@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/screens/home.dart';
+import 'package:greenwheel_user_app/screens/main_screen/home.dart';
+import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:sizer2/sizer2.dart';
 // late SharedPreferences sharedPreferences;
 void main() async{
@@ -15,7 +16,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Sizer(builder: (context, orientation, deviceType) {
     return const MaterialApp(
-      home: HomeScreen(),
+      home: TabScreen(),
       debugShowCheckedModeBanner: false,
     );
   });
