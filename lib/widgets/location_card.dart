@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/location.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/location_screen.dart';
 import 'package:greenwheel_user_app/widgets/rating_bar.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -11,7 +12,9 @@ class LocationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => LocationScreen(location: location)));
+      },
       child: Container(
         height: 30.h,
         width: 55.w,
@@ -60,7 +63,7 @@ class LocationCard extends StatelessWidget {
                     ratingCount: location.numberOfRating,
                   ),
                   const SizedBox(width: 4,),
-                  Text('${location.numberOfRating} Đánh giá', style: TextStyle(fontWeight: FontWeight.w600),)
+                  Text('${location.numberOfRating} Đánh giá', style: const TextStyle(fontWeight: FontWeight.w600),)
                 ],
               ),
             ),

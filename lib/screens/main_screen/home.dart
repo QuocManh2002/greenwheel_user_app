@@ -102,6 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         child: InkWell(
                           onTap: (){
+                            // Navigate to search screen 
                             Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const PlanScreen()));
                           },
                           child: TextField(
