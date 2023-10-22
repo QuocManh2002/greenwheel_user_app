@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/comments.dart';
+import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/location.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/select_date_screen.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/comment_card.dart';
 import 'package:greenwheel_user_app/widgets/emergency.dart';
@@ -38,15 +40,41 @@ class _LocationScreenState extends State<LocationScreen> {
         child: Scaffold(
       body: SingleChildScrollView(
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Hero(
-              tag: widget.location.id,
-              child: FadeInImage(
-                placeholder: MemoryImage(kTransparentImage),
-                height: 35.h,
-                image: NetworkImage(widget.location.imageUrl),
-                fit: BoxFit.cover,
-                width: double.infinity,
-              )),
+          Stack(
+            children: [
+              Hero(
+                  tag: widget.location.id,
+                  child: FadeInImage(
+                    placeholder: MemoryImage(kTransparentImage),
+                    height: 35.h,
+                    image: NetworkImage(widget.location.imageUrl),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                  )),
+              Positioned(
+                  left: 0,
+                  top: 0,
+                  child: Padding(
+                    padding: const EdgeInsets.only(top: 12, left: 4),
+                    child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(shape:const CircleBorder()),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: Container(
+                          height: 5.h,
+                          decoration:const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.white,
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Image.asset(backIcon),
+                          ),
+                        )),
+                  ))
+            ],
+          ),
           const SizedBox(
             height: 20,
           ),
@@ -339,16 +367,21 @@ class _LocationScreenState extends State<LocationScreen> {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child:
-                Container(
-                  alignment: Alignment.center,
-                  child: ElevatedButton(onPressed: () {},
-                    style: elevatedButtonStyle,
-                   child:const Text("Lập kế hoạch", style: TextStyle(fontWeight: FontWeight.bold),)),
-                ),
+            child: Container(
+              alignment: Alignment.center,
+              child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SelectDateScreen(location: widget.location,)));
+                  },
+                  style: elevatedButtonStyle,
+                  child: const Text(
+                    "Lập kế hoạch",
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  )),
+            ),
           ),
           const SizedBox(
-            height: 32,
+            height: 16,
           ),
         ]),
       ),
