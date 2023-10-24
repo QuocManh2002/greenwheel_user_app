@@ -56,6 +56,7 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
   Widget build(BuildContext context) {
     final start = selectedDates.start;
     final end = selectedDates.end;
+    final difference = selectedDates.duration;
 
     return SafeArea(
         child: Scaffold(
@@ -159,17 +160,21 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
           Padding(
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
-              style: elevatedButtonStyle,
-              onPressed: (){
-                Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => CreatePlanScreen(location: widget.location,endDate: end,startDate: start,numberOfMember: _selectedQuantity,)));
-              },
-                child:const Text(
-              "Chọn",
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold
-              ),
-            )),
+                style: elevatedButtonStyle,
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (ctx) => CreatePlanScreen(
+                            location: widget.location,
+                            endDate: end,
+                            startDate: start,
+                            numberOfMember: _selectedQuantity,
+                            duration: difference.inDays,
+                          )));
+                },
+                child: const Text(
+                  "Chọn",
+                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                )),
           )
         ],
       ),

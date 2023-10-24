@@ -4,6 +4,7 @@ import 'package:greenwheel_user_app/constants/supplier_orders.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
+import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
 import 'package:greenwheel_user_app/widgets/supplier_order_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -14,11 +15,13 @@ class CreatePlanScreen extends StatefulWidget {
       required this.location,
       required this.endDate,
       required this.numberOfMember,
-      required this.startDate});
+      required this.startDate, 
+      required this.duration});
   final Location location;
   final DateTime startDate;
   final DateTime endDate;
   final int numberOfMember;
+  final int duration;
 
   @override
   State<CreatePlanScreen> createState() => _CreatePlanScreenState();
@@ -195,13 +198,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                   const SizedBox(
                     height: 16,
                   ),
-                  SizedBox(
-                    height: 30.h,
-                    child: ListView(
-                      children:
-                          _planItems.map((item) => buildPlan(item)).toList(),
-                    ),
-                  ),
+                  for(int i = 0; i<= widget.duration; i++)
+                    CustomPlanItem(title: "Ngày ${i+1}"),
                   const SizedBox(
                     height: 16,
                   ),
