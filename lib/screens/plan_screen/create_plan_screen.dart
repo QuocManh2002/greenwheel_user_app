@@ -1,8 +1,11 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/supplier_orders.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
+import 'package:greenwheel_user_app/screens/main_screen/home.dart';
+import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
 import 'package:greenwheel_user_app/widgets/supplier_order_card.dart';
@@ -277,7 +280,19 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                   const SizedBox(
                     height: 16,
                   ),
-                  ElevatedButton(onPressed: (){}, child: const Text("Lưu kế hoạch"), style: elevatedButtonStyle,),
+                  ElevatedButton(onPressed: (){
+                    AwesomeDialog(context: context,
+                    dialogType: DialogType.success,
+                    animType: AnimType.topSlide,
+                    btnOkColor: primaryColor,
+                    desc: "Lưu kế hoạch thành công",
+                    btnOkOnPress: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const TabScreen()));
+                    },
+                    ).show();
+                  }, style: elevatedButtonStyle,
+                   child: const Text("Lưu kế hoạch"),),
                   const SizedBox(
                     height: 16,
                   ),

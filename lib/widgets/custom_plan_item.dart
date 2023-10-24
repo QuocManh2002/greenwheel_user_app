@@ -68,7 +68,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
-              alignment: Alignment.center,
+              
               height: (planDetail.length * 5.7).h,
               width: double.infinity,
               decoration: BoxDecoration(
@@ -80,7 +80,6 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                 itemCount: planDetail.length,
                 itemBuilder: (ctx, index) {
                   return Padding(
-                    
                     key: ValueKey(planDetail[index]),
                     padding: const EdgeInsets.only(
                         left: 32, top: 2.5, bottom: 2.5, right: 8),

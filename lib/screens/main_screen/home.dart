@@ -4,6 +4,7 @@ import 'package:greenwheel_user_app/constants/activities.dart';
 import 'package:greenwheel_user_app/constants/locations.dart';
 import 'package:greenwheel_user_app/constants/provinces.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
+import 'package:greenwheel_user_app/screens/main_screen/search.dart';
 import 'package:greenwheel_user_app/widgets/activity_card.dart';
 import 'package:greenwheel_user_app/widgets/location_card.dart';
 import 'package:greenwheel_user_app/widgets/province_card.dart';
@@ -103,7 +104,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: InkWell(
                           onTap: (){
                             // Navigate to search screen 
-                            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const PlanScreen()));
+                            Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const SearchScreen()));
                           },
                           child: TextField(
                             enabled: false,
@@ -155,7 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: SizedBox(
                   height: 30.h,
                   child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
+                    physics:const BouncingScrollPhysics(),
                     itemCount: locations.length,
                     shrinkWrap: true,
                     scrollDirection: Axis.horizontal,

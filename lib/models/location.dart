@@ -1,3 +1,4 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 
 class Location {
@@ -13,7 +14,8 @@ class Location {
       required this.lifeGuardNumber,
       required this.lifeGuardAddress,
       required this.clinicNumber,
-      required this.clinicAddress});
+      required this.clinicAddress,
+      required this.locationLatLng});
 
   final String id;
   final String name;
@@ -27,4 +29,5 @@ class Location {
   final String lifeGuardAddress;
   final String clinicNumber;
   final String clinicAddress;
+  final LatLng locationLatLng;
 }

@@ -1,3 +1,4 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 
@@ -15,7 +16,8 @@ List<Location> locations = [
       lifeGuardNumber: "0912312345",
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
-      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu"
+      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
+      locationLatLng:const LatLng(10.554411364780098, 107.2505359801003),
       ),
   Location(
       id: "2",
@@ -30,7 +32,9 @@ List<Location> locations = [
       lifeGuardNumber: "0912312345",
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
-      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu"),
+      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
+      locationLatLng: const LatLng(10.500131412056358, 107.47757431718013)
+      ),
   Location(
       id: "3",
       description: "Địa điểm du lịch Vũng Tàu ...",
@@ -44,7 +48,10 @@ List<Location> locations = [
       lifeGuardNumber: "0912312345",
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
-      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu"),
+      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
+      locationLatLng:const LatLng(11.25744127768411, 107.88268447823675)
+      ),
+      
   Location(
       id: "4",
       description: "Địa điểm du lịch Vũng Tàu ...",
@@ -58,7 +65,8 @@ List<Location> locations = [
       lifeGuardNumber: "0912312345",
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
-      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu"),
+      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
+      locationLatLng:const LatLng(11.994721228758529, 108.42856959567486)),
   Location(
       id: "5",
       description: "Địa điểm du lịch Vũng Tàu ...",
@@ -72,6 +80,7 @@ List<Location> locations = [
       lifeGuardNumber: "0912312345",
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
-      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu"
+      clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
+      locationLatLng: const LatLng(11.111790144544416, 107.10330964196373)
       ),
 ];

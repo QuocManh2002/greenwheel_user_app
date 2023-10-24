@@ -4,6 +4,7 @@ import 'package:greenwheel_user_app/constants/comments.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/location.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_date_screen.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/comment_card.dart';
@@ -158,7 +159,9 @@ class _LocationScreenState extends State<LocationScreen> {
           Container(
             alignment: Alignment.center,
             child: ElevatedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => LocalMapScreen(location: widget.location)));
+              },
               icon: const Icon(Icons.map),
               label: const Text(
                 "Bản đồ địa phương",
