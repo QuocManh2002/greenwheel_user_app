@@ -13,7 +13,8 @@ class LocationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => LocationScreen(location: location)));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => LocationScreen(location: location)));
       },
       child: Container(
         height: 30.h,
@@ -62,8 +63,13 @@ class LocationCard extends StatelessWidget {
                     rating: location.rating,
                     ratingCount: location.numberOfRating,
                   ),
-                  const SizedBox(width: 4,),
-                  Text('${location.numberOfRating} Đánh giá', style: const TextStyle(fontWeight: FontWeight.w600),)
+                  const SizedBox(
+                    width: 4,
+                  ),
+                  Text(
+                    '${location.numberOfRating} Đánh giá',
+                    style: const TextStyle(fontWeight: FontWeight.w600),
+                  )
                 ],
               ),
             ),
