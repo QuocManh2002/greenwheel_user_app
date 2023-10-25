@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_category.dart';
+import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/widgets/recent_card.dart';
 import 'package:greenwheel_user_app/widgets/location_card.dart';
 import 'package:sizer2/sizer2.dart';
@@ -59,7 +60,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     Navigator.of(context).pop(); // Close the current page
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (ctx) => const HomeScreen(),
+                        builder: (ctx) => const TabScreen(),
                       ),
                     );
                   },
