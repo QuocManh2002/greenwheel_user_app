@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/models/cart.dart';
 import 'package:greenwheel_user_app/models/menu_item.dart';
 import 'package:input_quantity/input_quantity.dart';
 import 'package:sizer2/sizer2.dart';

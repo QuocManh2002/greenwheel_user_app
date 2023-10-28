@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/menu_items.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
 
@@ -15,6 +14,11 @@ List<Supplier> suppliers = [
       items[0],
       items[1],
       items[2],
+      items[3],
+      items[4],
+      items[5],
+      items[6],
+      items[7],
     ],
   ),
   Supplier(

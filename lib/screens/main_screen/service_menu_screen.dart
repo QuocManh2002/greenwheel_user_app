@@ -3,7 +3,7 @@ import 'package:greenwheel_user_app/models/menu_item.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
-import 'package:greenwheel_user_app/screens/main_screen/cart-single.dart';
+import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/widgets/menu_item_card.dart';
 import 'package:intl/intl.dart';

@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/screens/main_screen/search.dart';
-import 'package:greenwheel_user_app/widgets/button_style.dart';
+import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 import 'package:greenwheel_user_app/widgets/tags_search_card.dart';
 import 'package:sizer2/sizer2.dart';
 

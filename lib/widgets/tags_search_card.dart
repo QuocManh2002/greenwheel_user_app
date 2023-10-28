@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:sizer2/sizer2.dart';
 

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:input_quantity/input_quantity.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:transparent_image/transparent_image.dart';
 import 'package:intl/intl.dart';
 
 class CartItemCard extends StatefulWidget {

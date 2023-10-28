@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
-import 'package:greenwheel_user_app/screens/main_screen/cart-single.dart';
-import 'package:intl/intl.dart';
+import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
@@ -31,12 +30,8 @@ class SelectOrderDateScreen extends StatefulWidget {
 }
 
 class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
-  String _selectedDate = '';
-  String _dateCount = '';
-  String _range = '';
   DateTime? pickupDate;
   DateTime? returnDate;
-  String _rangeCount = '';
 
   @override
   void initState() {
@@ -182,26 +177,14 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
   void _onSelectionChanged(DateRangePickerSelectionChangedArgs args) {
     setState(() {
       if (args.value is PickerDateRange) {
-        _range = '${DateFormat('dd/MM/yyyy').format(args.value.startDate)} -'
-            // ignore: lines_longer_than_80_chars
-            ' ${DateFormat('dd/MM/yyyy').format(args.value.endDate ?? args.value.startDate)}';
-        print(_range);
         setState(() {
           pickupDate = args.value.startDate;
           returnDate = args.value.endDate ?? args.value.startDate;
         });
       } else if (args.value is DateTime) {
-        _selectedDate = args.value.toString();
-        print(_selectedDate);
         setState(() {
           pickupDate = args.value;
         });
-      } else if (args.value is List<DateTime>) {
-        _dateCount = args.value.length.toString();
-        print(_dateCount);
-      } else {
-        _rangeCount = args.value.length.toString();
-        print(_rangeCount);
       }
     });
   }

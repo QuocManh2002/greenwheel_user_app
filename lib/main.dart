@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
 import 'package:sizer2/sizer2.dart';
@@ -27,7 +29,9 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        home: const TabScreen(),
+        home: ServiceMainScreen(
+          serviceType: services[0],
+        ),
         theme: theme,
         debugShowCheckedModeBanner: false,
       );

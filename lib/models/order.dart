@@ -1,13 +1,14 @@
-import 'package:greenwheel_user_app/models/menu_item.dart';
+import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
 
-class Cart {
-  const Cart(
+class Order {
+  const Order(
       {required this.total,
       required this.transactionType,
       required this.transactionId,
       required this.note,
-      required this.receiveDate,
+      required this.orderDate,
+      required this.pickupDate,
       required this.returnDate,
       required this.supplier,
       required this.items});
@@ -16,8 +17,9 @@ class Cart {
   final String transactionType;
   final int transactionId;
   final String note;
-  final DateTime receiveDate;
+  final DateTime orderDate;
+  final DateTime pickupDate;
   final DateTime returnDate;
   final Supplier supplier;
-  final List<MenuItem> items;
+  final List<ItemCart> items;
 }

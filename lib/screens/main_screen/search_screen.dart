@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/screens/main_screen/home.dart';
-import 'package:greenwheel_user_app/screens/main_screen/search_category.dart';
+import 'package:greenwheel_user_app/screens/main_screen/search_category_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/widgets/recent_card.dart';
 import 'package:greenwheel_user_app/widgets/location_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:greenwheel_user_app/constants/recent_search.dart';
 import 'package:greenwheel_user_app/constants/locations.dart';
-import 'package:greenwheel_user_app/constants/plans.dart';
 import 'package:greenwheel_user_app/widgets/search_card.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
 
