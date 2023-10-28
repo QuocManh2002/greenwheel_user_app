@@ -1,14 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_food_menu.dart';
-import 'package:greenwheel_user_app/screens/sub_screen/location_screen.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/widgets/rating_bar.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierCard extends StatefulWidget {
-  const SupplierCard({super.key, required this.supplier});
+  const SupplierCard({
+    super.key,
+    required this.supplier,
+    required this.serviceType,
+  });
   final Supplier supplier;
+  final ServiceType serviceType;
 
   @override
   State<SupplierCard> createState() => _SupplierCardState();
@@ -32,8 +37,9 @@ class _SupplierCardState extends State<SupplierCard> {
             onPressed: () async {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (ctx) => FoodServiceMenu(
+                  builder: (ctx) => ServiceMenuScreen(
                     supplier: widget.supplier,
+                    serviceType: widget.serviceType,
                   ),
                 ),
               );

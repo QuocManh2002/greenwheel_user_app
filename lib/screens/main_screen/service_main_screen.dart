@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/suppliers.dart';
-import 'package:greenwheel_user_app/models/cart.dart';
+import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/supplier_card.dart';
 import 'package:sizer2/sizer2.dart';
 
-class FoodServiceScreen extends StatefulWidget {
-  const FoodServiceScreen({super.key, this.cart});
-  final Cart? cart;
+class ServiceMainScreen extends StatefulWidget {
+  const ServiceMainScreen({super.key, required this.serviceType});
+  final ServiceType serviceType;
 
   @override
-  State<FoodServiceScreen> createState() => _FoodServiceScreenState();
+  State<ServiceMainScreen> createState() => _ServiceMainScreenState();
 }
 
-class _FoodServiceScreenState extends State<FoodServiceScreen> {
+class _ServiceMainScreenState extends State<ServiceMainScreen> {
   List<Supplier> list = [
     suppliers[0],
     suppliers[1],
@@ -75,7 +75,10 @@ class _FoodServiceScreenState extends State<FoodServiceScreen> {
                 shrinkWrap: true,
                 itemCount: list.length,
                 itemBuilder: (context, index) {
-                  return SupplierCard(supplier: list[index]);
+                  return SupplierCard(
+                    supplier: list[index],
+                    serviceType: widget.serviceType,
+                  );
                 },
               ),
             ],

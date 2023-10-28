@@ -1,27 +1,63 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/models/cart.dart';
 import 'package:greenwheel_user_app/models/menu_item.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
+import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
-import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_food_screen.dart';
+import 'package:greenwheel_user_app/screens/main_screen/cart-single.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/widgets/menu_item_card.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
-class FoodServiceMenu extends StatefulWidget {
-  const FoodServiceMenu({super.key, required this.supplier});
+class ServiceMenuScreen extends StatefulWidget {
+  const ServiceMenuScreen({
+    super.key,
+    required this.supplier,
+    required this.serviceType,
+    this.currentCart = const [],
+    this.iniPickupDate,
+    this.iniReturnDate,
+    this.iniNote = "",
+  });
   final Supplier supplier;
+  final ServiceType serviceType;
+  final List<ItemCart> currentCart;
+  final DateTime? iniPickupDate;
+  final DateTime? iniReturnDate;
+  final String iniNote;
 
   @override
-  State<FoodServiceMenu> createState() => _FoodServiceMenuState();
+  State<ServiceMenuScreen> createState() => _ServiceMenuScreenState();
 }
 
-class _FoodServiceMenuState extends State<FoodServiceMenu> {
+class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
 
   double total = 0;
   List<ItemCart> items = [];
+  DateTime? pickupDate;
+  DateTime? returnDate;
+  String note = "";
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (widget.currentCart.isNotEmpty) {
+      double tmp = 0;
+      if (widget.currentCart.length != 0) {}
+      for (var cartItem in widget.currentCart) {
+        tmp += cartItem.item.price * cartItem.qty;
+      }
+      setState(() {
+        items = widget.currentCart;
+        total = tmp;
+      });
+    }
+    pickupDate = widget.iniPickupDate;
+    returnDate = widget.iniReturnDate;
+    note = widget.iniNote;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,9 +80,12 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
                     color: Colors.black,
                   ),
                   onPressed: () {
+                    Navigator.of(context).pop(); // Close the current page
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (ctx) => const FoodServiceScreen(),
+                        builder: (ctx) => ServiceMainScreen(
+                          serviceType: widget.serviceType,
+                        ),
                       ),
                     );
                   },
@@ -88,8 +127,15 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
                 shrinkWrap: true,
                 itemCount: widget.supplier.items.length,
                 itemBuilder: (context, index) {
+                  int? qty;
+                  ItemCart? itemCart = getItemCartByMenuItemId(
+                      widget.currentCart, widget.supplier.items[index].id);
+                  if (itemCart != null) {
+                    qty = itemCart.qty;
+                  }
                   return MenuItemCard(
                     item: widget.supplier.items[index],
+                    quantity: qty,
                     updateCart: updateCart,
                   );
                 },
@@ -100,7 +146,7 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
         bottomNavigationBar: Visibility(
           visible: total != 0,
           child: Container(
-            height: 13.h,
+            height: 10.h,
             width: double.infinity,
             color: Colors.white,
             child: Row(
@@ -108,7 +154,7 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
               children: [
                 SizedBox(
                   width: 90.w,
-                  height: 8.h,
+                  height: 6.h,
                   child: ElevatedButton(
                     onPressed: () async {
                       Navigator.of(context).push(
@@ -117,6 +163,10 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
                             supplier: widget.supplier,
                             list: items,
                             total: total,
+                            serviceType: widget.serviceType,
+                            pickupDate: pickupDate,
+                            returnDate: returnDate,
+                            note: note,
                           ),
                         ),
                       );
@@ -132,7 +182,7 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
                             'Giỏ hàng',
                             style: TextStyle(
                               color: Colors.white, // Text color
-                              fontSize: 20,
+                              fontSize: 18,
                             ),
                           ),
                           const SizedBox(
@@ -150,7 +200,7 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
                             currencyFormat.format(total),
                             style: const TextStyle(
                               color: Colors.white, // Text color
-                              fontSize: 20,
+                              fontSize: 18,
                             ),
                           ),
                         ],
@@ -166,37 +216,15 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
     );
   }
 
-  // // Callback function to modify the tags list
-  // void updateCart(MenuItem item, int qty) {
-  //   setState(() {
-  //     bool unExisted = true;
-  //     if (items.isEmpty) {
-  //       items.add(ItemCart(item: item, qty: qty));
-  //       total += item.price * qty;
-  //       print(items.length);
-  //       print(total);
-  //     } else {
-  //       for (var i = 0; i < items.length; i++) {
-  //         if (items[i].item.id == item.id) {
-  //           if (qty != 0) {
-  //             total -= items[i].item.price * items[i].qty;
-  //             total += items[i].item.price * qty;
-  //             items.remove(items[i]);
-  //             items.add(ItemCart(item: item, qty: qty));
-  //           } else {
-  //             total -= items[i].item.price * items[i].qty;
-  //             items.remove(items[i]);
-  //           }
-  //           unExisted = false;
-  //         }
-  //       }
-  //       if (unExisted) {
-  //         items.add(ItemCart(item: item, qty: qty));
-  //         total += item.price * qty;
-  //       }
-  //     }
-  //   });
-  // }
+  ItemCart? getItemCartByMenuItemId(List<ItemCart> cartList, int selectId) {
+    try {
+      return cartList.firstWhere((cart) => cart.item.id == selectId);
+    } catch (e) {
+      // Handle the case when no matching item is found
+      return null;
+    }
+  }
+
   void updateCart(MenuItem item, int qty) {
     setState(() {
       final existingItemIndex =
@@ -215,6 +243,12 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
       } else if (qty != 0) {
         items.add(ItemCart(item: item, qty: qty));
         total += item.price * qty;
+      }
+
+      if (items.isEmpty) {
+        pickupDate = null;
+        returnDate = null;
+        note = "";
       }
     });
   }

@@ -18,6 +18,7 @@ dependencies:
   google_maps_flutter: ^2.5.0
   intl:
   input_quantity: ^2.1.1
+  syncfusion_flutter_datepicker: ^23.1.42
 
 dev_dependencies:
   flutter_test:

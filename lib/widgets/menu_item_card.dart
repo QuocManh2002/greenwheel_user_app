@@ -11,9 +11,11 @@ class MenuItemCard extends StatefulWidget {
     super.key,
     required this.item,
     required this.updateCart,
+    this.quantity,
   });
   final MenuItem item;
   final Function updateCart;
+  final int? quantity;
 
   @override
   State<MenuItemCard> createState() => _MenuItemCardState();
@@ -27,6 +29,17 @@ class _MenuItemCardState extends State<MenuItemCard>
   // Create a NumberFormat instance for currency formatting
   var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
   bool isQuantity = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (widget.quantity != null) {
+      setState(() {
+        isQuantity = true;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,7 +132,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                               margin: const EdgeInsets.only(bottom: 6),
                               child: InputQty(
                                 maxVal: 100,
-                                initVal: 1,
+                                initVal: widget.quantity ?? 1,
                                 minVal: 0,
                                 steps: 1,
                                 decoration: const QtyDecorationProps(
