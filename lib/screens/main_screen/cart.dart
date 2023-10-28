@@ -20,12 +20,16 @@ class CartScreen extends StatefulWidget {
 
 class _CartScreenState extends State<CartScreen> {
   double finalTotal = 0;
+  List<ItemCart> list = [];
+  Supplier? supplier;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     finalTotal = widget.total;
+    list = widget.list;
+    supplier = widget.supplier;
   }
 
   @override
@@ -80,7 +84,7 @@ class _CartScreenState extends State<CartScreen> {
                 child: Row(
                   children: [
                     Text(
-                      widget.supplier.name,
+                      supplier!.name,
                       style: const TextStyle(
                         fontSize: 19,
                         fontFamily: 'NotoSans',
@@ -111,23 +115,39 @@ class _CartScreenState extends State<CartScreen> {
                   color: Colors.grey.withOpacity(0.2),
                 ),
               ),
-              const SizedBox(
-                width: 8,
-              ),
               Container(
                 child: ListView.builder(
                   physics: const BouncingScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: widget.list.length,
+                  itemCount: list.length,
                   itemBuilder: (context, index) {
-                    print("Build");
                     return CartItemCard(
-                      cartItem: widget.list[index],
+                      cartItem: list[index],
                       updateFinalCart: updateFinalCart,
                     );
                   },
                 ),
               ),
+              const SizedBox(
+                height: 28,
+              ),
+              Container(
+                height: 8,
+                color: Colors.grey.withOpacity(0.2),
+              ),
+              const SizedBox(
+                height: 16,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 14),
+                child: Text(
+                  widget.supplier.name,
+                  style: const TextStyle(
+                      fontSize: 16,
+                      fontFamily: 'NotoSans',
+                      fontWeight: FontWeight.bold),
+                ),
+              )
             ],
           ),
         ),
@@ -136,16 +156,30 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   // Callback function to modify the tags list
-  void updateFinalCart(ItemCart item, int newQty) {
-    setState(() {
-      for (var cartItem in widget.list) {
-        if (item.item.id == cartItem.item.id) {
-          finalTotal -= cartItem.item.price * cartItem.qty;
-          finalTotal += cartItem.item.price * newQty;
-          widget.list.remove(cartItem);
-          widget.list.add(ItemCart(item: cartItem.item, qty: newQty));
+  void updateFinalCart(ItemCart cartItem, int newQty) {
+    List<ItemCart> updatedList =
+        List.from(list); // Create a copy of the original list
+
+    for (var i = 0; i < updatedList.length; i++) {
+      if (updatedList[i].item.id == cartItem.item.id) {
+        if (newQty != 0) {
+          setState(() {
+            finalTotal -= cartItem.item.price * cartItem.qty;
+            finalTotal += cartItem.item.price * newQty;
+            updatedList[i] = ItemCart(item: cartItem.item, qty: newQty);
+          });
+        } else {
+          setState(() {
+            finalTotal -= cartItem.item.price * cartItem.qty;
+          });
+          updatedList.removeAt(i);
+          break; // Exit the loop since the item was found and removed
         }
       }
+    }
+
+    setState(() {
+      list = updatedList; // Update the original list with the modified copy
     });
   }
 }

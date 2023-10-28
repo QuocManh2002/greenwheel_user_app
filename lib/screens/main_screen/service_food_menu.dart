@@ -72,7 +72,7 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
               const Padding(
                 padding: EdgeInsets.only(left: 14, top: 14),
                 child: Text(
-                  'Menu',
+                  'Món ăn',
                   style: TextStyle(
                     fontSize: 19,
                     fontFamily: 'NotoSans',
@@ -166,34 +166,55 @@ class _FoodServiceMenuState extends State<FoodServiceMenu> {
     );
   }
 
-  // Callback function to modify the tags list
+  // // Callback function to modify the tags list
+  // void updateCart(MenuItem item, int qty) {
+  //   setState(() {
+  //     bool unExisted = true;
+  //     if (items.isEmpty) {
+  //       items.add(ItemCart(item: item, qty: qty));
+  //       total += item.price * qty;
+  //       print(items.length);
+  //       print(total);
+  //     } else {
+  //       for (var i = 0; i < items.length; i++) {
+  //         if (items[i].item.id == item.id) {
+  //           if (qty != 0) {
+  //             total -= items[i].item.price * items[i].qty;
+  //             total += items[i].item.price * qty;
+  //             items.remove(items[i]);
+  //             items.add(ItemCart(item: item, qty: qty));
+  //           } else {
+  //             total -= items[i].item.price * items[i].qty;
+  //             items.remove(items[i]);
+  //           }
+  //           unExisted = false;
+  //         }
+  //       }
+  //       if (unExisted) {
+  //         items.add(ItemCart(item: item, qty: qty));
+  //         total += item.price * qty;
+  //       }
+  //     }
+  //   });
+  // }
   void updateCart(MenuItem item, int qty) {
     setState(() {
-      bool unExisted = true;
-      if (items.isEmpty) {
+      final existingItemIndex =
+          items.indexWhere((cartItem) => cartItem.item.id == item.id);
+
+      if (existingItemIndex != -1) {
+        final existingItem = items[existingItemIndex];
+        total -= existingItem.item.price * existingItem.qty;
+
+        if (qty != 0) {
+          total += item.price * qty;
+          items[existingItemIndex] = ItemCart(item: item, qty: qty);
+        } else {
+          items.removeAt(existingItemIndex);
+        }
+      } else if (qty != 0) {
         items.add(ItemCart(item: item, qty: qty));
         total += item.price * qty;
-        print(items.length);
-        print(total);
-      } else {
-        for (var i = 0; i < items.length; i++) {
-          if (items[i].item.id == item.id) {
-            if (qty != 0) {
-              total -= items[i].item.price * items[i].qty;
-              total += items[i].item.price * qty;
-              items.remove(items[i]);
-              items.add(ItemCart(item: item, qty: qty));
-            } else {
-              total -= items[i].item.price * items[i].qty;
-              items.remove(items[i]);
-            }
-            unExisted = false;
-          }
-        }
-        if (unExisted) {
-          items.add(ItemCart(item: item, qty: qty));
-          total += item.price * qty;
-        }
       }
     });
   }

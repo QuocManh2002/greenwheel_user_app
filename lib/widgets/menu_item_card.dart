@@ -120,7 +120,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                               child: InputQty(
                                 maxVal: 100,
                                 initVal: 1,
-                                minVal: -100,
+                                minVal: 0,
                                 steps: 1,
                                 decoration: const QtyDecorationProps(
                                   contentPadding: EdgeInsets.symmetric(

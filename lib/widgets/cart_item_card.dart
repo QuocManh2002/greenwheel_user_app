@@ -39,106 +39,71 @@ class _CartItemCardState extends State<CartItemCard>
             ),
             child: Row(
               children: [
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(8),
-                      bottomLeft: Radius.circular(8),
-                    ),
-                    child: Hero(
-                      tag: widget.cartItem.item.id,
-                      child: FadeInImage(
-                        height: 10.h,
-                        placeholder: MemoryImage(kTransparentImage),
-                        image: NetworkImage(widget.cartItem.item.imgUrl),
-                        fit: BoxFit.cover,
-                        width: 15.h,
-                        filterQuality: FilterQuality.high,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  width: 8,
-                ),
-                Stack(
-                  children: [
-                    SizedBox(
-                      height: 10.h,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Padding(
-                            padding: const EdgeInsets.only(left: 8, top: 10),
-                            child: Text(
-                              widget.cartItem.item.name,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontFamily: 'NotoSans',
-                              ),
-                            ),
+                SizedBox(
+                  height: 10.h,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(left: 8, top: 10),
+                        child: Text(
+                          widget.cartItem.item.name,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontFamily: 'NotoSans',
                           ),
-                          const SizedBox(height: 6),
-                          SizedBox(
-                            width: 55.w,
-                            child: Padding(
-                              padding: const EdgeInsets.only(left: 8),
-                              child: Text(
-                                currencyFormat
-                                    .format(widget.cartItem.item.price),
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontFamily: 'NotoSans',
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Positioned(
-                      bottom: 0,
-                      right: 0,
-                      child: InputQty(
-                        maxVal: 100,
-                        initVal: widget.cartItem.qty,
-                        minVal: -100,
-                        steps: 1,
-                        decoration: const QtyDecorationProps(
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 2,
-                            vertical: 10,
-                          ),
-                          width: 8,
-                          isBordered: false,
-                          fillColor: Colors.black12,
                         ),
-                        onQtyChanged: (val) async {
-                          setState(() {
-                            print("CHANGING");
-                            print(widget.cartItem.item.name);
-                            print(widget.cartItem.qty);
-                            print(val);
-                            widget.updateFinalCart(widget.cartItem, val);
-                          });
-                        },
                       ),
+                      const SizedBox(height: 6),
+                      SizedBox(
+                        width: 55.w,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8),
+                          child: Text(
+                            currencyFormat.format(widget.cartItem.item.price *
+                                widget.cartItem.qty),
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontFamily: 'NotoSans',
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Spacer(),
+                Container(
+                  margin: const EdgeInsets.only(right: 10),
+                  child: InputQty(
+                    maxVal: 100,
+                    initVal: widget.cartItem.qty,
+                    minVal: 0,
+                    steps: 1,
+                    decoration: const QtyDecorationProps(
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: 2,
+                        vertical: 10,
+                      ),
+                      width: 8,
+                      isBordered: false,
+                      fillColor: Colors.black12,
                     ),
-                  ],
+                    onQtyChanged: (val) async {
+                      widget.updateFinalCart(widget.cartItem, val);
+                    },
+                  ),
                 )
               ],
             ),
           ),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 0),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Container(
             height: 1.8,
             color: Colors.grey.withOpacity(0.2),
