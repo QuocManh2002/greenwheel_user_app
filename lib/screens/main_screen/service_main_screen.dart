@@ -6,7 +6,10 @@ import 'package:greenwheel_user_app/widgets/supplier_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ServiceMainScreen extends StatefulWidget {
-  const ServiceMainScreen({super.key, required this.serviceType});
+  const ServiceMainScreen({
+    super.key,
+    required this.serviceType,
+  });
   final ServiceType serviceType;
 
   @override
@@ -41,15 +44,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                     color: Colors.black,
                   ),
                   onPressed: () {
-                    // Handle return icon action here
-                    // Navigator.of(context).pop(); // Close the current page
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //     builder: (ctx) => SearchScreen(
-                    //       search: widget.search,
-                    //     ),
-                    //   ),
-                    // );
+                    Navigator.of(context).pop(); // Close the current page
                   },
                 ),
                 const Padding(

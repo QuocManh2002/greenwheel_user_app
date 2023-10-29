@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/orders.dart';
+import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/widgets/order_card.dart';
+import 'package:greenwheel_user_app/widgets/service_type_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class OrderHistoryScreen extends StatefulWidget {
-  const OrderHistoryScreen({super.key, this.serviceType});
-  final ServiceType? serviceType;
+  const OrderHistoryScreen({super.key, required this.serviceType});
+  final ServiceType serviceType;
 
   @override
   State<OrderHistoryScreen> createState() => _OrderHistoryScreenState();
 }
 
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
+  ServiceType? currentService;
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    currentService = widget.serviceType;
   }
 
   @override
@@ -40,15 +45,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                     color: Colors.black,
                   ),
                   onPressed: () {
-                    // Handle return icon action here
-                    // Navigator.of(context).pop(); // Close the current page
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //     builder: (ctx) => SearchScreen(
-                    //       search: widget.search,
-                    //     ),
-                    //   ),
-                    // );
+                    Navigator.of(context).pop(); // Close the current page
                   },
                 ),
                 const Padding(
@@ -69,20 +66,65 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: orders.length,
-                itemBuilder: (context, index) {
-                  return OrderCard(
-                    order: orders[index],
-                  );
-                },
+              Padding(
+                padding: const EdgeInsets.only(left: 8, top: 14, bottom: 20),
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: SizedBox(
+                        height: 4.h,
+                        child: ListView.builder(
+                          physics: const BouncingScrollPhysics(),
+                          itemCount: services.length,
+                          shrinkWrap: true,
+                          scrollDirection: Axis.horizontal,
+                          itemBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: ServiceTypeCard(
+                              serviceType: services[index],
+                              changeService: changeService,
+                              isPress: services[index].id == currentService?.id
+                                  ? true
+                                  : false,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Container(
+                  height: 1.8,
+                  color: Colors.grey.withOpacity(0.2),
+                ),
+              ),
+              Container(
+                height: 80.h,
+                child: ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: orders.length,
+                  itemBuilder: (context, index) {
+                    return OrderCard(
+                      order: orders[index],
+                      serviceType: widget.serviceType,
+                    );
+                  },
+                ),
               ),
             ],
           ),
         ),
       ),
     );
+  }
+
+  void changeService(ServiceType type) {
+    setState(() {
+      currentService = type;
+    });
   }
 }

@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/comments.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
+import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/location.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_date_screen.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
@@ -58,13 +60,14 @@ class _LocationScreenState extends State<LocationScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 12, left: 4),
                     child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(shape:const CircleBorder()),
+                        style: ElevatedButton.styleFrom(
+                            shape: const CircleBorder()),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
                         child: Container(
                           height: 5.h,
-                          decoration:const BoxDecoration(
+                          decoration: const BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white,
                           ),
@@ -160,7 +163,9 @@ class _LocationScreenState extends State<LocationScreen> {
             alignment: Alignment.center,
             child: ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => LocalMapScreen(location: widget.location)));
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (ctx) =>
+                        LocalMapScreen(location: widget.location)));
               },
               icon: const Icon(Icons.map),
               label: const Text(
@@ -240,7 +245,15 @@ class _LocationScreenState extends State<LocationScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => ServiceMainScreen(
+                      serviceType: services[1],
+                    ),
+                  ),
+                );
+              },
               icon: const Icon(Icons.bed),
               label: const Text("Lưu trú"),
               style: outlinedButtonStyle.copyWith(
@@ -254,7 +267,15 @@ class _LocationScreenState extends State<LocationScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => ServiceMainScreen(
+                      serviceType: services[0],
+                    ),
+                  ),
+                );
+              },
               icon: const Icon(Icons.restaurant),
               label: const Text("Ăn uống"),
               style: outlinedButtonStyle.copyWith(
@@ -268,7 +289,15 @@ class _LocationScreenState extends State<LocationScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => ServiceMainScreen(
+                      serviceType: services[2],
+                    ),
+                  ),
+                );
+              },
               icon: const Icon(Icons.car_crash),
               label: const Text("Đi lại"),
               style: outlinedButtonStyle.copyWith(
@@ -282,7 +311,15 @@ class _LocationScreenState extends State<LocationScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => ServiceMainScreen(
+                      serviceType: services[3],
+                    ),
+                  ),
+                );
+              },
               icon: const Icon(Icons.shopping_cart),
               label: const Text("Tiện lợi"),
               style: outlinedButtonStyle.copyWith(
@@ -374,7 +411,10 @@ class _LocationScreenState extends State<LocationScreen> {
               alignment: Alignment.center,
               child: ElevatedButton(
                   onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SelectDateScreen(location: widget.location,)));
+                    Navigator.of(context).push(MaterialPageRoute(
+                        builder: (ctx) => SelectDateScreen(
+                              location: widget.location,
+                            )));
                   },
                   style: elevatedButtonStyle,
                   child: const Text(

@@ -1,13 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/order.dart';
+import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/screens/main_screen/order_detail_screen.dart';
 import 'package:greenwheel_user_app/widgets/rating_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class OrderCard extends StatelessWidget {
-  const OrderCard({super.key, required this.order});
+  const OrderCard({
+    super.key,
+    required this.order,
+    required this.serviceType,
+  });
   final Order order;
+  final ServiceType serviceType;
 
   @override
   Widget build(BuildContext context) {
@@ -24,8 +31,14 @@ class OrderCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              // Navigator.of(context).push(MaterialPageRoute(
-              //     builder: (ctx) => LocationScreen(location: location)));
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => OrderDetailScreen(
+                    order: order,
+                    serviceType: serviceType,
+                  ),
+                ),
+              );
             },
             child: Row(
               children: [
@@ -38,16 +51,13 @@ class OrderCard extends StatelessWidget {
                       topLeft: Radius.circular(8),
                       bottomLeft: Radius.circular(8),
                     ),
-                    child: Hero(
-                      tag: order.supplier.id,
-                      child: FadeInImage(
-                        height: 15.h,
-                        placeholder: MemoryImage(kTransparentImage),
-                        image: NetworkImage(order.supplier.imgUrl),
-                        fit: BoxFit.cover,
-                        width: 15.h,
-                        filterQuality: FilterQuality.high,
-                      ),
+                    child: FadeInImage(
+                      height: 15.h,
+                      placeholder: MemoryImage(kTransparentImage),
+                      image: NetworkImage(order.supplier.imgUrl),
+                      fit: BoxFit.cover,
+                      width: 15.h,
+                      filterQuality: FilterQuality.high,
                     ),
                   ),
                 ),

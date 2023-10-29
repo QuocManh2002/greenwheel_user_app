@@ -3,6 +3,7 @@ import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
+import 'package:greenwheel_user_app/screens/main_screen/order_history_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/widgets/cart_item_card.dart';
@@ -143,6 +144,7 @@ class _CartScreenState extends State<CartScreen> {
                           const Spacer(), // Add space between the two elements
                           TextButton(
                             onPressed: () {
+                              Navigator.of(context).pop();
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (ctx) => ServiceMenuScreen(
@@ -275,6 +277,7 @@ class _CartScreenState extends State<CartScreen> {
                           const Spacer(), // Add space between the two elements
                           TextButton(
                             onPressed: () {
+                              Navigator.of(context).pop();
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (ctx) => SelectOrderDateScreen(
@@ -469,15 +472,14 @@ class _CartScreenState extends State<CartScreen> {
                         height: 6.h,
                         child: ElevatedButton(
                           onPressed: () async {
-                            // Navigator.of(context).push(
-                            //   MaterialPageRoute(
-                            //     builder: (ctx) => CartScreen(
-                            //       supplier: widget.supplier,
-                            //       list: items,
-                            //       total: total,
-                            //     ),
-                            //   ),
-                            // );
+                            Navigator.of(context).pop();
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => OrderHistoryScreen(
+                                  serviceType: widget.serviceType,
+                                ),
+                              ),
+                            );
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green, // Background color

@@ -63,19 +63,6 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => CartScreen(
-                          supplier: widget.supplier,
-                          list: widget.list,
-                          total: widget.total,
-                          serviceType: widget.serviceType,
-                          pickupDate: widget.iniPickupDate,
-                          returnDate: widget.iniReturnDate,
-                          note: widget.iniNote,
-                        ),
-                      ),
-                    );
                   },
                 ),
                 const Padding(

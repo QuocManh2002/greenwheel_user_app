@@ -35,6 +35,7 @@ class _SupplierCardState extends State<SupplierCard> {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
+              Navigator.of(context).pop();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => ServiceMenuScreen(
@@ -55,16 +56,13 @@ class _SupplierCardState extends State<SupplierCard> {
                       topLeft: Radius.circular(8),
                       bottomLeft: Radius.circular(8),
                     ),
-                    child: Hero(
-                      tag: widget.supplier.id,
-                      child: FadeInImage(
-                        height: 15.h,
-                        placeholder: MemoryImage(kTransparentImage),
-                        image: NetworkImage(widget.supplier.imgUrl),
-                        fit: BoxFit.cover,
-                        width: 15.h,
-                        filterQuality: FilterQuality.high,
-                      ),
+                    child: FadeInImage(
+                      height: 15.h,
+                      placeholder: MemoryImage(kTransparentImage),
+                      image: NetworkImage(widget.supplier.imgUrl),
+                      fit: BoxFit.cover,
+                      width: 15.h,
+                      filterQuality: FilterQuality.high,
                     ),
                   ),
                 ),
