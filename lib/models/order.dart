@@ -1,4 +1,5 @@
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
+import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
 
 class Order {
@@ -11,15 +12,19 @@ class Order {
       required this.pickupDate,
       required this.returnDate,
       required this.supplier,
-      required this.items});
+      required this.items,
+      required this.rating,
+      required this.serviceType});
 
   final double total;
   final String transactionType;
-  final int transactionId;
+  final String transactionId;
   final String note;
   final DateTime orderDate;
   final DateTime pickupDate;
-  final DateTime returnDate;
+  final DateTime? returnDate;
   final Supplier supplier;
   final List<ItemCart> items;
+  final double rating;
+  final ServiceType serviceType;
 }
