@@ -6,7 +6,11 @@ import 'package:greenwheel_user_app/widgets/tag_search_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SearchCategoryScreen extends StatefulWidget {
-  const SearchCategoryScreen({super.key, required this.list, this.search = ''});
+  const SearchCategoryScreen({
+    super.key,
+    required this.list,
+    required this.search,
+  });
   final String search;
   final List<Tag> list;
 
@@ -49,6 +53,10 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
     tags[21],
   ];
 
+  List<Tag> provinces = [
+    tags[22],
+  ];
+
   List<Tag> select = []; // Declare a mutable list
 
   @override
@@ -56,7 +64,6 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
     // TODO: implement initState
     super.initState();
     select = List.from(widget.list);
-    print("SELECT:${select.length}");
   }
 
   @override
@@ -86,6 +93,7 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
                       MaterialPageRoute(
                         builder: (ctx) => SearchScreen(
                           search: widget.search,
+                          list: select,
                         ),
                       ),
                     );
@@ -115,6 +123,106 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 24),
                 child: Text(
+                  "Miền:",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'NotoSans',
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 18,
+              ),
+              Container(
+                margin: const EdgeInsets.only(left: 22),
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, // 3 items per row
+                    childAspectRatio:
+                        3, // Aspect ratio for the items (1 means square)
+                    crossAxisSpacing: 7, // Spacing between columns
+                    mainAxisSpacing: 3.h, // Spacing between rows
+                  ),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: region.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) => TagSearchCard(
+                    tag: region[index],
+                    tags: select,
+                    updateTags: updateTags,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 38,
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
+                  "Tỉnh:",
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontFamily: 'NotoSans',
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 18,
+              ),
+              provinces.length == 1
+                  ? Container(
+                      margin: const EdgeInsets.only(left: 22),
+                      child: GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3, // 3 items per row
+                          childAspectRatio:
+                              3, // Aspect ratio for the items (1 means square)
+                          crossAxisSpacing: 7, // Spacing between columns
+                          mainAxisSpacing: 3.h, // Spacing between rows
+                        ),
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: provinces.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) => IgnorePointer(
+                          child: Opacity(
+                            opacity: 0.5,
+                            child: TagSearchCard(
+                              tag: provinces[index],
+                              tags: select,
+                              updateTags: updateTags,
+                            ),
+                          ),
+                        ),
+                      ),
+                    )
+                  : Container(
+                      margin: const EdgeInsets.only(left: 22),
+                      child: GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 3, // 3 items per row
+                          childAspectRatio:
+                              3, // Aspect ratio for the items (1 means square)
+                          crossAxisSpacing: 7, // Spacing between columns
+                          mainAxisSpacing: 3.h, // Spacing between rows
+                        ),
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: provinces.length,
+                        shrinkWrap: true,
+                        itemBuilder: (context, index) => TagSearchCard(
+                          tag: provinces[index],
+                          tags: select,
+                          updateTags: updateTags,
+                        ),
+                      ),
+                    ),
+              const SizedBox(
+                height: 38,
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Text(
                   "Vị trí:",
                   style: TextStyle(
                     fontSize: 16,
@@ -126,30 +234,24 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
               const SizedBox(
                 height: 18,
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 14),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: SizedBox(
-                        height: 6.h,
-                        child: ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: topographic.length,
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: TagSearchCard(
-                              tag: topographic[index],
-                              tags: select,
-                              updateTags: updateTags,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
+              Container(
+                margin: const EdgeInsets.only(left: 22),
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, // 3 items per row
+                    childAspectRatio:
+                        3, // Aspect ratio for the items (1 means square)
+                    crossAxisSpacing: 7, // Spacing between columns
+                    mainAxisSpacing: 3.h, // Spacing between rows
+                  ),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: topographic.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) => TagSearchCard(
+                    tag: topographic[index],
+                    tags: select,
+                    updateTags: updateTags,
+                  ),
                 ),
               ),
               const SizedBox(
@@ -169,30 +271,24 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
               const SizedBox(
                 height: 18,
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 14),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: SizedBox(
-                        height: 6.h,
-                        child: ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: activities.length,
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: TagSearchCard(
-                              tag: activities[index],
-                              tags: select,
-                              updateTags: updateTags,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
+              Container(
+                margin: const EdgeInsets.only(left: 22),
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, // 3 items per row
+                    childAspectRatio:
+                        3, // Aspect ratio for the items (1 means square)
+                    crossAxisSpacing: 7, // Spacing between columns
+                    mainAxisSpacing: 3.h, // Spacing between rows
+                  ),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: activities.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) => TagSearchCard(
+                    tag: activities[index],
+                    tags: select,
+                    updateTags: updateTags,
+                  ),
                 ),
               ),
               const SizedBox(
@@ -212,106 +308,29 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
               const SizedBox(
                 height: 18,
               ),
-              Padding(
-                padding: const EdgeInsets.only(left: 14),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: SizedBox(
-                        height: 6.h,
-                        child: ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: seasons.length,
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: TagSearchCard(
-                              tag: seasons[index],
-                              tags: select,
-                              updateTags: updateTags,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
+              Container(
+                margin: const EdgeInsets.only(left: 22),
+                child: GridView.builder(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3, // 3 items per row
+                    childAspectRatio:
+                        3, // Aspect ratio for the items (1 means square)
+                    crossAxisSpacing: 7, // Spacing between columns
+                    mainAxisSpacing: 3.h, // Spacing between rows
+                  ),
+                  physics: const BouncingScrollPhysics(),
+                  itemCount: seasons.length,
+                  shrinkWrap: true,
+                  itemBuilder: (context, index) => TagSearchCard(
+                    tag: seasons[index],
+                    tags: select,
+                    updateTags: updateTags,
+                  ),
                 ),
               ),
               const SizedBox(
                 height: 38,
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  "Miền:",
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontFamily: 'NotoSans',
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(
-                height: 18,
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 14),
-                child: Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: SizedBox(
-                        height: 6.h,
-                        child: ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          itemCount: region.length,
-                          shrinkWrap: true,
-                          scrollDirection: Axis.horizontal,
-                          itemBuilder: (context, index) => Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 8),
-                            child: TagSearchCard(
-                              tag: region[index],
-                              tags: select,
-                              updateTags: updateTags,
-                            ),
-                          ),
-                        ),
-                      ),
-                    )
-                  ],
-                ),
-              ),
-              SizedBox(
-                height: 17.h,
-              ), // Add some spacing between other widgets if needed
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: ElevatedButton(
-                  style: ButtonStyle(
-                    backgroundColor:
-                        MaterialStateProperty.all<Color>(Colors.black),
-                    foregroundColor:
-                        MaterialStateProperty.all<Color>(Colors.white),
-                    padding: MaterialStateProperty.all<EdgeInsetsGeometry>(
-                      EdgeInsets.symmetric(horizontal: 30.w, vertical: 20),
-                    ),
-                  ),
-                  child: const Text(
-                    'CHỌN',
-                    style: TextStyle(fontSize: 17, fontFamily: 'NotoSans'),
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => SearchScreen(
-                          list: select,
-                          search: widget.search,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              )
             ],
           ),
         ),
@@ -321,13 +340,14 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
 
   // Callback function to modify the tags list
   void updateTags(Tag tag, bool add) {
-    setState(() {
-      if (add) {
+    if (add) {
+      setState(() {
         select.add(tag);
-        print(select.length);
-      } else {
+      });
+    } else {
+      setState(() {
         select.remove(tag);
-      }
-    });
+      });
+    }
   }
 }

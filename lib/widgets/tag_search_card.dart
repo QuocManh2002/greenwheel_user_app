@@ -17,10 +17,7 @@ class TagSearchCard extends StatefulWidget {
   State<TagSearchCard> createState() => _TagSearchCardState();
 }
 
-class _TagSearchCardState extends State<TagSearchCard>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+class _TagSearchCardState extends State<TagSearchCard> {
   bool isPress = false;
 
   @override
@@ -33,41 +30,43 @@ class _TagSearchCardState extends State<TagSearchCard>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Padding(
       padding: const EdgeInsets.only(right: 20),
-      child: ElevatedButton(
-        style: ElevatedButton.styleFrom(
-            padding: EdgeInsets.zero, // Remove default padding
-            shape: RoundedRectangleBorder(
-              // Add a rounded shape if desired
-              borderRadius: BorderRadius.circular(10),
-            ),
-            backgroundColor: isPress ? Colors.black : Colors.white),
-        onPressed: () async {
-          setState(() {
-            isPress = !isPress;
-            widget.updateTags(
-                widget.tag, isPress); // Call the callback function
-          });
-        },
-        child: Container(
-          width: 11.h,
-          decoration: BoxDecoration(
-            shape: BoxShape.rectangle,
-            borderRadius: const BorderRadius.all(
-              Radius.circular(10),
-            ),
-            border: Border.all(width: 1.7),
-          ),
+      child: Container(
+        height: 4.h,
+        width: 10.h,
+        child: ElevatedButton(
+          style: ElevatedButton.styleFrom(
+              padding: EdgeInsets.zero, // Remove default padding
+              shape: RoundedRectangleBorder(
+                // Add a rounded shape if desired
+                borderRadius: BorderRadius.circular(10),
+              ),
+              backgroundColor: isPress ? Colors.black : Colors.white),
+          onPressed: () async {
+            setState(() {
+              isPress = !isPress;
+              widget.updateTags(
+                  widget.tag, isPress); // Call the callback function
+            });
+          },
           child: Container(
-            alignment: Alignment.center,
-            child: Text(
-              widget.tag.title,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: isPress ? Colors.white : Colors.black,
+            decoration: BoxDecoration(
+              shape: BoxShape.rectangle,
+              borderRadius: const BorderRadius.all(
+                Radius.circular(10),
+              ),
+              border: Border.all(width: 1.7),
+            ),
+            child: Container(
+              alignment: Alignment.center,
+              child: Text(
+                widget.tag.title,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: isPress ? Colors.white : Colors.black,
+                ),
               ),
             ),
           ),
