@@ -63,7 +63,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     Navigator.of(context).pop(); // Close the current page
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (ctx) => const TabScreen(),
+                        builder: (ctx) => const TabScreen(pageIndex: 0),
                       ),
                     );
                   },
@@ -332,16 +332,16 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  List<Location> searchLocationsByName(String query) {
+  List<LocationModel> searchLocationsByName(String query) {
     // Create an empty list to store the search results
-    List<Location> searchResults = [];
+    List<LocationModel> searchResults = [];
 
     // Split the query into multiple search terms
     List<String> searchTerms = query.trim().toLowerCase().split(' ');
 
     // Perform a case-insensitive search for locations by each search term
     for (String term in searchTerms) {
-      for (Location location in locations) {
+      for (LocationModel location in locations) {
         if (location.name.toLowerCase().contains(term)) {
           // Add the location to the search results if its name contains the search term
           searchResults.add(location);
