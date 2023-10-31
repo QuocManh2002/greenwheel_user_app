@@ -47,7 +47,7 @@ List<Order> orders = [
     orderDate: DateTime.now(),
     pickupDate: DateTime.now().add(const Duration(days: 10)),
     returnDate: DateTime.now().add(const Duration(days: 30)),
-    supplier: suppliers[0],
+    supplier: suppliers[5],
     items: [
       ItemCart(item: items[8], qty: 1),
       ItemCart(item: items[9], qty: 1),

@@ -38,6 +38,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   DateTime? pickupDate;
   DateTime? returnDate;
   String note = "";
+  String title = "";
 
   @override
   void initState() {
@@ -45,7 +46,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     super.initState();
     if (widget.currentCart.isNotEmpty) {
       double tmp = 0;
-      if (widget.currentCart.length != 0) {}
+      if (widget.currentCart.isNotEmpty) {}
       for (var cartItem in widget.currentCart) {
         tmp += cartItem.item.price * cartItem.qty;
       }
@@ -57,6 +58,12 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     pickupDate = widget.iniPickupDate;
     returnDate = widget.iniReturnDate;
     note = widget.iniNote;
+
+    if (widget.serviceType.id == 1) {
+      title = "Món ăn";
+    } else if (widget.serviceType.id == 2) {
+      title = "Vật dụng";
+    }
   }
 
   @override
@@ -65,41 +72,99 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(10.h),
+          preferredSize: Size.fromHeight(15.h),
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 1.h),
             width: double.infinity,
             decoration: const BoxDecoration(
               color: Colors.white,
             ),
-            child: Row(
+            child: Column(
               children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.black,
-                  ),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the current page
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => ServiceMainScreen(
-                          serviceType: widget.serviceType,
-                        ),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(
+                        Icons.arrow_back,
+                        color: Colors.black,
                       ),
-                    );
-                  },
+                      onPressed: () {
+                        Navigator.of(context).pop(); // Close the current page
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (ctx) => ServiceMainScreen(
+                              serviceType: widget.serviceType,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 14),
+                      child: Text(
+                        widget.supplier.name,
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontFamily: 'NotoSans',
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )
+                  ],
+                ),
+                const SizedBox(
+                  height: 6,
                 ),
                 Padding(
-                  padding: const EdgeInsets.only(left: 14),
-                  child: Text(
-                    widget.supplier.name,
-                    style: const TextStyle(
-                        fontSize: 16,
-                        fontFamily: 'NotoSans',
-                        fontWeight: FontWeight.bold),
+                  padding: EdgeInsets.only(left: 4.w, right: 4.w),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          decoration: InputDecoration(
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                  width: 1, color: Colors.grey),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: const BorderSide(
+                                  width: 1, color: Colors.black),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            // prefixIcon: const Icon(
+                            //   Icons.search,
+                            //   color: Colors.black,
+                            // ),
+                            suffixIcon: IconButton(
+                              icon: const Icon(
+                                Icons.search,
+                                color: Colors.black,
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  // var tagsByName =
+                                  //     searchTagsByName(searchController.text);
+                                  // if (tagsByName.isEmpty) {
+                                  //   // var locationsByName =
+                                  //   //     searchTagsByName(searchController.text);
+                                  //   print("empty");
+                                  // } else {
+                                  //   print("not empty");
+                                  //   setState(() {
+                                  //     currentTags = tagsByName;
+                                  //   });
+                                  // }
+                                });
+                              },
+                            ),
+                            hintText: "Bạn đang cần gì?",
+                            contentPadding: EdgeInsets.all(4.w),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                )
+                ),
               ],
             ),
           ),
@@ -108,11 +173,11 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Padding(
-                padding: EdgeInsets.only(left: 14, top: 14),
+              Padding(
+                padding: const EdgeInsets.only(left: 14, top: 14),
                 child: Text(
-                  'Món ăn',
-                  style: TextStyle(
+                  title,
+                  style: const TextStyle(
                     fontSize: 19,
                     fontFamily: 'NotoSans',
                     fontWeight: FontWeight.bold,

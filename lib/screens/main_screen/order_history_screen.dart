@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/orders.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
+import 'package:greenwheel_user_app/models/order.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/widgets/order_card.dart';
 import 'package:greenwheel_user_app/widgets/service_type_card.dart';
@@ -17,11 +18,23 @@ class OrderHistoryScreen extends StatefulWidget {
 class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   ServiceType? currentService;
 
+  List<Order> listOrder = [];
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     currentService = widget.serviceType;
+    if (currentService!.id == 1) {
+      listOrder = [
+        orders[0],
+        orders[1],
+      ];
+    } else if (currentService!.id == 2) {
+      listOrder = [
+        orders[2],
+      ];
+    }
   }
 
   @override
@@ -106,10 +119,10 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                 child: ListView.builder(
                   physics: const BouncingScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: orders.length,
+                  itemCount: listOrder.length,
                   itemBuilder: (context, index) {
                     return OrderCard(
-                      order: orders[index],
+                      order: listOrder[index],
                       serviceType: widget.serviceType,
                     );
                   },
@@ -125,6 +138,16 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   void changeService(ServiceType type) {
     setState(() {
       currentService = type;
+      if (currentService!.id == 1) {
+        listOrder = [
+          orders[0],
+          orders[1],
+        ];
+      } else if (currentService!.id == 2) {
+        listOrder = [
+          orders[2],
+        ];
+      }
     });
   }
 }
