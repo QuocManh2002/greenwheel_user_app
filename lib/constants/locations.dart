@@ -2,8 +2,8 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 
-List<Location> locations = [
-  Location(
+List<LocationModel> locations = [
+  LocationModel(
       id: "1",
       description: "Địa điểm du lịch Vũng Tàu ...",
       imageUrl:
@@ -19,7 +19,7 @@ List<Location> locations = [
       clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       locationLatLng:const LatLng(10.554411364780098, 107.2505359801003),
       ),
-  Location(
+  LocationModel(
       id: "2",
       description: "Địa điểm du lịch Vũng Tàu ...",
       imageUrl:
@@ -35,7 +35,7 @@ List<Location> locations = [
       clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       locationLatLng: const LatLng(10.500131412056358, 107.47757431718013)
       ),
-  Location(
+  LocationModel(
       id: "3",
       description: "Địa điểm du lịch Vũng Tàu ...",
       imageUrl:
@@ -52,7 +52,7 @@ List<Location> locations = [
       locationLatLng:const LatLng(11.25744127768411, 107.88268447823675)
       ),
       
-  Location(
+  LocationModel(
       id: "4",
       description: "Địa điểm du lịch Vũng Tàu ...",
       imageUrl:
@@ -67,7 +67,7 @@ List<Location> locations = [
       clinicNumber: "0912312345",
       clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       locationLatLng:const LatLng(11.994721228758529, 108.42856959567486)),
-  Location(
+  LocationModel(
       id: "5",
       description: "Địa điểm du lịch Vũng Tàu ...",
       imageUrl:

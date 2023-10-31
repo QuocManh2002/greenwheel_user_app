@@ -7,7 +7,7 @@ import 'package:sizer2/sizer2.dart';
 
 class SelectDateScreen extends StatefulWidget {
   const SelectDateScreen({super.key, required this.location});
-  final Location location;
+  final LocationModel location;
 
   @override
   State<SelectDateScreen> createState() => _SelectDateScreenState();

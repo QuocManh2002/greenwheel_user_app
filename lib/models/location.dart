@@ -1,8 +1,8 @@
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 
-class Location {
-  Location(
+class LocationModel {
+  LocationModel(
       {required this.id,
       required this.description,
       required this.imageUrl,

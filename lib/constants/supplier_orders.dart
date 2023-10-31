@@ -25,4 +25,20 @@ const List<SupplierOrder> supplier_orders = [
       quantity: 5,
       supplierName: "Cà phê Rừng Thông",
       type: 1),
+      SupplierOrder(
+      id: 3,
+      imgUrl:
+          "https://agotourist.com/wp-content/uploads/2021/04/quan-cafe-san-may-hai-a-da-lat2.jpg",
+      price: 300000,
+      quantity: 5,
+      supplierName: "Cà phê Rừng Thông",
+      type: 1),
+      SupplierOrder(
+      id: 4,
+      imgUrl:
+          "https://agotourist.com/wp-content/uploads/2021/04/quan-cafe-san-may-hai-a-da-lat2.jpg",
+      price: 300000,
+      quantity: 5,
+      supplierName: "Cà phê Rừng Thông",
+      type: 0),
 ];
