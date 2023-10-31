@@ -7,13 +7,9 @@ import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CustomPlanItem extends StatefulWidget {
-  const CustomPlanItem(
-      {super.key,
-      required this.title,
-      required this.details,
+  const CustomPlanItem({super.key , required this.title,required this.details,
       required this.onDismiss,
-      required this.onAddNewItem
-      });
+      required this.onAddNewItem});
   final String title;
   final List<String> details;
   final void Function(String item, List<String> list) onDismiss;
@@ -51,10 +47,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        widget.title,
-                        style: const TextStyle(fontSize: 18),
-                      ),
+                      Text(widget.title, style:const TextStyle(fontSize: 18),),
                       AnimatedSwitcher(
                         transitionBuilder: (child, animation) {
                           return RotationTransition(
@@ -80,6 +73,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
+              
               height: (widget.details.length * 5.7).h,
               width: double.infinity,
               decoration: const BoxDecoration(

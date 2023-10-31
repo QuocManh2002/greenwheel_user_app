@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/tags.dart';
+import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/screens/main_screen/home.dart';
-import 'package:greenwheel_user_app/screens/main_screen/search_category.dart';
+import 'package:greenwheel_user_app/screens/main_screen/search_category_screen.dart';
+import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/widgets/recent_card.dart';
 import 'package:greenwheel_user_app/widgets/location_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:greenwheel_user_app/constants/recent_search.dart';
 import 'package:greenwheel_user_app/constants/locations.dart';
-import 'package:greenwheel_user_app/constants/plans.dart';
 import 'package:greenwheel_user_app/widgets/search_card.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
 
@@ -23,6 +24,8 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   TextEditingController searchController = TextEditingController();
 
+  List<Tag> currentTags = [];
+
   @override
   void initState() {
     // TODO: implement initState
@@ -32,6 +35,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   _setUpData() {
     searchController.text = widget.search;
+    currentTags = widget.list;
   }
 
   @override
@@ -59,7 +63,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     Navigator.of(context).pop(); // Close the current page
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (ctx) => const HomeScreen(),
+                        builder: (ctx) => const TabScreen(),
                       ),
                     );
                   },
@@ -88,16 +92,20 @@ class _SearchScreenState extends State<SearchScreen> {
                           color: Colors.black,
                         ),
                         onPressed: () {
-                          // setState(() {
-                          //   search.text = "";
-                          // });
-                          Navigator.of(context).pop(); // Close the current page
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (ctx) =>
-                                  SearchScreen(search: searchController.text),
-                            ),
-                          );
+                          setState(() {
+                            var tagsByName =
+                                searchTagsByName(searchController.text);
+                            if (tagsByName.isEmpty) {
+                              // var locationsByName =
+                              //     searchTagsByName(searchController.text);
+                              print("empty");
+                            } else {
+                              print("not empty");
+                              setState(() {
+                                currentTags = tagsByName;
+                              });
+                            }
+                          });
                         },
                       ),
                       hintText: "Bạn có dự định đi đâu?",
@@ -105,23 +113,27 @@ class _SearchScreenState extends State<SearchScreen> {
                     ),
                   ),
                 ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.more_vert,
-                    color: Colors.black,
-                  ),
-                  onPressed: () {
-                    // Handle threedot icon action here
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => SearchCategoryScreen(
-                          list: widget.list,
-                          search: widget.search,
+                (searchController.text.isEmpty)
+                    ? Container(
+                        margin: const EdgeInsets.only(right: 20),
+                      )
+                    : IconButton(
+                        icon: const Icon(
+                          Icons.more_vert,
+                          color: Colors.black,
                         ),
+                        onPressed: () {
+                          // Handle threedot icon action here
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (ctx) => SearchCategoryScreen(
+                                list: currentTags,
+                                search: searchController.text,
+                              ),
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
-                ),
               ],
             ),
           ),
@@ -262,9 +274,9 @@ class _SearchScreenState extends State<SearchScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    widget.list.isNotEmpty
+                    currentTags.isNotEmpty
                         ? Padding(
-                            padding: const EdgeInsets.only(left: 8),
+                            padding: const EdgeInsets.only(left: 8, top: 14),
                             child: Row(
                               children: <Widget>[
                                 Expanded(
@@ -272,14 +284,14 @@ class _SearchScreenState extends State<SearchScreen> {
                                     height: 4.h,
                                     child: ListView.builder(
                                       physics: const BouncingScrollPhysics(),
-                                      itemCount: widget.list.length,
+                                      itemCount: currentTags.length,
                                       shrinkWrap: true,
                                       scrollDirection: Axis.horizontal,
                                       itemBuilder: (context, index) => Padding(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 8),
                                         child:
-                                            TagWidget(tag: widget.list[index]),
+                                            TagWidget(tag: currentTags[index]),
                                       ),
                                     ),
                                   ),
@@ -288,29 +300,81 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           )
                         : Container(),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 14, top: 14),
-                      child: Text(
-                        'Kết quả tìm kiếm của "${searchController.text}"',
-                        style: const TextStyle(
-                          fontSize: 19,
-                          fontFamily: 'NotoSans',
-                          fontWeight: FontWeight.bold,
-                        ),
+                    widget.list.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.only(
+                                left: 14, top: 14, bottom: 14),
+                            child: Text(
+                              'Kết quả tìm kiếm của "${searchController.text}"',
+                              style: const TextStyle(
+                                fontSize: 19,
+                                fontFamily: 'NotoSans',
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          )
+                        : Container(),
+                    Container(
+                      height: 80.h,
+                      child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: locations.length,
+                        itemBuilder: (context, index) {
+                          return SearchCard(location: locations[index]);
+                        },
                       ),
-                    ),
-                    ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: locations.length,
-                      itemBuilder: (context, index) {
-                        return SearchCard(location: locations[index]);
-                      },
                     ),
                   ],
                 ),
               ),
       ),
     );
+  }
+
+  List<Location> searchLocationsByName(String query) {
+    // Create an empty list to store the search results
+    List<Location> searchResults = [];
+
+    // Split the query into multiple search terms
+    List<String> searchTerms = query.trim().toLowerCase().split(' ');
+
+    // Perform a case-insensitive search for locations by each search term
+    for (String term in searchTerms) {
+      for (Location location in locations) {
+        if (location.name.toLowerCase().contains(term)) {
+          // Add the location to the search results if its name contains the search term
+          searchResults.add(location);
+        }
+      }
+    }
+
+    // Remove duplicates by creating a Set and converting it back to a List
+    searchResults = searchResults.toSet().toList();
+
+    return searchResults;
+  }
+
+  List<Tag> searchTagsByName(String query) {
+    // Create an empty list to store the search results
+    List<Tag> searchResults = [];
+
+    // Split the query into multiple search terms
+    List<String> searchTerms = query.trim().toLowerCase().split(' ');
+
+    // Perform a case-insensitive search for tags by each search term
+    for (String term in searchTerms) {
+      for (Tag tag in tags) {
+        if (tag.title.toLowerCase() == (term)) {
+          // Add the tag to the search results if its title contains the search term
+          searchResults.add(tag);
+        }
+      }
+    }
+
+    // Remove duplicates by creating a Set and converting it back to a List
+    searchResults = searchResults.toSet().toList();
+
+    return searchResults;
   }
 }

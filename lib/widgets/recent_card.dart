@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/screens/main_screen/search.dart';
+import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 
 class RecentCard extends StatelessWidget {
   const RecentCard({super.key, required this.recent});

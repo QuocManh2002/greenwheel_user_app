@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
 import 'package:sizer2/sizer2.dart';
 // late SharedPreferences sharedPreferences;
 
