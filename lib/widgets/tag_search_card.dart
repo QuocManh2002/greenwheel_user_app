@@ -8,10 +8,12 @@ class TagSearchCard extends StatefulWidget {
     required this.tag,
     required this.tags,
     required this.updateTags,
+    this.updateProvinces,
   });
   final Tag tag;
   final List<Tag> tags;
   final Function updateTags; // Callback function
+  final Function? updateProvinces;
 
   @override
   State<TagSearchCard> createState() => _TagSearchCardState();
@@ -48,6 +50,11 @@ class _TagSearchCardState extends State<TagSearchCard> {
               isPress = !isPress;
               widget.updateTags(
                   widget.tag, isPress); // Call the callback function
+              if (widget.tag.id == "20" ||
+                  widget.tag.id == "21" ||
+                  widget.tag.id == "22") {
+                widget.updateProvinces!(widget.tag, isPress);
+              }
             });
           },
           child: Container(

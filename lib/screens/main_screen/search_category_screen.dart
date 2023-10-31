@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
@@ -10,9 +11,11 @@ class SearchCategoryScreen extends StatefulWidget {
     super.key,
     required this.list,
     required this.search,
+    this.provinceList = const [],
   });
   final String search;
   final List<Tag> list;
+  final List<Tag> provinceList;
 
   @override
   State<SearchCategoryScreen> createState() => _SearchCategoryScreenState();
@@ -53,17 +56,26 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
     tags[21],
   ];
 
-  List<Tag> provinces = [
-    tags[22],
-  ];
+  List<Tag> provinces = [];
 
   List<Tag> select = []; // Declare a mutable list
+
+  bool isExpand = true;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    select = List.from(widget.list);
+    setState(() {
+      select = List.from(widget.list);
+      print(isExpand);
+      provinces = List.from(widget.provinceList);
+      provinces.add(tags[22]);
+      if (provinces.length > 9) {
+        isExpand = false;
+      }
+      print(isExpand);
+    });
   }
 
   @override
@@ -94,6 +106,7 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
                         builder: (ctx) => SearchScreen(
                           search: widget.search,
                           list: select,
+                          provinces: provinces,
                         ),
                       ),
                     );
@@ -151,6 +164,7 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
                     tag: region[index],
                     tags: select,
                     updateTags: updateTags,
+                    updateProvinces: updateProvinces,
                   ),
                 ),
               ),
@@ -197,26 +211,101 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
                         ),
                       ),
                     )
-                  : Container(
-                      margin: const EdgeInsets.only(left: 22),
-                      child: GridView.builder(
-                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3, // 3 items per row
-                          childAspectRatio:
-                              3, // Aspect ratio for the items (1 means square)
-                          crossAxisSpacing: 7, // Spacing between columns
-                          mainAxisSpacing: 3.h, // Spacing between rows
+                  : !isExpand
+                      ? Column(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(left: 22),
+                              child: GridView.builder(
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  childAspectRatio: 3,
+                                  crossAxisSpacing: 7,
+                                  mainAxisSpacing: 3.h,
+                                ),
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: 9,
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) => TagSearchCard(
+                                  tag: provinces[index],
+                                  tags: select,
+                                  updateTags: updateTags,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Center(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets
+                                          .zero, // Remove default padding
+                                      shape: RoundedRectangleBorder(
+                                        // Add a rounded shape if desired
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      backgroundColor: Colors.black),
+                                  onPressed: () {
+                                    setState(() {
+                                      isExpand = !isExpand;
+                                    });
+                                  },
+                                  child: const Icon(Icons.keyboard_arrow_down,
+                                      size:
+                                          20), // You can adjust the icon and size
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          children: [
+                            Container(
+                              margin: const EdgeInsets.only(left: 22),
+                              child: GridView.builder(
+                                gridDelegate:
+                                    SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 3,
+                                  childAspectRatio: 3,
+                                  crossAxisSpacing: 7,
+                                  mainAxisSpacing: 3.h,
+                                ),
+                                physics: const BouncingScrollPhysics(),
+                                itemCount: provinces.length,
+                                shrinkWrap: true,
+                                itemBuilder: (context, index) => TagSearchCard(
+                                  tag: provinces[index],
+                                  tags: select,
+                                  updateTags: updateTags,
+                                ),
+                              ),
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 12),
+                              child: Center(
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                      padding: EdgeInsets
+                                          .zero, // Remove default padding
+                                      shape: RoundedRectangleBorder(
+                                        // Add a rounded shape if desired
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      backgroundColor: Colors.black),
+                                  onPressed: () {
+                                    setState(() {
+                                      isExpand = !isExpand;
+                                    });
+                                  },
+                                  child: const Icon(Icons.keyboard_arrow_up,
+                                      size:
+                                          20), // You can adjust the icon and size
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        physics: const BouncingScrollPhysics(),
-                        itemCount: provinces.length,
-                        shrinkWrap: true,
-                        itemBuilder: (context, index) => TagSearchCard(
-                          tag: provinces[index],
-                          tags: select,
-                          updateTags: updateTags,
-                        ),
-                      ),
-                    ),
               const SizedBox(
                 height: 38,
               ),
@@ -349,5 +438,59 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
         select.remove(tag);
       });
     }
+  }
+
+  List<Tag> generateProvinceTags(List<String> provinces) {
+    List<Tag> provinceTags = [];
+    int startingId = 23; // Starting ID as specified
+
+    for (int i = 0; i < provinces.length; i++) {
+      provinceTags.add(Tag(
+        id: (startingId + i).toString(),
+        title: provinces[i],
+        mainColor: Colors.white,
+        strokeColor: Colors.black,
+      ));
+    }
+    return provinceTags;
+  }
+
+  void updateProvinces(Tag tag, bool check) {
+    setState(() {
+      if (check) {
+        if (tag.id == "20") {
+          provinces.addAll(generateProvinceTags(northSide));
+        } else if (tag.id == "21") {
+          provinces.addAll(generateProvinceTags(midSide));
+        } else if (tag.id == "22") {
+          provinces.addAll(generateProvinceTags(southSide));
+        }
+
+        provinces.removeWhere((province) => province.id == "23");
+        if (provinces.length > 9) {
+          isExpand = false;
+        }
+      } else {
+        if (tag.id == "20") {
+          provinces
+              .removeWhere((province) => northSide.contains(province.title));
+          select.removeWhere((province) => northSide.contains(province.title));
+        } else if (tag.id == "21") {
+          provinces.removeWhere((province) => midSide.contains(province.title));
+          select.removeWhere((province) => midSide.contains(province.title));
+        } else if (tag.id == "22") {
+          provinces
+              .removeWhere((province) => southSide.contains(province.title));
+          select.removeWhere((province) => southSide.contains(province.title));
+        }
+
+        if (provinces.isEmpty) {
+          provinces.add(tags[22]);
+        }
+        if (provinces.length < 9) {
+          isExpand = true;
+        }
+      }
+    });
   }
 }

@@ -13,9 +13,15 @@ import 'package:greenwheel_user_app/widgets/search_card.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
 
 class SearchScreen extends StatefulWidget {
-  const SearchScreen({super.key, this.search = '', this.list = const []});
+  const SearchScreen({
+    super.key,
+    this.search = '',
+    this.list = const [],
+    this.provinces = const [],
+  });
   final String search;
   final List<Tag> list;
+  final List<Tag> provinces;
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -63,7 +69,7 @@ class _SearchScreenState extends State<SearchScreen> {
                     Navigator.of(context).pop(); // Close the current page
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (ctx) => const TabScreen(pageIndex: 0),
+                        builder: (ctx) => const TabScreen(pageIndex: 0,),
                       ),
                     );
                   },
@@ -129,6 +135,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               builder: (ctx) => SearchCategoryScreen(
                                 list: currentTags,
                                 search: searchController.text,
+                                provinceList: widget.provinces,
                               ),
                             ),
                           );

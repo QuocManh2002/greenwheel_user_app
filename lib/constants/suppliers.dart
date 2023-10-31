@@ -85,10 +85,6 @@ List<Supplier> suppliers = [
     address: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
     rating: 1,
     numberOfReviews: 100,
-    items: [
-      items[3],
-      items[4],
-      items[5],
-    ],
+    items: [items[8], items[9], items[10]],
   ),
 ];

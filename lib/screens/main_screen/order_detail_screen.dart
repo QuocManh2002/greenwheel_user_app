@@ -170,7 +170,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ),
               widget.order.returnDate == null
                   ? Container()
-                  : Row(
+                  : Column(
                       children: [
                         Row(
                           children: [
@@ -208,16 +208,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         ),
                         const SizedBox(
                           height: 16,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 16),
-                          child: Container(
-                            height: 1.8,
-                            color: Colors.grey.withOpacity(0.2),
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 20,
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 16),
