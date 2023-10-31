@@ -18,7 +18,7 @@ import 'package:transparent_image/transparent_image.dart';
 
 class LocationScreen extends StatefulWidget {
   const LocationScreen({super.key, required this.location});
-  final Location location;
+  final LocationModel location;
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();
@@ -60,14 +60,13 @@ class _LocationScreenState extends State<LocationScreen> {
                   child: Padding(
                     padding: const EdgeInsets.only(top: 12, left: 4),
                     child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                            shape: const CircleBorder()),
+                        style: ElevatedButton.styleFrom(shape:const CircleBorder()),
                         onPressed: () {
                           Navigator.of(context).pop();
                         },
                         child: Container(
                           height: 5.h,
-                          decoration: const BoxDecoration(
+                          decoration:const BoxDecoration(
                             shape: BoxShape.circle,
                             color: Colors.white,
                           ),
@@ -163,9 +162,7 @@ class _LocationScreenState extends State<LocationScreen> {
             alignment: Alignment.center,
             child: ElevatedButton.icon(
               onPressed: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (ctx) =>
-                        LocalMapScreen(location: widget.location)));
+                Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => LocalMapScreen(location: widget.location)));
               },
               icon: const Icon(Icons.map),
               label: const Text(
@@ -245,15 +242,13 @@ class _LocationScreenState extends State<LocationScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
+              onPressed: () {Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => ServiceMainScreen(
                       serviceType: services[1],
                     ),
                   ),
-                );
-              },
+                );},
               icon: const Icon(Icons.bed),
               label: const Text("Lưu trú"),
               style: outlinedButtonStyle.copyWith(
@@ -267,15 +262,7 @@ class _LocationScreenState extends State<LocationScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => ServiceMainScreen(
-                      serviceType: services[0],
-                    ),
-                  ),
-                );
-              },
+              onPressed: () {},
               icon: const Icon(Icons.restaurant),
               label: const Text("Ăn uống"),
               style: outlinedButtonStyle.copyWith(
@@ -289,15 +276,13 @@ class _LocationScreenState extends State<LocationScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
+              onPressed: () {Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => ServiceMainScreen(
                       serviceType: services[2],
                     ),
                   ),
-                );
-              },
+                );},
               icon: const Icon(Icons.car_crash),
               label: const Text("Đi lại"),
               style: outlinedButtonStyle.copyWith(
@@ -311,15 +296,13 @@ class _LocationScreenState extends State<LocationScreen> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
             child: OutlinedButton.icon(
-              onPressed: () {
-                Navigator.of(context).push(
+              onPressed: () {Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => ServiceMainScreen(
                       serviceType: services[3],
                     ),
                   ),
-                );
-              },
+                );},
               icon: const Icon(Icons.shopping_cart),
               label: const Text("Tiện lợi"),
               style: outlinedButtonStyle.copyWith(
@@ -406,8 +389,9 @@ class _LocationScreenState extends State<LocationScreen> {
             height: 16,
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Container(
+              height: 5.h,
               alignment: Alignment.center,
               child: ElevatedButton(
                   onPressed: () {
@@ -423,11 +407,8 @@ class _LocationScreenState extends State<LocationScreen> {
                   )),
             ),
           ),
-          const SizedBox(
-            height: 16,
-          ),
-        ]),
+        ],
       ),
-    ));
+    )));
   }
 }

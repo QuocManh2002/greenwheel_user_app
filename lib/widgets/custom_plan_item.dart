@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
@@ -5,8 +7,13 @@ import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CustomPlanItem extends StatefulWidget {
-  const CustomPlanItem({super.key, required this.title});
+  const CustomPlanItem({super.key , required this.title,required this.details,
+      required this.onDismiss,
+      required this.onAddNewItem});
   final String title;
+  final List<String> details;
+  final void Function(String item, List<String> list) onDismiss;
+  final void Function(List<String> list) onAddNewItem;
 
   @override
   State<CustomPlanItem> createState() => _CustomPlanItemState();
@@ -14,8 +21,6 @@ class CustomPlanItem extends StatefulWidget {
 
 class _CustomPlanItemState extends State<CustomPlanItem> {
   bool isExpanded = false;
-
-  List<String> planDetail = ["Check in", "Đi bơi", "Đi câu cá"];
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +32,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
           child: Container(
             height: 6.h,
             decoration: BoxDecoration(
-                color: secondaryColor.withOpacity(0.5),
+                color: primaryColor.withOpacity(0.5),
                 borderRadius: const BorderRadius.only(
                     topLeft: Radius.circular(12),
                     topRight: Radius.circular(12))),
@@ -42,10 +47,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        widget.title,
-                        style: TextStyle(fontSize: 18),
-                      ),
+                      Text(widget.title, style:const TextStyle(fontSize: 18),),
                       AnimatedSwitcher(
                         transitionBuilder: (child, animation) {
                           return RotationTransition(
@@ -71,30 +73,46 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
-              height: (planDetail.length * 5.7).h,
+              
+              height: (widget.details.length * 5.7).h,
               width: double.infinity,
-              decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.5),
-                  borderRadius: const BorderRadius.only(
-                      bottomRight: Radius.circular(12),
-                      bottomLeft: Radius.circular(12))),
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 3,
+                    color: Colors.black12,
+                    offset: Offset(1, 3),
+                  )
+                ],
+                // borderRadius: BorderRadius.only(
+                //     bottomRight: Radius.circular(12),
+                //     bottomLeft: Radius.circular(12))
+              ),
               child: ReorderableListView.builder(
-                itemCount: planDetail.length,
+                itemCount: widget.details.length,
                 itemBuilder: (ctx, index) {
                   return Padding(
-                    key: ValueKey(planDetail[index]),
+                    key: ValueKey(widget.details[index]),
                     padding: const EdgeInsets.only(
                         left: 32, top: 2.5, bottom: 2.5, right: 8),
                     child: Container(
                       decoration: const BoxDecoration(
                           border: Border(
                               bottom: BorderSide(
-                                  color: Colors.black26, width: 1.5))),
+                                  color: Colors.black26, width: 1.5),
+                                  left: BorderSide(
+                                  color: Colors.black26, width: 1.5),
+                                  right: BorderSide(
+                                  color: Colors.black26, width: 1.5),
+                                  top: BorderSide(
+                                  color: Colors.black26, width: 1.5),
+                                  )),
                       height: 5.h,
                       child: Dismissible(
-                        key: ValueKey(planDetail[index]),
+                        key: ValueKey(widget.details[index]),
                         background: Container(
-                          padding: const EdgeInsets.only(left: 16),
+                          padding: const EdgeInsets.only(left: 16,),
                           alignment: Alignment.centerLeft,
                           height: 5.h,
                           color: redColor,
@@ -108,13 +126,12 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                           child: const Icon(Icons.delete),
                         ),
                         onDismissed: (direction) {
-                          setState(() {
-                            planDetail.remove(planDetail[index]);
-                          });
+                          widget.onDismiss(
+                              widget.details[index], widget.details);
                         },
                         child: ListTile(
                           title: Text(
-                            planDetail[index],
+                            widget.details[index],
                             style: const TextStyle(fontSize: 18),
                           ),
                         ),
@@ -125,13 +142,65 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                 onReorder: (oldIndex, newIndex) {
                   setState(() {
                     final index = newIndex > oldIndex ? newIndex - 1 : newIndex;
-                    final item = planDetail.removeAt(oldIndex);
-                    planDetail.insert(index, item);
+                    final item = widget.details.removeAt(oldIndex);
+                    widget.details.insert(index, item);
                   });
                 },
               ),
             ),
           ),
+          if (isExpanded)
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: InkWell(
+            onTap: (){
+              widget.onAddNewItem(widget.details);
+            },
+            child: Container(
+              height: 5.7.h,
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(
+                      blurRadius: 3,
+                      color: Colors.black12,
+                      offset: Offset(1, 3),
+                    )
+                  ],
+                  borderRadius: BorderRadius.only(
+                      bottomRight: Radius.circular(12),
+                      bottomLeft: Radius.circular(12))),
+              child: Padding(
+                padding: const EdgeInsets.only(
+                  left: 32, right: 8, bottom: 8
+                ),
+                child: Container(
+                  
+                  clipBehavior: Clip.hardEdge,
+                  decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.2),
+                      // borderRadius: const BorderRadius.only(
+                      //     bottomRight: Radius.circular(12))
+                          ),
+                  child: Container(
+                    padding: const EdgeInsets.only(left: 16, top: 8, right: 12, bottom: 8),
+                    child:const Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          "Thêm hoạt động",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        Icon(Icons.add)          
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        )
       ],
     );
   }

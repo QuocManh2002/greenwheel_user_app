@@ -4,7 +4,7 @@ import 'package:greenwheel_user_app/models/location.dart';
 
 class Emergency extends StatelessWidget {
   const Emergency({super.key, required this.location});
-  final Location location;
+  final LocationModel location;
 
   @override
   Widget build(BuildContext context) {

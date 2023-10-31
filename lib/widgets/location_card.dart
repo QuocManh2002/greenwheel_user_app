@@ -7,7 +7,7 @@ import 'package:transparent_image/transparent_image.dart';
 
 class LocationCard extends StatelessWidget {
   const LocationCard({super.key, required this.location});
-  final Location location;
+  final LocationModel location;
 
   @override
   Widget build(BuildContext context) {
