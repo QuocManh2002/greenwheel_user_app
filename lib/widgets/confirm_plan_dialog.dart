@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 
 class ConfirmPlan extends StatefulWidget {
   const ConfirmPlan(
@@ -14,7 +15,7 @@ class ConfirmPlan extends StatefulWidget {
       required this.planDetail,
       required this.orders});
 
-  final LocationModel location;
+  final LocationViewModel location;
   final DateTime startDate;
   final DateTime endDate;
   final int numberOfMember;

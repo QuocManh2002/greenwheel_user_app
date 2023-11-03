@@ -6,13 +6,14 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/constants/locations.dart';
 import 'package:greenwheel_user_app/helpers/direction_handler.dart';
 import 'package:greenwheel_user_app/models/location.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:location/location.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class LocalMapScreen extends StatefulWidget {
   const LocalMapScreen({super.key, required this.location});
-  final LocationModel location;
+  final LocationViewModel location;
 
   @override
   State<LocalMapScreen> createState() => _LocalMapScreenState();
@@ -53,12 +54,12 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                 GoogleMap(
                   mapType: MapType.normal,
                   initialCameraPosition: CameraPosition(
-                      target: widget.location.locationLatLng, zoom: 15),
+                      target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 15),
                   markers: {
                     Marker(
-                        markerId: MarkerId(widget.location.id),
+                        markerId: MarkerId(widget.location.id.toString()),
                         icon: BitmapDescriptor.defaultMarker,
-                        position: widget.location.locationLatLng),
+                        position:LatLng(widget.location.latitude, widget.location.longitude)),
                   },
                   onMapCreated: (GoogleMapController controller) {
                     _controller.complete(controller);
@@ -99,7 +100,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                   child: FadeInImage(
                     height: 15.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(widget.location.imageUrl),
+                    image: NetworkImage(widget.location.imageUrls[0]),
                     fit: BoxFit.cover,
                     width: 15.h,
                     filterQuality: FilterQuality.high,
@@ -176,7 +177,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
   getMapInfo() async {
     if (_currentP.latitude != 0) {
       var mapInfo = await getDirectionsAPIResponse(
-          _currentP, widget.location.locationLatLng);
+          _currentP, LatLng(widget.location.latitude, widget.location.longitude));
 
       if (mapInfo.isNotEmpty) {
         print(mapInfo["duration"]);

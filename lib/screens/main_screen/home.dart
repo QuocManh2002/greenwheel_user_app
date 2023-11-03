@@ -1,10 +1,13 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/constants/activities.dart';
 import 'package:greenwheel_user_app/constants/locations.dart';
 import 'package:greenwheel_user_app/constants/provinces.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
+import 'package:greenwheel_user_app/service/location_service.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/activity_card.dart';
 import 'package:greenwheel_user_app/widgets/location_card.dart';
 import 'package:greenwheel_user_app/widgets/province_card.dart';
@@ -21,6 +24,9 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchController = TextEditingController();
   late List<Widget> carouselItems;
+  List<LocationViewModel>? locationModels ;
+  LocationService _locationService = LocationService();
+  bool isLoading = true;
   @override
   void dispose() {
     // TODO: implement dispose
@@ -35,12 +41,25 @@ class _HomeScreenState extends State<HomeScreen> {
     _setUpData();
   }
 
-  _setUpData() {
-    carouselItems = List<Widget>.generate(
+  _setUpData() async {
+    
+    
+    locationModels = null;
+    locationModels = await _locationService.getLocations();
+
+    if(locationModels != null){
+      print(locationModels);
+      carouselItems = List<Widget>.generate(
         locations.length,
         (index) => Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: LocationCard(location: locations[index])));
+            child: LocationCard(location: locationModels![index])));
+        setState(() {
+          isLoading = false;
+        });
+    }
+
+    
   }
 
   @override
@@ -48,7 +67,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return SafeArea(
         child: Scaffold(
       resizeToAvoidBottomInset: false,
-      body: SingleChildScrollView(
+      body: 
+      isLoading ? 
+      const Center(child: Text("Is loading..."),):
+      
+      SingleChildScrollView(
           child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -163,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context, index) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: LocationCard(location: locations[index]),
+                      child: LocationCard(location: locationModels![index]),
                     ),
                   ),
                 ))

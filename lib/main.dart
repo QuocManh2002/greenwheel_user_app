@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:sizer2/sizer2.dart';
@@ -15,6 +16,7 @@ ThemeData theme = ThemeData(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // sharedPreferences = await SharedPreferences.getInstance();
+  await initHiveForFlutter();
   runApp(const MainApp());
 }
 

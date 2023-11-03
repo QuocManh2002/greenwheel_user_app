@@ -1,13 +1,16 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/location_screen.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/rating_bar.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class LocationCard extends StatelessWidget {
   const LocationCard({super.key, required this.location});
-  final LocationModel location;
+  final LocationViewModel location;
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +37,7 @@ class LocationCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 20.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(location.imageUrl),
+                    image: NetworkImage(json.decode(location.imageUrls)[0]),
                     fit: BoxFit.cover,
                     width: double.infinity,
                     filterQuality: FilterQuality.high,
@@ -60,14 +63,14 @@ class LocationCard extends StatelessWidget {
               child: Row(
                 children: [
                   RatingBar(
-                    rating: location.rating,
-                    ratingCount: location.numberOfRating,
+                    rating: 5,
+                    ratingCount: 12,
                   ),
                   const SizedBox(
                     width: 4,
                   ),
                   Text(
-                    '${location.numberOfRating} Đánh giá',
+                    '${12} Đánh giá',
                     style: const TextStyle(fontWeight: FontWeight.w600),
                   )
                 ],

@@ -8,6 +8,7 @@ import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_date_screen.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/comment_card.dart';
 import 'package:greenwheel_user_app/widgets/emergency.dart';
@@ -18,7 +19,7 @@ import 'package:transparent_image/transparent_image.dart';
 
 class LocationScreen extends StatefulWidget {
   const LocationScreen({super.key, required this.location});
-  final LocationModel location;
+  final LocationViewModel location;
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();
@@ -30,12 +31,12 @@ class _LocationScreenState extends State<LocationScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    getData();
+    // getData();
   }
 
-  getData() {
-    lineNumber = (widget.location.tags.length / 4).ceil();
-  }
+  // getData() {
+  //   lineNumber = (widget.location.tags.length / 4).ceil();
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +53,7 @@ class _LocationScreenState extends State<LocationScreen> {
                   child: FadeInImage(
                     placeholder: MemoryImage(kTransparentImage),
                     height: 35.h,
-                    image: NetworkImage(widget.location.imageUrl),
+                    image: NetworkImage(widget.location.imageUrls[0]),
                     fit: BoxFit.cover,
                     width: double.infinity,
                   )),
@@ -98,8 +99,8 @@ class _LocationScreenState extends State<LocationScreen> {
             padding: const EdgeInsets.only(left: 12),
             child: Row(
               children: [
-                RatingBar(rating: widget.location.rating),
-                Text(' ${widget.location.numberOfRating} đánh giá')
+                RatingBar(rating: 5),
+                Text(' ${12} đánh giá')
               ],
             ),
           ),
@@ -116,24 +117,24 @@ class _LocationScreenState extends State<LocationScreen> {
           const SizedBox(
             height: 16,
           ),
-          SizedBox(
-            height: (lineNumber * 5).toDouble().h,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: GridView(
-                // padding: const EdgeInsets.symmetric(horizontal: 12),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 4,
-                    mainAxisSpacing: 10,
-                    crossAxisSpacing: 10,
-                    childAspectRatio: 5 / 2),
-                children: [
-                  for (var locationTag in widget.location.tags)
-                    TagWidget(tag: locationTag)
-                ],
-              ),
-            ),
-          ),
+          // SizedBox(
+          //   height: (lineNumber * 5).toDouble().h,
+          //   child: Padding(
+          //     padding: const EdgeInsets.symmetric(horizontal: 16),
+          //     child: GridView(
+          //       // padding: const EdgeInsets.symmetric(horizontal: 12),
+          //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          //           crossAxisCount: 4,
+          //           mainAxisSpacing: 10,
+          //           crossAxisSpacing: 10,
+          //           childAspectRatio: 5 / 2),
+          //       children: [
+          //         for (var locationTag in widget.location.tags)
+          //           TagWidget(tag: locationTag)
+          //       ],
+          //     ),
+          //   ),
+          // ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Text(widget.location.description),
@@ -348,17 +349,17 @@ class _LocationScreenState extends State<LocationScreen> {
             alignment: Alignment.center,
             child: Column(children: [
               Text(
-                widget.location.rating.toString(),
+                "5",
                 style: const TextStyle(fontSize: 20),
               ),
               const SizedBox(
                 height: 8,
               ),
-              RatingBar(rating: widget.location.rating),
+              RatingBar(rating: 5),
               const SizedBox(
                 height: 8,
               ),
-              Text('(${widget.location.numberOfRating})')
+              Text('(${12})')
             ]),
           ),
           const SizedBox(

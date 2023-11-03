@@ -256,21 +256,21 @@ class _SearchScreenState extends State<SearchScreen> {
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Row(
                         children: <Widget>[
-                          Expanded(
-                              child: SizedBox(
-                            height: 30.h,
-                            child: ListView.builder(
-                              physics: const BouncingScrollPhysics(),
-                              itemCount: locations.length,
-                              shrinkWrap: true,
-                              scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, index) => Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                child: LocationCard(location: locations[index]),
-                              ),
-                            ),
-                          ))
+                          // Expanded(
+                          //     child: SizedBox(
+                          //   height: 30.h,
+                          //   child: ListView.builder(
+                          //     physics: const BouncingScrollPhysics(),
+                          //     itemCount: locations.length,
+                          //     shrinkWrap: true,
+                          //     scrollDirection: Axis.horizontal,
+                          //     itemBuilder: (context, index) => Padding(
+                          //       padding:
+                          //           const EdgeInsets.symmetric(horizontal: 8),
+                          //       child: LocationCard(location: locations[index]),
+                          //     ),
+                          //   ),
+                          // ))
                         ],
                       ),
                     ),
@@ -321,17 +321,17 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           )
                         : Container(),
-                    Container(
-                      height: 80.h,
-                      child: ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: locations.length,
-                        itemBuilder: (context, index) {
-                          return SearchCard(location: locations[index]);
-                        },
-                      ),
-                    ),
+                    // Container(
+                    //   height: 80.h,
+                    //   child: ListView.builder(
+                    //     physics: const BouncingScrollPhysics(),
+                    //     shrinkWrap: true,
+                    //     itemCount: locations.length,
+                    //     itemBuilder: (context, index) {
+                    //       return SearchCard(location: locations[index]);
+                    //     },
+                    //   ),
+                    // ),
                   ],
                 ),
               ),

@@ -1,5 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/supplier_orders.dart';
 import 'package:greenwheel_user_app/models/location.dart';
@@ -7,6 +8,7 @@ import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/confirm_plan_dialog.dart';
 import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
@@ -23,7 +25,7 @@ class CreatePlanScreen extends StatefulWidget {
       required this.numberOfMember,
       required this.startDate,
       required this.duration});
-  final LocationModel location;
+  final LocationViewModel location;
   final DateTime startDate;
   final DateTime endDate;
   final int numberOfMember;
@@ -162,7 +164,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                       child: FadeInImage(
                         placeholder: MemoryImage(kTransparentImage),
                         height: 35.h,
-                        image: NetworkImage(widget.location.imageUrl),
+                        image: NetworkImage(widget.location.imageUrls[0]),
                         fit: BoxFit.cover,
                         width: double.infinity,
                       )),

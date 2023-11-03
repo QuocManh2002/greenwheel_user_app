@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/models/location.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 
 class Emergency extends StatelessWidget {
   const Emergency({super.key, required this.location});
-  final LocationModel location;
+  final LocationViewModel location;
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class Emergency extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  location.hotlineNumber,
+                  location.hotline,
                   style: const TextStyle(
                       fontSize: 17, fontWeight: FontWeight.bold),
                 ),
@@ -51,7 +52,7 @@ class Emergency extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  location.lifeGuardNumber,
+                  location.lifeguardPhone,
                   style: const TextStyle(
                       fontSize: 17, fontWeight: FontWeight.bold),
                 ),
@@ -67,7 +68,7 @@ class Emergency extends StatelessWidget {
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 50),
-            child: Text(location.lifeGuardAddress, style: const TextStyle(fontSize: 16),),
+            child: Text(location.lifeguardAddress, style: const TextStyle(fontSize: 16),),
           ),
           const SizedBox(height: 8,),
           Padding(
@@ -80,7 +81,7 @@ class Emergency extends StatelessWidget {
                 ),
                 const Spacer(),
                 Text(
-                  location.clinicNumber,
+                  location.clinicPhone,
                   style: const TextStyle(
                       fontSize: 17, fontWeight: FontWeight.bold),
                 ),

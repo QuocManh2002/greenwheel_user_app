@@ -21,6 +21,8 @@ dependencies:
   intl:
   input_quantity: ^2.1.1
   syncfusion_flutter_datepicker: ^23.1.42
+  graphql_flutter: ^5.1.2
+  http: ^1.1.0
 
 dev_dependencies:
   flutter_test:
