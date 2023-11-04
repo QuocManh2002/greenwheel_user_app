@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/province.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/filter_location_screen.dart';
+import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class ProvinceCard extends StatelessWidget {
   const ProvinceCard({super.key, required this.province});
-  final Province province;
+  final ProvinceViewModel province;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => FilterLocationScreen(province: province,)));
+      },
       child: Container(
         height: 25.h,
         width: 25.h,
@@ -28,7 +32,7 @@ class ProvinceCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 25.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(province.imageUrl),
+                    image: NetworkImage(province.thumbnailUrl),
                     fit: BoxFit.cover,
                     width: double.infinity,
                     filterQuality: FilterQuality.high,

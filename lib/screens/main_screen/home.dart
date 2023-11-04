@@ -8,6 +8,7 @@ import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:greenwheel_user_app/widgets/activity_card.dart';
 import 'package:greenwheel_user_app/widgets/location_card.dart';
 import 'package:greenwheel_user_app/widgets/province_card.dart';
@@ -23,8 +24,8 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchController = TextEditingController();
-  late List<Widget> carouselItems;
   List<LocationViewModel>? locationModels ;
+  List<ProvinceViewModel>? provinceModels ;
   LocationService _locationService = LocationService();
   bool isLoading = true;
   @override
@@ -42,24 +43,16 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _setUpData() async {
-    
-    
     locationModels = null;
+    provinceModels = null;
     locationModels = await _locationService.getLocations();
+    provinceModels = await _locationService.getProvinces();
 
-    if(locationModels != null){
-      print(locationModels);
-      carouselItems = List<Widget>.generate(
-        locations.length,
-        (index) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: LocationCard(location: locationModels![index])));
+    if(locationModels != null && provinceModels != null){
         setState(() {
           isLoading = false;
         });
     }
-
-    
   }
 
   @override
@@ -69,7 +62,7 @@ class _HomeScreenState extends State<HomeScreen> {
       resizeToAvoidBottomInset: false,
       body: 
       isLoading ? 
-      const Center(child: Text("Is loading..."),):
+      const Center(child: Text("Loading..."),):
       
       SingleChildScrollView(
           child: Column(
@@ -217,12 +210,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 25.h,
                   child: ListView.builder(
                     physics: const BouncingScrollPhysics(),
-                    itemCount: provinces.length,
+                    itemCount: provinceModels!.length,
                     shrinkWrap: true,
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context, index) => Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 8),
-                      child: ProvinceCard(province: provinces[index]),
+                      child: ProvinceCard(province: provinceModels![index]),
                     ),
                   ),
                 ))
@@ -264,6 +257,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 ))
               ],
             ),
+          ),
+           const SizedBox(
+            height: 12,
           ),
         ],
       )),

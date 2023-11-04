@@ -23,6 +23,8 @@ dependencies:
   syncfusion_flutter_datepicker: ^23.1.42
   graphql_flutter: ^5.1.2
   http: ^1.1.0
+  readmore: ^2.2.0
+  collection: ^1.17.2
 
 dev_dependencies:
   flutter_test:

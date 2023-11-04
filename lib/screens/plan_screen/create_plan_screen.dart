@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
@@ -164,7 +166,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                       child: FadeInImage(
                         placeholder: MemoryImage(kTransparentImage),
                         height: 35.h,
-                        image: NetworkImage(widget.location.imageUrls[0]),
+                        image: NetworkImage(json.decode(widget.location.imageUrls)[0]),
                         fit: BoxFit.cover,
                         width: double.infinity,
                       )),
@@ -347,8 +349,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                             label: const Text("Tìm & đặt"),
                             icon: const Icon(Icons.search),
                             onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (ctx) => const TestScreen()));
+                              // Navigator.of(context).push(MaterialPageRoute(
+                              //     builder: (ctx) => const TestScreen()));
                             },
                             style: elevatedButtonStyle,
                           ),

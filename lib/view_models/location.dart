@@ -1,8 +1,8 @@
 import 'dart:convert';
 
-LocationViewModel locationFromJson(String str) => LocationViewModel.fromJson(json.decode(str));
+LocationViewModel provinceFromJson(String str) => LocationViewModel.fromJson(json.decode(str));
 
-String locationToJson(LocationViewModel data) => json.encode(data.toJson());
+String provinceToJson(LocationViewModel data) => json.encode(data.toJson());
 
 class LocationViewModel {
     int id;
@@ -21,6 +21,7 @@ class LocationViewModel {
     String clinicPhone;
     String clinicAddress;
     String hotline;
+    int provinceId;
 
     LocationViewModel({
         required this.id,
@@ -39,6 +40,7 @@ class LocationViewModel {
         required this.clinicPhone,
         required this.clinicAddress,
         required this.hotline,
+        required this.provinceId,
     });
 
     factory LocationViewModel.fromJson(Map<String, dynamic> json) => LocationViewModel(
@@ -58,6 +60,7 @@ class LocationViewModel {
         clinicPhone: json["clinicPhone"],
         clinicAddress: json["clinicAddress"],
         hotline: json["hotline"],
+        provinceId: json["provinceId"],
     );
 
     Map<String, dynamic> toJson() => {
@@ -77,9 +80,6 @@ class LocationViewModel {
         "clinicPhone": clinicPhone,
         "clinicAddress": clinicAddress,
         "hotline": hotline,
+        "provinceId": provinceId,
     };
-
-    // List<String> toListImage(String imageUrls){
-    //   return imageUrls.
-    // }
 }
