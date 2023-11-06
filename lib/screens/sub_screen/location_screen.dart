@@ -329,7 +329,15 @@ class _LocationScreenState extends State<LocationScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: OutlinedButton.icon(
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => ServiceMainScreen(
+                            serviceType: services[0],
+                          ),
+                        ),
+                      );
+                    },
                     icon: const Icon(Icons.restaurant),
                     label: const Text("Ăn uống"),
                     style: outlinedButtonStyle.copyWith(
@@ -462,13 +470,12 @@ class _LocationScreenState extends State<LocationScreen> {
         ),
         Container(
           decoration: BoxDecoration(
-                  border: Border(
-                      top: BorderSide(
-                          color: Colors.grey.withOpacity(0.4), width: 1.3))),
+              border: Border(
+                  top: BorderSide(
+                      color: Colors.grey.withOpacity(0.4), width: 1.3))),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Container(
-              
               height: 5.h,
               alignment: Alignment.center,
               child: ElevatedButton(

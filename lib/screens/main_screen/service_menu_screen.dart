@@ -63,6 +63,10 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       title = "Món ăn";
     } else if (widget.serviceType.id == 2) {
       title = "Vật dụng";
+    } else if (widget.serviceType.id == 3) {
+      title = "Phương tiện";
+    } else {
+      title = "Hàng hóa";
     }
   }
 

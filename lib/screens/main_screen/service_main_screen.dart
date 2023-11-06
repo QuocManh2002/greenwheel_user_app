@@ -36,6 +36,16 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
       list = [
         suppliers[5],
       ];
+    } else if (widget.serviceType.id == 3) {
+      title = "Dịch vụ đi lại";
+      list = [
+        suppliers[5],
+      ];
+    } else {
+      title = "Dịch vụ tiện lợi";
+      list = [
+        suppliers[5],
+      ];
     }
   }
 
@@ -97,10 +107,6 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                                   width: 1, color: Colors.black),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            // prefixIcon: const Icon(
-                            //   Icons.search,
-                            //   color: Colors.black,
-                            // ),
                             suffixIcon: IconButton(
                               icon: const Icon(
                                 Icons.search,
