@@ -31,8 +31,7 @@ class LocationService extends Iterable {
           seasons
           topographic
           templatePlan
-          latitude
-          longitude
+          coordinate{coordinates}
           address
           lifeguardPhone
           lifeguardAddress
@@ -125,8 +124,7 @@ query getById(\$id: Int) {
       seasons
       topographic
       templatePlan
-      latitude
-      longitude
+      coordinate{coordinates}
       address
       lifeguardPhone
       lifeguardAddress

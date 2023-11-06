@@ -5,9 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/comments.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
+import 'package:greenwheel_user_app/constants/enums.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/location.dart';
+import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_date_screen.dart';
@@ -35,6 +37,7 @@ class _LocationScreenState extends State<LocationScreen> {
   int currentImageIndex = 0;
   bool isLoading = true;
   List<dynamic> imageUrls = [];
+  List<Tag> tagList = [];
   @override
   void initState() {
     // TODO: implement initState
@@ -42,16 +45,34 @@ class _LocationScreenState extends State<LocationScreen> {
     getData();
   }
 
-  getData() {
-    // lineNumber = (widget.location.tags.length / 4).ceil();
+  getData() { 
     imageUrls = json.decode(widget.location.imageUrls);
+    print(Season.SPRING);
+    print(Season.SUMMER);
+    print(Season.FALL);
+    print(Season.WINTER);
+    for(final season in widget.location.seasons){
+      tagList.add(getTag(season));
+    }
+    for(final activity in widget.location.activities){
+      tagList.add(getTag(activity));
+    }
+    tagList.add(getTag(widget.location.topographic));
+    setState(() {
+      lineNumber = (tagList.length / 4).ceil();
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-            body: Column(
+            body: 
+            isLoading ?
+            const Center(child: Text("Loading..."),):
+            
+            Column(
       children: [
         Expanded(
           child: SingleChildScrollView(
@@ -66,12 +87,11 @@ class _LocationScreenState extends State<LocationScreen> {
                               (item) => Hero(
                                   tag: widget.location.id,
                                   child: FadeInImage(
-                                    height: 20.h,
+                                    // height: 20.h,
                                     placeholder: MemoryImage(kTransparentImage),
                                     image: NetworkImage(item.toString()),
                                     fit: BoxFit.cover,
                                     width: double.infinity,
-                                    filterQuality: FilterQuality.high,
                                   )),
                             )
                             .toList(),
@@ -80,8 +100,8 @@ class _LocationScreenState extends State<LocationScreen> {
                           scrollPhysics: const BouncingScrollPhysics(),
                           autoPlay: true,
                           aspectRatio: 2,
-                          autoPlayAnimationDuration: Duration(seconds: 3),
-                          autoPlayInterval: Duration(seconds: 5),
+                          autoPlayAnimationDuration:const Duration(seconds: 3),
+                          autoPlayInterval:const Duration(seconds: 5),
                           viewportFraction: 1,
                           onPageChanged: (index, reason) {
                             currentImageIndex = index;
@@ -145,24 +165,24 @@ class _LocationScreenState extends State<LocationScreen> {
                 const SizedBox(
                   height: 16,
                 ),
-                // SizedBox(
-                //   height: (lineNumber * 5).toDouble().h,
-                //   child: Padding(
-                //     padding: const EdgeInsets.symmetric(horizontal: 16),
-                //     child: GridView(
-                //       // padding: const EdgeInsets.symmetric(horizontal: 12),
-                //       gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                //           crossAxisCount: 4,
-                //           mainAxisSpacing: 10,
-                //           crossAxisSpacing: 10,
-                //           childAspectRatio: 5 / 2),
-                //       children: [
-                //         for (var locationTag in widget.location.tags)
-                //           TagWidget(tag: locationTag)
-                //       ],
-                //     ),
-                //   ),
-                // ),
+                SizedBox(
+                  height: (lineNumber * 5).toDouble().h,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: GridView(
+                      // padding: const EdgeInsets.symmetric(horizontal: 12),
+                      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 4,
+                          mainAxisSpacing: 10,
+                          crossAxisSpacing: 10,
+                          childAspectRatio: 5 / 2),
+                      children: [
+                        for (var item in tagList)
+                          TagWidget(tag: item)
+                      ],
+                    ),
+                  ),
+                ),
                 Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     child: ReadMoreText(
@@ -172,9 +192,9 @@ class _LocationScreenState extends State<LocationScreen> {
                       trimMode: TrimMode.Line,
                       trimCollapsedText: "Xem thêm",
                       trimExpandedText: "Thu gọn",
-                      lessStyle: TextStyle(
+                      lessStyle:const TextStyle(
                           color: primaryColor, fontWeight: FontWeight.bold),
-                      moreStyle: TextStyle(
+                      moreStyle:const TextStyle(
                           color: primaryColor, fontWeight: FontWeight.bold),
                     )),
                 const SizedBox(
@@ -390,7 +410,7 @@ class _LocationScreenState extends State<LocationScreen> {
                 Container(
                   alignment: Alignment.center,
                   child: Column(children: [
-                    Text(
+                    const Text(
                       "5",
                       style: const TextStyle(fontSize: 20),
                     ),
@@ -401,7 +421,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     const SizedBox(
                       height: 8,
                     ),
-                    Text('(${12})')
+                    const Text('(${12})')
                   ]),
                 ),
                 const SizedBox(

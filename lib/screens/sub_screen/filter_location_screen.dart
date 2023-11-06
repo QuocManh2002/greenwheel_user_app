@@ -41,8 +41,6 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
     return SafeArea(child: Scaffold(
       appBar: AppBar(title: Text(widget.province.name)),
       body: 
-      // Center(child: Text(locationModels.toString()),)
-
       isLoading ?
       const Center(child: Text("Loading..."),):
       

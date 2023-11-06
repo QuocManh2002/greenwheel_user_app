@@ -98,6 +98,15 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                         foregroundColor: primaryColor),
                     onPressed: () {
                       if (newItemController.text.isNotEmpty) {
+                        if(list.any((element) => element == newItemController.text)){
+                          AwesomeDialog(
+                                context: context,
+                                dialogType: DialogType.warning,
+                                body:const Text("Bạn vừa thêm một hoạt động đã có trước đó trong ngày, hãy chắc chắn rằng bạn muốn thêm hoạt động này trước khi xác nhận kế hoạch!"),
+                                btnOkColor: Colors.orange,
+                                btnOkOnPress: () {
+                                }).show();
+                        }
                         Navigator.of(context).pop(newItemController.text);
 
                         setState(() {
