@@ -4,6 +4,8 @@ class SupplierViewModel {
   String name;
   String phone;
   String thumbnailUrl;
+  double longitude;
+  double latitude;
 
   SupplierViewModel({
     required this.id,
@@ -11,6 +13,8 @@ class SupplierViewModel {
     required this.name,
     required this.phone,
     required this.thumbnailUrl,
+    required this.longitude,
+    required this.latitude,
   });
 
   factory SupplierViewModel.fromJson(Map<String, dynamic> json) =>
@@ -20,6 +24,8 @@ class SupplierViewModel {
         name: json["name"],
         phone: json["phone"],
         thumbnailUrl: json["thumbnailUrl"],
+        latitude: json["coordinate"]["coordinates"][1],
+        longitude: json["coordinate"]["coordinates"][0],
       );
 
   Map<String, dynamic> toJson() => {
@@ -28,5 +34,7 @@ class SupplierViewModel {
         "name": name,
         "phone": phone,
         "thumbnailUrl": thumbnailUrl,
+        "latitude": latitude,
+        "longitude": longitude,
       };
 }

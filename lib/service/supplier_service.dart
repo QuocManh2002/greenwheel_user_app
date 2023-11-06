@@ -6,13 +6,28 @@ class SupplierService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
   GraphQLClient client = config.clientToQuery();
 
-  Future<List<SupplierViewModel>> getSuppliers() async {
+  Future<List<SupplierViewModel>> getSuppliers(
+      double longitude, double latitude, String type) async {
     try {
-      final QueryResult result = await client.query(QueryOptions(
-        fetchPolicy: FetchPolicy.noCache,
-        document: gql('''
+      final QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''
         {
-          suppliers {
+          suppliers (
+    where: {
+        coordinate: {
+          distance: {
+            geometry: {
+              type: Point,
+              coordinates: [$longitude, $latitude],
+              crs: 4326
+            },
+            buffer: 0.054816437335142465,
+            lte: 120
+          }
+        },
+        type: { eq: $type },
+      }
+    ) {
             nodes {
               id
               name
@@ -20,17 +35,12 @@ class SupplierService extends Iterable {
               phone
               thumbnailUrl
               coordinate {
-                __typename
-                bbox
                 coordinates
-                crs
-                type
               }
             }
           }
         }
-      '''),
-      ));
+      ''')));
 
       if (result.hasException) {
         throw Exception(result.exception.toString());

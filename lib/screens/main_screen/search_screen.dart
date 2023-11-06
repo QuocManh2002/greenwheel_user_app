@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
-import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_category_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/service/location_service.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/recent_card.dart';
 import 'package:greenwheel_user_app/widgets/location_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:greenwheel_user_app/constants/recent_search.dart';
-import 'package:greenwheel_user_app/constants/locations.dart';
 import 'package:greenwheel_user_app/widgets/search_card.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
 
@@ -28,9 +28,14 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
+  final LocationService locationService = LocationService();
+
   TextEditingController searchController = TextEditingController();
 
   List<Tag> currentTags = [];
+  List<LocationViewModel> locations = [];
+
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -39,9 +44,18 @@ class _SearchScreenState extends State<SearchScreen> {
     _setUpData();
   }
 
-  _setUpData() {
+  _setUpData() async {
     searchController.text = widget.search;
     currentTags = widget.list;
+    if (locations.isEmpty) {
+      locations = await locationService.getLocations();
+    }
+
+    if (locations.isNotEmpty) {
+      setState(() {
+        isLoading = false;
+      });
+    }
   }
 
   @override
@@ -69,7 +83,9 @@ class _SearchScreenState extends State<SearchScreen> {
                     Navigator.of(context).pop(); // Close the current page
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (ctx) => const TabScreen(pageIndex: 0,),
+                        builder: (ctx) => const TabScreen(
+                          pageIndex: 0,
+                        ),
                       ),
                     );
                   },
@@ -88,10 +104,6 @@ class _SearchScreenState extends State<SearchScreen> {
                             const BorderSide(width: 1, color: Colors.black),
                         borderRadius: BorderRadius.circular(20),
                       ),
-                      // prefixIcon: const Icon(
-                      //   Icons.search,
-                      //   color: Colors.black,
-                      // ),
                       suffixIcon: IconButton(
                         icon: const Icon(
                           Icons.search,
@@ -108,7 +120,7 @@ class _SearchScreenState extends State<SearchScreen> {
                             } else {
                               print("not empty");
                               setState(() {
-                                currentTags = tagsByName;
+                                currentTags.addAll(tagsByName);
                               });
                             }
                           });
@@ -256,21 +268,21 @@ class _SearchScreenState extends State<SearchScreen> {
                       padding: const EdgeInsets.only(left: 8.0),
                       child: Row(
                         children: <Widget>[
-                          // Expanded(
-                          //     child: SizedBox(
-                          //   height: 30.h,
-                          //   child: ListView.builder(
-                          //     physics: const BouncingScrollPhysics(),
-                          //     itemCount: locations.length,
-                          //     shrinkWrap: true,
-                          //     scrollDirection: Axis.horizontal,
-                          //     itemBuilder: (context, index) => Padding(
-                          //       padding:
-                          //           const EdgeInsets.symmetric(horizontal: 8),
-                          //       child: LocationCard(location: locations[index]),
-                          //     ),
-                          //   ),
-                          // ))
+                          Expanded(
+                              child: SizedBox(
+                            height: 30.h,
+                            child: ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: locations.length,
+                              shrinkWrap: true,
+                              scrollDirection: Axis.horizontal,
+                              itemBuilder: (context, index) => Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 8),
+                                child: LocationCard(location: locations[index]),
+                              ),
+                            ),
+                          ))
                         ],
                       ),
                     ),
@@ -321,45 +333,22 @@ class _SearchScreenState extends State<SearchScreen> {
                             ),
                           )
                         : Container(),
-                    // Container(
-                    //   height: 80.h,
-                    //   child: ListView.builder(
-                    //     physics: const BouncingScrollPhysics(),
-                    //     shrinkWrap: true,
-                    //     itemCount: locations.length,
-                    //     itemBuilder: (context, index) {
-                    //       return SearchCard(location: locations[index]);
-                    //     },
-                    //   ),
-                    // ),
+                    Container(
+                      height: 80.h,
+                      child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: locations.length,
+                        itemBuilder: (context, index) {
+                          return SearchCard(location: locations[index]);
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
       ),
     );
-  }
-
-  List<LocationModel> searchLocationsByName(String query) {
-    // Create an empty list to store the search results
-    List<LocationModel> searchResults = [];
-
-    // Split the query into multiple search terms
-    List<String> searchTerms = query.trim().toLowerCase().split(' ');
-
-    // Perform a case-insensitive search for locations by each search term
-    for (String term in searchTerms) {
-      for (LocationModel location in locations) {
-        if (location.name.toLowerCase().contains(term)) {
-          // Add the location to the search results if its name contains the search term
-          searchResults.add(location);
-        }
-      }
-    }
-
-    // Remove duplicates by creating a Set and converting it back to a List
-    searchResults = searchResults.toSet().toList();
-
-    return searchResults;
   }
 
   List<Tag> searchTagsByName(String query) {
