@@ -1,10 +1,13 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/order_history_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail_create.dart';
@@ -39,7 +42,9 @@ class CartScreen extends StatefulWidget {
 }
 
 class _CartScreenState extends State<CartScreen> {
+  OrderService orderService = OrderService();
   double finalTotal = 0;
+  double deposit = 0;
   List<ItemCart> list = [];
   SupplierViewModel? supplier;
 
@@ -445,12 +450,14 @@ class _CartScreenState extends State<CartScreen> {
             : Visibility(
                 visible: finalTotal != 0,
                 child: Container(
-                  height: 14.h,
+                  height: 19.h,
                   width: double.infinity,
                   color: Colors.white,
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
+                      const SizedBox(
+                        height: 20,
+                      ),
                       Container(
                         width: 90.w,
                         child: Row(
@@ -459,13 +466,44 @@ class _CartScreenState extends State<CartScreen> {
                             const Text(
                               'Tổng cộng', // Replace with your first text
                               style: TextStyle(
+                                fontSize: 16,
+                                fontFamily: 'NotoSans',
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                              currencyFormat.format(
+                                  finalTotal), // Replace with your second text
+                              style: const TextStyle(
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NotoSans',
+                                color: Colors.grey,
+                                decoration: TextDecoration.lineThrough,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Container(
+                        width: 90.w,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              'Đặt cọc (30%)', // Replace with your first text
+                              style: TextStyle(
                                   fontSize: 16,
                                   fontFamily: 'NotoSans',
                                   color: Colors.black),
                             ),
                             Text(
-                              currencyFormat.format(
-                                  finalTotal), // Replace with your second text
+                              currencyFormat.format(finalTotal *
+                                  30 /
+                                  100), // Replace with your second text
                               style: const TextStyle(
                                 fontSize: 17,
                                 fontWeight: FontWeight.bold,
@@ -475,19 +513,70 @@ class _CartScreenState extends State<CartScreen> {
                           ],
                         ),
                       ),
-                      SizedBox(
+                      const SizedBox(
+                        height: 20,
+                      ),
+                      Container(
                         width: 90.w,
                         height: 6.h,
                         child: ElevatedButton(
                           onPressed: () async {
-                            Navigator.of(context).pop();
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (ctx) => OrderHistoryScreen(
-                                  serviceType: widget.serviceType,
-                                ),
-                              ),
-                            );
+                            if (widget.pickupDate == null) {
+                              Fluttertoast.showToast(
+                                msg: 'Vui lòng thêm ngày nhận!',
+                                toastLength: Toast.LENGTH_LONG,
+                                gravity: ToastGravity.BOTTOM,
+                                timeInSecForIosWeb: 1, // Duration in seconds
+                              );
+                            } else {
+                              bool check =
+                                  await orderService.addOrder(convertCart());
+                              if (check) {
+                                // ignore: use_build_context_synchronously
+                                AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.success,
+                                  animType: AnimType.topSlide,
+                                  showCloseIcon: true,
+                                  title: "Thanh toán thành công",
+                                  desc: "Ấn tiếp tục để trở về kế hoạch",
+                                  btnOkText: "Tiếp tục",
+                                  btnOkOnPress: () {
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (ctx) => OrderHistoryScreen(
+                                          serviceType: widget.serviceType,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                  btnCancelOnPress: () {
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).push(
+                                      MaterialPageRoute(
+                                        builder: (ctx) => OrderHistoryScreen(
+                                          serviceType: widget.serviceType,
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ).show();
+                              } else {
+                                // ignore: use_build_context_synchronously
+                                AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.error,
+                                  animType: AnimType.topSlide,
+                                  showCloseIcon: true,
+                                  title: "Thanh toán thất bại",
+                                  desc:
+                                      "Xuất hiện lỗi trong quá trình thanh toán",
+                                  btnOkText: "OK",
+                                  btnOkOnPress: () {},
+                                ).show();
+                              }
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.green, // Background color
@@ -502,6 +591,9 @@ class _CartScreenState extends State<CartScreen> {
                             ),
                           ),
                         ),
+                      ),
+                      const SizedBox(
+                        height: 1,
                       ),
                     ],
                   ),
@@ -555,11 +647,11 @@ class _CartScreenState extends State<CartScreen> {
     }).toList();
 
     OrderCreateViewModel order = OrderCreateViewModel(
-      planId: 123,
+      planId: 8,
       pickupDate: widget.pickupDate!,
       paymentMethod: "MOMO",
       transactionId: "SIUUUUUU",
-      deposit: widget.total.toInt(),
+      deposit: finalTotal.toInt(),
       details: details,
     );
 
@@ -567,7 +659,7 @@ class _CartScreenState extends State<CartScreen> {
       order.returnDate = widget.returnDate;
     }
     if (widget.note.isNotEmpty) {
-      order.note = widget.note;
+      order.note = noteController.text;
     }
 
     return order;

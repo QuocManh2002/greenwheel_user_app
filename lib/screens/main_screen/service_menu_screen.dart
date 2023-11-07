@@ -179,45 +179,50 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
             ),
           ),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Padding(
-                padding: const EdgeInsets.only(left: 14, top: 14),
-                child: Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 19,
-                    fontFamily: 'NotoSans',
-                    fontWeight: FontWeight.bold,
-                  ),
+        body: isLoading
+            ? Image.asset(
+                'assets/images/loading.gif',
+                width: 100.w, // Set the width to your desired size
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(left: 14, top: 14),
+                      child: Text(
+                        title,
+                        style: const TextStyle(
+                          fontSize: 19,
+                          fontFamily: 'NotoSans',
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: list.length,
+                      itemBuilder: (context, index) {
+                        int? qty;
+                        ItemCart? itemCart = getItemCartByMenuItemId(
+                            widget.currentCart, list[index].id);
+                        if (itemCart != null) {
+                          qty = itemCart.qty;
+                        }
+                        return MenuItemCard(
+                          product: list[index],
+                          quantity: qty,
+                          updateCart: updateCart,
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-              const SizedBox(
-                width: 8,
-              ),
-              ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: list.length,
-                itemBuilder: (context, index) {
-                  int? qty;
-                  ItemCart? itemCart = getItemCartByMenuItemId(
-                      widget.currentCart, list[index].id);
-                  if (itemCart != null) {
-                    qty = itemCart.qty;
-                  }
-                  return MenuItemCard(
-                    product: list[index],
-                    quantity: qty,
-                    updateCart: updateCart,
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
         bottomNavigationBar: Visibility(
           visible: total != 0,
           child: Container(

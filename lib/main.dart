@@ -33,7 +33,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        home: LoginScreen(),
+        home: const TabScreen(pageIndex: 0),
         theme: theme,
         debugShowCheckedModeBanner: false,
       );
