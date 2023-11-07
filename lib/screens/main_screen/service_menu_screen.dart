@@ -5,6 +5,10 @@ import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
+import 'package:greenwheel_user_app/service/product_service.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/product.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/menu_item_card.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -18,37 +22,47 @@ class ServiceMenuScreen extends StatefulWidget {
     this.iniPickupDate,
     this.iniReturnDate,
     this.iniNote = "",
+    required this.location,
   });
-  final Supplier supplier;
+  final SupplierViewModel supplier;
   final ServiceType serviceType;
   final List<ItemCart> currentCart;
   final DateTime? iniPickupDate;
   final DateTime? iniReturnDate;
   final String iniNote;
+  final LocationViewModel location;
 
   @override
   State<ServiceMenuScreen> createState() => _ServiceMenuScreenState();
 }
 
 class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
-  var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
+  ProductService productService = ProductService();
 
-  double total = 0;
+  List<ProductViewModel> list = [];
   List<ItemCart> items = [];
   DateTime? pickupDate;
   DateTime? returnDate;
   String note = "";
   String title = "";
+  bool isLoading = true;
+  double total = 0;
+
+  var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    setUpData();
+  }
+
+  setUpData() async {
     if (widget.currentCart.isNotEmpty) {
       double tmp = 0;
       if (widget.currentCart.isNotEmpty) {}
       for (var cartItem in widget.currentCart) {
-        tmp += cartItem.item.price * cartItem.qty;
+        tmp += cartItem.product.price * cartItem.qty;
       }
       setState(() {
         items = widget.currentCart;
@@ -62,11 +76,23 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     if (widget.serviceType.id == 1) {
       title = "Món ăn";
     } else if (widget.serviceType.id == 2) {
-      title = "Vật dụng";
+      title = "Phòng ốc";
     } else if (widget.serviceType.id == 3) {
       title = "Phương tiện";
-    } else {
+    } else if (widget.serviceType.id == 4) {
       title = "Hàng hóa";
+    } else if (widget.serviceType.id == 5) {
+      title = "Dịch vụ";
+    } else {
+      title = "Vật dụng";
+    }
+
+    list = await productService.getProductsBySupplierId(widget.supplier.id);
+
+    if (list.isNotEmpty) {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -98,6 +124,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                           MaterialPageRoute(
                             builder: (ctx) => ServiceMainScreen(
                               serviceType: widget.serviceType,
+                              location: widget.location,
                             ),
                           ),
                         );
@@ -135,31 +162,12 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                   width: 1, color: Colors.black),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            // prefixIcon: const Icon(
-                            //   Icons.search,
-                            //   color: Colors.black,
-                            // ),
                             suffixIcon: IconButton(
                               icon: const Icon(
                                 Icons.search,
                                 color: Colors.black,
                               ),
-                              onPressed: () {
-                                setState(() {
-                                  // var tagsByName =
-                                  //     searchTagsByName(searchController.text);
-                                  // if (tagsByName.isEmpty) {
-                                  //   // var locationsByName =
-                                  //   //     searchTagsByName(searchController.text);
-                                  //   print("empty");
-                                  // } else {
-                                  //   print("not empty");
-                                  //   setState(() {
-                                  //     currentTags = tagsByName;
-                                  //   });
-                                  // }
-                                });
-                              },
+                              onPressed: () {},
                             ),
                             hintText: "Bạn đang cần gì?",
                             contentPadding: EdgeInsets.all(4.w),
@@ -194,16 +202,16 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
               ListView.builder(
                 physics: const BouncingScrollPhysics(),
                 shrinkWrap: true,
-                itemCount: widget.supplier.items.length,
+                itemCount: list.length,
                 itemBuilder: (context, index) {
                   int? qty;
                   ItemCart? itemCart = getItemCartByMenuItemId(
-                      widget.currentCart, widget.supplier.items[index].id);
+                      widget.currentCart, list[index].id);
                   if (itemCart != null) {
                     qty = itemCart.qty;
                   }
                   return MenuItemCard(
-                    item: widget.supplier.items[index],
+                    product: list[index],
                     quantity: qty,
                     updateCart: updateCart,
                   );
@@ -226,20 +234,20 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                   height: 6.h,
                   child: ElevatedButton(
                     onPressed: () async {
-                      Navigator.of(context).pop();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (ctx) => CartScreen(
-                            supplier: widget.supplier,
-                            list: items,
-                            total: total,
-                            serviceType: widget.serviceType,
-                            pickupDate: pickupDate,
-                            returnDate: returnDate,
-                            note: note,
-                          ),
-                        ),
-                      );
+                      // Navigator.of(context).pop();
+                      // Navigator.of(context).push(
+                      //   MaterialPageRoute(
+                      //     builder: (ctx) => CartScreen(
+                      //       supplier: widget.supplier,
+                      //       list: items,
+                      //       total: total,
+                      //       serviceType: widget.serviceType,
+                      //       pickupDate: pickupDate,
+                      //       returnDate: returnDate,
+                      //       note: note,
+                      //     ),
+                      //   ),
+                      // );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green, // Background color
@@ -288,31 +296,31 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
 
   ItemCart? getItemCartByMenuItemId(List<ItemCart> cartList, int selectId) {
     try {
-      return cartList.firstWhere((cart) => cart.item.id == selectId);
+      return cartList.firstWhere((cart) => cart.product.id == selectId);
     } catch (e) {
       // Handle the case when no matching item is found
       return null;
     }
   }
 
-  void updateCart(MenuItem item, int qty) {
+  void updateCart(ProductViewModel prod, int qty) {
     setState(() {
       final existingItemIndex =
-          items.indexWhere((cartItem) => cartItem.item.id == item.id);
+          items.indexWhere((cartItem) => cartItem.product.id == prod.id);
 
       if (existingItemIndex != -1) {
         final existingItem = items[existingItemIndex];
-        total -= existingItem.item.price * existingItem.qty;
+        total -= existingItem.product.price * existingItem.qty;
 
         if (qty != 0) {
-          total += item.price * qty;
-          items[existingItemIndex] = ItemCart(item: item, qty: qty);
+          total += prod.price * qty;
+          items[existingItemIndex] = ItemCart(product: prod, qty: qty);
         } else {
           items.removeAt(existingItemIndex);
         }
       } else if (qty != 0) {
-        items.add(ItemCart(item: item, qty: qty));
-        total += item.price * qty;
+        items.add(ItemCart(product: prod, qty: qty));
+        total += prod.price * qty;
       }
 
       if (items.isEmpty) {

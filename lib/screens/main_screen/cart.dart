@@ -6,6 +6,7 @@ import 'package:greenwheel_user_app/models/supplier.dart';
 import 'package:greenwheel_user_app/screens/main_screen/order_history_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/cart_item_card.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -21,7 +22,7 @@ class CartScreen extends StatefulWidget {
     this.returnDate,
     this.note = "",
   });
-  final Supplier supplier;
+  final SupplierViewModel supplier;
   final List<ItemCart> list;
   final double total;
   final ServiceType serviceType;
@@ -36,7 +37,7 @@ class CartScreen extends StatefulWidget {
 class _CartScreenState extends State<CartScreen> {
   double finalTotal = 0;
   List<ItemCart> list = [];
-  Supplier? supplier;
+  SupplierViewModel? supplier;
 
   TextEditingController noteController = TextEditingController();
   var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
@@ -83,19 +84,19 @@ class _CartScreenState extends State<CartScreen> {
                     color: Colors.black,
                   ),
                   onPressed: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => ServiceMenuScreen(
-                          supplier: widget.supplier,
-                          currentCart: list,
-                          serviceType: widget.serviceType,
-                          iniPickupDate: widget.pickupDate,
-                          iniReturnDate: widget.returnDate,
-                          iniNote: noteController.text,
-                        ),
-                      ),
-                    );
+                    // Navigator.of(context).pop();
+                    // Navigator.of(context).push(
+                    //   MaterialPageRoute(
+                    //     builder: (ctx) => ServiceMenuScreen(
+                    //       supplier: widget.supplier,
+                    //       currentCart: list,
+                    //       serviceType: widget.serviceType,
+                    //       iniPickupDate: widget.pickupDate,
+                    //       iniReturnDate: widget.returnDate,
+                    //       iniNote: noteController.text,
+                    //     ),
+                    //   ),
+                    // );
                   },
                 ),
                 const Padding(
@@ -144,19 +145,19 @@ class _CartScreenState extends State<CartScreen> {
                           const Spacer(), // Add space between the two elements
                           TextButton(
                             onPressed: () {
-                              Navigator.of(context).pop();
-                              Navigator.of(context).push(
-                                MaterialPageRoute(
-                                  builder: (ctx) => ServiceMenuScreen(
-                                    supplier: widget.supplier,
-                                    currentCart: list,
-                                    serviceType: widget.serviceType,
-                                    iniPickupDate: widget.pickupDate,
-                                    iniReturnDate: widget.returnDate,
-                                    iniNote: noteController.text,
-                                  ),
-                                ),
-                              );
+                              // Navigator.of(context).pop();
+                              // Navigator.of(context).push(
+                              //   MaterialPageRoute(
+                              //     builder: (ctx) => ServiceMenuScreen(
+                              //       supplier: widget.supplier,
+                              //       currentCart: list,
+                              //       serviceType: widget.serviceType,
+                              //       iniPickupDate: widget.pickupDate,
+                              //       iniReturnDate: widget.returnDate,
+                              //       iniNote: noteController.text,
+                              //     ),
+                              //   ),
+                              // );
                             },
                             child: const Text(
                               '+  Thêm món',
@@ -200,8 +201,8 @@ class _CartScreenState extends State<CartScreen> {
                               onDismissed: (direction) {
                                 // Handle the item removal here
                                 setState(() {
-                                  finalTotal -=
-                                      list[index].item.price * list[index].qty;
+                                  finalTotal -= list[index].product.price *
+                                      list[index].qty;
                                   list.removeAt(index);
                                 });
                               },
@@ -509,16 +510,16 @@ class _CartScreenState extends State<CartScreen> {
         List.from(list); // Create a copy of the original list
 
     for (var i = 0; i < updatedList.length; i++) {
-      if (updatedList[i].item.id == cartItem.item.id) {
+      if (updatedList[i].product.id == cartItem.product.id) {
         if (newQty != 0) {
           setState(() {
-            finalTotal -= cartItem.item.price * cartItem.qty;
-            finalTotal += cartItem.item.price * newQty;
-            updatedList[i] = ItemCart(item: cartItem.item, qty: newQty);
+            finalTotal -= cartItem.product.price * cartItem.qty;
+            finalTotal += cartItem.product.price * newQty;
+            updatedList[i] = ItemCart(product: cartItem.product, qty: newQty);
           });
         } else {
           setState(() {
-            finalTotal -= cartItem.item.price * cartItem.qty;
+            finalTotal -= cartItem.product.price * cartItem.qty;
           });
           updatedList.removeAt(i);
           break; // Exit the loop since the item was found and removed

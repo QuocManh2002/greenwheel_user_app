@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/supplier.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
-import 'package:greenwheel_user_app/widgets/rating_bar.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -11,9 +12,11 @@ class SupplierCard extends StatefulWidget {
     super.key,
     required this.supplier,
     required this.serviceType,
+    required this.location,
   });
-  final Supplier supplier;
+  final SupplierViewModel supplier;
   final ServiceType serviceType;
+  final LocationViewModel location;
 
   @override
   State<SupplierCard> createState() => _SupplierCardState();
@@ -35,12 +38,15 @@ class _SupplierCardState extends State<SupplierCard> {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
+              var service =
+                  services.firstWhere((s) => s.name == widget.supplier.type);
               Navigator.of(context).pop();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => ServiceMenuScreen(
                     supplier: widget.supplier,
-                    serviceType: widget.serviceType,
+                    serviceType: service,
+                    location: widget.location,
                   ),
                 ),
               );
@@ -59,7 +65,7 @@ class _SupplierCardState extends State<SupplierCard> {
                     child: FadeInImage(
                       height: 15.h,
                       placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage(widget.supplier.imgUrl),
+                      image: NetworkImage(widget.supplier.thumbnailUrl),
                       fit: BoxFit.cover,
                       width: 15.h,
                       filterQuality: FilterQuality.high,
@@ -90,24 +96,32 @@ class _SupplierCardState extends State<SupplierCard> {
                       const SizedBox(
                         height: 6,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 5),
-                        child: Row(
-                          children: [
-                            RatingBar(
-                              rating: widget.supplier.rating,
-                              ratingCount: widget.supplier.numberOfReviews,
+                      Row(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(left: 8, top: 0.5.h),
+                            child: const Text(
+                              'Số điện thoại: ',
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: Colors.black45,
+                                fontFamily: 'NotoSans',
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                            const SizedBox(
-                              width: 4,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(left: 8, top: 0.5.h),
+                            child: Text(
+                              widget.supplier.phone,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontFamily: 'NotoSans',
+                              ),
                             ),
-                            Text(
-                              '${widget.supplier.numberOfReviews} Đánh giá',
-                              style:
-                                  const TextStyle(fontWeight: FontWeight.w600),
-                            )
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                       const SizedBox(
                         height: 6,
@@ -115,7 +129,7 @@ class _SupplierCardState extends State<SupplierCard> {
                       Container(
                         width: 55.w,
                         child: Padding(
-                          padding: const EdgeInsets.only(left: 8),
+                          padding: EdgeInsets.only(left: 8, top: 0.5.h),
                           child: Text(
                             widget.supplier.address,
                             overflow: TextOverflow.ellipsis,

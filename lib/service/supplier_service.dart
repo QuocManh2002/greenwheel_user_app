@@ -7,40 +7,55 @@ class SupplierService extends Iterable {
   GraphQLClient client = config.clientToQuery();
 
   Future<List<SupplierViewModel>> getSuppliers(
-      double longitude, double latitude, String type) async {
+      double longitude, double latitude, List<String> types) async {
     try {
-      final QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''
-        {
-          suppliers (
-    where: {
+      List<Map<String, dynamic>> typeConditions = types.map((type) {
+        return {
+          'type': {
+            'eq': type,
+          },
+        };
+      }).toList();
+
+      String coordinateString = '''
         coordinate: {
           distance: {
-            geometry: {
-              type: Point,
-              coordinates: [$longitude, $latitude],
-              crs: 4326
-            },
-            buffer: 0.054816437335142465,
-            lte: 120
+            geometry: { type: Point, coordinates: [$longitude, $latitude], crs: 4326 },
+            buffer: 0.09138622285234489,
+            eq: 0
           }
         },
-        type: { eq: $type },
-      }
-    ) {
-            nodes {
-              id
-              name
-              address
-              phone
-              thumbnailUrl
-              coordinate {
-                coordinates
+      ''';
+
+      final QueryResult result = await client.query(
+        QueryOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql('''
+          query GetSuppliers(\$typeConditions: [SupplierFilterInput!]) {
+            suppliers(
+              where: {
+                isHidden: { eq: false },
+                $coordinateString
+                or: \$typeConditions
+              }
+            ) {
+              nodes {
+                id
+                name
+                address
+                phone
+                thumbnailUrl
+                coordinate {
+                  coordinates
+                }
+                type
               }
             }
           }
-        }
-      ''')));
+        '''),
+          variables: {'typeConditions': typeConditions},
+        ),
+      );
 
       if (result.hasException) {
         throw Exception(result.exception.toString());

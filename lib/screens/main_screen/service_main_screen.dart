@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/suppliers.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/supplier.dart';
+import 'package:greenwheel_user_app/service/supplier_service.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/supplier_card.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -9,43 +10,52 @@ class ServiceMainScreen extends StatefulWidget {
   const ServiceMainScreen({
     super.key,
     required this.serviceType,
+    required this.location,
   });
   final ServiceType serviceType;
+  final LocationViewModel location;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();
 }
 
 class _ServiceMainScreenState extends State<ServiceMainScreen> {
-  List<Supplier> list = [];
+  SupplierService supplierService = SupplierService();
+  List<SupplierViewModel> list = [];
   String title = "";
+  bool isLoading = true;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    setUpData();
+  }
+
+  setUpData() async {
+    List<String> type = [];
+
     if (widget.serviceType.id == 1) {
       title = "Dịch vụ ăn uống";
-      list = [
-        suppliers[0],
-        suppliers[1],
-        suppliers[2],
-      ];
-    } else if (widget.serviceType.id == 2) {
+      type.add("RESTAURANT");
+    } else if (widget.serviceType.id == 2 || widget.serviceType.id == 6) {
       title = "Dịch vụ lưu trú";
-      list = [
-        suppliers[5],
-      ];
-    } else if (widget.serviceType.id == 3) {
+      type.addAll(["CAMPING", "MOTEL"]);
+    } else if (widget.serviceType.id == 3 || widget.serviceType.id == 5) {
       title = "Dịch vụ đi lại";
-      list = [
-        suppliers[5],
-      ];
+      type.addAll(["REPAIR", "TAXI"]);
     } else {
       title = "Dịch vụ tiện lợi";
-      list = [
-        suppliers[5],
-      ];
+      type.add("GROCERY");
+    }
+
+    list = await supplierService.getSuppliers(
+        widget.location.longitude, widget.location.latitude, type);
+
+    if (list.isNotEmpty) {
+      setState(() {
+        isLoading = false;
+      });
     }
   }
 
@@ -141,24 +151,30 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
             ),
           ),
         ),
-        body: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              ListView.builder(
-                physics: const BouncingScrollPhysics(),
-                shrinkWrap: true,
-                itemCount: list.length,
-                itemBuilder: (context, index) {
-                  return SupplierCard(
-                    supplier: list[index],
-                    serviceType: widget.serviceType,
-                  );
-                },
+        body: isLoading
+            ? Image.asset(
+                'assets/images/loading.gif',
+                width: 100.w, // Set the width to your desired size
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: list.length,
+                      itemBuilder: (context, index) {
+                        return SupplierCard(
+                          supplier: list[index],
+                          serviceType: widget.serviceType,
+                          location: widget.location,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
-            ],
-          ),
-        ),
       ),
     );
   }

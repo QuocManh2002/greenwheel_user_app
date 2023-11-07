@@ -46,7 +46,7 @@ class _CartItemCardState extends State<CartItemCard>
                       Padding(
                         padding: const EdgeInsets.only(left: 8, top: 10),
                         child: Text(
-                          widget.cartItem.item.name,
+                          widget.cartItem.product.name,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 16,
@@ -62,8 +62,9 @@ class _CartItemCardState extends State<CartItemCard>
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8),
                           child: Text(
-                            currencyFormat.format(widget.cartItem.item.price *
-                                widget.cartItem.qty),
+                            currencyFormat.format(
+                                widget.cartItem.product.price *
+                                    widget.cartItem.qty),
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Colors.grey,

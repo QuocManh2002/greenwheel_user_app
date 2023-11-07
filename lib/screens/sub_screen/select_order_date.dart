@@ -3,6 +3,7 @@ import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/supplier.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
@@ -17,7 +18,7 @@ class SelectOrderDateScreen extends StatefulWidget {
     this.iniReturnDate,
     this.iniNote = "",
   });
-  final Supplier supplier;
+  final SupplierViewModel supplier;
   final List<ItemCart> list;
   final double total;
   final ServiceType serviceType;

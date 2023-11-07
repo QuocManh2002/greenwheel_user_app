@@ -1,10 +1,10 @@
-import 'package:greenwheel_user_app/models/menu_item.dart';
+import 'package:greenwheel_user_app/view_models/product.dart';
 
 class ItemCart {
   const ItemCart({
-    required this.item,
+    required this.product,
     required this.qty,
   });
-  final MenuItem item;
+  final ProductViewModel product;
   final int qty;
 }

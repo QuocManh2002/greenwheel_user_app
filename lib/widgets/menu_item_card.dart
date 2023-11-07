@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/models/menu_item.dart';
+import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:input_quantity/input_quantity.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -8,11 +8,11 @@ import 'package:intl/intl.dart';
 class MenuItemCard extends StatefulWidget {
   const MenuItemCard({
     super.key,
-    required this.item,
+    required this.product,
     required this.updateCart,
     this.quantity,
   });
-  final MenuItem item;
+  final ProductViewModel product;
   final Function updateCart;
   final int? quantity;
 
@@ -70,11 +70,11 @@ class _MenuItemCardState extends State<MenuItemCard>
                       bottomLeft: Radius.circular(8),
                     ),
                     child: Hero(
-                      tag: widget.item.id,
+                      tag: widget.product.id,
                       child: FadeInImage(
                         height: 15.h,
                         placeholder: MemoryImage(kTransparentImage),
-                        image: NetworkImage(widget.item.imgUrl),
+                        image: NetworkImage(widget.product.thumbnailUrl),
                         fit: BoxFit.cover,
                         width: 15.h,
                         filterQuality: FilterQuality.high,
@@ -95,7 +95,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                           Padding(
                             padding: const EdgeInsets.only(left: 8, top: 10),
                             child: Text(
-                              widget.item.name,
+                              widget.product.name,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 16,
@@ -111,7 +111,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                             child: Padding(
                               padding: const EdgeInsets.only(left: 8),
                               child: Text(
-                                currencyFormat.format(widget.item.price),
+                                currencyFormat.format(widget.product.price),
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   color: Colors.grey,
@@ -148,7 +148,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                                     if (val == 0) {
                                       isQuantity = !isQuantity;
                                     }
-                                    widget.updateCart(widget.item, val);
+                                    widget.updateCart(widget.product, val);
                                   });
                                 },
                               ),
@@ -167,7 +167,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                                 onPressed: () async {
                                   setState(() {
                                     isQuantity = true;
-                                    widget.updateCart(widget.item, 1);
+                                    widget.updateCart(widget.product, 1);
                                   });
                                 },
                                 icon: const Icon(

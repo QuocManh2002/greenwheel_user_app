@@ -25,16 +25,16 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     // TODO: implement initState
     super.initState();
     currentService = widget.serviceType;
-    if (currentService!.id == 1) {
-      listOrder = [
-        orders[0],
-        orders[1],
-      ];
-    } else if (currentService!.id == 2) {
-      listOrder = [
-        orders[2],
-      ];
-    }
+    // if (currentService!.id == 1) {
+    //   listOrder = [
+    //     orders[0],
+    //     orders[1],
+    //   ];
+    // } else if (currentService!.id == 2) {
+    //   listOrder = [
+    //     orders[2],
+    //   ];
+    // }
   }
 
   @override
@@ -138,16 +138,16 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
   void changeService(ServiceType type) {
     setState(() {
       currentService = type;
-      if (currentService!.id == 1) {
-        listOrder = [
-          orders[0],
-          orders[1],
-        ];
-      } else if (currentService!.id == 2) {
-        listOrder = [
-          orders[2],
-        ];
-      }
+      // if (currentService!.id == 1) {
+      //   listOrder = [
+      //     orders[0],
+      //     orders[1],
+      //   ];
+      // } else if (currentService!.id == 2) {
+      //   listOrder = [
+      //     orders[2],
+      //   ];
+      // }
     });
   }
 }
