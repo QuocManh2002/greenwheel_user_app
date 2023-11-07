@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/supplier_orders.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
@@ -53,6 +54,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
     super.initState();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     newItemController = TextEditingController();
+    print(sharedPreferences.getInt("planId"));
     setUpData();
   }
 

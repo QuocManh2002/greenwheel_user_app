@@ -1,5 +1,8 @@
+import 'dart:convert';
+
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
 
 class PlanService {
@@ -21,8 +24,8 @@ class PlanService {
 """), variables: {
         "input": {
           "vm": {
-            "startDate": draft.startDate,
-            "endDate": draft.endDate,
+            "startDate": "${draft.startDate.year.toString().padLeft(4, '0')}-${draft.startDate.month.toString().padLeft(2, '0')}-${draft.startDate.day.toString().padLeft(2, '0')}",
+            "endDate": "${draft.endDate.year.toString().padLeft(4, '0')}-${draft.endDate.month.toString().padLeft(2, '0')}-${draft.endDate.day.toString().padLeft(2, '0')}",
             "locationId": draft.locationId,
             "memberLimit": draft.memberLimit
           }
@@ -32,7 +35,11 @@ class PlanService {
       if(result.hasException){
         throw Exception(result.exception);
       }else{
-        return true;
+        var rstext = result.data!;
+        bool isSuccess = rstext['createPlanDraft']['result']['success'];
+        int planId = rstext['createPlanDraft']['result']['payload']['Id'];
+        sharedPreferences.setInt("planId", planId);
+        return isSuccess;
       }
 
     } catch (error) {

@@ -41,7 +41,9 @@ class LocationService extends Iterable {
           provinceId
         }
     }
-}"""),
+}
+
+"""),
       ));
 
       if (result.hasException) {
