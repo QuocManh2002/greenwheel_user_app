@@ -69,16 +69,13 @@ class _MenuItemCardState extends State<MenuItemCard>
                       topLeft: Radius.circular(8),
                       bottomLeft: Radius.circular(8),
                     ),
-                    child: Hero(
-                      tag: widget.product.id,
-                      child: FadeInImage(
-                        height: 15.h,
-                        placeholder: MemoryImage(kTransparentImage),
-                        image: NetworkImage(widget.product.thumbnailUrl),
-                        fit: BoxFit.cover,
-                        width: 15.h,
-                        filterQuality: FilterQuality.high,
-                      ),
+                    child: FadeInImage(
+                      height: 15.h,
+                      placeholder: MemoryImage(kTransparentImage),
+                      image: NetworkImage(widget.product.thumbnailUrl),
+                      fit: BoxFit.cover,
+                      width: 15.h,
+                      filterQuality: FilterQuality.high,
                     ),
                   ),
                 ),
