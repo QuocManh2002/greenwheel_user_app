@@ -454,199 +454,206 @@ class _CartScreenState extends State<CartScreen> {
                       ],
                     ),
                   ),
-        bottomNavigationBar: list.isEmpty
-            ? null
-            : Visibility(
-                visible: finalTotal != 0,
-                child: Container(
-                  height: 19.h,
-                  width: double.infinity,
-                  color: Colors.white,
-                  child: Column(
-                    children: [
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Container(
-                        width: 90.w,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Tổng cộng', // Replace with your first text
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontFamily: 'NotoSans',
-                                color: Colors.black,
-                              ),
-                            ),
-                            Text(
-                              currencyFormat.format(
-                                  finalTotal), // Replace with your second text
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'NotoSans',
-                                color: Colors.grey,
-                                decoration: TextDecoration.lineThrough,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 10,
-                      ),
-                      Container(
-                        width: 90.w,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Đặt cọc (30%)', // Replace with your first text
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontFamily: 'NotoSans',
-                                  color: Colors.black),
-                            ),
-                            Text(
-                              currencyFormat.format(finalTotal *
-                                  30 /
-                                  100), // Replace with your second text
-                              style: const TextStyle(
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'NotoSans',
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 20,
-                      ),
-                      Container(
-                        width: 90.w,
-                        height: 6.h,
-                        child: ElevatedButton(
-                          onPressed: () async {
-                            if (widget.pickupDate == null) {
-                              Fluttertoast.showToast(
-                                msg: 'Vui lòng thêm ngày nhận!',
-                                toastLength: Toast.LENGTH_LONG,
-                                gravity: ToastGravity.BOTTOM,
-                                timeInSecForIosWeb: 1, // Duration in seconds
-                              );
-                            } else {
-                              var items = [
-                                {
-                                  "productPrice": finalTotal * 30 ~/ 100,
-                                  "productName": "Thanh toán dịch vụ",
-                                  "qty": 1,
-                                },
-                              ];
-                              setState(() {
-                                isLoading = true;
-                              });
-                              await StripeConfig.stripePaymentCheckout(
-                                items,
-                                finalTotal * 30 ~/ 100,
-                                context,
-                                mounted,
-                                onSuccess: () async {
-                                  bool check = await orderService
-                                      .addOrder(convertCart());
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  if (check) {
-                                    // ignore: use_build_context_synchronously
-                                    AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.success,
-                                      animType: AnimType.topSlide,
-                                      title: "Thanh toán thành công",
-                                      desc: "Ấn tiếp tục để trở về kế hoạch",
-                                      btnOkText: "Tiếp tục",
-                                      btnOkOnPress: () {
-                                        Navigator.of(context).pop();
-                                        Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                            builder: (ctx) =>
-                                                OrderHistoryScreen(
-                                              serviceType: widget.serviceType,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                    ).show();
-                                  } else {
-                                    // ignore: use_build_context_synchronously
-                                    AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.error,
-                                      animType: AnimType.topSlide,
-                                      title: "Thanh toán thất bại",
-                                      desc:
-                                          "Xuất hiện lỗi trong quá trình thanh toán",
-                                      btnOkText: "OK",
-                                      btnOkOnPress: () {},
-                                    ).show();
-                                  }
-                                },
-                                onCancel: () {
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  AwesomeDialog(
-                                    context: context,
-                                    dialogType: DialogType.warning,
-                                    animType: AnimType.topSlide,
-                                    title: "Hủy thanh toán",
-                                    desc: "Bạn đã hủy thanh toán thành công",
-                                    btnOkText: "OK",
-                                    btnOkOnPress: () {},
-                                  ).show();
-                                },
-                                onError: (e) {
-                                  setState(() {
-                                    isLoading = false;
-                                  });
-                                  AwesomeDialog(
-                                    context: context,
-                                    dialogType: DialogType.error,
-                                    animType: AnimType.topSlide,
-                                    title: "Thanh toán thất bại",
-                                    desc:
-                                        "Xuất hiện lỗi trong quá trình thanh toán",
-                                    btnOkText: "OK",
-                                    btnOkOnPress: () {},
-                                  ).show();
-                                },
-                              );
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.green, // Background color
+        bottomNavigationBar: isLoading
+            ? Container()
+            : list.isEmpty
+                ? null
+                : Visibility(
+                    visible: finalTotal != 0,
+                    child: Container(
+                      height: 19.h,
+                      width: double.infinity,
+                      color: Colors.white,
+                      child: Column(
+                        children: [
+                          const SizedBox(
+                            height: 20,
                           ),
-                          child: const Center(
-                            child: Text(
-                              'Thanh toán',
-                              style: TextStyle(
-                                color: Colors.white, // Text color
-                                fontSize: 18,
-                              ),
+                          Container(
+                            width: 90.w,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Tổng cộng', // Replace with your first text
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontFamily: 'NotoSans',
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                Text(
+                                  currencyFormat.format(
+                                      finalTotal), // Replace with your second text
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'NotoSans',
+                                    color: Colors.grey,
+                                    decoration: TextDecoration.lineThrough,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                        ),
+                          const SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                            width: 90.w,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Đặt cọc (30%)', // Replace with your first text
+                                  style: TextStyle(
+                                      fontSize: 16,
+                                      fontFamily: 'NotoSans',
+                                      color: Colors.black),
+                                ),
+                                Text(
+                                  currencyFormat.format(finalTotal *
+                                      30 /
+                                      100), // Replace with your second text
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'NotoSans',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 20,
+                          ),
+                          Container(
+                            width: 90.w,
+                            height: 6.h,
+                            child: ElevatedButton(
+                              onPressed: () async {
+                                if (widget.pickupDate == null) {
+                                  Fluttertoast.showToast(
+                                    msg: 'Vui lòng thêm ngày nhận!',
+                                    toastLength: Toast.LENGTH_LONG,
+                                    gravity: ToastGravity.BOTTOM,
+                                    timeInSecForIosWeb:
+                                        1, // Duration in seconds
+                                  );
+                                } else {
+                                  var items = [
+                                    {
+                                      "productPrice": finalTotal * 30 ~/ 100,
+                                      "productName": "Thanh toán dịch vụ",
+                                      "qty": 1,
+                                    },
+                                  ];
+                                  setState(() {
+                                    isLoading = true;
+                                  });
+                                  await StripeConfig.stripePaymentCheckout(
+                                    items,
+                                    finalTotal * 30 ~/ 100,
+                                    context,
+                                    mounted,
+                                    onSuccess: () async {
+                                      bool check = await orderService
+                                          .addOrder(convertCart());
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                      if (check) {
+                                        // ignore: use_build_context_synchronously
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.success,
+                                          animType: AnimType.topSlide,
+                                          title: "Thanh toán thành công",
+                                          desc:
+                                              "Ấn tiếp tục để trở về kế hoạch",
+                                          btnOkText: "Tiếp tục",
+                                          btnOkOnPress: () {
+                                            Navigator.of(context).pop();
+                                            Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                builder: (ctx) =>
+                                                    OrderHistoryScreen(
+                                                  serviceType:
+                                                      widget.serviceType,
+                                                ),
+                                              ),
+                                            );
+                                          },
+                                        ).show();
+                                      } else {
+                                        // ignore: use_build_context_synchronously
+                                        AwesomeDialog(
+                                          context: context,
+                                          dialogType: DialogType.error,
+                                          animType: AnimType.topSlide,
+                                          title: "Thanh toán thất bại",
+                                          desc:
+                                              "Xuất hiện lỗi trong quá trình thanh toán",
+                                          btnOkText: "OK",
+                                          btnOkOnPress: () {},
+                                        ).show();
+                                      }
+                                    },
+                                    onCancel: () {
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                      AwesomeDialog(
+                                        context: context,
+                                        dialogType: DialogType.warning,
+                                        animType: AnimType.topSlide,
+                                        title: "Hủy thanh toán",
+                                        desc:
+                                            "Bạn đã hủy thanh toán thành công",
+                                        btnOkText: "OK",
+                                        btnOkOnPress: () {},
+                                      ).show();
+                                    },
+                                    onError: (e) {
+                                      setState(() {
+                                        isLoading = false;
+                                      });
+                                      AwesomeDialog(
+                                        context: context,
+                                        dialogType: DialogType.error,
+                                        animType: AnimType.topSlide,
+                                        title: "Thanh toán thất bại",
+                                        desc:
+                                            "Xuất hiện lỗi trong quá trình thanh toán",
+                                        btnOkText: "OK",
+                                        btnOkOnPress: () {},
+                                      ).show();
+                                    },
+                                  );
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor:
+                                    Colors.green, // Background color
+                              ),
+                              child: const Center(
+                                child: Text(
+                                  'Thanh toán',
+                                  style: TextStyle(
+                                    color: Colors.white, // Text color
+                                    fontSize: 18,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 1,
+                          ),
+                        ],
                       ),
-                      const SizedBox(
-                        height: 1,
-                      ),
-                    ],
+                    ),
                   ),
-                ),
-              ),
       ),
     );
   }
@@ -698,7 +705,7 @@ class _CartScreenState extends State<CartScreen> {
     String? transactionId = sharedPreferences.getString("transactionId");
 
     OrderCreateViewModel order = OrderCreateViewModel(
-      planId: 8,
+      planId: id!,
       pickupDate: widget.pickupDate!,
       paymentMethod: "PAYPAL",
       transactionId: transactionId!,
