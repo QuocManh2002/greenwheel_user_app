@@ -6,6 +6,8 @@ import 'package:greenwheel_user_app/screens/main_screen/order_history_screen.dar
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order_create.dart';
+import 'package:greenwheel_user_app/view_models/order_detail_create.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/cart_item_card.dart';
 import 'package:intl/intl.dart';
@@ -541,5 +543,33 @@ class _CartScreenState extends State<CartScreen> {
     setState(() {
       // widget.pickupDate = newDate;
     });
+  }
+
+  OrderCreateViewModel convertCart() {
+    List<OrderDetailCreateViewModel> details = list.map((itemCart) {
+      return OrderDetailCreateViewModel(
+        productId: itemCart.product
+            .id, // Replace with the actual property from ProductViewModel
+        quantity: itemCart.qty,
+      );
+    }).toList();
+
+    OrderCreateViewModel order = OrderCreateViewModel(
+      planId: 123,
+      pickupDate: widget.pickupDate!,
+      paymentMethod: "MOMO",
+      transactionId: "SIUUUUUU",
+      deposit: widget.total.toInt(),
+      details: details,
+    );
+
+    if (widget.returnDate != null) {
+      order.returnDate = widget.returnDate;
+    }
+    if (widget.note.isNotEmpty) {
+      order.note = widget.note;
+    }
+
+    return order;
   }
 }

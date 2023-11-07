@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "637018147234",
+    "project_id": "phuottravel-aa116",
+    "storage_bucket": "phuottravel-aa116.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:637018147234:android:17547fcfde7ca06a218afb",
+        "android_client_info": {
+          "package_name": "com.example.greenwheel_user_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBqJ59_W5Mks7cQe8taz9UevwcVosJ7v4k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
