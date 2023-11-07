@@ -2,10 +2,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/otp_screen.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -74,11 +74,11 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Container(
                 width: size.width,
                 child: Padding(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(14),
                   child: Column(
                     children: [
                       Container(
-                        margin: EdgeInsets.only(top: 5.h),
+                        margin: EdgeInsets.only(top: 4.h),
                         alignment: Alignment.topLeft,
                         child: const Text(
                           'Số điện thoại',
@@ -101,32 +101,67 @@ class _LoginScreenState extends State<LoginScreen> {
                             controller: phoneController,
                             decoration: const InputDecoration(
                               enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.white)),
+                                borderSide: BorderSide(color: Colors.white),
+                              ),
                               focusedBorder: OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Color(0xffA0A5BA))),
+                                borderSide:
+                                    BorderSide(color: Color(0xffA0A5BA)),
+                              ),
                               fillColor: Color(0xffF0F5FA),
                               filled: true,
+                              prefixText:
+                                  '+84 ', // Replace '+1' with your desired country code
                             ),
                             textAlignVertical: TextAlignVertical.center,
                             autofocus: false,
                             style: const TextStyle(fontSize: 20),
-                            keyboardType: TextInputType
-                                .number, // Set the keyboard type to number
+                            keyboardType: TextInputType.number,
                             inputFormatters: [
                               FilteringTextInputFormatter.digitsOnly
-                            ], // Allow only digits
+                            ],
                           ),
                         ),
                       ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "Bạn chưa có tài khoản?",
+                            style: TextStyle(
+                              fontFamily: 'NotoSans',
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {},
+                            child: const Text(
+                              'Đăng ký ngay',
+                              style: TextStyle(
+                                fontFamily: 'NotoSans',
+                                color:
+                                    primaryColor, // Set the color of the link text
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                       Spacer(),
                       Container(
-                        margin: EdgeInsets.only(top: 5.h),
+                        height: 7.h,
+                        width: 90.w,
                         child: ElevatedButton(
                           style: elevatedButtonStyle.copyWith(),
-                          child: const Text('Gửi OTP'),
+                          child: const Text(
+                            'Gửi OTP',
+                            style: TextStyle(
+                              fontFamily: 'NotoSans',
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
                           onPressed: () {
-                            // verifyNumber();
+                            verifyNumber();
                           },
                         ),
                       ),
