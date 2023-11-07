@@ -31,7 +31,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Padding(
-          padding: const EdgeInsets.only(left: 16, right: 16, top: 8),
+          padding: const EdgeInsets.only( top: 8),
           child: Container(
             height: 6.h,
             decoration: BoxDecoration(
@@ -65,7 +65,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                         duration: const Duration(microseconds: 300),
                         child: Image.asset(
                           isExpanded ? upIcon : downIcon,
-                          height: 3.h,
+                          height: 2.h,
                           fit: BoxFit.cover,
                           key: ValueKey(isExpanded),
                         ),
@@ -77,7 +77,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
         ),
         if (isExpanded)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 0),
             child: Container(
               height: (widget.details.length * 5.7).h,
               width: double.infinity,
@@ -160,7 +160,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
           ),
         if (isExpanded)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
+            padding: const EdgeInsets.symmetric(horizontal: 0),
             child: InkWell(
               onTap: () {
                 widget.onAddNewItem(widget.details);

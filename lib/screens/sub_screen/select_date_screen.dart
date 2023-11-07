@@ -72,7 +72,7 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
                             endDate: selectedDates.end,
                             startDate: selectedDates.start,
                             numberOfMember: _selectedQuantity,
-                            duration: selectedDates.duration.inDays,
+                            duration: selectedDates.duration.inDays + 1,
                           )));
     }
   }

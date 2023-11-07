@@ -9,6 +9,7 @@ import 'package:greenwheel_user_app/constants/enums.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/location.dart';
+import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
@@ -47,17 +48,14 @@ class _LocationScreenState extends State<LocationScreen> {
 
   getData() {
     imageUrls = json.decode(widget.location.imageUrls);
-    print(Season.SPRING);
-    print(Season.SUMMER);
-    print(Season.FALL);
-    print(Season.WINTER);
-    for (final season in widget.location.seasons) {
-      tagList.add(getTag(season));
-    }
+    // province tag
+    tagList.add(getTag(widget.location.topographic));
     for (final activity in widget.location.activities) {
       tagList.add(getTag(activity));
     }
-    tagList.add(getTag(widget.location.topographic));
+    for (final season in widget.location.seasons) {
+      tagList.add(getTag(season));
+    }
     setState(() {
       lineNumber = (tagList.length / 4).ceil();
       isLoading = false;

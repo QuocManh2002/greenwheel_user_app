@@ -4,6 +4,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/locations.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/supplier_orders.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -13,7 +14,9 @@ import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/confirm_plan_dialog.dart';
 import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
@@ -43,6 +46,7 @@ class CreatePlanScreen extends StatefulWidget {
 class _CreatePlanScreenState extends State<CreatePlanScreen>
     with TickerProviderStateMixin {
   late TabController tabController;
+  PlanService _planService = PlanService();
   List<Widget> listLuutru = [];
   List<Widget> listFood = [];
   List<PlanItem> planDetail = [];
@@ -146,7 +150,55 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
   }
 
   setUpData() {
-    planDetail = planItems(widget.duration + 1);
+    var templatePlan = generateItems(widget.location.templatePlan);
+    if (widget.duration <= templatePlan.length) {
+      for (int i = 0; i < widget.duration; i++) {
+        planDetail.add(templatePlan[i]);
+      }
+    } else {
+      for (int i = 0; i < widget.duration; i++) {
+        if (i < templatePlan.length) {
+          planDetail.add(templatePlan[i]);
+        } else {
+          planDetail.add(PlanItem(title: "Ngày ${i + 1}", details: []));
+        }
+      }
+    }
+  }
+
+  finishPlan() async {
+    String schedule = "[";
+
+
+
+    for(int i = 0 ; i < planDetail.length; i++){
+      schedule += PlanItemToJson(planDetail[i]) ;
+      if(i < planDetail.length - 1) schedule += ',';
+    }
+    schedule += "]";
+    PlanFinish finish = PlanFinish(
+        planId: sharedPreferences.getInt("planId")!,
+        startDate: widget.startDate,
+        endDate: widget.endDate,
+        locationId: widget.location.id,
+        memberLimit: widget.numberOfMember,
+        schedule: schedule );
+    var rs = await _planService.finishPlan(finish);
+    if (rs) {
+      // ignore: use_build_context_synchronously
+      AwesomeDialog(
+          context: context,
+          dialogType: DialogType.success,
+          body: Text("Tạo kế hoạch thành công"),
+          btnOkColor: primaryColor,
+          btnOkOnPress: () {
+            Navigator.of(context).pop();
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (ctx) => const TabScreen(
+                      pageIndex: 1,
+                    )));
+          }).show();
+    }
   }
 
   @override
@@ -282,7 +334,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                         const SizedBox(
                           height: 16,
                         ),
-                        for (int i = 0; i <= widget.duration; i++)
+                        for (int i = 0; i < planDetail.length; i++)
                           CustomPlanItem(
                             title: planDetail[i].title,
                             details: planDetail[i].details,
@@ -326,7 +378,9 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                             ]),
                         Container(
                           margin: const EdgeInsets.only(top: 8),
-                          height: 35.h,
+                          height: listFood.length == 0 && listLuutru.length == 0
+                              ? 0.h
+                              : 35.h,
                           child:
                               TabBarView(controller: tabController, children: [
                             ListView.builder(
@@ -425,19 +479,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                               orders: supplier_orders,
                             ),
                           ),
-                          btnOkOnPress: () {
-                            AwesomeDialog(
-                                context: context,
-                                dialogType: DialogType.success,
-                                body: Text("Tạo kế hoạch thành công"),
-                                btnOkColor: primaryColor,
-                                btnOkOnPress: () {
-                                  Navigator.of(context).pop();
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (ctx) => const TabScreen(
-                                            pageIndex: 1,
-                                          )));
-                                }).show();
+                          btnOkOnPress: (){
+                            finishPlan();
                           },
                           btnCancelText: "Chỉnh sửa",
                           btnCancelOnPress: () {},
