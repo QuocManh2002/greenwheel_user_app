@@ -7,7 +7,10 @@ import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CustomPlanItem extends StatefulWidget {
-  const CustomPlanItem({super.key , required this.title,required this.details,
+  const CustomPlanItem(
+      {super.key,
+      required this.title,
+      required this.details,
       required this.onDismiss,
       required this.onAddNewItem});
   final String title;
@@ -47,7 +50,10 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(widget.title, style:const TextStyle(fontSize: 18),),
+                      Text(
+                        widget.title,
+                        style: const TextStyle(fontSize: 18),
+                      ),
                       AnimatedSwitcher(
                         transitionBuilder: (child, animation) {
                           return RotationTransition(
@@ -73,7 +79,6 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Container(
-              
               height: (widget.details.length * 5.7).h,
               width: double.infinity,
               decoration: const BoxDecoration(
@@ -97,22 +102,21 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                     padding: const EdgeInsets.only(
                         left: 32, top: 2.5, bottom: 2.5, right: 8),
                     child: Container(
+                      alignment: Alignment.centerLeft,
                       decoration: const BoxDecoration(
                           border: Border(
-                              bottom: BorderSide(
-                                  color: Colors.black26, width: 1.5),
-                                  left: BorderSide(
-                                  color: Colors.black26, width: 1.5),
-                                  right: BorderSide(
-                                  color: Colors.black26, width: 1.5),
-                                  top: BorderSide(
-                                  color: Colors.black26, width: 1.5),
-                                  )),
+                        bottom: BorderSide(color: Colors.black26, width: 1.5),
+                        left: BorderSide(color: Colors.black26, width: 1.5),
+                        right: BorderSide(color: Colors.black26, width: 1.5),
+                        top: BorderSide(color: Colors.black26, width: 1.5),
+                      )),
                       height: 5.h,
                       child: Dismissible(
                         key: ValueKey(widget.details[index]),
                         background: Container(
-                          padding: const EdgeInsets.only(left: 16,),
+                          padding: const EdgeInsets.only(
+                            left: 16,
+                          ),
                           alignment: Alignment.centerLeft,
                           height: 5.h,
                           color: redColor,
@@ -129,10 +133,15 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                           widget.onDismiss(
                               widget.details[index], widget.details);
                         },
-                        child: ListTile(
-                          title: Text(
-                            widget.details[index],
-                            style: const TextStyle(fontSize: 18),
+                        child: Container(
+                          height: double.infinity,
+                          width: double.infinity,
+                          child: Padding(
+                            padding: const EdgeInsets.only(left: 16, top: 12),
+                            child: Text(
+                              widget.details[index],
+                              style: const TextStyle(fontSize: 18),
+                            ),
                           ),
                         ),
                       ),
@@ -149,58 +158,56 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
               ),
             ),
           ),
-          if (isExpanded)
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: InkWell(
-            onTap: (){
-              widget.onAddNewItem(widget.details);
-            },
-            child: Container(
-              height: 5.7.h,
-              width: double.infinity,
-              decoration: const BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      blurRadius: 3,
-                      color: Colors.black12,
-                      offset: Offset(1, 3),
-                    )
-                  ],
-                  borderRadius: BorderRadius.only(
-                      bottomRight: Radius.circular(12),
-                      bottomLeft: Radius.circular(12))),
-              child: Padding(
-                padding: const EdgeInsets.only(
-                  left: 32, right: 8, bottom: 8
-                ),
-                child: Container(
-                  
-                  clipBehavior: Clip.hardEdge,
-                  decoration: BoxDecoration(
+        if (isExpanded)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: InkWell(
+              onTap: () {
+                widget.onAddNewItem(widget.details);
+              },
+              child: Container(
+                height: 5.7.h,
+                width: double.infinity,
+                decoration: const BoxDecoration(
+                    color: Colors.white,
+                    boxShadow: [
+                      BoxShadow(
+                        blurRadius: 3,
+                        color: Colors.black12,
+                        offset: Offset(1, 3),
+                      )
+                    ],
+                    borderRadius: BorderRadius.only(
+                        bottomRight: Radius.circular(12),
+                        bottomLeft: Radius.circular(12))),
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 32, right: 8, bottom: 8),
+                  child: Container(
+                    clipBehavior: Clip.hardEdge,
+                    decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.2),
                       // borderRadius: const BorderRadius.only(
                       //     bottomRight: Radius.circular(12))
+                    ),
+                    child: Container(
+                      padding: const EdgeInsets.only(
+                          left: 16, top: 8, right: 12, bottom: 8),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text(
+                            "Thêm hoạt động",
+                            style: TextStyle(fontSize: 18),
                           ),
-                  child: Container(
-                    padding: const EdgeInsets.only(left: 16, top: 8, right: 12, bottom: 8),
-                    child:const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Thêm hoạt động",
-                          style: TextStyle(fontSize: 18),
-                        ),
-                        Icon(Icons.add)          
-                      ],
+                          Icon(Icons.add)
+                        ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
-        )
+          )
       ],
     );
   }

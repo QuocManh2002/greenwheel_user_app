@@ -4,11 +4,14 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 // import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/supplier_orders.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
@@ -44,13 +47,14 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
   List<Widget> listFood = [];
   List<PlanItem> planDetail = [];
   late TextEditingController newItemController;
-
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     newItemController = TextEditingController();
+    print(sharedPreferences.getInt("planId"));
     setUpData();
   }
 
@@ -74,6 +78,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
         builder: (context) => AlertDialog(
               title: const Text("Hoạt động mới"),
               content: TextField(
+                // key: ValueKey(),
                 controller: newItemController,
                 autofocus: true,
                 cursorColor: primaryColor,
@@ -96,23 +101,40 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                           width: 1.8,
                         ),
                         foregroundColor: primaryColor),
-                    onPressed: () {
+                    onPressed: () async {
+                      String dupItem = "";
                       if (newItemController.text.isNotEmpty) {
-                        if(list.any((element) => element == newItemController.text)){
+                        bool check = list.any(
+                            (element) => element == newItemController.text);
+                        if (check) {
+                          dupItem = newItemController.text;
                           AwesomeDialog(
-                                context: context,
-                                dialogType: DialogType.warning,
-                                body:const Text("Bạn vừa thêm một hoạt động đã có trước đó trong ngày, hãy chắc chắn rằng bạn muốn thêm hoạt động này trước khi xác nhận kế hoạch!"),
-                                btnOkColor: Colors.orange,
-                                btnOkOnPress: () {
-                                }).show();
-                        }
-                        Navigator.of(context).pop(newItemController.text);
+                              context: context,
+                              dialogType: DialogType.warning,
+                              body: const Padding(
+                                padding: EdgeInsets.all(16),
+                                child: Text(
+                                  "     Bạn vừa thêm một hoạt động đã có trước đó trong ngày, hãy chắc chắn rằng bạn muốn thêm hoạt động này trước khi xác nhận kế hoạch!",
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                              btnOkColor: Colors.orange,
+                              btnOkOnPress: () {
+                                Navigator.of(context).pop();
+                                setState(() {
+                                  list.add(dupItem);
+                                });
+                                newItemController.clear();
+                              }).show();
+                        } else {
+                          // ignore: use_build_context_synchronously
+                          Navigator.of(context).pop();
+                          setState(() {
+                            list.add(newItemController.text);
+                          });
 
-                        setState(() {
-                          list.add(newItemController.text);
-                        });
-                        newItemController.clear();
+                          newItemController.clear();
+                        }
                       }
                     },
                     label: const Text(
@@ -124,38 +146,14 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
   }
 
   setUpData() {
-    for (var item in supplier_orders) {
-      if (item.type == 0) {
-        listLuutru.add(Padding(
-          padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
-          child: SupplierOrderCard(order: item),
-        ));
-      } else {
-        listFood.add(Padding(
-          padding: const EdgeInsets.only(bottom: 8, left: 8, right: 8),
-          child: SupplierOrderCard(order: item),
-        ));
-      }
-    }
-
     planDetail = planItems(widget.duration + 1);
   }
 
   @override
   Widget build(BuildContext context) {
-    Widget buildPlan(PlanItem item) {
-      return ExpansionTile(
-        title: Text(item.title),
-        children: item.details
-            .map((detail) => ListTile(
-                  title: Text(detail),
-                ))
-            .toList(),
-      );
-    }
-
     return SafeArea(
         child: Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         foregroundColor: Colors.black,
         backgroundColor: Colors.white,
@@ -175,7 +173,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                       child: FadeInImage(
                         placeholder: MemoryImage(kTransparentImage),
                         height: 35.h,
-                        image: NetworkImage(json.decode(widget.location.imageUrls)[0]),
+                        image: NetworkImage(
+                            json.decode(widget.location.imageUrls)[0]),
                         fit: BoxFit.cover,
                         width: double.infinity,
                       )),
@@ -358,6 +357,25 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                             label: const Text("Tìm & đặt"),
                             icon: const Icon(Icons.search),
                             onPressed: () {
+                              print(tabController.index);
+                              switch (tabController.index) {
+                                case 0:
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (ctx) => ServiceMainScreen(
+                                      serviceType: services[1],
+                                      location: widget.location,
+                                    ),
+                                  ));
+                                  break;
+                                case 1:
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (ctx) => ServiceMainScreen(
+                                      serviceType: services[0],
+                                      location: widget.location,
+                                    ),
+                                  ));
+                                  break;
+                              }
                               // Navigator.of(context).push(MaterialPageRoute(
                               //     builder: (ctx) => const TestScreen()));
                             },
@@ -416,7 +434,9 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                                 btnOkOnPress: () {
                                   Navigator.of(context).pop();
                                   Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (ctx) => const TabScreen(pageIndex: 1,)));
+                                      builder: (ctx) => const TabScreen(
+                                            pageIndex: 1,
+                                          )));
                                 }).show();
                           },
                           btnCancelText: "Chỉnh sửa",

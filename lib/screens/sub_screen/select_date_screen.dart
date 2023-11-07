@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -15,6 +17,13 @@ class SelectDateScreen extends StatefulWidget {
 }
 
 class _SelectDateScreenState extends State<SelectDateScreen> {
+  PlanService _planService = PlanService();
+  bool isLoading = true;
+  DateTimeRange selectedDates =
+      DateTimeRange(start: DateTime.now(), end: DateTime.now());
+  
+  
+
   @override
   void initState() {
     // TODO: implement initState
@@ -24,8 +33,7 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
 
   int _selectedQuantity = 1;
 
-  DateTimeRange selectedDates =
-      DateTimeRange(start: DateTime.now(), end: DateTime.now());
+  
 
   Future pickDateRange() async {
     DateTimeRange? newSelectedDate = await showDateRangePicker(
@@ -52,12 +60,31 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
       });
     }
   }
+  
+  _createDraftPlan() async{
+    PlanDraft draft = PlanDraft(startDate: selectedDates.start, endDate: selectedDates.end, locationId: widget.location.id, memberLimit: _selectedQuantity);
+
+    var rs = await _planService.createPlanDraft(draft);
+    if(rs){
+      Navigator.of(context).push(MaterialPageRoute(
+                      builder: (ctx) => CreatePlanScreen(
+                            location: widget.location,
+                            endDate: selectedDates.end,
+                            startDate: selectedDates.start,
+                            numberOfMember: _selectedQuantity,
+                            duration: selectedDates.duration.inDays,
+                          )));
+    }
+  }
+  
 
   @override
   Widget build(BuildContext context) {
     final start = selectedDates.start;
     final end = selectedDates.end;
     final difference = selectedDates.duration;
+
+    
 
     return SafeArea(
         child: Scaffold(
@@ -162,16 +189,7 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
             padding: const EdgeInsets.all(16),
             child: ElevatedButton(
                 style: elevatedButtonStyle,
-                onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
-                      builder: (ctx) => CreatePlanScreen(
-                            location: widget.location,
-                            endDate: end,
-                            startDate: start,
-                            numberOfMember: _selectedQuantity,
-                            duration: difference.inDays,
-                          )));
-                },
+                onPressed: _createDraftPlan,
                 child: const Text(
                   "Chọn",
                   style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
