@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/supplier.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
@@ -10,6 +10,7 @@ import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 class SelectOrderDateScreen extends StatefulWidget {
   const SelectOrderDateScreen({
     super.key,
+    required this.location,
     required this.supplier,
     required this.list,
     required this.total,
@@ -18,6 +19,7 @@ class SelectOrderDateScreen extends StatefulWidget {
     this.iniReturnDate,
     this.iniNote = "",
   });
+  final LocationViewModel location;
   final SupplierViewModel supplier;
   final List<ItemCart> list;
   final double total;
@@ -82,7 +84,10 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
         ),
         body: Container(
           margin: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
-          child: (widget.serviceType.id == 2 || widget.serviceType.id == 3)
+          child: (widget.serviceType.id == 2 ||
+                  widget.serviceType.id == 3 ||
+                  widget.serviceType.id == 5 ||
+                  widget.serviceType.id == 6)
               ? SfDateRangePicker(
                   onSelectionChanged: _onSelectionChanged,
                   selectionMode: DateRangePickerSelectionMode.range,
@@ -118,6 +123,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                         ? Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (ctx) => CartScreen(
+                                location: widget.location,
                                 supplier: widget.supplier,
                                 list: widget.list,
                                 total: widget.total,
@@ -131,6 +137,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                         : Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (ctx) => CartScreen(
+                                location: widget.location,
                                 supplier: widget.supplier,
                                 list: widget.list,
                                 total: widget.total,

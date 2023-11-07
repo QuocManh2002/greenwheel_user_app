@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/supplier.dart';
 import 'package:greenwheel_user_app/screens/main_screen/order_history_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/cart_item_card.dart';
 import 'package:intl/intl.dart';
@@ -14,6 +14,7 @@ import 'package:sizer2/sizer2.dart';
 class CartScreen extends StatefulWidget {
   CartScreen({
     super.key,
+    required this.location,
     required this.supplier,
     required this.list,
     required this.total,
@@ -22,6 +23,7 @@ class CartScreen extends StatefulWidget {
     this.returnDate,
     this.note = "",
   });
+  final LocationViewModel location;
   final SupplierViewModel supplier;
   final List<ItemCart> list;
   final double total;
@@ -84,19 +86,20 @@ class _CartScreenState extends State<CartScreen> {
                     color: Colors.black,
                   ),
                   onPressed: () {
-                    // Navigator.of(context).pop();
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //     builder: (ctx) => ServiceMenuScreen(
-                    //       supplier: widget.supplier,
-                    //       currentCart: list,
-                    //       serviceType: widget.serviceType,
-                    //       iniPickupDate: widget.pickupDate,
-                    //       iniReturnDate: widget.returnDate,
-                    //       iniNote: noteController.text,
-                    //     ),
-                    //   ),
-                    // );
+                    Navigator.of(context).pop();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (ctx) => ServiceMenuScreen(
+                          supplier: widget.supplier,
+                          currentCart: list,
+                          serviceType: widget.serviceType,
+                          iniPickupDate: widget.pickupDate,
+                          iniReturnDate: widget.returnDate,
+                          iniNote: noteController.text,
+                          location: widget.location,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 const Padding(
@@ -145,19 +148,20 @@ class _CartScreenState extends State<CartScreen> {
                           const Spacer(), // Add space between the two elements
                           TextButton(
                             onPressed: () {
-                              // Navigator.of(context).pop();
-                              // Navigator.of(context).push(
-                              //   MaterialPageRoute(
-                              //     builder: (ctx) => ServiceMenuScreen(
-                              //       supplier: widget.supplier,
-                              //       currentCart: list,
-                              //       serviceType: widget.serviceType,
-                              //       iniPickupDate: widget.pickupDate,
-                              //       iniReturnDate: widget.returnDate,
-                              //       iniNote: noteController.text,
-                              //     ),
-                              //   ),
-                              // );
+                              Navigator.of(context).pop();
+                              Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (ctx) => ServiceMenuScreen(
+                                    location: widget.location,
+                                    supplier: widget.supplier,
+                                    currentCart: list,
+                                    serviceType: widget.serviceType,
+                                    iniPickupDate: widget.pickupDate,
+                                    iniReturnDate: widget.returnDate,
+                                    iniNote: noteController.text,
+                                  ),
+                                ),
+                              );
                             },
                             child: const Text(
                               '+  Thêm món',
@@ -282,6 +286,7 @@ class _CartScreenState extends State<CartScreen> {
                               Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (ctx) => SelectOrderDateScreen(
+                                    location: widget.location,
                                     supplier: widget.supplier,
                                     list: list,
                                     total: finalTotal,

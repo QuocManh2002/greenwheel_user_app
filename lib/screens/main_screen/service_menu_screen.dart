@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/models/menu_item.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/supplier.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
@@ -234,20 +232,21 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                   height: 6.h,
                   child: ElevatedButton(
                     onPressed: () async {
-                      // Navigator.of(context).pop();
-                      // Navigator.of(context).push(
-                      //   MaterialPageRoute(
-                      //     builder: (ctx) => CartScreen(
-                      //       supplier: widget.supplier,
-                      //       list: items,
-                      //       total: total,
-                      //       serviceType: widget.serviceType,
-                      //       pickupDate: pickupDate,
-                      //       returnDate: returnDate,
-                      //       note: note,
-                      //     ),
-                      //   ),
-                      // );
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => CartScreen(
+                            location: widget.location,
+                            supplier: widget.supplier,
+                            list: items,
+                            total: total,
+                            serviceType: widget.serviceType,
+                            pickupDate: pickupDate,
+                            returnDate: returnDate,
+                            note: note,
+                          ),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green, // Background color
