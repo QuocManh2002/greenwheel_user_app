@@ -15,6 +15,9 @@ class SelectDateScreen extends StatefulWidget {
 }
 
 class _SelectDateScreenState extends State<SelectDateScreen> {
+
+  
+
   @override
   void initState() {
     // TODO: implement initState
@@ -51,6 +54,10 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
         _selectedQuantity -= 1;
       });
     }
+  }
+
+  _createDraftPlan(){
+
   }
 
   @override
