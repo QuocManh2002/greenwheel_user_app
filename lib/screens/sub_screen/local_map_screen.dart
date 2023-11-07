@@ -2,12 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:greenwheel_user_app/constants/constant.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/constants/locations.dart';
 import 'package:greenwheel_user_app/helpers/direction_handler.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:location/location.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -20,13 +22,36 @@ class LocalMapScreen extends StatefulWidget {
 }
 
 class _LocalMapScreenState extends State<LocalMapScreen> {
-  final Completer<GoogleMapController> _controller =
-      Completer<GoogleMapController>();
+  late MapboxMapController controller;
   Location _locationController = new Location();
   bool isLoading = true;
   LatLng _currentP = LatLng(0, 0);
   num distance = 0;
   num duration = 0;
+
+  _onMapCreated(MapboxMapController controller) {
+    this.controller = controller;
+  }
+
+    _onStyleLoadedCallback() async {
+    // for (var _kParkingItem in _kParkingList) {
+    //   await controller.addSymbol(SymbolOptions(
+    //     geometry: _kParkingItem.target,
+    //     iconSize: 0.2,
+    //     iconImage: "assets/images/delivery.png",
+    //   ));
+    // }
+    await controller.addSymbol(SymbolOptions(
+      geometry: _currentP,
+      iconSize: 5,
+      iconImage: "assets/images/from_icon.png"
+    ));
+    await controller.addSymbol(SymbolOptions(
+      geometry: LatLng(widget.location.latitude, widget.location.longitude),
+      iconSize: 5,
+      iconImage: "assets/images/to_icon.png"
+    ));
+  }
 
   @override
   void initState() {
@@ -51,20 +76,29 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
             )
           : Stack(
               children: [
-                GoogleMap(
-                  mapType: MapType.normal,
-                  initialCameraPosition: CameraPosition(
-                      target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 15),
-                  markers: {
-                    Marker(
-                        markerId: MarkerId(widget.location.id.toString()),
-                        icon: BitmapDescriptor.defaultMarker,
-                        position:LatLng(widget.location.latitude, widget.location.longitude)),
-                  },
-                  onMapCreated: (GoogleMapController controller) {
-                    _controller.complete(controller);
-                  },
-                ),
+                // GoogleMap(
+                //   mapType: MapType.normal,
+                //   initialCameraPosition: CameraPosition(
+                //       target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 15),
+                //   markers: {
+                //     Marker(
+                //         markerId: MarkerId(widget.location.id.toString()),
+                //         icon: BitmapDescriptor.defaultMarker,
+                //         position:LatLng(widget.location.latitude, widget.location.longitude)),
+                //   },
+                //   onMapCreated: (GoogleMapController controller) {
+                //     _controller.complete(controller);
+                //   },
+                // ),
+                MapboxMap(initialCameraPosition: CameraPosition(
+                      target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 8),
+                      accessToken: mapboxKey,
+                      onMapCreated: _onMapCreated,
+                      onStyleLoadedCallback: _onStyleLoadedCallback,
+                      // myLocationEnabled: true,
+                      minMaxZoomPreference: const MinMaxZoomPreference(6, 17),
+                      myLocationRenderMode: MyLocationRenderMode.NORMAL,
+                      ),
                 Positioned(
                     top: 0,
                     left: 0,
@@ -129,7 +163,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                   const SizedBox(
                     height: 8,
                   ),
-                  Text("Thời gian di chuyển: ${duration.toStringAsFixed(2)} phút")
+                  Text("Thời gian di chuyển: ${duration.toStringAsFixed(0)} phút")
                 ],
               ),
             )

@@ -174,7 +174,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 30.h,
                   child: ListView.builder(
                     physics: const BouncingScrollPhysics(),
-                    itemCount: locations.length,
+                    itemCount: locationModels!.length,
                     shrinkWrap: true,
                     scrollDirection: Axis.horizontal,
                     itemBuilder: (context, index) => Padding(

@@ -1,5 +1,6 @@
-import 'package:google_maps_flutter/google_maps_flutter.dart';
+// import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
+import 'package:mapbox_gl/mapbox_gl.dart';
 
 class LocationModel {
   LocationModel(
