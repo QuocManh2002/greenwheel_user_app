@@ -5,6 +5,7 @@ import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/menu_item_card.dart';
@@ -123,6 +124,9 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                             builder: (ctx) => ServiceMainScreen(
                               serviceType: widget.serviceType,
                               location: widget.location,
+                              callbackFunction: (List<OrderCreatePlan> orderList){
+                                
+                              },
                             ),
                           ),
                         );

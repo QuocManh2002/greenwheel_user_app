@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order_create.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/supplier_card.dart';
 import 'package:sizer2/sizer2.dart';
@@ -11,9 +15,11 @@ class ServiceMainScreen extends StatefulWidget {
     super.key,
     required this.serviceType,
     required this.location,
+     required this.callbackFunction 
   });
   final ServiceType serviceType;
   final LocationViewModel location;
+  final void Function(List<OrderCreatePlan> list) callbackFunction;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();
@@ -24,6 +30,8 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
   List<SupplierViewModel> list = [];
   String title = "";
   bool isLoading = true;
+  PlanService _planService = PlanService();
+  List<OrderCreatePlan>? orderList ;
 
   @override
   void initState() {
@@ -81,8 +89,16 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                         Icons.arrow_back,
                         color: Colors.black,
                       ),
-                      onPressed: () {
-                        Navigator.of(context).pop(); // Close the current page
+                      onPressed: () async{
+                        orderList = null;
+                        orderList = await _planService.getOrderCreatePlan(sharedPreferences.getInt("planId")!);
+                        if(orderList != null){
+                          widget.callbackFunction(orderList!);
+                          Navigator.of(context).pop(); 
+                        }else{
+                          Navigator.of(context).pop(); 
+                        }
+                        // Close the current page
                       },
                     ),
                     Padding(

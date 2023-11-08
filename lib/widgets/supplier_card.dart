@@ -40,7 +40,7 @@ class _SupplierCardState extends State<SupplierCard> {
             onPressed: () async {
               var service =
                   services.firstWhere((s) => s.name == widget.supplier.type);
-              Navigator.of(context).pop();
+              // Navigator.of(context).pop();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => ServiceMenuScreen(

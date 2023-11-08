@@ -12,5 +12,5 @@ class SupplierOrder {
   final int quantity;
   final String supplierName;
   final double price;
-  final int type;
+  final String type;
 }

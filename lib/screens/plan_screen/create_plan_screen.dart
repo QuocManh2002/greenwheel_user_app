@@ -10,6 +10,7 @@ import 'package:greenwheel_user_app/constants/supplier_orders.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
+import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
@@ -17,6 +18,7 @@ import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/confirm_plan_dialog.dart';
 import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
@@ -47,11 +49,12 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
     with TickerProviderStateMixin {
   late TabController tabController;
   PlanService _planService = PlanService();
-  List<Widget> listLuutru = [];
-  List<Widget> listFood = [];
+  List<Widget> _listRestaurant = [];
+  List<Widget> _listMotel = [];
   List<PlanItem> planDetail = [];
   late TextEditingController newItemController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  List<OrderCreatePlan> _orderList = [];
   @override
   void initState() {
     // TODO: implement initState
@@ -65,6 +68,39 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
   void removeItem(String item, List<String> list) {
     setState(() {
       list.remove(item);
+    });
+  }
+
+  callback(List<OrderCreatePlan> orderList) {
+    print(orderList);
+    print("helllooooooo");
+    List<Widget> listRestaurant = [];
+    List<Widget> listMotel = [];
+    for (var item in orderList) {
+      if (item.type == "RESTAURANT") {
+        listRestaurant.add(SupplierOrderCard(
+            order: SupplierOrder(
+                id: item.id,
+                imgUrl: item.thumbnailUrl,
+                price: item.deposit.toDouble(),
+                quantity: item.details.length,
+                supplierName: item.details[0].supplierName,
+                type: item.type)));
+      }else{
+         listMotel.add(SupplierOrderCard(
+            order: SupplierOrder(
+                id: item.id,
+                imgUrl: item.thumbnailUrl,
+                price: item.deposit.toDouble(),
+                quantity: item.details.length,
+                supplierName: item.details[0].supplierName,
+                type: item.type)));
+      }
+    }
+    setState(() {
+      _listMotel = listMotel;
+      _listRestaurant = listRestaurant;
+      _orderList = orderList;
     });
   }
 
@@ -168,12 +204,9 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
 
   finishPlan() async {
     String schedule = "[";
-
-
-
-    for(int i = 0 ; i < planDetail.length; i++){
-      schedule += PlanItemToJson(planDetail[i]) ;
-      if(i < planDetail.length - 1) schedule += ',';
+    for (int i = 0; i < planDetail.length; i++) {
+      schedule += PlanItemToJson(planDetail[i]);
+      if (i < planDetail.length - 1) schedule += ',';
     }
     schedule += "]";
     PlanFinish finish = PlanFinish(
@@ -182,7 +215,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
         endDate: widget.endDate,
         locationId: widget.location.id,
         memberLimit: widget.numberOfMember,
-        schedule: schedule );
+        schedule: schedule);
     var rs = await _planService.finishPlan(finish);
     if (rs) {
       // ignore: use_build_context_synchronously
@@ -368,17 +401,17 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                             unselectedLabelColor: Colors.grey,
                             tabs: [
                               Tab(
-                                text: "(${listLuutru.length})",
+                                text: "(${_listMotel.length})",
                                 icon: const Icon(Icons.bed),
                               ),
                               Tab(
-                                text: "(${listFood.length})",
+                                text: "(${_listRestaurant.length})",
                                 icon: const Icon(Icons.restaurant),
                               )
                             ]),
                         Container(
                           margin: const EdgeInsets.only(top: 8),
-                          height: listFood.length == 0 && listLuutru.length == 0
+                          height: _listRestaurant.length == 0 && _listMotel.length == 0
                               ? 0.h
                               : 35.h,
                           child:
@@ -386,17 +419,17 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                             ListView.builder(
                               physics: const BouncingScrollPhysics(),
                               shrinkWrap: true,
-                              itemCount: listLuutru.length,
+                              itemCount: _listMotel.length,
                               itemBuilder: (context, index) {
-                                return listLuutru[index];
+                                return _listMotel[index];
                               },
                             ),
                             ListView.builder(
                               physics: const BouncingScrollPhysics(),
                               shrinkWrap: true,
-                              itemCount: listFood.length,
+                              itemCount: _listRestaurant.length,
                               itemBuilder: (context, index) {
-                                return listFood[index];
+                                return _listRestaurant[index];
                               },
                             ),
                           ]),
@@ -411,13 +444,13 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                             label: const Text("Tìm & đặt"),
                             icon: const Icon(Icons.search),
                             onPressed: () {
-                              print(tabController.index);
                               switch (tabController.index) {
                                 case 0:
                                   Navigator.of(context).push(MaterialPageRoute(
                                     builder: (ctx) => ServiceMainScreen(
                                       serviceType: services[1],
                                       location: widget.location,
+                                      callbackFunction: callback,
                                     ),
                                   ));
                                   break;
@@ -426,6 +459,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                                     builder: (ctx) => ServiceMainScreen(
                                       serviceType: services[0],
                                       location: widget.location,
+                                      callbackFunction: callback,
                                     ),
                                   ));
                                   break;
@@ -476,10 +510,10 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                               numberOfMember: widget.numberOfMember,
                               planDetail: planDetail,
                               startDate: widget.startDate,
-                              orders: supplier_orders,
+                              orders: _orderList!,
                             ),
                           ),
-                          btnOkOnPress: (){
+                          btnOkOnPress: () {
                             finishPlan();
                           },
                           btnCancelText: "Chỉnh sửa",

@@ -3,6 +3,7 @@ import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 
 class ConfirmPlan extends StatefulWidget {
   const ConfirmPlan(
@@ -21,7 +22,7 @@ class ConfirmPlan extends StatefulWidget {
   final int numberOfMember;
   final int duration;
   final List<PlanItem> planDetail;
-  final List<SupplierOrder> orders;
+  final List<OrderCreatePlan> orders;
 
   @override
   State<ConfirmPlan> createState() => _ConfirmPlanState();
@@ -52,12 +53,12 @@ class _ConfirmPlanState extends State<ConfirmPlan> {
     }
 
     for (var item in widget.orders) {
-      if (item.type == 0) {
+      if (item.type == "MOTEL") {
         listLuuTru.add(
-            "- ${item.supplierName} - ${item.quantity} sản phẩm - ${item.price}VND");
+            "- ${item.details[0].supplierName} - ${item.details.length} sản phẩm - ${item.deposit}VND");
       } else {
         listFood.add(
-            "- ${item.supplierName} - ${item.quantity} sản phẩm - ${item.price}VND");
+            "- ${item.details[0].supplierName} - ${item.details.length} sản phẩm - ${item.deposit}VND");
       }
     }
   }

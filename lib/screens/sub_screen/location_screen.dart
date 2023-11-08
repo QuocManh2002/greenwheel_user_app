@@ -15,6 +15,7 @@ import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_date_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/comment_card.dart';
 import 'package:greenwheel_user_app/widgets/emergency.dart';
@@ -342,6 +343,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                         builder: (ctx) => ServiceMainScreen(
                                           serviceType: services[1],
                                           location: widget.location,
+                                          callbackFunction: (List<OrderCreatePlan> orderList){},
                                         ),
                                       ),
                                     );
@@ -368,6 +370,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                         builder: (ctx) => ServiceMainScreen(
                                           serviceType: services[0],
                                           location: widget.location,
+                                          callbackFunction: (List<OrderCreatePlan> orderList){},
                                         ),
                                       ),
                                     );
@@ -394,6 +397,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                         builder: (ctx) => ServiceMainScreen(
                                           serviceType: services[2],
                                           location: widget.location,
+                                          callbackFunction: (List<OrderCreatePlan> orderList){},
                                         ),
                                       ),
                                     );
@@ -420,6 +424,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                         builder: (ctx) => ServiceMainScreen(
                                           serviceType: services[3],
                                           location: widget.location,
+                                          callbackFunction: (List<OrderCreatePlan> orderList){},
                                         ),
                                       ),
                                     );
