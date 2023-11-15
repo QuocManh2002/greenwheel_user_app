@@ -61,7 +61,6 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
     super.initState();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     newItemController = TextEditingController();
-    print(sharedPreferences.getInt("planId"));
     setUpData();
   }
 
@@ -72,8 +71,6 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
   }
 
   callback(List<OrderCreatePlan> orderList) {
-    print(orderList);
-    print("helllooooooo");
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
     for (var item in orderList) {
@@ -222,7 +219,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
       AwesomeDialog(
           context: context,
           dialogType: DialogType.success,
-          body: Text("Tạo kế hoạch thành công"),
+          body: const Text("Tạo kế hoạch thành công"),
           btnOkColor: primaryColor,
           btnOkOnPress: () {
             Navigator.of(context).pop();
@@ -510,7 +507,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                               numberOfMember: widget.numberOfMember,
                               planDetail: planDetail,
                               startDate: widget.startDate,
-                              orders: _orderList!,
+                              orders: _orderList,
                             ),
                           ),
                           btnOkOnPress: () {

@@ -55,10 +55,10 @@ class _ConfirmPlanState extends State<ConfirmPlan> {
     for (var item in widget.orders) {
       if (item.type == "MOTEL") {
         listLuuTru.add(
-            "- ${item.details[0].supplierName} - ${item.details.length} sản phẩm - ${item.deposit}VND");
+            "- ${item.details[0].supplierName} - ${item.deposit}VND");
       } else {
         listFood.add(
-            "- ${item.details[0].supplierName} - ${item.details.length} sản phẩm - ${item.deposit}VND");
+            "- ${item.details[0].supplierName} - ${item.deposit}VND");
       }
     }
   }

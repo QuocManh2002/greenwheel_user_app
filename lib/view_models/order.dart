@@ -2,8 +2,8 @@ import 'package:greenwheel_user_app/view_models/order_detail.dart';
 
 class OrderViewModel {
   int id;
-  int userId;
-  double deposit;
+  int customerId;
+  int deposit;
   String note;
   DateTime orderDate;
   DateTime pickupDate;
@@ -12,50 +12,53 @@ class OrderViewModel {
   String? comment;
   int? rating;
   String transactionId;
-  List<OrderDetailViewModel> details;
+  List<OrderDetailViewModel>? details;
 
   OrderViewModel({
     required this.id,
-    required this.userId,
+    required this.customerId,
     required this.deposit,
     required this.note,
     required this.orderDate,
     required this.pickupDate,
     this.returnDate,
     required this.paymentMethod,
-    this.comment,
-    this.rating,
     required this.transactionId,
-    required this.details,
+    this.details,
   });
 
   factory OrderViewModel.fromJson(Map<String, dynamic> json) => OrderViewModel(
         id: json["id"],
-        userId: json["userId"],
+        customerId: json["customerId"],
         deposit: json["deposit"],
         note: json["note"],
-        orderDate: json["orderDate"],
-        pickupDate: json["pickupDate"],
-        returnDate: json["returnDate"],
+        orderDate: DateTime.parse(json["orderDate"]),
+        pickupDate: DateTime.parse(json["pickupDate"]),
+        returnDate: json["returnDate"] == null
+            ? null
+            : DateTime.parse(json["returnDate"]),
         paymentMethod: json["paymentMethod"],
-        comment: json["comment"],
-        rating: json["rating"],
         transactionId: json["transactionId"],
-        details: json["details"],
+        // details: getDetails(json["details"]),
       );
 
   Map<String, dynamic> toJson() => {
         "id": id,
-        "userId": userId,
+        "userId": customerId,
         "deposit": deposit,
         "note": note,
         "orderDate": orderDate,
         "pickupDate": pickupDate,
         "returnDate": returnDate,
         "paymentMethod": paymentMethod,
-        "comment": comment,
-        "rating": rating,
         "transactionId": transactionId,
-        "details": details,
+        // "details": details,
       };
+  List<OrderDetailViewModel> getDetails(dynamic details) {
+    List<OrderDetailViewModel> list = [];
+    for (final detail in details) {
+      list.add(OrderDetailViewModel.fromJson(detail));
+    }
+    return list;
+  }
 }

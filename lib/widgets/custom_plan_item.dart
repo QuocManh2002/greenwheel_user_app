@@ -109,7 +109,8 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                         left: BorderSide(color: Colors.black26, width: 1.5),
                         right: BorderSide(color: Colors.black26, width: 1.5),
                         top: BorderSide(color: Colors.black26, width: 1.5),
-                      )),
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(8))),
                       height: 5.h,
                       child: Dismissible(
                         key: ValueKey(widget.details[index]),
@@ -186,8 +187,8 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                     clipBehavior: Clip.hardEdge,
                     decoration: BoxDecoration(
                       color: Colors.grey.withOpacity(0.2),
-                      // borderRadius: const BorderRadius.only(
-                      //     bottomRight: Radius.circular(12))
+                      borderRadius: const BorderRadius.all(
+                          Radius.circular(8))
                     ),
                     child: Container(
                       padding: const EdgeInsets.only(
