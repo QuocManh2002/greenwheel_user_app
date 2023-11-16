@@ -26,9 +26,13 @@ class ProductService extends Iterable {
                 id
                 name
                 paymentType
-                price
+                originalPrice
                 thumbnailUrl
-                supplierId
+                partySize
+                supplier {
+                  id
+                  name
+                }
               }
             }
           }
