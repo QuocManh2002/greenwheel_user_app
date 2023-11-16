@@ -3,10 +3,15 @@ import 'dart:convert';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/order.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/widgets/order_detail_card.dart';
 
 class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
@@ -92,14 +97,14 @@ mutation FinishCreatePlanInput(\$input: FinishCreatePlanInput!) {
     }
   }
 
-  Future<List<PlanCardViewModel>> getPlanCard() async {
+  Future<List<PlanCardViewModel>> getPlanCardByStatus(String status) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  plans(order: { 
-        id:DESC
-      },){
+  plans
+    (where: {status:{eq:${status}}} order: {id:DESC})
+  {
     nodes{
       id
       startDate
@@ -109,7 +114,6 @@ mutation FinishCreatePlanInput(\$input: FinishCreatePlanInput!) {
   }
 }
 """)));
-
       if (result.hasException) {
         throw Exception(result.exception);
       }
@@ -166,6 +170,79 @@ query getOrderDetailsByPlanId(\$planId: Int) {
       List<OrderCreatePlan> orders =
           res.map((order) => OrderCreatePlan.fromJson(order)).toList();
       return orders;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<PlanDetail?> GetPlanById(int planId) async{
+    try {
+      QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+query GetPlanById(\$planId: Int){
+  plans(where: {id: {eq: \$planId}}){
+    nodes{
+      id
+      startDate
+      endDate
+      schedule
+      memberLimit
+      status
+      orders{
+        id
+        customerId
+        deposit
+        note
+        pickupDate
+        returnDate
+        orderDate
+        paymentMethod
+        transactionId 
+        details{
+          id
+          quantity
+          price
+          product{
+            name
+            supplier{
+              type
+              name
+              thumbnailUrl
+            }
+            }
+            }
+            }
+      isOpenToJoin
+      location{id name imageUrls}
+    }
+  }
+}
+"""), variables: {"planId": planId}));
+
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      List? res = result.data!['plans']['nodes'];
+      if (res == null || res.isEmpty) {
+        return null;
+      }
+      List<PlanDetail> plan = res.map((plan) => PlanDetail.fromJson(plan)).toList();
+      var rs = plan[0];
+      // rs.orders = res[0]["orders"];
+      // List<OrderViewModel>? orders = res[0]["orders"].map((order) => OrderViewModel.fromJson(order)).toList();
+      List<OrderViewModel>? orders = [];
+      for(final item in res[0]["orders"]){
+        List<OrderDetailViewModel>? details = [];
+        OrderViewModel order = OrderViewModel.fromJson(item);
+        for(final detail in item["details"]){
+          details.add(OrderDetailViewModel.fromJson(detail));
+        }
+        order.details = details;
+        orders.add(order);
+      }
+      rs.orders = orders;
+      return rs;
     } catch (error) {
       throw Exception(error);
     }

@@ -14,7 +14,7 @@ class PlanScreen extends StatefulWidget {
 
 class _PlanScreenState extends State<PlanScreen> {
   PlanService _planService = PlanService();
-  List<PlanCardViewModel>? historyPlan ;
+  List<PlanCardViewModel>? historyPlan;
   bool isLoading = true;
 
   @override
@@ -24,10 +24,10 @@ class _PlanScreenState extends State<PlanScreen> {
     _setUpData();
   }
 
-  _setUpData() async{
+  _setUpData() async {
     historyPlan = null;
-    historyPlan = await _planService.getPlanCard();
-    if(historyPlan != null){
+    historyPlan = await _planService.getPlanCardByStatus("OFFICIAL");
+    if (historyPlan != null) {
       setState(() {
         isLoading = false;
       });
@@ -40,32 +40,51 @@ class _PlanScreenState extends State<PlanScreen> {
         child: Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.white,
-        title:const Text(
+        title: const Text(
           "Kế hoạch",
-          style: TextStyle(color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
+          style: TextStyle(
+              color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
         ),
       ),
-      body: 
-      
-      isLoading ?
-      const Center(child: Text("Loading..."),):
-      
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: historyPlan!.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: PlanCard(plan: historyPlan![index]),
-              );
-            },
-          ),
-        ),
-      ),
+      body: isLoading
+          ? const Center(
+              child: Text("Loading..."),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 5),
+                    child: OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                            
+                            backgroundColor: primaryColor.withOpacity(0.3),
+                            shape: ContinuousRectangleBorder(
+                                borderRadius: BorderRadius.circular(14))),
+                        onPressed: () {},
+                        child: const Text(
+                          'Bản nháp',
+                          style: TextStyle(color: primaryColor, fontSize: 17),
+                        )),
+                  ),
+                  SingleChildScrollView(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: historyPlan!.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 16),
+                          child: PlanCard(plan: historyPlan![index]),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            ),
     ));
   }
 }

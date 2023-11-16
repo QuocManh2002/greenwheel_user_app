@@ -155,6 +155,50 @@ query getById(\$id: Int) {
     }
   }
 
+  Future<LocationViewModel?> GetLocationById(int locationId) async{
+    try {
+      QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+query getByLocationId(\$id: Int) {
+  locations(where: { id: { eq: \$id } }) {
+    nodes {
+      id
+      description
+      imageUrls
+      name
+      activities
+      seasons
+      topographic
+      templatePlan
+      coordinate{coordinates}
+      address
+      lifeguardPhone
+      lifeguardAddress
+      clinicPhone
+      clinicAddress
+      hotline
+      provinceId
+    }
+  }
+}
+"""), variables: {"id": locationId}));
+
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      List? res = result.data!['locations']['nodes'];
+      if (res == null || res.isEmpty) {
+        return null;
+      }
+      List<LocationViewModel> locations =
+          res.map((location) => LocationViewModel.fromJson(location)).toList();
+      return locations[0];
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
   @override
   // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();

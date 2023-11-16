@@ -1,30 +1,48 @@
-import 'package:greenwheel_user_app/view_models/product.dart';
+// To parse this JSON data, do
+//
+//     final orderDetail = orderDetailFromJson(jsonString);
+
+import 'dart:convert';
+
+OrderDetailViewModel orderDetailFromJson(String str) => OrderDetailViewModel.fromJson(json.decode(str));
+
+String orderDetailToJson(OrderDetailViewModel data) => json.encode(data.toJson());
 
 class OrderDetailViewModel {
-  int id;
-  int quantity;
-  int orderId;
-  ProductViewModel product;
+    int id;
+    String productName;
+    int quantity;
+    int price;
+    String type;
+    String supplierName;
+    String supplierThumbnailUrl;
 
-  OrderDetailViewModel({
-    required this.id,
-    required this.quantity,
-    required this.orderId,
-    required this.product,
-  });
+    OrderDetailViewModel({
+        required this.id,
+        required this.productName,
+        required this.quantity,
+        required this.price,
+        required this.supplierName,
+        required this.supplierThumbnailUrl,
+        required this.type
+    });
 
-  factory OrderDetailViewModel.fromJson(Map<String, dynamic> json) =>
-      OrderDetailViewModel(
+    factory OrderDetailViewModel.fromJson(Map<String, dynamic> json) => OrderDetailViewModel(
         id: json["id"],
+        productName: json["product"]["name"],
         quantity: json["quantity"],
-        orderId: json["orderId"],
-        product: json["product"],
-      );
+        price: json["price"],
+        supplierName: json["product"]["supplier"]["name"],
+        supplierThumbnailUrl: json["product"]["supplier"]["thumbnailUrl"],
+        type: json["product"]["supplier"]["type"]
+    );
 
-  Map<String, dynamic> toJson() => {
+    Map<String, dynamic> toJson() => {
         "id": id,
+        "productName": productName,
         "quantity": quantity,
-        "orderId": orderId,
-        "product": product,
-      };
+        "price": price,
+        "supplierName": supplierName,
+        "supplierThumbnailUrl": supplierThumbnailUrl,
+    };
 }
