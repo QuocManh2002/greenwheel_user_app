@@ -21,12 +21,15 @@ class PlanService {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-            mutation CreatePlanDraftInput(\$input: CreatePlanDraftInput!) {
-  createPlanDraft(input: \$input) {
-    result: mutationResult {
-      success
-      payload
-    }
+mutation{
+  createDraftPlan(model: {
+    locationId: ${draft.locationId}
+    endDate: "${draft.endDate.year.toString().padLeft(4, '0')}-${draft.endDate.month.toString().padLeft(2, '0')}-${draft.endDate.day.toString().padLeft(2, '0')}"
+    memberLimit: ${draft.memberLimit}
+    startDate:"${draft.startDate.year.toString().padLeft(4, '0')}-${draft.startDate.month.toString().padLeft(2, '0')}-${draft.startDate.day.toString().padLeft(2, '0')}"
+  }){
+    id
+    status
   }
 }
 """), variables: {

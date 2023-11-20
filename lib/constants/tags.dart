@@ -1,7 +1,6 @@
 // ignore_for_file: constant_pattern_never_matches_value_type
 
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/enums.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 
 List<Tag> tags = [
