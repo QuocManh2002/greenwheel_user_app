@@ -6,15 +6,12 @@ import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/screens/main_screen/order_history_screen.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail_create.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/cart_item_card.dart';
 import 'package:intl/intl.dart';
@@ -576,7 +573,7 @@ class _CartScreenState extends State<CartScreen> {
                                           btnOkText: "Tiếp tục",
                                           btnOkOnPress: () {
                                             Navigator.of(context).pop();
-                                            
+
                                             // Navigator.of(context).push(
                                             //   MaterialPageRoute(
                                             //     builder: (ctx) =>

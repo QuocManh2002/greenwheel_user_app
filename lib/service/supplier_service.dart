@@ -34,7 +34,7 @@ class SupplierService extends Iterable {
           query GetSuppliers(\$typeConditions: [SupplierFilterInput!]) {
             suppliers(
               where: {
-                isHidden: { eq: false },
+                isShow: { eq: false },
                 $coordinateString
                 or: \$typeConditions
               }
