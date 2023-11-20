@@ -3,11 +3,7 @@ import 'dart:convert';
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/models/location.dart';
-import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -25,7 +21,7 @@ class _TestScreenState extends State<TestScreen> {
   bool isLoading = true;
   List<dynamic> imageUrls = [];
   List<LocationViewModel>? locationModels;
-  LocationService _locationService = LocationService();
+  // LocationService _locationService = LocationService();
   
 
   @override
