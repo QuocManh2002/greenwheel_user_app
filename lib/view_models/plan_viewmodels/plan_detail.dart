@@ -4,7 +4,6 @@
 
 import 'dart:convert';
 
-import 'package:greenwheel_user_app/models/order.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 
 PlanDetail planDetailFromJson(String str) => PlanDetail.fromJson(json.decode(str));

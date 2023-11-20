@@ -30,7 +30,7 @@ class LocationService extends Iterable {
           activities
           seasons
           topographic
-          templatePlan
+          templateSchedule
           coordinate{coordinates}
           address
           lifeguardPhone
@@ -83,7 +83,8 @@ class LocationService extends Iterable {
          province{id name thumbnailUrl}
         }
     }
-}"""),
+}
+"""),
       ));
 
       if (result.hasException) {
@@ -125,7 +126,7 @@ query getById(\$id: Int) {
       activities
       seasons
       topographic
-      templatePlan
+      templateSchedule
       coordinate{coordinates}
       address
       lifeguardPhone
@@ -169,7 +170,7 @@ query getByLocationId(\$id: Int) {
       activities
       seasons
       topographic
-      templatePlan
+      templateSchedule
       coordinate{coordinates}
       address
       lifeguardPhone

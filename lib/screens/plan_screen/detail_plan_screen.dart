@@ -7,9 +7,7 @@ import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/widgets/confirm_plan_dialog.dart';
 import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
 import 'package:greenwheel_user_app/widgets/supplier_order_card.dart';
 import 'package:sizer2/sizer2.dart';
@@ -34,7 +32,7 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
   LocationService _locationService = LocationService();
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
-  List<OrderCreatePlan> _orderList = [];
+  // List<OrderCreatePlan> _orderList = [];
   PlanDetail? _planDetail;
   late TabController tabController;
   late TextEditingController newItemController;

@@ -3,10 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
-// import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:greenwheel_user_app/constants/locations.dart';
 import 'package:greenwheel_user_app/helpers/direction_handler.dart';
-import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';

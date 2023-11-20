@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/models/location.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 
 class Emergency extends StatelessWidget {
