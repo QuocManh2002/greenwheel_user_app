@@ -1,9 +1,8 @@
-import 'dart:convert';
+
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/order.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
@@ -11,7 +10,6 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/widgets/order_detail_card.dart';
 
 class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
@@ -32,27 +30,16 @@ mutation{
     status
   }
 }
-"""), variables: {
-        "input": {
-          "vm": {
-            "startDate":
-                "${draft.startDate.year.toString().padLeft(4, '0')}-${draft.startDate.month.toString().padLeft(2, '0')}-${draft.startDate.day.toString().padLeft(2, '0')}",
-            "endDate":
-                "${draft.endDate.year.toString().padLeft(4, '0')}-${draft.endDate.month.toString().padLeft(2, '0')}-${draft.endDate.day.toString().padLeft(2, '0')}",
-            "locationId": draft.locationId,
-            "memberLimit": draft.memberLimit
-          }
-        }
-      }));
+"""), ));
 
       if (result.hasException) {
         throw Exception(result.exception);
       } else {
         var rstext = result.data!;
-        bool isSuccess = rstext['createPlanDraft']['result']['success'];
-        int planId = rstext['createPlanDraft']['result']['payload']['Id'];
+        // bool isSuccess = rstext['createPlanDraft']['result']['success'];
+        int planId = rstext['createDraftPlan']['id'];
         sharedPreferences.setInt("planId", planId);
-        return isSuccess;
+        return true;
       }
     } catch (error) {
       throw Exception(error);

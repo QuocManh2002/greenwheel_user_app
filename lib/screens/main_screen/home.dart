@@ -1,10 +1,7 @@
-import 'package:carousel_slider/carousel_slider.dart';
+
 import 'package:flutter/material.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/constants/activities.dart';
-import 'package:greenwheel_user_app/constants/locations.dart';
 import 'package:greenwheel_user_app/constants/provinces.dart';
-import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
