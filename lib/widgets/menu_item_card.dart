@@ -108,7 +108,8 @@ class _MenuItemCardState extends State<MenuItemCard>
                             child: Padding(
                               padding: const EdgeInsets.only(left: 8),
                               child: Text(
-                                currencyFormat.format(widget.product.price),
+                                currencyFormat
+                                    .format(widget.product.originalPrice),
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   color: Colors.grey,

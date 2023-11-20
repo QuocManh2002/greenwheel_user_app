@@ -162,10 +162,8 @@ class _OTPScreenState extends State<OTPScreen> {
 
   void verifyCode() async {
     try {
-      print("CODE: ${otpController.text}");
       String verificationIDReceived =
           sharedPreferences.getString('verificationID') ?? "";
-      print("${verificationIDReceived} OTP RECEIVED");
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
           verificationId: verificationIDReceived, smsCode: otpController.text);
       await auth.signInWithCredential(credential).then(

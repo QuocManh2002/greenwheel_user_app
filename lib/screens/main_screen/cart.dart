@@ -49,6 +49,8 @@ class _CartScreenState extends State<CartScreen> {
   List<ItemCart> list = [];
   SupplierViewModel? supplier;
   bool isLoading = false;
+  bool isIndividual = false;
+  int? planId;
 
   TextEditingController noteController = TextEditingController();
   var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
@@ -72,6 +74,10 @@ class _CartScreenState extends State<CartScreen> {
       }
     }
     noteController.text = widget.note;
+    planId = sharedPreferences.getInt("planId");
+    if (planId == null) {
+      isIndividual = true;
+    }
   }
 
   @override
@@ -219,8 +225,9 @@ class _CartScreenState extends State<CartScreen> {
                                   onDismissed: (direction) {
                                     // Handle the item removal here
                                     setState(() {
-                                      finalTotal -= list[index].product.price *
-                                          list[index].qty;
+                                      finalTotal -=
+                                          list[index].product.originalPrice *
+                                              list[index].qty;
                                       list.removeAt(index);
                                     });
                                   },
@@ -540,59 +547,105 @@ class _CartScreenState extends State<CartScreen> {
                                         1, // Duration in seconds
                                   );
                                 } else {
-                                  var items = [
-                                    {
-                                      "productPrice": finalTotal * 30 ~/ 100,
-                                      "productName": "Thanh toán dịch vụ",
-                                      "qty": 1,
-                                    },
-                                  ];
-                                  setState(() {
-                                    isLoading = true;
-                                  });
-                                  await StripeConfig.stripePaymentCheckout(
-                                    items,
-                                    finalTotal * 30 ~/ 100,
-                                    context,
-                                    mounted,
-                                    onSuccess: () async {
-                                      bool check = await orderService
-                                          .addOrder(convertCart());
-                                      setState(() {
-                                        isLoading = false;
-                                      });
-                                      if (check) {
-                                        // ignore: use_build_context_synchronously
+                                  bool canPay = false;
+                                  if (isIndividual) {
+                                    AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.error,
+                                      animType: AnimType.topSlide,
+                                      title: "Xác nhận thanh toán",
+                                      desc: "Bạn sẽ thanh toán theo cá nhân",
+                                      btnOkText: "OK",
+                                      btnOkOnPress: () {
+                                        canPay = true;
+                                      },
+                                    ).show();
+                                  }
+                                  if (canPay) {
+                                    var items = [
+                                      {
+                                        "productPrice": finalTotal * 30 ~/ 100,
+                                        "productName": "Thanh toán dịch vụ",
+                                        "qty": 1,
+                                      },
+                                    ];
+                                    setState(() {
+                                      isLoading = true;
+                                    });
+                                    await StripeConfig.stripePaymentCheckout(
+                                      items,
+                                      finalTotal * 30 ~/ 100,
+                                      context,
+                                      mounted,
+                                      onSuccess: () async {
+                                        bool check = await orderService
+                                            .addOrder(convertCart());
+                                        setState(() {
+                                          isLoading = false;
+                                        });
+                                        if (check) {
+                                          // ignore: use_build_context_synchronously
+                                          AwesomeDialog(
+                                            context: context,
+                                            dialogType: DialogType.success,
+                                            animType: AnimType.topSlide,
+                                            title: "Thanh toán thành công",
+                                            desc:
+                                                "Ấn tiếp tục để trở về kế hoạch",
+                                            btnOkText: "Tiếp tục",
+                                            btnOkOnPress: () {
+                                              Navigator.of(context).pop();
+
+                                              // Navigator.of(context).push(
+                                              //   MaterialPageRoute(
+                                              //     builder: (ctx) =>
+                                              //         //     OrderHistoryScreen(
+                                              //         //   serviceType:
+                                              //         //       widget.serviceType,
+                                              //         // ),
+                                              //         ServiceMainScreen(
+                                              //       serviceType:
+                                              //           widget.serviceType,
+                                              //       location: widget.location,
+                                              //       callbackFunction: (List<OrderCreatePlan> orderList){},
+                                              //     ),
+                                              //   ),
+                                              // );
+                                            },
+                                          ).show();
+                                        } else {
+                                          // ignore: use_build_context_synchronously
+                                          AwesomeDialog(
+                                            context: context,
+                                            dialogType: DialogType.error,
+                                            animType: AnimType.topSlide,
+                                            title: "Thanh toán thất bại",
+                                            desc:
+                                                "Xuất hiện lỗi trong quá trình thanh toán",
+                                            btnOkText: "OK",
+                                            btnOkOnPress: () {},
+                                          ).show();
+                                        }
+                                      },
+                                      onCancel: () {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
                                         AwesomeDialog(
                                           context: context,
-                                          dialogType: DialogType.success,
+                                          dialogType: DialogType.warning,
                                           animType: AnimType.topSlide,
-                                          title: "Thanh toán thành công",
+                                          title: "Hủy thanh toán",
                                           desc:
-                                              "Ấn tiếp tục để trở về kế hoạch",
-                                          btnOkText: "Tiếp tục",
-                                          btnOkOnPress: () {
-                                            Navigator.of(context).pop();
-
-                                            // Navigator.of(context).push(
-                                            //   MaterialPageRoute(
-                                            //     builder: (ctx) =>
-                                            //         //     OrderHistoryScreen(
-                                            //         //   serviceType:
-                                            //         //       widget.serviceType,
-                                            //         // ),
-                                            //         ServiceMainScreen(
-                                            //       serviceType:
-                                            //           widget.serviceType,
-                                            //       location: widget.location,
-                                            //       callbackFunction: (List<OrderCreatePlan> orderList){},
-                                            //     ),
-                                            //   ),
-                                            // );
-                                          },
+                                              "Bạn đã hủy thanh toán thành công",
+                                          btnOkText: "OK",
+                                          btnOkOnPress: () {},
                                         ).show();
-                                      } else {
-                                        // ignore: use_build_context_synchronously
+                                      },
+                                      onError: (e) {
+                                        setState(() {
+                                          isLoading = false;
+                                        });
                                         AwesomeDialog(
                                           context: context,
                                           dialogType: DialogType.error,
@@ -603,39 +656,9 @@ class _CartScreenState extends State<CartScreen> {
                                           btnOkText: "OK",
                                           btnOkOnPress: () {},
                                         ).show();
-                                      }
-                                    },
-                                    onCancel: () {
-                                      setState(() {
-                                        isLoading = false;
-                                      });
-                                      AwesomeDialog(
-                                        context: context,
-                                        dialogType: DialogType.warning,
-                                        animType: AnimType.topSlide,
-                                        title: "Hủy thanh toán",
-                                        desc:
-                                            "Bạn đã hủy thanh toán thành công",
-                                        btnOkText: "OK",
-                                        btnOkOnPress: () {},
-                                      ).show();
-                                    },
-                                    onError: (e) {
-                                      setState(() {
-                                        isLoading = false;
-                                      });
-                                      AwesomeDialog(
-                                        context: context,
-                                        dialogType: DialogType.error,
-                                        animType: AnimType.topSlide,
-                                        title: "Thanh toán thất bại",
-                                        desc:
-                                            "Xuất hiện lỗi trong quá trình thanh toán",
-                                        btnOkText: "OK",
-                                        btnOkOnPress: () {},
-                                      ).show();
-                                    },
-                                  );
+                                      },
+                                    );
+                                  }
                                 }
                               },
                               style: ElevatedButton.styleFrom(
@@ -673,13 +696,13 @@ class _CartScreenState extends State<CartScreen> {
       if (updatedList[i].product.id == cartItem.product.id) {
         if (newQty != 0) {
           setState(() {
-            finalTotal -= cartItem.product.price * cartItem.qty;
-            finalTotal += cartItem.product.price * newQty;
+            finalTotal -= cartItem.product.originalPrice * cartItem.qty;
+            finalTotal += cartItem.product.originalPrice * newQty;
             updatedList[i] = ItemCart(product: cartItem.product, qty: newQty);
           });
         } else {
           setState(() {
-            finalTotal -= cartItem.product.price * cartItem.qty;
+            finalTotal -= cartItem.product.originalPrice * cartItem.qty;
           });
           updatedList.removeAt(i);
           break; // Exit the loop since the item was found and removed
@@ -692,12 +715,6 @@ class _CartScreenState extends State<CartScreen> {
     });
   }
 
-  void updatePickupDate(DateTime newDate) {
-    setState(() {
-      // widget.pickupDate = newDate;
-    });
-  }
-
   OrderCreateViewModel convertCart() {
     List<OrderDetailCreateViewModel> details = list.map((itemCart) {
       return OrderDetailCreateViewModel(
@@ -707,11 +724,10 @@ class _CartScreenState extends State<CartScreen> {
       );
     }).toList();
 
-    int? id = sharedPreferences.getInt("planId");
     String? transactionId = sharedPreferences.getString("transactionId");
 
     OrderCreateViewModel order = OrderCreateViewModel(
-      planId: id!,
+      planId: planId!,
       pickupDate: widget.pickupDate!,
       paymentMethod: "PAYPAL",
       transactionId: transactionId!,
