@@ -4,6 +4,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/firebase_options.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -32,7 +33,9 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        home: const TabScreen(pageIndex: 0),
+        // home: const TabScreen(pageIndex: 0),
+        home: const AddBalanceScreen(),
+
         theme: theme,
         debugShowCheckedModeBanner: false,
       );
