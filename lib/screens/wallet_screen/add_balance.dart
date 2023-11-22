@@ -1,5 +1,5 @@
-
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
@@ -36,24 +36,30 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                     borderRadius: BorderRadius.all(Radius.circular(14))),
                 child: Column(
                   children: [
-                    const Padding(
+                     Padding(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                          EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
+                          const Text(
                             "Số dư ví",
                             style: TextStyle(
                               color: Colors.black54,
                               fontSize: 20,
                             ),
                           ),
-                          Text(
-                            "10 Gcoin",
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                          Row(
+                            children: [
+                              const Text(
+                                "10 ",
+                                style: TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                              SvgPicture.asset("assets/images/gcoin_logo.svg", height: 32,)
+                            ],
                           ),
+                          
                         ],
                       ),
                     ),
@@ -65,8 +71,14 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.all(16),
+                      padding:
+                          const EdgeInsets.only(top: 16, left: 16, right: 16),
                       child: TextFormField(
+                        onChanged: (value) {
+                          setState(() {
+                            newBalanceController.text = value;
+                          });
+                        },
                         controller: newBalanceController,
                         cursorColor: primaryColor,
                         keyboardType: TextInputType.number,
@@ -75,8 +87,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                             color: Colors.black87,
                             fontWeight: FontWeight.bold),
                         decoration: const InputDecoration(
-                            hintText: "0đ",
-                            labelText: "Số tiền cần nạp",
+                            hintText: "0",
+                            labelText: "Số GCOIN cần nạp",
                             floatingLabelBehavior: FloatingLabelBehavior.always,
                             labelStyle: TextStyle(color: primaryColor),
                             floatingLabelStyle: TextStyle(color: Colors.grey),
@@ -100,46 +112,66 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(top: 8, right: 16, left: 16, bottom: 16),
+                      padding: const EdgeInsets.only(
+                          top: 8, left: 20, right: 20, bottom: 16),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Tổng tiền",
+                            style:
+                                TextStyle(fontSize: 18, color: Colors.black54),
+                          ),
+                          Text(
+                            "${1000 * int.parse(newBalanceController.text.isEmpty ? '0' : newBalanceController.text)}đ",
+                            style: const TextStyle(
+                                fontSize: 18, color: Colors.black87, fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          top: 8, right: 16, left: 16, bottom: 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
                           InkWell(
-                            onTap: (){
+                            onTap: () {
                               setState(() {
-                                newBalanceController.text = "100000";
+                                newBalanceController.text = "100";
                               });
                             },
                             child: TagWidget(
                                 tag: Tag(
-                                    id: "100000",
-                                    title: "100000đ",
+                                    id: "100",
+                                    title: "100 GCOIN",
                                     mainColor: Colors.white,
                                     strokeColor: Colors.grey)),
                           ),
                           InkWell(
                             onTap: () {
                               setState(() {
-                                newBalanceController.text = "200000";
+                                newBalanceController.text = "200";
                               });
                             },
                             child: TagWidget(
                                 tag: Tag(
-                                    id: "200000",
-                                    title: "200000đ",
+                                    id: "200",
+                                    title: "200 GCOIN",
                                     mainColor: Colors.white,
                                     strokeColor: Colors.grey)),
                           ),
                           InkWell(
-                            onTap: (){
+                            onTap: () {
                               setState(() {
-                                newBalanceController.text = "500000";
+                                newBalanceController.text = "500";
                               });
                             },
                             child: TagWidget(
                                 tag: Tag(
-                                    id: "500000",
-                                    title: "500000đ",
+                                    id: "500",
+                                    title: "500 GCOIN",
                                     mainColor: Colors.white,
                                     strokeColor: Colors.grey)),
                           ),
@@ -149,16 +181,21 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                   ],
                 ),
               ),
-
-              const SizedBox(height: 16,),
+              const SizedBox(
+                height: 16,
+              ),
               Container(
-                alignment: Alignment.centerLeft,
-                child:const Text('Nguồn tiền', style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.black87
-                ),)),
-              const SizedBox(height: 16,),
+                  alignment: Alignment.centerLeft,
+                  child: const Text(
+                    'Nguồn tiền',
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87),
+                  )),
+              const SizedBox(
+                height: 16,
+              ),
               Container(
                 width: double.infinity,
                 decoration: const BoxDecoration(
@@ -167,33 +204,45 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(16),
                   child: InkWell(
-                    onTap: (){
-                      setState(() {
-                        isSelected = true;
-                      });
-                    }, 
-                    child: Container(
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: isSelected ? primaryColor : Colors.white,
-                          width: 2
+                      onTap: () {
+                        setState(() {
+                          isSelected = true;
+                        });
+                      },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                              color: isSelected ? primaryColor : Colors.grey,
+                              width: 2),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(14)),
                         ),
-                        borderRadius:const BorderRadius.all(Radius.circular(14)),
-                      ),
-                      child: ListTile(
-                        minLeadingWidth: 0,
-                        leading: Image.asset("assets/images/vnpay.png", height: 50),
-                        title:const Text("VNPAY", style: TextStyle(fontWeight: FontWeight.bold),),
-                        subtitle:const Text("Thanh toán trong nước"),
-                        trailing: isSelected? Image.asset("assets/images/outline_circle.png", height: 30,): const Text(""),
-                      ),
-                    )),),
+                        child: ListTile(
+                          minLeadingWidth: 0,
+                          leading: Image.asset("assets/images/vnpay.png",
+                              height: 50),
+                          title: const Text(
+                            "VNPAY",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          subtitle: const Text("Thanh toán trong nước"),
+                          trailing: isSelected
+                              ? Image.asset(
+                                  "assets/images/outline_circle.png",
+                                  height: 30,
+                                )
+                              : const Text(""),
+                        ),
+                      )),
+                ),
               ),
-              const SizedBox(height: 16,),
+              const SizedBox(
+                height: 16,
+              ),
               ElevatedButton(
-                style: elevatedButtonStyle,
-                onPressed: (){}, 
-                child:const Text("Nạp tiền"))
+                  style: elevatedButtonStyle,
+                  onPressed: () {},
+                  child: const Text("Nạp tiền"))
             ],
           ),
         ),
