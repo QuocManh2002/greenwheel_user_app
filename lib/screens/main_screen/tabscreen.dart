@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/screens/main_screen/historyscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/notificationscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
+import 'package:greenwheel_user_app/screens/profie_screen/setting_screen.dart';
 
 class TabScreen extends StatefulWidget {
   const TabScreen({super.key, required this.pageIndex});
@@ -43,8 +43,8 @@ class _TabScreenState extends State<TabScreen> {
         activePage = const NotificationScreen();
         break;
       case 3:
-        //switch to history page;
-        activePage = const HistoryScreen();
+        //switch to profie page;
+        activePage = const ProfileScreen();
         break;
     }
 
@@ -69,7 +69,7 @@ class _TabScreenState extends State<TabScreen> {
               icon: Icon(Icons.calendar_month), label: "Kế hoạch"),
           BottomNavigationBarItem(
               icon: Icon(Icons.notifications), label: "Thông báo"),
-          BottomNavigationBarItem(icon: Icon(Icons.history), label: "Lịch sử")
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Hồ sơ")
         ],
       ),
     ));
