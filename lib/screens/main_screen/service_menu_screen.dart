@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/menu_item_card.dart';
@@ -37,7 +40,9 @@ class ServiceMenuScreen extends StatefulWidget {
 
 class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   ProductService productService = ProductService();
+  PlanService planService = PlanService();
 
+  PlanDetail? plan;
   List<ProductViewModel> list = [];
   List<ItemCart> items = [];
   DateTime? pickupDate;
@@ -61,7 +66,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       double tmp = 0;
       if (widget.currentCart.isNotEmpty) {}
       for (var cartItem in widget.currentCart) {
-        tmp += cartItem.product.price * cartItem.qty;
+        tmp += cartItem.product.originalPrice * cartItem.qty;
       }
       setState(() {
         items = widget.currentCart;
@@ -92,6 +97,16 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       setState(() {
         isLoading = false;
       });
+    }
+
+    int? id = sharedPreferences.getInt("planId");
+    if (id != null) {
+      plan = await planService.GetPlanById(id);
+      for (var item in list) {
+        if (item.partySize == plan!.memberLimit) {
+          updateCart(item, 1);
+        }
+      }
     }
   }
 
@@ -124,9 +139,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                             builder: (ctx) => ServiceMainScreen(
                               serviceType: widget.serviceType,
                               location: widget.location,
-                              callbackFunction: (List<OrderCreatePlan> orderList){
-                                
-                              },
+                              callbackFunction:
+                                  (List<OrderCreatePlan> orderList) {},
                             ),
                           ),
                         );
@@ -318,17 +332,17 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
 
       if (existingItemIndex != -1) {
         final existingItem = items[existingItemIndex];
-        total -= existingItem.product.price * existingItem.qty;
+        total -= existingItem.product.originalPrice * existingItem.qty;
 
         if (qty != 0) {
-          total += prod.price * qty;
+          total += prod.originalPrice * qty;
           items[existingItemIndex] = ItemCart(product: prod, qty: qty);
         } else {
           items.removeAt(existingItemIndex);
         }
       } else if (qty != 0) {
         items.add(ItemCart(product: prod, qty: qty));
-        total += prod.price * qty;
+        total += prod.originalPrice * qty;
       }
 
       if (items.isEmpty) {
