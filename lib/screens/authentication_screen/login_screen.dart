@@ -190,8 +190,6 @@ class _LoginScreenState extends State<LoginScreen> {
             );
       },
       verificationFailed: (FirebaseAuthException exception) {
-        print(exception.message);
-        print("VERIFY FAIL!");
         Fluttertoast.showToast(
           msg: 'Vui lòng kiểm tra lại số điện thoại!',
           toastLength: Toast.LENGTH_SHORT,
@@ -200,13 +198,10 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       codeSent: (String verificationID, int? resendToken) {
         verificationIDReceived = verificationID;
-        print("${verificationIDReceived}received");
         sharedPreferences.setString('verificationID', verificationIDReceived);
-        sharedPreferences.setString('phone', "+84${phoneController.text}");
-        Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const OTPScreen()),
-            (route) => false);
+        Navigator.pop(context);
+        Navigator.push(
+            context, MaterialPageRoute(builder: (_) => const OTPScreen()));
       },
       codeAutoRetrievalTimeout: (String verificationId) {},
     );
