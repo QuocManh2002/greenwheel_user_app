@@ -205,7 +205,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
     for(final detail in planDetail){
       List<String> items = [];
       for(final item in detail.details){
-        items.add(item.toString());
+        items.add(json.encode(item));
       }
       schedule.add(items);
     }
@@ -219,7 +219,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
         memberLimit: widget.numberOfMember,
         schedule: schedule);
     var rs = await _planService.finishPlan(finish);
-    if (rs) {
+    if (rs != 0) {
       // ignore: use_build_context_synchronously
       AwesomeDialog(
           context: context,

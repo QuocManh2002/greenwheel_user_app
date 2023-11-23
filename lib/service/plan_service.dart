@@ -58,7 +58,7 @@ mutation{
     }
   }
 
-  Future<bool> finishPlan(PlanFinish finish) async {
+  Future<int> finishPlan(PlanFinish finish) async {
     try {
       String? userToken = sharedPreferences.getString("userToken");
       final HttpLink httpLink = HttpLink("http://52.76.14.50/graphql");
@@ -86,34 +86,18 @@ mutation {
       ${finish.schedule}
   }
   }) {
+    id
     locationId
   }
 }
 """), 
-// variables: {
-//         "input": {
-//           "planId": finish.planId,
-//           "vm": {
-//             "startDate":
-//                 "${finish.startDate.year.toString().padLeft(4, '0')}-${finish.startDate.month.toString().padLeft(2, '0')}-${finish.startDate.day.toString().padLeft(2, '0')}",
-//             "endDate":
-//                 "${finish.endDate.year.toString().padLeft(4, '0')}-${finish.endDate.month.toString().padLeft(2, '0')}-${finish.endDate.day.toString().padLeft(2, '0')}",
-//             "locationId": finish.locationId,
-//             "memberLimit": finish.memberLimit,
-//             "schedule": finish.schedule
-//           }
-//         }
-//       }
       ));
 
       if (result.hasException) {
         throw Exception(result.exception);
       } else {
-        var rstext = result.data!;
-        bool isSuccess = rstext['finishCreatePlan']['result']['success'];
-        // int planId = rstext['createPlanDraft']['result']['payload']['Id'];
-        // sharedPreferences.setInt("planId", planId);
-        return isSuccess;
+        int planId = result.data!['updatePlan']['id'];
+        return planId;
       }
     } catch (error) {
       throw Exception(error);

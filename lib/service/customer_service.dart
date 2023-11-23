@@ -69,4 +69,44 @@ class CustomerService {
       throw Exception(error);
     }
   }
+
+  Future<String?> addBalance(int balance) async{
+    try{
+      String? userToken = sharedPreferences.getString("userToken");
+      final HttpLink httpLink = HttpLink("http://52.76.14.50/graphql");
+
+      final AuthLink authLink =
+          AuthLink(getToken: () async => 'Bearer $userToken');
+
+      final Link link = authLink.concat(httpLink);
+
+      GraphQLClient client = GraphQLClient(
+        cache: GraphQLCache(),
+        link: link,
+      );
+
+      QueryResult result =await client.mutate(
+        MutationOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql(
+            """
+mutation{
+  createTopUpRequest(model: {
+    amount: $balance
+    gateway:STRIPE
+  })
+}
+"""
+          ))
+      );
+      if (result.hasException) {
+        throw Exception(result.exception);
+      } else {
+        String transactionId = result.data!['createTopUpRequest'];
+        return transactionId;
+      } 
+    }catch (error) {
+      throw Exception(error);
+    }
+  }
 }
