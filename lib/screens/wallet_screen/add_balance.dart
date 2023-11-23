@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
@@ -219,10 +220,10 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                         ),
                         child: ListTile(
                           minLeadingWidth: 0,
-                          leading: Image.asset("assets/images/vnpay.png",
+                          leading: Image.asset(stripe_logo,
                               height: 50),
                           title: const Text(
-                            "VNPAY",
+                            "STRIPE",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           subtitle: const Text("Thanh toán trong nước"),
