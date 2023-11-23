@@ -20,7 +20,6 @@ class OTPScreen extends StatefulWidget {
 
 class _OTPScreenState extends State<OTPScreen> {
   TextEditingController otpController = TextEditingController();
-  FirebaseAuth auth = FirebaseAuth.instance;
   TextEditingController tokenController = TextEditingController();
   CustomerService customerService = CustomerService();
 
@@ -173,18 +172,17 @@ class _OTPScreenState extends State<OTPScreen> {
 
       PhoneAuthCredential credential = PhoneAuthProvider.credential(
           verificationId: verificationIDReceived, smsCode: otpController.text);
-
       await auth.signInWithCredential(credential).then(
-            (value) => {},
+            (value) => {print(value)},
           );
+
       await auth.currentUser!.getIdTokenResult().then(
             (value) => {
-              setState(() {
-                // tokenController.text = value.token ?? "";
-                token = value.token!;
-                sharedPreferences.setString('userToken', token);
-                print(token);
-              }),
+              // tokenController.text = value.token ?? "";
+              token = value.token!,
+              sharedPreferences.setString('userToken', token),
+              print(auth.currentUser),
+              print(token)
             },
           );
 
@@ -203,8 +201,9 @@ class _OTPScreenState extends State<OTPScreen> {
         //         }),
         //       },
         //     );
-        // ignore: use_build_context_synchronously
         sharedPreferences.setString("userPhone", payload['phone_number']);
+
+        // ignore: use_build_context_synchronously
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const TabScreen(pageIndex: 0)));
       }
