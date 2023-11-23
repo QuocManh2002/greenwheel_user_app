@@ -3,9 +3,9 @@ import 'dart:convert';
 class CustomerViewModel {
   int id;
   String name;
-  String email;
+  String? email;
   bool isMale;
-  String avatarUrl;
+  String? avatarUrl;
   DateTime birthday;
   String phone;
   int balance;

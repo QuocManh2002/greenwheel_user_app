@@ -1,8 +1,13 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
 import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
+import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -13,12 +18,39 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _SettingScreenState extends State<ProfileScreen> {
+  CustomerService _customerService = CustomerService();
+  CustomerViewModel? _customer ;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    setUpData();
+  }
+
+  setUpData() async{
+    // String phone = sharedPreferences.getString("userPhone")!;
+    // _customer = null;
+    // _customer = await _customerService.GetCustomerByPhone(phone);
+    // if(_customer != null){
+    //   setState(() {
+    //     _isLoading = false;
+    //   });
+    // }
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
       backgroundColor: primaryColor,
-      body: Stack(
+      body: 
+      // _isLoading ?
+      // const Center(child: Text("Loading..."),):
+
+
+      Stack(
         alignment: Alignment.bottomCenter,
         children: [
           Container(
@@ -49,10 +81,11 @@ class _SettingScreenState extends State<ProfileScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
-                      "Ly Sang Hốc",
+                     Text(
+                      // _customer!.name,
+                      "Ly Sang Hoc",
                       style:
-                          TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                         const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
                     const SizedBox(
                       width: 8,
@@ -66,9 +99,10 @@ class _SettingScreenState extends State<ProfileScreen> {
                 const SizedBox(
                   height: 8,
                 ),
-                const Text(
-                  "0797695011",
-                  style: TextStyle(
+                 Text(
+                  // _customer!.phone,
+                  "1231213123",
+                  style:const TextStyle(
                     fontSize: 18,
                   ),
                 ),
@@ -239,7 +273,26 @@ class _SettingScreenState extends State<ProfileScreen> {
                           shape:const RoundedRectangleBorder(
                               borderRadius:
                                   BorderRadius.all(Radius.circular(10)))),
-                      onPressed: () {},
+                      onPressed: () {
+                        AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.question,
+                              animType: AnimType.leftSlide,
+                              showCloseIcon: true,
+                              title: "Đăng xuất",
+                              btnOkColor: primaryColor,
+                              btnOkText: "Đồng ý",
+                              btnCancelText: "Đóng",
+                              desc:
+                                  "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
+                              btnOkOnPress: () {
+                                sharedPreferences.clear();
+                      Navigator.push(context,
+                          MaterialPageRoute(builder: (_) => const LoginScreen()));
+                              },
+                              btnCancelOnPress: (){})
+                          .show();
+                      },
                       icon: const Icon(
                         Icons.logout,
                         color: primaryColor,

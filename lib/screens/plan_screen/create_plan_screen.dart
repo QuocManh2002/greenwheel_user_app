@@ -205,10 +205,11 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
     for(final detail in planDetail){
       List<String> items = [];
       for(final item in detail.details){
-        items.add(item);
+        items.add(item.toString());
       }
       schedule.add(items);
     }
+    print(schedule);
 
     PlanFinish finish = PlanFinish(
         planId: sharedPreferences.getInt("planId")!,
