@@ -6,7 +6,7 @@ class ProductViewModel {
   String thumbnailUrl;
   int supplierId;
   String supplierName;
-  int partySize;
+  int? partySize;
 
   ProductViewModel({
     required this.id,

@@ -119,34 +119,20 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                 child: ElevatedButton(
                   onPressed: () async {
                     Navigator.of(context).pop();
-                    (widget.serviceType.id == 2 || widget.serviceType.id == 3)
-                        ? Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (ctx) => CartScreen(
-                                location: widget.location,
-                                supplier: widget.supplier,
-                                list: widget.list,
-                                total: widget.total,
-                                serviceType: widget.serviceType,
-                                pickupDate: pickupDate,
-                                returnDate: returnDate,
-                                note: widget.iniNote,
-                              ),
-                            ),
-                          )
-                        : Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (ctx) => CartScreen(
-                                location: widget.location,
-                                supplier: widget.supplier,
-                                list: widget.list,
-                                total: widget.total,
-                                serviceType: widget.serviceType,
-                                pickupDate: pickupDate,
-                                note: widget.iniNote,
-                              ),
-                            ),
-                          );
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (ctx) => CartScreen(
+                          location: widget.location,
+                          supplier: widget.supplier,
+                          list: widget.list,
+                          total: widget.total,
+                          serviceType: widget.serviceType,
+                          pickupDate: pickupDate,
+                          returnDate: returnDate,
+                          note: widget.iniNote,
+                        ),
+                      ),
+                    );
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.green, // Background color
@@ -179,6 +165,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
       } else if (args.value is DateTime) {
         setState(() {
           pickupDate = args.value;
+          returnDate = args.value;
         });
       }
     });

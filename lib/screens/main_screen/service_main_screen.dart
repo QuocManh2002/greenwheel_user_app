@@ -88,6 +88,9 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                         color: Colors.black,
                       ),
                       onPressed: () async {
+                        if (sharedPreferences.getInt("planId") == null) {
+                          Navigator.of(context).pop();
+                        }
                         orderList = null;
                         orderList = await _planService.getOrderCreatePlan(
                             sharedPreferences.getInt("planId")!);
