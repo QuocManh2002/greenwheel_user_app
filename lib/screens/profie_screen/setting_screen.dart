@@ -30,14 +30,14 @@ class _SettingScreenState extends State<ProfileScreen> {
   }
 
   setUpData() async{
-    // String phone = sharedPreferences.getString("userPhone")!;
-    // _customer = null;
-    // _customer = await _customerService.GetCustomerByPhone(phone);
-    // if(_customer != null){
-    //   setState(() {
-    //     _isLoading = false;
-    //   });
-    // }
+    String phone = sharedPreferences.getString("userPhone")!;
+    _customer = null;
+    _customer = await _customerService.GetCustomerByPhone(phone);
+    if(_customer != null){
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -46,8 +46,8 @@ class _SettingScreenState extends State<ProfileScreen> {
         child: Scaffold(
       backgroundColor: primaryColor,
       body: 
-      // _isLoading ?
-      // const Center(child: Text("Loading..."),):
+      _isLoading ?
+      const Center(child: Text("Loading..."),):
 
 
       Stack(
@@ -82,8 +82,8 @@ class _SettingScreenState extends State<ProfileScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                      Text(
-                      // _customer!.name,
-                      "Ly Sang Hoc",
+                      _customer!.name,
+                      // "Ly Sang Hoc",
                       style:
                          const TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
                     ),
@@ -91,7 +91,7 @@ class _SettingScreenState extends State<ProfileScreen> {
                       width: 8,
                     ),
                     Image.asset(
-                      male_icon,
+                      _customer!.isMale? male_icon: female_icon,
                       height: 20,
                     )
                   ],
@@ -100,8 +100,8 @@ class _SettingScreenState extends State<ProfileScreen> {
                   height: 8,
                 ),
                  Text(
-                  // _customer!.phone,
-                  "1231213123",
+                  _customer!.phone,
+                  // "1231213123",
                   style:const TextStyle(
                     fontSize: 18,
                   ),
@@ -144,9 +144,9 @@ class _SettingScreenState extends State<ProfileScreen> {
                                   left: 24, right: 16, bottom: 16),
                               child: Row(
                                 children: [
-                                  const Text(
-                                    "1000",
-                                    style: TextStyle(
+                                  Text(
+                                    _customer!.balance.toString(),
+                                    style:const TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold),
                                   ),
@@ -177,8 +177,7 @@ class _SettingScreenState extends State<ProfileScreen> {
                                     onPressed: () {
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
-                                              builder: (ctx) =>
-                                                  const AddBalanceScreen()));
+                                              builder: (ctx) => AddBalanceScreen(balance: _customer!.balance,)));
                                     },
                                     icon: const Icon(
                                       Icons.account_balance_wallet_outlined,
