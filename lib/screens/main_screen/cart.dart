@@ -676,95 +676,48 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   paymentStart() async {
-    var items = [
-      {
-        "productPrice": finalTotal * 30 ~/ 100,
-        "productName": "Thanh toán dịch vụ",
-        "qty": 1,
-      },
-    ];
-    print(items);
-    setState(() {
-      isLoading = true;
-    });
-    await StripeConfig.stripePaymentCheckout(
-      items,
-      finalTotal * 30 ~/ 100,
-      context,
-      mounted,
-      onSuccess: () async {
-        bool check = await orderService.addOrder(convertCart());
-        if (check) {
-          // ignore: use_build_context_synchronously
-          AwesomeDialog(
-            context: context,
-            dialogType: DialogType.success,
-            animType: AnimType.topSlide,
-            showCloseIcon: true,
-            title: "Thanh toán thành công",
-            desc: "Ấn tiếp tục để trở về kế hoạch",
-            btnOkText: "Tiếp tục",
-            btnOkOnPress: () {
-              Navigator.of(context).pop();
+    bool check = await orderService.addOrder(convertCart());
+    if (check) {
+      // ignore: use_build_context_synchronously
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.success,
+        animType: AnimType.topSlide,
+        showCloseIcon: true,
+        title: "Thanh toán thành công",
+        desc: "Ấn tiếp tục để trở về",
+        btnOkText: "Tiếp tục",
+        btnOkOnPress: () {
+          Navigator.of(context).pop();
 
-              // Navigator.of(context).push(
-              //   MaterialPageRoute(
-              //     builder: (ctx) =>
-              //         //     OrderHistoryScreen(
-              //         //   serviceType:
-              //         //       widget.serviceType,
-              //         // ),
-              //         ServiceMainScreen(
-              //       serviceType:
-              //           widget.serviceType,
-              //       location: widget.location,
-              //       callbackFunction: (List<OrderCreatePlan> orderList){},
-              //     ),
-              //   ),
-              // );
-            },
-          ).show();
-        } else {
-          // ignore: use_build_context_synchronously
-          AwesomeDialog(
-            context: context,
-            dialogType: DialogType.error,
-            animType: AnimType.topSlide,
-            title: "Thanh toán thất bại",
-            desc: "Xuất hiện lỗi trong quá trình thanh toán",
-            btnOkText: "OK",
-            btnOkOnPress: () {},
-          ).show();
-        }
-      },
-      onCancel: () {
-        setState(() {
-          isLoading = false;
-        });
-        AwesomeDialog(
-          context: context,
-          dialogType: DialogType.warning,
-          animType: AnimType.topSlide,
-          title: "Hủy thanh toán",
-          desc: "Bạn đã hủy thanh toán thành công",
-          btnOkText: "OK",
-          btnOkOnPress: () {},
-        ).show();
-      },
-      onError: (e) {
-        setState(() {
-          isLoading = false;
-        });
-        AwesomeDialog(
-          context: context,
-          dialogType: DialogType.error,
-          animType: AnimType.topSlide,
-          title: "Thanh toán thất bại",
-          desc: "Xuất hiện lỗi trong quá trình thanh toán",
-          btnOkText: "OK",
-          btnOkOnPress: () {},
-        ).show();
-      },
-    );
+          // Navigator.of(context).push(
+          //   MaterialPageRoute(
+          //     builder: (ctx) =>
+          //         //     OrderHistoryScreen(
+          //         //   serviceType:
+          //         //       widget.serviceType,
+          //         // ),
+          //         ServiceMainScreen(
+          //       serviceType:
+          //           widget.serviceType,
+          //       location: widget.location,
+          //       callbackFunction: (List<OrderCreatePlan> orderList){},
+          //     ),
+          //   ),
+          // );
+        },
+      ).show();
+    } else {
+      // ignore: use_build_context_synchronously
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.error,
+        animType: AnimType.topSlide,
+        title: "Thanh toán thất bại",
+        desc: "Xuất hiện lỗi trong quá trình thanh toán",
+        btnOkText: "OK",
+        btnOkOnPress: () {},
+      ).show();
+    }
   }
 }
