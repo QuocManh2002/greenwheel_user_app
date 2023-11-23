@@ -158,7 +158,7 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
         }
       }
     } else {
-      planSchedule = generateItems(_planDetail!.schedule);
+      planSchedule = generateItems(_planDetail!.schedule!);
     }
 
     List<Widget> listRestaurant = [];

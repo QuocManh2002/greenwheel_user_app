@@ -33,11 +33,15 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String? userToken = sharedPreferences.getString("userToken");
+    if(userToken != null){
+      print(userToken);
+    }
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
         // home: const TabScreen(pageIndex: 0),
         // home: const ProfileScreen(),
-        home: const LoginScreen(),
+        home:userToken != null?const TabScreen(pageIndex: 0): const LoginScreen(),
         theme: theme,
         debugShowCheckedModeBanner: false,
       );

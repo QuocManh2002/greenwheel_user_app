@@ -14,7 +14,7 @@ class PlanDetail {
     int id;
     DateTime startDate;
     DateTime endDate;
-    String schedule;
+    String? schedule;
     int memberLimit;
     String status;
     bool isOpenToJoin;

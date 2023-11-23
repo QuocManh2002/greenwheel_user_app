@@ -14,7 +14,7 @@ class PlanFinish {
     DateTime endDate;
     int locationId;
     int memberLimit;
-    String schedule;
+    List<List<String>> schedule;
 
     PlanFinish({
         required this.planId,

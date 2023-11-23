@@ -74,28 +74,37 @@ mutation{
       );
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-mutation FinishCreatePlanInput(\$input: FinishCreatePlanInput!) {
-  finishCreatePlan(input: \$input) {
-    result: mutationResult {
-      success
-      payload
-    }
+mutation {
+  updatePlan(model: {
+    memberLimit: ${finish.memberLimit}
+    endDate: "${finish.endDate.year.toString().padLeft(4, '0')}-${finish.endDate.month.toString().padLeft(2, '0')}-${finish.endDate.day.toString().padLeft(2, '0')}"
+    startDate: "${finish.startDate.year.toString().padLeft(4, '0')}-${finish.startDate.month.toString().padLeft(2, '0')}-${finish.startDate.day.toString().padLeft(2, '0')}"
+    isOpenToJoin: true
+    planId: ${finish.planId}
+    schedule : {
+    activities:
+      ${finish.schedule}
+  }
+  }) {
+    locationId
   }
 }
-"""), variables: {
-        "input": {
-          "planId": finish.planId,
-          "vm": {
-            "startDate":
-                "${finish.startDate.year.toString().padLeft(4, '0')}-${finish.startDate.month.toString().padLeft(2, '0')}-${finish.startDate.day.toString().padLeft(2, '0')}",
-            "endDate":
-                "${finish.endDate.year.toString().padLeft(4, '0')}-${finish.endDate.month.toString().padLeft(2, '0')}-${finish.endDate.day.toString().padLeft(2, '0')}",
-            "locationId": finish.locationId,
-            "memberLimit": finish.memberLimit,
-            "schedule": finish.schedule
-          }
-        }
-      }));
+"""), 
+// variables: {
+//         "input": {
+//           "planId": finish.planId,
+//           "vm": {
+//             "startDate":
+//                 "${finish.startDate.year.toString().padLeft(4, '0')}-${finish.startDate.month.toString().padLeft(2, '0')}-${finish.startDate.day.toString().padLeft(2, '0')}",
+//             "endDate":
+//                 "${finish.endDate.year.toString().padLeft(4, '0')}-${finish.endDate.month.toString().padLeft(2, '0')}-${finish.endDate.day.toString().padLeft(2, '0')}",
+//             "locationId": finish.locationId,
+//             "memberLimit": finish.memberLimit,
+//             "schedule": finish.schedule
+//           }
+//         }
+//       }
+      ));
 
       if (result.hasException) {
         throw Exception(result.exception);
@@ -172,13 +181,17 @@ mutation FinishCreatePlanInput(\$input: FinishCreatePlanInput!) {
         link: link,
       );
       QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+          QueryOptions(
+            fetchPolicy: FetchPolicy.noCache, 
+            document: gql("""
 query getOrderDetailsByPlanId(\$planId: Int) {
   orders(where: { planId: { eq: \$planId } }) {
     nodes {
       id
       planId
-      deposit
+      transaction{
+        amount
+      }
       details {
         price
         quantity
@@ -240,14 +253,11 @@ query GetPlanById(\$planId: Int){
       status
       orders{
         id
-        customerId
-        deposit
         note
-        pickupDate
-        returnDate
-        orderDate
-        paymentMethod
         transactionId 
+        transaction{
+          amount
+        }
         details{
           id
           quantity

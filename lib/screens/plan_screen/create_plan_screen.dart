@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/menu_items.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
@@ -13,6 +14,7 @@ import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/confirm_plan_dialog.dart';
 import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
@@ -193,12 +195,21 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
   }
 
   finishPlan() async {
-    String schedule = "[";
-    for (int i = 0; i < planDetail.length; i++) {
-      schedule += PlanItemToJson(planDetail[i]);
-      if (i < planDetail.length - 1) schedule += ',';
+    // String schedule = "[";
+    // for (int i = 0; i < planDetail.length; i++) {
+    //   schedule += PlanItemToJson(planDetail[i]);
+    //   if (i < planDetail.length - 1) schedule += ',';
+    // }
+    // schedule += "]";
+    List<List<String>> schedule = [];
+    for(final detail in planDetail){
+      List<String> items = [];
+      for(final item in detail.details){
+        items.add(item);
+      }
+      schedule.add(items);
     }
-    schedule += "]";
+
     PlanFinish finish = PlanFinish(
         planId: sharedPreferences.getInt("planId")!,
         startDate: widget.startDate,
