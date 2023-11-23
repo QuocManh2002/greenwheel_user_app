@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
@@ -52,7 +51,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   bool isLoading = true;
   double total = 0;
 
-  var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
+  var currencyFormat = NumberFormat.currency(symbol: 'Gcoin', locale: 'vi_VN');
 
   @override
   void initState() {
@@ -62,6 +61,14 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   }
 
   setUpData() async {
+    list = await productService.getProductsBySupplierId(widget.supplier.id);
+
+    if (list.isNotEmpty) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+
     if (widget.currentCart.isNotEmpty) {
       double tmp = 0;
       if (widget.currentCart.isNotEmpty) {}
@@ -73,6 +80,26 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
         total = tmp;
       });
     }
+    // int? id = sharedPreferences.getInt("planId");
+    // List<ItemCart> tmpList = [];
+    // if (id != null) {
+    //   plan = await planService.GetPlanById(id);
+    //   for (var item in list) {
+    //     if (item.partySize == plan!.memberLimit) {
+    //       setState(() {
+    //         tmpList.add(ItemCart(product: item, qty: 1));
+    //         total += item.originalPrice;
+    //       });
+    //       break;
+    //     }
+    //   }
+    //   setState(() {
+    //     items = tmpList;
+    //     print(items[0].product.name);
+    //     print(items[0].qty);
+    //     total;
+    //   });
+    // }
     pickupDate = widget.iniPickupDate;
     returnDate = widget.iniReturnDate;
     note = widget.iniNote;
@@ -89,24 +116,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       title = "Dịch vụ";
     } else {
       title = "Vật dụng";
-    }
-
-    list = await productService.getProductsBySupplierId(widget.supplier.id);
-
-    if (list.isNotEmpty) {
-      setState(() {
-        isLoading = false;
-      });
-    }
-
-    int? id = sharedPreferences.getInt("planId");
-    if (id != null) {
-      plan = await planService.GetPlanById(id);
-      for (var item in list) {
-        if (item.partySize == plan!.memberLimit) {
-          updateCart(item, 1);
-        }
-      }
     }
   }
 
@@ -226,8 +235,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                       itemCount: list.length,
                       itemBuilder: (context, index) {
                         int? qty;
-                        ItemCart? itemCart = getItemCartByMenuItemId(
-                            widget.currentCart, list[index].id);
+                        ItemCart? itemCart =
+                            getItemCartByMenuItemId(list[index].id);
                         if (itemCart != null) {
                           qty = itemCart.qty;
                         }
@@ -297,7 +306,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                               width:
                                   10), // Add a space between the dot and the price
                           Text(
-                            currencyFormat.format(total),
+                            currencyFormat.format(total / 1000),
                             style: const TextStyle(
                               color: Colors.white, // Text color
                               fontSize: 18,
@@ -316,9 +325,10 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     );
   }
 
-  ItemCart? getItemCartByMenuItemId(List<ItemCart> cartList, int selectId) {
+  ItemCart? getItemCartByMenuItemId(int selectId) {
     try {
-      return cartList.firstWhere((cart) => cart.product.id == selectId);
+      print(items.length);
+      return items.firstWhere((cart) => cart.product.id == selectId);
     } catch (e) {
       // Handle the case when no matching item is found
       return null;

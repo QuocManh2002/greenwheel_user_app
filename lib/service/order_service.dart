@@ -12,8 +12,8 @@ class OrderService extends Iterable {
     try {
       List<Map<String, dynamic>> details = order.details.map((detail) {
         return {
-          'productId': detail.productId,
-          'quantity': detail.quantity,
+          'key': detail.productId,
+          'value': detail.quantity,
         };
       }).toList();
       String? userToken = sharedPreferences.getString("userToken");
@@ -32,29 +32,32 @@ class OrderService extends Iterable {
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
-          mutation PlanOrderCheckoutInput(\$input: PlanOrderCheckoutInput!) {
-            planOrderCheckout(input: \$input) {
-              result: mutationResult {
-                success,
-                payload
-              }
-            }
-          }
+          mutation CreateOrder(\$input: CreateOrderModelInput!) {
+  createOrder(model: \$input) {
+    planId
+    id
+    from
+    to
+    note
+    rating
+    comment
+    transactionId
+    statusLog {
+      status
+    }
+  }
+}
+
         '''),
           variables: {
             "input": {
-              "vm": {
-                "planId": order.planId,
-                "pickupDate": DateFormat('yyyy-MM-dd').format(order.pickupDate),
-                "returnDate": order.returnDate != null
-                    ? DateFormat('yyyy-MM-dd').format(order.returnDate!)
-                    : null,
-                "note": order.note ?? "",
-                "paymentMethod": order.paymentMethod,
-                "transactionId": order.transactionId,
-                "deposit": order.deposit,
-                "details": details,
-              },
+              "planId": order.planId,
+              "from": DateFormat('yyyy-MM-dd').format(order.pickupDate),
+              "to": order.returnDate != null
+                  ? DateFormat('yyyy-MM-dd').format(order.returnDate!)
+                  : null,
+              "note": order.note ?? "",
+              "details": details,
             },
           },
         ),
@@ -64,8 +67,11 @@ class OrderService extends Iterable {
         throw Exception(result.exception);
       }
 
-      final bool res = result.data?['planOrderCheckout']['result']['success'];
-      return res;
+      final int? orderId = result.data?['createOrder']["id"];
+      if (orderId == null) {
+        return false;
+      }
+      return true;
     } catch (error) {
       throw Exception(error);
     }
