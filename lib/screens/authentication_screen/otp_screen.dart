@@ -189,7 +189,8 @@ class _OTPScreenState extends State<OTPScreen> {
           );
 
       Map<String, dynamic> payload = Jwt.parseJwt(token);
-      print("NEW TOKEN: $payload");
+      sharedPreferences.setString('userId', payload['Id']);
+      print("NEW PAYLOAD: $payload");
 
       CustomerViewModel? customer =
           await customerService.GetCustomerByPhone(payload['phone_number']);
