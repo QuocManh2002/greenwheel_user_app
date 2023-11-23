@@ -255,7 +255,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                     var items = [
                       {
                         "productPrice":
-                            double.parse(newBalanceController.text) * 1000,
+                            int.parse(newBalanceController.text) * 1000,
                         "productName": "Thanh toán dịch vụ",
                         "qty": 1,
                       },
@@ -265,7 +265,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                     // });
                     await StripeConfig.stripePaymentCheckout(
                       items,
-                      double.parse(newBalanceController.text) * 1000,
+                      int.parse(newBalanceController.text) * 1000,
                       context,
                       mounted,
                       onSuccess: () async {
