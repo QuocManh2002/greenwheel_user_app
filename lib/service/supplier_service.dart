@@ -1,11 +1,10 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 
 class SupplierService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
-  // GraphQLClient client = config.clientToQuery();
+  static GraphQLClient client = config.getClient();
 
   Future<List<SupplierViewModel>> getSuppliers(
       double longitude, double latitude, List<String> types) async {
@@ -27,18 +26,6 @@ class SupplierService extends Iterable {
           }
         },
       ''';
-String? userToken = sharedPreferences.getString("userToken");
-      final HttpLink httpLink = HttpLink("http://52.76.14.50/graphql");
-
-      final AuthLink authLink =
-          AuthLink(getToken: () async => 'Bearer $userToken');
-
-      final Link link = authLink.concat(httpLink);
-
-      GraphQLClient client = GraphQLClient(
-        cache: GraphQLCache(),
-        link: link,
-      );
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,

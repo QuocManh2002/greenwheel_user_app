@@ -13,22 +13,10 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart
 
 class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
-  // GraphQLClient client = graphQlConfig.clientToQuery();
+  static GraphQLClient client = graphQlConfig.getClient();
 
   Future<bool> createPlanDraft(PlanDraft draft) async {
     try {
-      String? userToken = sharedPreferences.getString("userToken");
-      final HttpLink httpLink = HttpLink("http://52.76.14.50/graphql");
-
-      final AuthLink authLink =
-          AuthLink(getToken: () async => 'Bearer $userToken');
-
-      final Link link = authLink.concat(httpLink);
-
-      GraphQLClient client = GraphQLClient(
-        cache: GraphQLCache(),
-        link: link,
-      );
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
@@ -60,18 +48,6 @@ mutation{
 
   Future<int> finishPlan(PlanFinish finish) async {
     try {
-      String? userToken = sharedPreferences.getString("userToken");
-      final HttpLink httpLink = HttpLink("http://52.76.14.50/graphql");
-
-      final AuthLink authLink =
-          AuthLink(getToken: () async => 'Bearer $userToken');
-
-      final Link link = authLink.concat(httpLink);
-
-      GraphQLClient client = GraphQLClient(
-        cache: GraphQLCache(),
-        link: link,
-      );
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation {
@@ -106,18 +82,6 @@ mutation {
 
   Future<List<PlanCardViewModel>> getPlanCardByStatus(String status) async {
     try {
-      String? userToken = sharedPreferences.getString("userToken");
-      final HttpLink httpLink = HttpLink("http://52.76.14.50/graphql");
-
-      final AuthLink authLink =
-          AuthLink(getToken: () async => 'Bearer $userToken');
-
-      final Link link = authLink.concat(httpLink);
-
-      GraphQLClient client = GraphQLClient(
-        cache: GraphQLCache(),
-        link: link,
-      );
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
@@ -152,18 +116,6 @@ mutation {
 
   Future<List<OrderCreatePlan>> getOrderCreatePlan(int planId) async {
     try {
-      String? userToken = sharedPreferences.getString("userToken");
-      final HttpLink httpLink = HttpLink("http://52.76.14.50/graphql");
-
-      final AuthLink authLink =
-          AuthLink(getToken: () async => 'Bearer $userToken');
-
-      final Link link = authLink.concat(httpLink);
-
-      GraphQLClient client = GraphQLClient(
-        cache: GraphQLCache(),
-        link: link,
-      );
       QueryResult result = await client.query(
           QueryOptions(
             fetchPolicy: FetchPolicy.noCache, 
@@ -212,18 +164,6 @@ query getOrderDetailsByPlanId(\$planId: Int) {
 
   Future<PlanDetail?> GetPlanById(int planId) async{
     try {
-      String? userToken = sharedPreferences.getString("userToken");
-      final HttpLink httpLink = HttpLink("http://52.76.14.50/graphql");
-
-      final AuthLink authLink =
-          AuthLink(getToken: () async => 'Bearer $userToken');
-
-      final Link link = authLink.concat(httpLink);
-
-      GraphQLClient client = GraphQLClient(
-        cache: GraphQLCache(),
-        link: link,
-      );
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query GetPlanById(\$planId: Int){

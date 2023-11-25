@@ -1,4 +1,5 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:greenwheel_user_app/main.dart';
 
 class GraphQlConfig {
   // static HttpLink httpLink = HttpLink("http://52.76.14.50/graphql");
@@ -22,4 +23,21 @@ class GraphQlConfig {
         cache: GraphQLCache(),
         link: linkWithAuth(userToken),
       );
+
+  GraphQLClient getClient(){
+    String? userToken = sharedPreferences.getString("userToken");
+      final HttpLink httpLink = HttpLink("http://20.198.255.178/graphql");
+
+      final AuthLink authLink =
+          AuthLink(getToken: () async => 'Bearer $userToken');
+
+      final Link link = authLink.concat(httpLink);
+
+      GraphQLClient client = GraphQLClient(
+        cache: GraphQLCache(),
+        link: link,
+      );
+
+      return client;
+  }    
 }

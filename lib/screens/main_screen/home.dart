@@ -2,6 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/activities.dart';
 import 'package:greenwheel_user_app/constants/provinces.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/home_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -59,8 +60,7 @@ class _HomeScreenState extends State<HomeScreen> {
       resizeToAvoidBottomInset: false,
       body: 
       isLoading ? 
-      const Center(child: Text("Loading..."),):
-      
+      const HomeLoadingScreen():
       SingleChildScrollView(
           child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

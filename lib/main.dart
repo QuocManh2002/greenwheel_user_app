@@ -10,6 +10,7 @@ import 'package:greenwheel_user_app/screens/authentication_screen/login_success_
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/setting_screen.dart';
 import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
+import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -53,6 +54,7 @@ class MainApp extends StatelessWidget {
             ? const TabScreen(pageIndex: 0)
             : const LoginScreen(),
         // home: const LoginScreen(),
+        // home : const TestScreen(),
         theme: theme,
         debugShowCheckedModeBanner: false,
       );

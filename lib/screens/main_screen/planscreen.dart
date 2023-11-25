@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_card.dart';
+import 'package:sizer2/sizer2.dart';
 
 class PlanScreen extends StatefulWidget {
   const PlanScreen({super.key});
@@ -11,16 +13,25 @@ class PlanScreen extends StatefulWidget {
   State<PlanScreen> createState() => _PlanScreenState();
 }
 
-class _PlanScreenState extends State<PlanScreen> {
+class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   PlanService _planService = PlanService();
   List<PlanCardViewModel>? historyPlan;
   bool isLoading = true;
+  late TabController tabController;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _setUpData();
+    tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    tabController.dispose();
   }
 
   _setUpData() async {
@@ -46,39 +57,41 @@ class _PlanScreenState extends State<PlanScreen> {
         ),
       ),
       body: isLoading
-          ? const Center(
-              child: Text("Loading..."),
-            )
+          ? const PlanLoadingScreen()
           : Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
+                  TabBar(
+                      controller: tabController,
+                      indicatorColor: primaryColor,
+                      labelColor: primaryColor,
+                      unselectedLabelColor: Colors.grey,
+                      tabs:  [
+                        Tab(
+                          text: "Chính thức",
+                          height: 5.h,
+                        ),
+                        Tab(
+                          text: "Bản nháp",
+                          height: 5.h,
+                        )
+                      ]),
                   Padding(
-                    padding: const EdgeInsets.only(right: 5),
-                    child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                            
-                            backgroundColor: primaryColor.withOpacity(0.3),
-                            shape: ContinuousRectangleBorder(
-                                borderRadius: BorderRadius.circular(14))),
-                        onPressed: () {},
-                        child: const Text(
-                          'Bản nháp',
-                          style: TextStyle(color: primaryColor, fontSize: 17),
-                        )),
-                  ),
-                  SingleChildScrollView(
-                    child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: historyPlan!.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 16),
-                          child: PlanCard(plan: historyPlan![index]),
-                        );
-                      },
+                    padding: const EdgeInsets.only(top: 16),
+                    child: SingleChildScrollView(
+                      child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: historyPlan!.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 16),
+                            child: PlanCard(plan: historyPlan![index]),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],
