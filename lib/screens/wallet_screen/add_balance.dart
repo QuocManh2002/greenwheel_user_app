@@ -22,6 +22,13 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   bool isSelected = false;
   CustomerService _customerService = CustomerService();
   bool isLoading = true;
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    newBalanceController.dispose();
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +52,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                   children: [
                     Padding(
                       padding:
-                          EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                          const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [

@@ -5,6 +5,7 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/profile_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
@@ -14,10 +15,10 @@ class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
-  State<ProfileScreen> createState() => _SettingScreenState();
+  State<ProfileScreen> createState() => _ProfileScreenState();
 }
 
-class _SettingScreenState extends State<ProfileScreen> {
+class _ProfileScreenState extends State<ProfileScreen> {
   CustomerService _customerService = CustomerService();
   CustomerViewModel? _customer ;
   bool _isLoading = true;
@@ -44,12 +45,10 @@ class _SettingScreenState extends State<ProfileScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-      backgroundColor: primaryColor,
+      backgroundColor: _isLoading ? Colors.white : primaryColor,
       body: 
       _isLoading ?
-      const Center(child: Text("Loading..."),):
-
-
+      const ProfileLoadingScreen():
       Stack(
         alignment: Alignment.bottomCenter,
         children: [

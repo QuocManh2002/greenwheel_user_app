@@ -41,66 +41,33 @@ class _TestScreenState extends State<TestScreen> {
         child: Scaffold(
             body: isLoading
                 ? 
-                // SingleChildScrollView(
-                //   child: Column(
-                //     crossAxisAlignment: CrossAxisAlignment.start,
-                //     children: [
-                //     ShimmerWidget.rectangular(width: double.infinity, height: 30.h),
-                //     const SizedBox(height: 16,),
-                //     Padding(
-                //       padding: const EdgeInsets.symmetric(horizontal: 16),
-                //       child: ShimmerWidget.rectangular(width: 50.w, height: 16),
-                //     ),
-                //     const SizedBox(height: 16,),
-                //     SizedBox(
-                //       height: 40.h,
-                //       child: ListView.builder(
-                //         itemCount: 3,
-                //         physics:const BouncingScrollPhysics(),
-                //         shrinkWrap:  true,
-                //         scrollDirection: Axis.horizontal,
-                //         itemBuilder: (context, index) => Padding(
-                //           padding: const EdgeInsets.all(16),
-                //           child: Column(
-                //             crossAxisAlignment: CrossAxisAlignment.start,
-                //             children: [
-                //               ShimmerWidget.rectangular(width: 55.w, height: 30.h),
-                //               const SizedBox(height: 8,),
-                //               ShimmerWidget.rectangular(width: 18.w, height: 16),
-                //               const SizedBox(height: 8,),
-                //               ShimmerWidget.rectangular(width: 9.w, height: 16),
-                //             ],
-                //           ),
-                //         ),),
-                //     ),
-                //      Padding(
-                //       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                //       child: ShimmerWidget.rectangular(width: 50.w, height: 16),
-                //     ),
-                //     SizedBox(
-                //       height: 40.h,
-                //       child: ListView.builder(
-                //         itemCount: 3,
-                //         physics:const BouncingScrollPhysics(),
-                //         shrinkWrap:  true,
-                //         scrollDirection: Axis.horizontal,
-                //         itemBuilder: (context, index) => Padding(
-                //           padding: const EdgeInsets.all(16),
-                //           child: Column(
-                //             crossAxisAlignment: CrossAxisAlignment.start,
-                //             children: [
-                //               ShimmerWidget.rectangular(width: 55.w, height: 30.h),
-                //               const SizedBox(height: 8,),
-                //               ShimmerWidget.rectangular(width: 18.w, height: 16),
-                //               const SizedBox(height: 8,),
-                //               ShimmerWidget.rectangular(width: 9.w, height: 16),
-                //             ],
-                //           ),
-                //         ),),
-                //     ),
-                //   ]),
-                // )
-                PlanLoadingScreen()
+                SingleChildScrollView(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 32),
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10.h,),
+                        ShimmerWidget.circular(width: 15.h, height: 15.h),
+                        const SizedBox(height: 32,),
+                        ShimmerWidget.rectangular(width: 60.w, height: 32),
+                        const SizedBox(height: 32,),
+                        ShimmerWidget.rectangular(width: 30.w, height: 20),
+                        const SizedBox(height: 32,),
+                        ShimmerWidget.rectangular(width: double.infinity.w, height: 15.h),
+                        const SizedBox(height: 32,),
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          child: ShimmerWidget.rectangular(width: 30.w, height: 20)),
+                        const SizedBox(height: 16,),
+                        ShimmerWidget.rectangular(width: double.infinity.w, height: 7.h),
+                        const SizedBox(height: 16,),
+                        ShimmerWidget.rectangular(width: double.infinity.w, height: 7.h),
+                        const SizedBox(height: 16,),
+                        ShimmerWidget.rectangular(width: double.infinity.w, height: 7.h),
+                      ],
+                    ),
+                  ),
+                )
                 : Text("Content")));
   }
 }

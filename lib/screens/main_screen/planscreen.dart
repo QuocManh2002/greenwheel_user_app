@@ -68,6 +68,10 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                       indicatorColor: primaryColor,
                       labelColor: primaryColor,
                       unselectedLabelColor: Colors.grey,
+                      labelStyle:const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold
+                      ),
                       tabs:  [
                         Tab(
                           text: "Chính thức",

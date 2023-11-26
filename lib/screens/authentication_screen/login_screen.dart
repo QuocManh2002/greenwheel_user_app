@@ -5,6 +5,7 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/otp_screen.dart';
+import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 
@@ -135,7 +136,11 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              Navigator.of(context).push(
+                                MaterialPageRoute(builder: (ctx) => const RegisterScreen())
+                              );
+                            },
                             child: const Text(
                               'Đăng ký ngay',
                               style: TextStyle(

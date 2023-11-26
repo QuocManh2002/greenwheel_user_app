@@ -13,7 +13,7 @@ class CustomerService {
           fetchPolicy: FetchPolicy.noCache,
           document: gql("""
             query getCustomerByPhone(\$phone: String) {
-    customers
+    travelers
     (
       where: { 
         phone: {eq: \$phone } 
@@ -42,7 +42,7 @@ class CustomerService {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['customers']['nodes'];
+      List? res = result.data!['travelers']['nodes'];
       if (res == null || res.isEmpty) {
         return null;
       }

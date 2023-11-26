@@ -1,6 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
+import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
@@ -61,7 +64,18 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
   }
   
   _createDraftPlan() async{
-    PlanDraft draft = PlanDraft(startDate: selectedDates.start, endDate: selectedDates.end, locationId: widget.location.id, memberLimit: _selectedQuantity);
+    LocationService locationService = LocationService();
+    LocationViewModel? location = await locationService.GetLocationById(widget.location.id);
+    // List<List<String>> schedule = json.decode(location!.templatePlan);
+    List<List<String>> schedule = [];
+    for(final detail in json.decode(location!.templatePlan)){
+      List<String> items = [];
+      for(final item in detail){
+        items.add(json.encode(item));
+      }
+      schedule.add(items);
+    }
+    PlanDraft draft = PlanDraft(startDate: selectedDates.start, endDate: selectedDates.end, locationId: widget.location.id, memberLimit: _selectedQuantity, schedule: schedule);
 
     var rs = await _planService.createPlanDraft(draft);
     if(rs){

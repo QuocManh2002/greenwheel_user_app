@@ -13,12 +13,14 @@ class PlanDraft {
     DateTime endDate;
     int locationId;
     int memberLimit;
+    List<List<String>> schedule;
 
     PlanDraft({
         required this.startDate,
         required this.endDate,
         required this.locationId,
         required this.memberLimit,
+        required this.schedule
     });
 
     factory PlanDraft.fromJson(Map<String, dynamic> json) => PlanDraft(
@@ -26,6 +28,7 @@ class PlanDraft {
         endDate: DateTime.parse(json["endDate"]),
         locationId: json["locationId"],
         memberLimit: json["memberLimit"],
+        schedule: json["schedule"]
     );
 
     Map<String, dynamic> toJson() => {

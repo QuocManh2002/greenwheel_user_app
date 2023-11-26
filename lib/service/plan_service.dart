@@ -21,10 +21,14 @@ class PlanService {
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
   createDraftPlan(model: {
-    locationId: ${draft.locationId}
-    endDate: "${draft.endDate.year.toString().padLeft(4, '0')}-${draft.endDate.month.toString().padLeft(2, '0')}-${draft.endDate.day.toString().padLeft(2, '0')}"
     memberLimit: ${draft.memberLimit}
-    startDate:"${draft.startDate.year.toString().padLeft(4, '0')}-${draft.startDate.month.toString().padLeft(2, '0')}-${draft.startDate.day.toString().padLeft(2, '0')}"
+    endDate: "${draft.endDate.year.toString().padLeft(4, '0')}-${draft.endDate.month.toString().padLeft(2, '0')}-${draft.endDate.day.toString().padLeft(2, '0')}"
+    startDate: "${draft.startDate.year.toString().padLeft(4, '0')}-${draft.startDate.month.toString().padLeft(2, '0')}-${draft.startDate.day.toString().padLeft(2, '0')}"
+    locationId: ${draft.locationId}
+    schedule : {
+    activities:
+      ${draft.schedule}
+  }
   }){
     id
     status
