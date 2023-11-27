@@ -2,7 +2,7 @@ class ProductViewModel {
   int id;
   String name;
   String paymentType;
-  int originalPrice;
+  int price;
   String thumbnailUrl;
   int supplierId;
   String supplierName;
@@ -12,7 +12,7 @@ class ProductViewModel {
     required this.id,
     required this.name,
     required this.paymentType,
-    required this.originalPrice,
+    required this.price,
     required this.thumbnailUrl,
     required this.supplierId,
     required this.supplierName,
@@ -24,7 +24,7 @@ class ProductViewModel {
         id: json["id"],
         name: json["name"],
         paymentType: json["paymentType"],
-        originalPrice: json["originalPrice"],
+        price: json["price"],
         thumbnailUrl: json["thumbnailUrl"],
         supplierId: json["supplier"]["id"],
         supplierName: json["supplier"]["name"],
@@ -35,7 +35,7 @@ class ProductViewModel {
         "id": id,
         "name": name,
         "paymentType": paymentType,
-        "originalPrice": originalPrice,
+        "originalPrice": price,
         "thumbnailUrl": thumbnailUrl,
         "supplierId": supplierId,
         "supplierName": supplierName,

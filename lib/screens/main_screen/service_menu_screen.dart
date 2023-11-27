@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/service_menu_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -51,7 +52,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   bool isLoading = true;
   double total = 0;
 
-  var currencyFormat = NumberFormat.currency(symbol: 'Gcoin', locale: 'vi_VN');
+  var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
 
   @override
   void initState() {
@@ -73,7 +74,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       double tmp = 0;
       if (widget.currentCart.isNotEmpty) {}
       for (var cartItem in widget.currentCart) {
-        tmp += cartItem.product.originalPrice * cartItem.qty;
+        tmp += cartItem.product.price * cartItem.qty;
       }
       setState(() {
         items = widget.currentCart;
@@ -207,10 +208,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
           ),
         ),
         body: isLoading
-            ? Image.asset(
-                'assets/images/loading.gif',
-                width: 100.w, // Set the width to your desired size
-              )
+            ? const ServiceMenuLoadingScreen()
             : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -342,17 +340,17 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
 
       if (existingItemIndex != -1) {
         final existingItem = items[existingItemIndex];
-        total -= existingItem.product.originalPrice * existingItem.qty;
+        total -= existingItem.product.price * existingItem.qty;
 
         if (qty != 0) {
-          total += prod.originalPrice * qty;
+          total += prod.price * qty;
           items[existingItemIndex] = ItemCart(product: prod, qty: qty);
         } else {
           items.removeAt(existingItemIndex);
         }
       } else if (qty != 0) {
         items.add(ItemCart(product: prod, qty: qty));
-        total += prod.originalPrice * qty;
+        total += prod.price * qty;
       }
 
       if (items.isEmpty) {

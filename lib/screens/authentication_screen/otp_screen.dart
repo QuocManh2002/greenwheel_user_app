@@ -181,8 +181,6 @@ class _OTPScreenState extends State<OTPScreen> {
               // tokenController.text = value.token ?? "";
               token = value.token!,
               sharedPreferences.setString('userToken', token),
-              print(auth.currentUser),
-              print(token)
             },
           );
 
@@ -193,20 +191,12 @@ class _OTPScreenState extends State<OTPScreen> {
       CustomerViewModel? customer =
           await customerService.GetCustomerByPhone(payload['phone_number']);
       if (customer != null) {
-        // await auth.currentUser!.getIdTokenResult().then(
-        //       (value) => {
-        //         setState(() {
-        //           Map<String, dynamic> payload = Jwt.parseJwt(value.token!);
-        //           print("NEW TOKEN: $payload");
-        //         }),
-        //       },
-        //     );
         sharedPreferences.setString("userPhone", payload['phone_number']);
 
         // ignore: use_build_context_synchronously
         Navigator.push(context,
             MaterialPageRoute(builder: (_) => const TabScreen(pageIndex: 0)));
-      }
+      } else {}
     } on PlatformException catch (e) {
       print(e.message);
     } on FirebaseAuthException {

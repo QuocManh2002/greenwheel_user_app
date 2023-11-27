@@ -9,13 +9,15 @@ class SupplierService extends Iterable {
   Future<List<SupplierViewModel>> getSuppliers(
       double longitude, double latitude, List<String> types) async {
     try {
-      List<Map<String, dynamic>> typeConditions = types.map((type) {
-        return {
-          'type': {
-            'eq': type,
+      List<Map<String, dynamic>> typeConditions = [
+        {
+          "type": {
+            "in": types.map((type) => type).toList(),
           },
-        };
-      }).toList();
+        },
+      ];
+
+      print(typeConditions);
 
       String coordinateString = '''
         coordinate: {
@@ -33,7 +35,7 @@ class SupplierService extends Iterable {
           query GetSuppliers(\$typeConditions: [SupplierFilterInput!]) {
             suppliers(
               where: {
-                isShow: { eq: false },
+                isHidden: { eq: false },
                 $coordinateString
                 or: \$typeConditions
               }

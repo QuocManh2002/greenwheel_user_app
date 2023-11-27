@@ -6,7 +6,8 @@ class GraphQlConfig {
   // GraphQLClient clientToQuery() =>
   //     GraphQLClient(link: httpLink, cache: GraphQLCache(store: HiveStore()));
 
-  static HttpLink httpLink = HttpLink("https://greenwheels.southeastasia.cloudapp.azure.com/graphql");
+  static HttpLink httpLink =
+      HttpLink("https://greenwheels.southeastasia.cloudapp.azure.com/graphql");
 
   // Add the AuthLink to the link chain if userToken is not null
   static Link linkWithAuth(String? userToken) {
@@ -24,20 +25,22 @@ class GraphQlConfig {
         link: linkWithAuth(userToken),
       );
 
-  GraphQLClient getClient(){
+  GraphQLClient getClient() {
     String? userToken = sharedPreferences.getString("userToken");
-      final HttpLink httpLink = HttpLink("https://greenwheels.southeastasia.cloudapp.azure.com/graphql");
+    print("CLIENT TOKEN: $userToken");
+    final HttpLink httpLink = HttpLink(
+        "https://greenwheels.southeastasia.cloudapp.azure.com/graphql");
 
-      final AuthLink authLink =
-          AuthLink(getToken: () async => 'Bearer $userToken');
+    final AuthLink authLink =
+        AuthLink(getToken: () async => 'Bearer $userToken');
 
-      final Link link = authLink.concat(httpLink);
+    final Link link = authLink.concat(httpLink);
 
-      GraphQLClient client = GraphQLClient(
-        cache: GraphQLCache(),
-        link: link,
-      );
+    GraphQLClient client = GraphQLClient(
+      cache: GraphQLCache(),
+      link: link,
+    );
 
-      return client;
-  }    
+    return client;
+  }
 }
