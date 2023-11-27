@@ -4,13 +4,14 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/topup_successfull_screen.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
-import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
 import 'package:vnpay_client/vnpay_client.dart';
 import 'package:intl/intl.dart';
+
 class AddBalanceScreen extends StatefulWidget {
   const AddBalanceScreen({super.key, required this.balance});
   final int balance;
@@ -24,6 +25,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   bool isSelected = false;
   OrderService orderService = OrderService();
   bool isLoading = true;
+  String? paymentData;
+
   @override
   void dispose() {
     // TODO: implement dispose
@@ -67,7 +70,11 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                           Row(
                             children: [
                               Text(
-                                NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0,name: "").format(widget.balance),
+                                NumberFormat.simpleCurrency(
+                                        locale: 'en-US',
+                                        decimalDigits: 0,
+                                        name: "")
+                                    .format(widget.balance),
                                 style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
@@ -271,9 +278,25 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                         onPaymentError: _onPaymentFailure,
                       );
 
-                      TopupViewModel? topup = await orderService
-                          .topUpSubcription(request.transactionId);
-                      print("TOPUP STATUS: ${topup!.status}");
+                      if (paymentData != null) {
+                        print(paymentData);
+                        // ignore: use_build_context_synchronously
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (ctx) => TopupSuccessfulScreen(
+                        //       data: paymentData!,
+                        //     ),
+                        //   ),
+                        // );
+                      }
+                      // print(request.transactionId);
+                      // TopupViewModel? topup = await orderService
+                      //     .topUpSubcription(request.transactionId);
+                      // print("TOPUP STATUS: ${topup!.status}");
+                      // if (topup.status == "ACCEPTED") {
+                      // } else {
+                      //   // ignore: use_build_context_synchronously
+                      // }
                     } else {
                       // ignore: use_build_context_synchronously
                       AwesomeDialog(
@@ -297,6 +320,9 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
 
   void _onPaymentSuccess(data) {
     print(data);
+    setState(() {
+      paymentData = data;
+    });
   }
 
   void _onPaymentFailure(error) {

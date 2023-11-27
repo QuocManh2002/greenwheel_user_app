@@ -120,14 +120,15 @@ class OrderService extends Iterable {
       }
 
       var res = result.data?['topUpSuccess'];
+      print("RESPONSE: $res");
       if (res == null) {
         return null;
       }
-      print(res);
+
       final int id = result.data?['topUpSuccess']['id'];
       final String status = result.data?['topUpSuccess']['status'];
       final String gateway = result.data?['topUpSuccess']['gateway'];
-      final String description = result.data?['topUpSuccess']['description'];
+      final String? description = result.data?['topUpSuccess']['description'];
       final String transactionCode =
           result.data?['topUpSuccess']['transactionCode'];
       TopupViewModel topup = TopupViewModel(

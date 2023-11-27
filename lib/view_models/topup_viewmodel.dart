@@ -2,14 +2,14 @@ class TopupViewModel {
   int id;
   String status;
   String gateway;
-  String description;
+  String? description;
   String transactionCode;
 
   TopupViewModel({
     required this.id,
     required this.status,
     required this.gateway,
-    required this.description,
+    this.description,
     required this.transactionCode,
   });
 
