@@ -103,7 +103,7 @@ mutation {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['travelers']['nodes'];
+      List? res = result.data!['registerTraveler']['id'];
       if (res == null || res.isEmpty) {
         return null;
       }

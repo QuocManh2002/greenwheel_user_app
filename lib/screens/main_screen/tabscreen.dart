@@ -1,9 +1,13 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/notificationscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
+import 'package:uni_links/uni_links.dart';
 
 class TabScreen extends StatefulWidget {
   const TabScreen({super.key, required this.pageIndex});
@@ -14,6 +18,29 @@ class TabScreen extends StatefulWidget {
 
 class _TabScreenState extends State<TabScreen> {
   int _selectedPageIndex = 0;
+
+  StreamSubscription? _sub;  
+   void initUniLinks() {
+    // ... check initialLink
+
+    // Attach a listener to the stream
+    _sub = linkStream.listen((String? link)  {
+      // Parse the link and warn the user, if it is not correct
+      if(link != null){
+        print("111111111111111111111111111111");
+        var uri = Uri.parse(link);
+        if(uri.queryParameters['id'] != null){
+          print(uri.queryParameters['id'].toString());
+          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) =>  DetailPlanScreen(planId: int.parse(uri.queryParameters['id'].toString()), locationName: "Rừng tràm Trà Sư", isEnableToJoin: true,)));
+        }
+      }
+    }, onError: (err) {
+      // Handle exception by warning the user their action did not succeed
+    });
+
+    // NOTE: Don't forget to call _sub.cancel() in dispose()
+  }
+
   void selectPage(int index) {
     setState(() {
       _selectedPageIndex = index;
@@ -23,6 +50,7 @@ class _TabScreenState extends State<TabScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    initUniLinks();
     _selectedPageIndex = widget.pageIndex;
   }
 

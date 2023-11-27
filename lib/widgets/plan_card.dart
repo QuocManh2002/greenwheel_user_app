@@ -14,7 +14,7 @@ class PlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DetailPlanScreen(planId: plan.id,locationName: plan.locationName,)));
+        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DetailPlanScreen(planId: plan.id,locationName: plan.locationName,isEnableToJoin: false,)));
       },
       child: Container(
         
