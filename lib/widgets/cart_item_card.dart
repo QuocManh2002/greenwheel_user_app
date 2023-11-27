@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
+import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:input_quantity/input_quantity.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:intl/intl.dart';
@@ -9,13 +10,13 @@ class CartItemCard extends StatefulWidget {
     super.key,
     required this.cartItem,
     required this.updateFinalCart,
-    required this.updateFinalTotal,
     this.days,
+    required this.serviceType,
   });
   final ItemCart cartItem;
   final Function updateFinalCart;
-  final Function updateFinalTotal;
   final int? days;
+  final ServiceType serviceType;
 
   @override
   State<CartItemCard> createState() => _CartItemCardState();
@@ -100,8 +101,6 @@ class _CartItemCardState extends State<CartItemCard>
                     ),
                     onQtyChanged: (val) async {
                       widget.updateFinalCart(widget.cartItem, val);
-                      widget.updateFinalTotal(
-                          widget.cartItem, val, widget.days);
                     },
                   ),
                 )
