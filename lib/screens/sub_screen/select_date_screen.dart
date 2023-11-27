@@ -42,7 +42,20 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
         context: context,
         initialDateRange: selectedDates,
         firstDate: DateTime.now(),
-        lastDate: DateTime(2100));
+        lastDate: DateTime(2100),
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData().copyWith(
+                colorScheme: const ColorScheme.light(
+                    primary: primaryColor, onPrimary: Colors.white)),
+            child: DateRangePickerDialog(
+              initialDateRange: selectedDates,
+              firstDate: DateTime.now(),
+              lastDate: DateTime(2024),
+            ),
+          );
+        },
+        );
     if (newSelectedDate == null) {
       return;
     }
@@ -64,19 +77,17 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
   }
   
   _createDraftPlan() async{
-    LocationService locationService = LocationService();
-    LocationViewModel? location = await locationService.GetLocationById(widget.location.id);
-    // List<List<String>> schedule = json.decode(location!.templatePlan);
-    List<List<String>> schedule = [];
-    for(final detail in json.decode(location!.templatePlan)){
-      List<String> items = [];
-      for(final item in detail){
-        items.add(json.encode(item));
+    List<List<String>> schedule = _planService.GetPlanDetailFormJson(widget.location.templatePlan);
+    List<List<String>> finalSchedule = [];
+    for(int i = 0; i < selectedDates.duration.inDays + 1; i++){
+      if(i < schedule.length){
+        finalSchedule.add(schedule[i]);
+      }else{
+        finalSchedule.add([]);
       }
-      schedule.add(items);
     }
-    PlanDraft draft = PlanDraft(startDate: selectedDates.start, endDate: selectedDates.end, locationId: widget.location.id, memberLimit: _selectedQuantity, schedule: schedule);
-
+    
+    PlanDraft draft = PlanDraft(startDate: selectedDates.start, endDate: selectedDates.end, locationId: widget.location.id, memberLimit: _selectedQuantity, schedule: finalSchedule);
     var rs = await _planService.createPlanDraft(draft);
     if(rs){
       Navigator.of(context).push(MaterialPageRoute(
@@ -95,8 +106,6 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
   Widget build(BuildContext context) {
     final start = selectedDates.start;
     final end = selectedDates.end;
-
-    
 
     return SafeArea(
         child: Scaffold(
