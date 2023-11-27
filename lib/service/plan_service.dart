@@ -1,8 +1,11 @@
 
 
+import 'dart:convert';
+
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
@@ -25,10 +28,7 @@ mutation{
     endDate: "${draft.endDate.year.toString().padLeft(4, '0')}-${draft.endDate.month.toString().padLeft(2, '0')}-${draft.endDate.day.toString().padLeft(2, '0')}"
     startDate: "${draft.startDate.year.toString().padLeft(4, '0')}-${draft.startDate.month.toString().padLeft(2, '0')}-${draft.startDate.day.toString().padLeft(2, '0')}"
     locationId: ${draft.locationId}
-    schedule : {
-    activities:
-      ${draft.schedule}
-  }
+    schedule : ${draft.schedule}
   }){
     id
     status
@@ -61,10 +61,7 @@ mutation {
     startDate: "${finish.startDate.year.toString().padLeft(4, '0')}-${finish.startDate.month.toString().padLeft(2, '0')}-${finish.startDate.day.toString().padLeft(2, '0')}"
     isOpenToJoin: true
     planId: ${finish.planId}
-    schedule : {
-    activities:
-      ${finish.schedule}
-  }
+    schedule: ${finish.schedule}
   }) {
     id
     locationId
@@ -234,5 +231,29 @@ query GetPlanById(\$planId: Int){
     } catch (error) {
       throw Exception(error);
     }
+  }
+
+  List<List<String>> GetPlanDetailFormJson(String planText){
+    List<List<String>> schedule = [];
+    for(final detail in json.decode(planText)){
+      List<String> items = [];
+      for(final item in detail){
+        items.add(json.encode(item));
+      }
+      schedule.add(items);
+    }
+    return schedule;
+  }
+
+  List<List<String>> GetPlanDetailFromListPlanItem(List<PlanItem> planDetail){
+    List<List<String>> schedule = [];
+    for(final detail in planDetail){
+      List<String> items = [];
+      for(final item in detail.details){
+        items.add(json.encode(item));
+      }
+      schedule.add(items);
+    }
+    return schedule;
   }
 }

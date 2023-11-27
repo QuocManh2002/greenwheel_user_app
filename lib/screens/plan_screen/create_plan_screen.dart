@@ -193,21 +193,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
   }
 
   finishPlan() async {
-    // String schedule = "[";
-    // for (int i = 0; i < planDetail.length; i++) {
-    //   schedule += PlanItemToJson(planDetail[i]);
-    //   if (i < planDetail.length - 1) schedule += ',';
-    // }
-    // schedule += "]";
-    List<List<String>> schedule = [];
-    for(final detail in planDetail){
-      List<String> items = [];
-      for(final item in detail.details){
-        items.add(json.encode(item));
-      }
-      schedule.add(items);
-    }
-    print(schedule);
+    List<List<String>> schedule = _planService.GetPlanDetailFromListPlanItem(planDetail);
 
     PlanFinish finish = PlanFinish(
         planId: sharedPreferences.getInt("planId")!,
