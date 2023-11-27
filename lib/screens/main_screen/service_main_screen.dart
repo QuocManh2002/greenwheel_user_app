@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_loading_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -170,10 +171,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
           ),
         ),
         body: isLoading
-            ? Image.asset(
-                'assets/images/loading.gif',
-                width: 100.w, // Set the width to your desired size
-              )
+            ? const ServiceSupplierLoadingScreen()
             : SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,

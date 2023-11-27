@@ -60,7 +60,6 @@ class MainApp extends StatelessWidget {
             : const LoginScreen(),
 
         // home: const RegisterScreen(),
-
         // home: const LoginScreen(),
         // home : const TestScreen(),
         theme: theme,

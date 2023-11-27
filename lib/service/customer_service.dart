@@ -56,29 +56,24 @@ class CustomerService {
     }
   }
 
-  Future<String?> addBalance(int balance) async{
-    try{
-      QueryResult result =await client.mutate(
-        MutationOptions(
-          fetchPolicy: FetchPolicy.noCache,
-          document: gql(
-            """
+  Future<String?> addBalance(int balance) async {
+    try {
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
   createTopUpRequest(model: {
     amount: $balance
     gateway:STRIPE
   })
 }
-"""
-          ))
-      );
+""")));
       if (result.hasException) {
         throw Exception(result.exception);
       } else {
         String transactionId = result.data!['createTopUpRequest'];
         return transactionId;
-      } 
-    }catch (error) {
+      }
+    } catch (error) {
       throw Exception(error);
     }
   }

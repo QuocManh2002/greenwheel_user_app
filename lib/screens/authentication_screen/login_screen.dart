@@ -75,11 +75,12 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Container(
                 width: size.width,
                 child: Padding(
-                  padding: const EdgeInsets.all(14),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
                   child: Column(
                     children: [
                       Container(
-                        margin: EdgeInsets.only(top: 4.h),
+                        margin: EdgeInsets.only(top: 3.h),
                         alignment: Alignment.topLeft,
                         child: const Text(
                           'Số điện thoại',
@@ -137,9 +138,8 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           TextButton(
                             onPressed: () {
-                              Navigator.of(context).push(
-                                MaterialPageRoute(builder: (ctx) => const RegisterScreen())
-                              );
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (ctx) => const RegisterScreen()));
                             },
                             child: const Text(
                               'Đăng ký ngay',
@@ -186,7 +186,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void verifyNumber() {
     auth.verifyPhoneNumber(
-      phoneNumber: "+84${phoneController.text}",
+      phoneNumber: "+84${phoneController.text.trim()}",
       verificationCompleted: (PhoneAuthCredential credential) async {
         await auth.signInWithCredential(credential).then(
               (value) => {
@@ -196,7 +196,7 @@ class _LoginScreenState extends State<LoginScreen> {
       },
       verificationFailed: (FirebaseAuthException exception) {
         Fluttertoast.showToast(
-          msg: 'Vui lòng kiểm tra lại số điện thoại!',
+          msg: 'Vui lòng kiểm tra lại số điện thoại! ${phoneController.text}',
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
         );

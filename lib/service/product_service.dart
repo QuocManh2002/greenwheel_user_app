@@ -16,7 +16,7 @@ class ProductService extends Iterable {
             products(
               where: {
                 supplierId: { eq: \$id },
-                isAvailable: { eq: true }
+                isHidden: { eq: false }
               },
               order: {
                 id: ASC
@@ -26,7 +26,7 @@ class ProductService extends Iterable {
                 id
                 name
                 paymentType
-                originalPrice
+                price
                 thumbnailUrl
                 partySize
                 supplier {
@@ -49,7 +49,7 @@ class ProductService extends Iterable {
       if (res == null || res.isEmpty) {
         return [];
       }
-
+      print(res);
       final List<ProductViewModel> products =
           res.map((product) => ProductViewModel.fromJson(product)).toList();
       return products;

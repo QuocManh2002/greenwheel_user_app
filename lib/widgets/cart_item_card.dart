@@ -9,9 +9,13 @@ class CartItemCard extends StatefulWidget {
     super.key,
     required this.cartItem,
     required this.updateFinalCart,
+    required this.updateFinalTotal,
+    this.days,
   });
   final ItemCart cartItem;
   final Function updateFinalCart;
+  final Function updateFinalTotal;
+  final int? days;
 
   @override
   State<CartItemCard> createState() => _CartItemCardState();
@@ -23,7 +27,7 @@ class _CartItemCardState extends State<CartItemCard>
   bool get wantKeepAlive => true;
 
   // Create a NumberFormat instance for currency formatting
-  var currencyFormat = NumberFormat.currency(symbol: 'Gcoin', locale: 'vi_VN');
+  var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +67,7 @@ class _CartItemCardState extends State<CartItemCard>
                           padding: const EdgeInsets.only(left: 8),
                           child: Text(
                             currencyFormat.format(
-                                (widget.cartItem.product.originalPrice *
+                                (widget.cartItem.product.price *
                                         widget.cartItem.qty) /
                                     1000),
                             overflow: TextOverflow.ellipsis,
@@ -96,6 +100,8 @@ class _CartItemCardState extends State<CartItemCard>
                     ),
                     onQtyChanged: (val) async {
                       widget.updateFinalCart(widget.cartItem, val);
+                      widget.updateFinalTotal(
+                          widget.cartItem, val, widget.days);
                     },
                   ),
                 )

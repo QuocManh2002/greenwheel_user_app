@@ -29,7 +29,6 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
     newBalanceController.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -51,8 +50,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                 child: Column(
                   children: [
                     Padding(
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 20, vertical: 16),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -270,89 +269,89 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                     // setState(() {
                     //   isLoading = true;
                     // });
-                    await StripeConfig.stripePaymentCheckout(
-                      items,
-                      int.parse(newBalanceController.text) * 1000,
-                      context,
-                      mounted,
-                      onSuccess: () async {
-                        bool check = await _customerService.addBalance(
-                                int.parse(newBalanceController.text)) !=
-                            null;
-                        setState(() {
-                          isLoading = false;
-                        });
-                        if (check) {
-                          // ignore: use_build_context_synchronously
-                          AwesomeDialog(
-                            context: context,
-                            dialogType: DialogType.success,
-                            animType: AnimType.topSlide,
-                            title: "Thanh toán thành công",
-                            desc: "Ấn tiếp tục để trở về kế hoạch",
-                            btnOkText: "Tiếp tục",
-                            btnOkOnPress: () {
-                              Navigator.of(context).pop();
+                    // await StripeConfig.stripePaymentCheckout(
+                    //   items,
+                    //   int.parse(newBalanceController.text) * 1000,
+                    //   context,
+                    //   mounted,
+                    //   onSuccess: () async {
+                    //     bool check = await _customerService.addBalance(
+                    //             int.parse(newBalanceController.text)) !=
+                    //         null;
+                    //     setState(() {
+                    //       isLoading = false;
+                    //     });
+                    //     if (check) {
+                    //       // ignore: use_build_context_synchronously
+                    //       AwesomeDialog(
+                    //         context: context,
+                    //         dialogType: DialogType.success,
+                    //         animType: AnimType.topSlide,
+                    //         title: "Thanh toán thành công",
+                    //         desc: "Ấn tiếp tục để trở về kế hoạch",
+                    //         btnOkText: "Tiếp tục",
+                    //         btnOkOnPress: () {
+                    //           Navigator.of(context).pop();
 
-                              // Navigator.of(context).push(
-                              //   MaterialPageRoute(
-                              //     builder: (ctx) =>
-                              //         //     OrderHistoryScreen(
-                              //         //   serviceType:
-                              //         //       widget.serviceType,
-                              //         // ),
-                              //         ServiceMainScreen(
-                              //       serviceType:
-                              //           widget.serviceType,
-                              //       location: widget.location,
-                              //       callbackFunction: (List<OrderCreatePlan> orderList){},
-                              //     ),
-                              //   ),
-                              // );
-                            },
-                          ).show();
-                        } else {
-                          // ignore: use_build_context_synchronously
-                          AwesomeDialog(
-                            context: context,
-                            dialogType: DialogType.error,
-                            animType: AnimType.topSlide,
-                            title: "Thanh toán thất bại",
-                            desc: "Xuất hiện lỗi trong quá trình thanh toán",
-                            btnOkText: "OK",
-                            btnOkOnPress: () {},
-                          ).show();
-                        }
-                      },
-                      onCancel: () {
-                        setState(() {
-                          isLoading = false;
-                        });
-                        AwesomeDialog(
-                          context: context,
-                          dialogType: DialogType.warning,
-                          animType: AnimType.topSlide,
-                          title: "Hủy thanh toán",
-                          desc: "Bạn đã hủy thanh toán thành công",
-                          btnOkText: "OK",
-                          btnOkOnPress: () {},
-                        ).show();
-                      },
-                      onError: (e) {
-                        setState(() {
-                          isLoading = false;
-                        });
-                        AwesomeDialog(
-                          context: context,
-                          dialogType: DialogType.error,
-                          animType: AnimType.topSlide,
-                          title: "Thanh toán thất bại",
-                          desc: "Xuất hiện lỗi trong quá trình thanh toán",
-                          btnOkText: "OK",
-                          btnOkOnPress: () {},
-                        ).show();
-                      },
-                    );
+                    //           // Navigator.of(context).push(
+                    //           //   MaterialPageRoute(
+                    //           //     builder: (ctx) =>
+                    //           //         //     OrderHistoryScreen(
+                    //           //         //   serviceType:
+                    //           //         //       widget.serviceType,
+                    //           //         // ),
+                    //           //         ServiceMainScreen(
+                    //           //       serviceType:
+                    //           //           widget.serviceType,
+                    //           //       location: widget.location,
+                    //           //       callbackFunction: (List<OrderCreatePlan> orderList){},
+                    //           //     ),
+                    //           //   ),
+                    //           // );
+                    //         },
+                    //       ).show();
+                    //     } else {
+                    //       // ignore: use_build_context_synchronously
+                    //       AwesomeDialog(
+                    //         context: context,
+                    //         dialogType: DialogType.error,
+                    //         animType: AnimType.topSlide,
+                    //         title: "Thanh toán thất bại",
+                    //         desc: "Xuất hiện lỗi trong quá trình thanh toán",
+                    //         btnOkText: "OK",
+                    //         btnOkOnPress: () {},
+                    //       ).show();
+                    //     }
+                    //   },
+                    //   onCancel: () {
+                    //     setState(() {
+                    //       isLoading = false;
+                    //     });
+                    //     AwesomeDialog(
+                    //       context: context,
+                    //       dialogType: DialogType.warning,
+                    //       animType: AnimType.topSlide,
+                    //       title: "Hủy thanh toán",
+                    //       desc: "Bạn đã hủy thanh toán thành công",
+                    //       btnOkText: "OK",
+                    //       btnOkOnPress: () {},
+                    //     ).show();
+                    //   },
+                    //   onError: (e) {
+                    //     setState(() {
+                    //       isLoading = false;
+                    //     });
+                    //     AwesomeDialog(
+                    //       context: context,
+                    //       dialogType: DialogType.error,
+                    //       animType: AnimType.topSlide,
+                    //       title: "Thanh toán thất bại",
+                    //       desc: "Xuất hiện lỗi trong quá trình thanh toán",
+                    //       btnOkText: "OK",
+                    //       btnOkOnPress: () {},
+                    //     ).show();
+                    //   },
+                    // );
                   },
                   child: const Text("Nạp tiền"))
             ],

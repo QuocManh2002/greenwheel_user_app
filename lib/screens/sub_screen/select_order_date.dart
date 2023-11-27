@@ -84,10 +84,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
         ),
         body: Container(
           margin: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
-          child: (widget.serviceType.id == 2 ||
-                  widget.serviceType.id == 3 ||
-                  widget.serviceType.id == 5 ||
-                  widget.serviceType.id == 6)
+          child: (widget.serviceType.id != 100)
               ? SfDateRangePicker(
                   onSelectionChanged: _onSelectionChanged,
                   selectionMode: DateRangePickerSelectionMode.range,

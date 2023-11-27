@@ -55,7 +55,7 @@ class _OrderDetailCardState extends State<OrderDetailCard> {
                           padding: const EdgeInsets.only(left: 8),
                           child: Text(
                             currencyFormat.format(
-                                widget.cartItem.product.originalPrice *
+                                widget.cartItem.product.price *
                                     widget.cartItem.qty),
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(

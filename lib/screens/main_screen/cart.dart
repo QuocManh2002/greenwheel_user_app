@@ -1,5 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -58,9 +59,9 @@ class _CartScreenState extends State<CartScreen> {
   PlanDetail? plan;
 
   TextEditingController noteController = TextEditingController();
-  var currencyFormat = NumberFormat.currency(symbol: 'Gcoin', locale: 'vi_VN');
+  var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
   var _range = "";
-  var _single = "";
+  int? days;
 
   @override
   void initState() {
@@ -70,12 +71,13 @@ class _CartScreenState extends State<CartScreen> {
     list = widget.list;
     supplier = widget.supplier;
     if (widget.pickupDate != null) {
-      if (widget.serviceType.id == 2 || widget.serviceType.id == 3) {
-        _range =
-            '${DateFormat('dd/MM/yyyy').format(widget.pickupDate ?? DateTime.now())} - ${DateFormat('dd/MM/yyyy').format(widget.returnDate ?? DateTime.now())}';
-      } else {
-        _single = DateFormat('dd/MM/yyyy')
-            .format(widget.pickupDate ?? DateTime.now());
+      _range =
+          '${DateFormat('dd/MM/yyyy').format(widget.pickupDate ?? DateTime.now())} - ${DateFormat('dd/MM/yyyy').format(widget.returnDate ?? DateTime.now())}';
+      days = widget.returnDate?.difference(widget.pickupDate!).inDays;
+      if (days! > 0) {
+        for (var item in list) {
+          updateFinalTotal(item, item.qty, days);
+        }
       }
     }
     noteController.text = widget.note;
@@ -237,15 +239,16 @@ class _CartScreenState extends State<CartScreen> {
                                   onDismissed: (direction) {
                                     // Handle the item removal here
                                     setState(() {
-                                      finalTotal -=
-                                          list[index].product.originalPrice *
-                                              list[index].qty;
+                                      finalTotal -= list[index].product.price *
+                                          list[index].qty;
                                       list.removeAt(index);
                                     });
                                   },
                                   child: CartItemCard(
                                     cartItem: list[index],
                                     updateFinalCart: updateFinalCart,
+                                    updateFinalTotal: updateFinalTotal,
+                                    days: days,
                                   ),
                                 );
                               },
@@ -300,13 +303,7 @@ class _CartScreenState extends State<CartScreen> {
                           child: Row(
                             children: [
                               Text(
-                                widget.pickupDate == null
-                                    ? "N/A"
-                                    : ((widget.serviceType.id == 1 ||
-                                            widget.serviceType.id == 2 ||
-                                            widget.serviceType.id == 3)
-                                        ? _range
-                                        : _single),
+                                widget.pickupDate == null ? "N/A" : (_range),
                                 style: const TextStyle(
                                   fontSize: 14,
                                   fontFamily: 'NotoSans',
@@ -343,6 +340,27 @@ class _CartScreenState extends State<CartScreen> {
                             ],
                           ),
                         ),
+                        (widget.serviceType.id == 1 ||
+                                widget.serviceType.id == 4)
+                            ? (Column(
+                                children: [
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+                                  Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 5.w),
+                                    child: const Text(
+                                      "Đối với mặt hàng thuộc thức ăn và như yếu phẩm, số lượng sẽ được nhân lên tương ứng với số ngày được chọn.",
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        fontFamily: 'NotoSans',
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ))
+                            : Container(),
                         const SizedBox(
                           height: 16,
                         ),
@@ -437,14 +455,14 @@ class _CartScreenState extends State<CartScreen> {
                             const SizedBox(
                               width: 22,
                             ),
-                            const Icon(
-                              Icons.money,
-                              color: Colors.green,
-                            ), // Add the calendar icon
+                            SvgPicture.asset(
+                              "assets/images/gcoin_logo.svg",
+                              height: 32,
+                            ),
                             const Padding(
                               padding: EdgeInsets.only(left: 14),
                               child: Text(
-                                "Thanh toán trực tiếp",
+                                "Thanh toán bằng số dư GCOIN ",
                                 style: TextStyle(
                                   fontSize: 15,
                                   fontFamily: 'NotoSans',
@@ -453,15 +471,6 @@ class _CartScreenState extends State<CartScreen> {
                               ),
                             ),
                             Spacer(),
-                            GestureDetector(
-                              onTap: () {
-                                // Add your onPressed action here
-                              },
-                              child: const Icon(
-                                Icons
-                                    .arrow_forward, // Replace with your desired icon
-                              ),
-                            ),
                             const SizedBox(
                               width: 20,
                             ),
@@ -493,13 +502,30 @@ class _CartScreenState extends State<CartScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                const Text(
-                                  'Tổng cộng', // Replace with your first text
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontFamily: 'NotoSans',
-                                    color: Colors.black,
-                                  ),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      'Tổng cộng ', // Replace with your first text
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontFamily: 'NotoSans',
+                                        color: Colors.black,
+                                      ),
+                                    ),
+                                    (widget.serviceType.id == 1 ||
+                                            widget.serviceType.id == 4)
+                                        ? Text(
+                                            days == null
+                                                ? ""
+                                                : "( ${days.toString()} ngày )", // Replace with your first text
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontFamily: 'NotoSans',
+                                              color: Colors.black38,
+                                            ),
+                                          )
+                                        : Container(),
+                                  ],
                                 ),
                                 Text(
                                   currencyFormat.format(finalTotal /
@@ -625,13 +651,13 @@ class _CartScreenState extends State<CartScreen> {
       if (updatedList[i].product.id == cartItem.product.id) {
         if (newQty != 0) {
           setState(() {
-            finalTotal -= cartItem.product.originalPrice * cartItem.qty;
-            finalTotal += cartItem.product.originalPrice * newQty;
+            finalTotal -= cartItem.product.price * cartItem.qty;
+            finalTotal += cartItem.product.price * newQty;
             updatedList[i] = ItemCart(product: cartItem.product, qty: newQty);
           });
         } else {
           setState(() {
-            finalTotal -= cartItem.product.originalPrice * cartItem.qty;
+            finalTotal -= cartItem.product.price * cartItem.qty;
           });
           updatedList.removeAt(i);
           break; // Exit the loop since the item was found and removed
@@ -672,6 +698,22 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     return order;
+  }
+
+  updateFinalTotal(ItemCart item, int newQty, int? days) {
+    setState(() {
+      if (newQty == item.qty) {
+        finalTotal -= item.product.price * item.qty;
+        finalTotal += item.product.price * newQty * days!;
+      } else {
+        finalTotal -= item.product.price * item.qty * days!;
+        print(finalTotal);
+        finalTotal += item.product.price * newQty * days;
+        print(days);
+        print(newQty);
+        print(item.product.price);
+      }
+    });
   }
 
   paymentStart() async {
