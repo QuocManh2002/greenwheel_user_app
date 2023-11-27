@@ -2,6 +2,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
+import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
 import 'package:intl/intl.dart';
 
 class OrderService extends Iterable {
@@ -89,6 +90,54 @@ class OrderService extends Iterable {
       TopupRequestViewModel request = TopupRequestViewModel(
           transactionId: transactionId, paymentUrl: paymentUrl);
       return request;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<TopupViewModel?> topUpSubcription(int transactionId) async {
+    try {
+      final QueryResult result = await client.query(
+        QueryOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql('''
+          subscription topUp (\$input: Int!) {
+  topUpSuccess(transactionId: \$input) {
+    id
+    status
+    gateway
+    description
+    transactionCode
+  }
+}
+          '''),
+          variables: {"input": transactionId},
+        ),
+      );
+
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      var res = result.data?['topUpSuccess'];
+      if (res == null) {
+        return null;
+      }
+      print(res);
+      final int id = result.data?['topUpSuccess']['id'];
+      final String status = result.data?['topUpSuccess']['status'];
+      final String gateway = result.data?['topUpSuccess']['gateway'];
+      final String description = result.data?['topUpSuccess']['description'];
+      final String transactionCode =
+          result.data?['topUpSuccess']['transactionCode'];
+      TopupViewModel topup = TopupViewModel(
+        id: id,
+        status: status,
+        gateway: gateway,
+        description: description,
+        transactionCode: transactionCode,
+      );
+      return topup;
     } catch (error) {
       throw Exception(error);
     }

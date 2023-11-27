@@ -82,6 +82,7 @@ class _CartScreenState extends State<CartScreen> {
       days = 1;
     }
     noteController.text = widget.note;
+
     planId = sharedPreferences.getInt("planId");
     if (planId != null) {
       setUpdata();
@@ -93,6 +94,7 @@ class _CartScreenState extends State<CartScreen> {
 
   setUpdata() async {
     plan = await planService.GetPlanById(planId!);
+    print("PLAN END DATE: ${plan!.endDate}");
   }
 
   @override
