@@ -6,6 +6,7 @@ import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
+import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
 import 'package:vnpay_client/vnpay_client.dart';
@@ -262,13 +263,17 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                     TopupRequestViewModel? request = await orderService
                         .topUpRequest(int.parse(newBalanceController.text));
                     if (request != null) {
-                      print(request.paymentUrl);
+                      // ignore: use_build_context_synchronously
                       showVNPayScreen(
                         context,
                         paymentUrl: request.paymentUrl,
                         onPaymentSuccess: _onPaymentSuccess,
                         onPaymentError: _onPaymentFailure,
                       );
+
+                      TopupViewModel? topup = await orderService
+                          .topUpSubcription(request.transactionId);
+                      print("TOPUP STATUS: ${topup!.status}");
                     } else {
                       // ignore: use_build_context_synchronously
                       AwesomeDialog(
