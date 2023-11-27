@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
@@ -315,7 +316,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 alignment: Alignment.center,
                 child: ElevatedButton(
                     style: elevatedButtonStyle,
-                    onPressed: () {},
+                    onPressed: _register,
                     child: const Text(
                       "Đăng ký",
                       style:
@@ -331,5 +332,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   _register() async{
     var id = await _customerService.registerTraveler(RegisterViewModel(birthday: selectedDate, isMale: isMale, email: emailController.text, name: nameController.text));
+    if(id != null){
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) =>const TabScreen(pageIndex: 0)), (route) => false);
+    }
   }
 }

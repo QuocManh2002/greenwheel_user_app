@@ -17,9 +17,10 @@ import '../../widgets/button_style.dart';
 
 class DetailPlanScreen extends StatefulWidget {
   const DetailPlanScreen(
-      {super.key, required this.planId, required this.locationName});
+      {super.key, required this.planId, required this.locationName, required this.isEnableToJoin});
   final int planId;
   final String locationName;
+  final bool isEnableToJoin;
 
   @override
   State<DetailPlanScreen> createState() => _DetailPlanScreenState();
@@ -443,9 +444,9 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                                   .show();
                             },
                             style: elevatedButtonStyle,
-                            child: const Text(
-                              "Chỉnh sửa kế hoạch",
-                              style: TextStyle(
+                            child:  Text(
+                              widget.isEnableToJoin?"Tham gia kế hoạch" : "Chỉnh sửa kế hoạch",
+                              style:const TextStyle(
                                   fontSize: 20, fontWeight: FontWeight.bold),
                             ),
                           ),
