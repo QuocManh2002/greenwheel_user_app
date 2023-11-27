@@ -9,6 +9,7 @@ import 'package:greenwheel_user_app/screens/loading_screen/profile_loading_scree
 import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -99,8 +100,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   height: 8,
                 ),
                  Text(
-                  _customer!.phone,
-                  // "1231213123",
+                  "0${_customer!.phone.substring(3)}",
                   style:const TextStyle(
                     fontSize: 18,
                   ),
@@ -144,7 +144,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               child: Row(
                                 children: [
                                   Text(
-                                    _customer!.balance.toString(),
+                                    NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0,name: "").format(int.parse(_customer!.balance.toString())),
                                     style:const TextStyle(
                                         fontSize: 24,
                                         fontWeight: FontWeight.bold),

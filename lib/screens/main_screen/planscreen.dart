@@ -14,8 +14,10 @@ class PlanScreen extends StatefulWidget {
 }
 
 class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
-  PlanService _planService = PlanService();
-  List<PlanCardViewModel>? historyPlan;
+  final PlanService _planService = PlanService();
+  List<PlanCardViewModel> _officialPlans= [];
+  List<PlanCardViewModel> _draftPlans = [];
+
   bool isLoading = true;
   late TabController tabController;
 
@@ -35,10 +37,20 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   }
 
   _setUpData() async {
-    historyPlan = null;
-    historyPlan = await _planService.getPlanCardByStatus("OFFICIAL");
+    List<PlanCardViewModel> draftPlans = [];
+    List<PlanCardViewModel> officialPlans = [];
+    List<PlanCardViewModel>? historyPlan = await _planService.getPlanCards();
     if (historyPlan != null) {
+      for(final plan in historyPlan){
+        if(plan.status == "DRAFT"){
+          draftPlans.add(plan);
+        }else{
+          officialPlans.add(plan);
+        }
+      }
       setState(() {
+        _draftPlans = draftPlans;
+        _officialPlans = officialPlans;
         isLoading = false;
       });
     }
@@ -82,21 +94,35 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                           height: 5.h,
                         )
                       ]),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 16),
-                    child: SingleChildScrollView(
-                      child: ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: historyPlan!.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: const EdgeInsets.only(bottom: 16),
-                            child: PlanCard(plan: historyPlan![index]),
-                          );
-                        },
-                      ),
-                    ),
+                  Expanded(
+                    child: Container(
+                            margin: const EdgeInsets.only(top: 8),
+                            child:
+                                TabBarView(controller: tabController, children: [
+                              ListView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: _officialPlans.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric( vertical: 4),
+                                    child: PlanCard(plan: _officialPlans[index]),
+                                  );
+                                },
+                              ),
+                              ListView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: _draftPlans.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric( vertical: 4),
+                                    child: PlanCard(plan: _draftPlans[index]),
+                                  );
+                                },
+                              ),
+                            ]),
+                          ),
                   ),
                 ],
               ),

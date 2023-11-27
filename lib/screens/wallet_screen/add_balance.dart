@@ -8,6 +8,7 @@ import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
+import 'package:intl/intl.dart';
 
 class AddBalanceScreen extends StatefulWidget {
   const AddBalanceScreen({super.key, required this.balance});
@@ -65,7 +66,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                           Row(
                             children: [
                               Text(
-                                "${widget.balance.toString()} ",
+                                NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0,name: "").format(widget.balance),
                                 style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),

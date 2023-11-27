@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
@@ -183,20 +184,27 @@ class _OTPScreenState extends State<OTPScreen> {
               sharedPreferences.setString('userToken', token),
             },
           );
-
+      print(sharedPreferences.getString("userToken"));
       Map<String, dynamic> payload = Jwt.parseJwt(token);
-      sharedPreferences.setString('userId', payload['Id'].toString());
-      print("NEW PAYLOAD: $payload");
 
-      CustomerViewModel? customer =
-          await customerService.GetCustomerByPhone(payload['phone_number']);
-      if (customer != null) {
-        sharedPreferences.setString("userPhone", payload['phone_number']);
+      if (payload['Id'] != null) {
+        sharedPreferences.setString('userId', payload['Id'].toString());
+        print("NEW PAYLOAD: $payload");
 
-        // ignore: use_build_context_synchronously
+        CustomerViewModel? customer =
+            await customerService.GetCustomerByPhone(payload['phone_number']);
+        if (customer != null) {
+          sharedPreferences.setString("userPhone", payload['phone_number']);
+
+          // ignore: use_build_context_synchronously
+          Navigator.push(context,
+              MaterialPageRoute(builder: (_) => const TabScreen(pageIndex: 0)));
+        } else {}
+      }else{
+        // sharedPreferences.setString("userPhone", payload['phone_number']);
         Navigator.push(context,
-            MaterialPageRoute(builder: (_) => const TabScreen(pageIndex: 0)));
-      } else {}
+              MaterialPageRoute(builder: (_) => const RegisterScreen()));
+      }
     } on PlatformException catch (e) {
       print(e.message);
     } on FirebaseAuthException {

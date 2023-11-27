@@ -33,6 +33,8 @@ dependencies:
   jwt_decode: ^0.3.1
   shimmer: ^3.0.0
   vnpay_client: ^0.0.3
+  intl: ^0.18.1
+  uni_links: ^0.5.1
 
 dev_dependencies:
   flutter_test:

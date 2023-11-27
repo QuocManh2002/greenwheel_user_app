@@ -233,6 +233,46 @@ query GetPlanById(\$planId: Int){
     }
   }
 
+  Future<List<PlanCardViewModel>?> getPlanCards() async {
+    try {
+      QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+{
+  plans{
+    nodes{
+      id
+      startDate
+      endDate
+      status
+      location{
+        name
+        imageUrls
+        province{
+          name
+        }
+      }
+
+    }
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      List? res = result.data!['plans']['nodes'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+
+      List<PlanCardViewModel> plans =
+          res.map((plan) => PlanCardViewModel.fromJson(plan)).toList();
+      return plans;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
   List<List<String>> GetPlanDetailFormJson(String planText){
     List<List<String>> schedule = [];
     for(final detail in json.decode(planText)){

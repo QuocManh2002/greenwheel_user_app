@@ -1,13 +1,11 @@
-import 'dart:convert';
+
 
 import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/shimmer_widget.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
