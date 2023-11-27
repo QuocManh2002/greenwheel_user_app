@@ -1,15 +1,15 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/config/stripe_config.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
+import 'package:greenwheel_user_app/view_models/topup_request.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
+import 'package:vnpay_client/vnpay_client.dart';
 import 'package:intl/intl.dart';
-
 class AddBalanceScreen extends StatefulWidget {
   const AddBalanceScreen({super.key, required this.balance});
   final int balance;
@@ -21,7 +21,7 @@ class AddBalanceScreen extends StatefulWidget {
 class _AddBalanceScreenState extends State<AddBalanceScreen> {
   TextEditingController newBalanceController = TextEditingController();
   bool isSelected = false;
-  CustomerService _customerService = CustomerService();
+  OrderService orderService = OrderService();
   bool isLoading = true;
   @override
   void dispose() {
@@ -237,9 +237,9 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                         ),
                         child: ListTile(
                           minLeadingWidth: 0,
-                          leading: Image.asset(stripe_logo, height: 50),
+                          leading: Image.asset(vnpay_logo, height: 50),
                           title: const Text(
-                            "STRIPE",
+                            "VNPay",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
                           // subtitle: const Text("Thanh toán trong nước"),
@@ -259,100 +259,28 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
               ElevatedButton(
                   style: elevatedButtonStyle,
                   onPressed: () async {
-                    var items = [
-                      {
-                        "productPrice":
-                            int.parse(newBalanceController.text) * 1000,
-                        "productName": "Thanh toán dịch vụ",
-                        "qty": 1,
-                      },
-                    ];
-                    // setState(() {
-                    //   isLoading = true;
-                    // });
-                    // await StripeConfig.stripePaymentCheckout(
-                    //   items,
-                    //   int.parse(newBalanceController.text) * 1000,
-                    //   context,
-                    //   mounted,
-                    //   onSuccess: () async {
-                    //     bool check = await _customerService.addBalance(
-                    //             int.parse(newBalanceController.text)) !=
-                    //         null;
-                    //     setState(() {
-                    //       isLoading = false;
-                    //     });
-                    //     if (check) {
-                    //       // ignore: use_build_context_synchronously
-                    //       AwesomeDialog(
-                    //         context: context,
-                    //         dialogType: DialogType.success,
-                    //         animType: AnimType.topSlide,
-                    //         title: "Thanh toán thành công",
-                    //         desc: "Ấn tiếp tục để trở về kế hoạch",
-                    //         btnOkText: "Tiếp tục",
-                    //         btnOkOnPress: () {
-                    //           Navigator.of(context).pop();
-
-                    //           // Navigator.of(context).push(
-                    //           //   MaterialPageRoute(
-                    //           //     builder: (ctx) =>
-                    //           //         //     OrderHistoryScreen(
-                    //           //         //   serviceType:
-                    //           //         //       widget.serviceType,
-                    //           //         // ),
-                    //           //         ServiceMainScreen(
-                    //           //       serviceType:
-                    //           //           widget.serviceType,
-                    //           //       location: widget.location,
-                    //           //       callbackFunction: (List<OrderCreatePlan> orderList){},
-                    //           //     ),
-                    //           //   ),
-                    //           // );
-                    //         },
-                    //       ).show();
-                    //     } else {
-                    //       // ignore: use_build_context_synchronously
-                    //       AwesomeDialog(
-                    //         context: context,
-                    //         dialogType: DialogType.error,
-                    //         animType: AnimType.topSlide,
-                    //         title: "Thanh toán thất bại",
-                    //         desc: "Xuất hiện lỗi trong quá trình thanh toán",
-                    //         btnOkText: "OK",
-                    //         btnOkOnPress: () {},
-                    //       ).show();
-                    //     }
-                    //   },
-                    //   onCancel: () {
-                    //     setState(() {
-                    //       isLoading = false;
-                    //     });
-                    //     AwesomeDialog(
-                    //       context: context,
-                    //       dialogType: DialogType.warning,
-                    //       animType: AnimType.topSlide,
-                    //       title: "Hủy thanh toán",
-                    //       desc: "Bạn đã hủy thanh toán thành công",
-                    //       btnOkText: "OK",
-                    //       btnOkOnPress: () {},
-                    //     ).show();
-                    //   },
-                    //   onError: (e) {
-                    //     setState(() {
-                    //       isLoading = false;
-                    //     });
-                    //     AwesomeDialog(
-                    //       context: context,
-                    //       dialogType: DialogType.error,
-                    //       animType: AnimType.topSlide,
-                    //       title: "Thanh toán thất bại",
-                    //       desc: "Xuất hiện lỗi trong quá trình thanh toán",
-                    //       btnOkText: "OK",
-                    //       btnOkOnPress: () {},
-                    //     ).show();
-                    //   },
-                    // );
+                    TopupRequestViewModel? request = await orderService
+                        .topUpRequest(int.parse(newBalanceController.text));
+                    if (request != null) {
+                      print(request.paymentUrl);
+                      showVNPayScreen(
+                        context,
+                        paymentUrl: request.paymentUrl,
+                        onPaymentSuccess: _onPaymentSuccess,
+                        onPaymentError: _onPaymentFailure,
+                      );
+                    } else {
+                      // ignore: use_build_context_synchronously
+                      AwesomeDialog(
+                        context: context,
+                        dialogType: DialogType.error,
+                        animType: AnimType.topSlide,
+                        title: "Tạo đơn thất bại!",
+                        desc: "Xuất hiện lỗi khi tạo đơn nạp GCOIN.",
+                        btnOkText: "OK",
+                        btnOkOnPress: () {},
+                      ).show();
+                    }
                   },
                   child: const Text("Nạp tiền"))
             ],
@@ -360,5 +288,22 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
         ),
       ),
     ));
+  }
+
+  void _onPaymentSuccess(data) {
+    print(data);
+  }
+
+  void _onPaymentFailure(error) {
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.error,
+      animType: AnimType.topSlide,
+      title: "Thanh toán thất bại!",
+      desc: "Nạp GCOIN không thành công.",
+      btnOkText: "OK",
+      btnOkOnPress: () {},
+    ).show();
+    print(error);
   }
 }

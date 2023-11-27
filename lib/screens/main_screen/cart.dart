@@ -73,12 +73,13 @@ class _CartScreenState extends State<CartScreen> {
     if (widget.pickupDate != null) {
       _range =
           '${DateFormat('dd/MM/yyyy').format(widget.pickupDate ?? DateTime.now())} - ${DateFormat('dd/MM/yyyy').format(widget.returnDate ?? DateTime.now())}';
-      days = widget.returnDate?.difference(widget.pickupDate!).inDays;
-      if (days! > 0) {
-        for (var item in list) {
-          updateFinalTotal(item, item.qty, days);
-        }
+      if (widget.serviceType.id == 1 || widget.serviceType.id == 4) {
+        days = widget.returnDate!.difference(widget.pickupDate!).inDays + 1;
+      } else {
+        days = 1;
       }
+    } else {
+      days = 1;
     }
     noteController.text = widget.note;
     planId = sharedPreferences.getInt("planId");
@@ -247,8 +248,8 @@ class _CartScreenState extends State<CartScreen> {
                                   child: CartItemCard(
                                     cartItem: list[index],
                                     updateFinalCart: updateFinalCart,
-                                    updateFinalTotal: updateFinalTotal,
                                     days: days,
+                                    serviceType: widget.serviceType,
                                   ),
                                 );
                               },
@@ -489,7 +490,7 @@ class _CartScreenState extends State<CartScreen> {
                 : Visibility(
                     visible: finalTotal != 0,
                     child: Container(
-                      height: 19.h,
+                      height: days == 1 ? 19.h : 23.h,
                       width: double.infinity,
                       color: Colors.white,
                       child: Column(
@@ -497,6 +498,43 @@ class _CartScreenState extends State<CartScreen> {
                           const SizedBox(
                             height: 20,
                           ),
+                          days != 1
+                              ? Column(
+                                  children: [
+                                    Container(
+                                      width: 90.w,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Tạm tổng', // Replace with your first text
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontFamily: 'NotoSans',
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            currencyFormat.format(((finalTotal *
+                                                        30 /
+                                                        100) /
+                                                    1000) *
+                                                days!), // Replace with your second text
+                                            style: const TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'NotoSans',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 12,
+                                    ),
+                                  ],
+                                )
+                              : Container(),
                           Container(
                             width: 90.w,
                             child: Row(
@@ -515,7 +553,7 @@ class _CartScreenState extends State<CartScreen> {
                                     (widget.serviceType.id == 1 ||
                                             widget.serviceType.id == 4)
                                         ? Text(
-                                            days == null
+                                            days == 1
                                                 ? ""
                                                 : "( ${days.toString()} ngày )", // Replace with your first text
                                             style: const TextStyle(
@@ -528,8 +566,8 @@ class _CartScreenState extends State<CartScreen> {
                                   ],
                                 ),
                                 Text(
-                                  currencyFormat.format(finalTotal /
-                                      1000), // Replace with your second text
+                                  currencyFormat.format((finalTotal / 1000) *
+                                      days!), // Replace with your second text
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
@@ -557,10 +595,11 @@ class _CartScreenState extends State<CartScreen> {
                                       color: Colors.black),
                                 ),
                                 Text(
-                                  currencyFormat.format((finalTotal *
-                                          30 /
-                                          100) /
-                                      1000), // Replace with your second text
+                                  currencyFormat.format(((finalTotal *
+                                              30 /
+                                              100) /
+                                          1000) *
+                                      days!), // Replace with your second text
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
@@ -653,6 +692,7 @@ class _CartScreenState extends State<CartScreen> {
           setState(() {
             finalTotal -= cartItem.product.price * cartItem.qty;
             finalTotal += cartItem.product.price * newQty;
+
             updatedList[i] = ItemCart(product: cartItem.product, qty: newQty);
           });
         } else {
@@ -679,14 +719,9 @@ class _CartScreenState extends State<CartScreen> {
       );
     }).toList();
 
-    String? transactionId = sharedPreferences.getString("transactionId");
-
     OrderCreateViewModel order = OrderCreateViewModel(
-      planId: planId!,
+      planId: null,
       pickupDate: widget.pickupDate!,
-      paymentMethod: "PAYPAL",
-      transactionId: transactionId!,
-      deposit: finalTotal.toInt(),
       details: details,
     );
 
@@ -700,25 +735,9 @@ class _CartScreenState extends State<CartScreen> {
     return order;
   }
 
-  updateFinalTotal(ItemCart item, int newQty, int? days) {
-    setState(() {
-      if (newQty == item.qty) {
-        finalTotal -= item.product.price * item.qty;
-        finalTotal += item.product.price * newQty * days!;
-      } else {
-        finalTotal -= item.product.price * item.qty * days!;
-        print(finalTotal);
-        finalTotal += item.product.price * newQty * days;
-        print(days);
-        print(newQty);
-        print(item.product.price);
-      }
-    });
-  }
-
   paymentStart() async {
-    bool check = await orderService.addOrder(convertCart());
-    if (check) {
+    int? check = await orderService.addOrder(convertCart());
+    if (check != null) {
       // ignore: use_build_context_synchronously
       AwesomeDialog(
         context: context,
