@@ -11,6 +11,7 @@ class PlanCardViewModel {
     String locationName;
     String imageUrls;
     String provinceName;
+    String status;
 
     PlanCardViewModel({
         required this.id,
@@ -19,6 +20,7 @@ class PlanCardViewModel {
         required this.locationName,
         required this.imageUrls,
         required this.provinceName,
+        required this.status,
     });
 
     factory PlanCardViewModel.fromJson(Map<String, dynamic> json) => PlanCardViewModel(
@@ -28,6 +30,7 @@ class PlanCardViewModel {
         locationName: json["location"]['name'],
         imageUrls: json["location"]["imageUrls"],
         provinceName: json["location"]["province"]["name"],
+        status: json["status"]
     );
 
     Map<String, dynamic> toJson() => {

@@ -1,6 +1,9 @@
+import 'dart:ffi';
+
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
+import 'package:greenwheel_user_app/view_models/register.dart';
 
 class CustomerService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
@@ -74,6 +77,39 @@ mutation{
         return transactionId;
       }
     } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<Int?> registerTraveler(RegisterViewModel model) async{
+    try{
+      QueryResult result = await client.mutate(
+        MutationOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql('''
+mutation {
+  registerTraveler(model: {
+    name:"${model.name}"
+    birthday:"${model.birthday}"
+    isMale:${model.isMale}
+    email:"${model.email}"
+  }){
+    id
+  }
+}
+'''))
+      );
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      List? res = result.data!['travelers']['nodes'];
+      if (res == null || res.isEmpty) {
+        return null;
+      }
+      
+      return res[0];
+    }catch (error) {
       throw Exception(error);
     }
   }

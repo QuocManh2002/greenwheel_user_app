@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/view_models/register.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -16,6 +18,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   bool isMale = true;
   DateTime selectedDate = DateTime.now();
   bool isPolicyAccept = false;
+  CustomerService _customerService = CustomerService();
 
   @override
   void initState() {
@@ -324,5 +327,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
         ),
       ),
     ));
+  }
+
+  _register() async{
+    var id = await _customerService.registerTraveler(RegisterViewModel(birthday: selectedDate, isMale: isMale, email: emailController.text, name: nameController.text));
   }
 }
