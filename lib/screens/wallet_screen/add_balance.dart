@@ -48,6 +48,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
         refreshedBalance = _customer!.balance;
       });
     }
+    print(phone);
   }
 
   @override
@@ -90,7 +91,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                         locale: 'en-US',
                                         decimalDigits: 0,
                                         name: "")
-                                    .format(widget.balance),
+                                    .format(refreshedBalance ?? widget.balance),
                                 style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
@@ -294,17 +295,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                         onPaymentError: _onPaymentFailure,
                       );
 
-                      if (paymentData != null) {
-                        print(paymentData);
-                        // ignore: use_build_context_synchronously
-                        // Navigator.of(context).push(
-                        //   MaterialPageRoute(
-                        //     builder: (ctx) => TopupSuccessfulScreen(
-                        //       data: paymentData!,
-                        //     ),
-                        //   ),
-                        // );
-                      }
+                      setUpData();
                       // print(request.transactionId);
                       // TopupViewModel? topup = await orderService
                       //     .topUpSubcription(request.transactionId);
@@ -313,6 +304,11 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                       // } else {
                       //   // ignore: use_build_context_synchronously
                       // }
+//                       Ngân hàng	NCB
+// Số thẻ	9704198526191432198
+// Tên chủ thẻ	NGUYEN VAN A
+// Ngày phát hành	07/15
+// Mật khẩu OTP	123456
                     } else {
                       // ignore: use_build_context_synchronously
                       AwesomeDialog(
@@ -336,9 +332,6 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
 
   void _onPaymentSuccess(data) {
     print(data);
-    setState(() {
-      paymentData = data;
-    });
   }
 
   void _onPaymentFailure(error) {
