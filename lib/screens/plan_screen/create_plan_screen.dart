@@ -9,6 +9,7 @@ import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/select_date_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
@@ -76,8 +77,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                 quantity: item.details.length,
                 supplierName: item.details[0].supplierName,
                 type: item.type)));
-      }else{
-         listMotel.add(SupplierOrderCard(
+      } else {
+        listMotel.add(SupplierOrderCard(
             order: SupplierOrder(
                 id: item.id,
                 imgUrl: item.thumbnailUrl,
@@ -192,8 +193,23 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
     }
   }
 
+  handleQuitScreen() {
+    AwesomeDialog(
+        context: context,
+        dialogType: DialogType.warning,
+        body: const Padding(
+          padding: EdgeInsets.all(18.0),
+          child: Text(
+            "Kế hoạch cho chuyến đi này chưa được lưu, bạn có chắc chắn muốn rời khỏi màn hình này không?",
+            style: TextStyle(fontSize: 18),
+            textAlign: TextAlign.center,
+          ),
+        )).show();
+  }
+
   finishPlan() async {
-    List<List<String>> schedule = _planService.GetPlanDetailFromListPlanItem(planDetail);
+    List<List<String>> schedule =
+        _planService.GetPlanDetailFromListPlanItem(planDetail);
 
     PlanFinish finish = PlanFinish(
         planId: sharedPreferences.getInt("planId")!,
@@ -232,6 +248,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
           "Lập kế hoạch",
           style: TextStyle(color: Colors.black),
         ),
+        leading: BackButton(onPressed: handleQuitScreen),
       ),
       body: Column(
         children: [
@@ -271,70 +288,111 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                           height: 1.8,
                           color: Colors.grey.withOpacity(0.4),
                         ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          child: RichText(
-                              textAlign: TextAlign.start,
-                              text: TextSpan(
-                                  text: "Khởi hành:  ",
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black),
-                                  children: [
-                                    TextSpan(
-                                        text:
-                                            '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.normal))
-                                  ])),
-                        ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          child: RichText(
-                              textAlign: TextAlign.start,
-                              text: TextSpan(
-                                  text: "Kết thúc:     ",
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black),
-                                  children: [
-                                    TextSpan(
-                                        text:
-                                            '${widget.endDate.day}/${widget.endDate.month}/${widget.endDate.year}',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.normal))
-                                  ])),
-                        ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        Container(
-                          alignment: Alignment.centerLeft,
-                          child: RichText(
-                              textAlign: TextAlign.start,
-                              text: TextSpan(
-                                  text: "Thành viên: ",
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black),
-                                  children: [
-                                    TextSpan(
-                                        text: '${widget.numberOfMember} người',
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.normal))
-                                  ])),
-                        ),
-                        const SizedBox(
-                          height: 16,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: RichText(
+                                      textAlign: TextAlign.start,
+                                      text: TextSpan(
+                                          text: "Khởi hành:  ",
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                          children: [
+                                            TextSpan(
+                                                text:
+                                                    '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}',
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.normal))
+                                          ])),
+                                ),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: RichText(
+                                      textAlign: TextAlign.start,
+                                      text: TextSpan(
+                                          text: "Kết thúc:     ",
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                          children: [
+                                            TextSpan(
+                                                text:
+                                                    '${widget.endDate.day}/${widget.endDate.month}/${widget.endDate.year}',
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.normal))
+                                          ])),
+                                ),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  child: RichText(
+                                      textAlign: TextAlign.start,
+                                      text: TextSpan(
+                                          text: "Thành viên: ",
+                                          style: const TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                          children: [
+                                            TextSpan(
+                                                text:
+                                                    '${widget.numberOfMember} người',
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.normal))
+                                          ])),
+                                ),
+                                const SizedBox(
+                                  height: 16,
+                                ),
+                              ],
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.only(right: 8),
+                              child: TextButton(
+                                style: ButtonStyle(
+                                    shape: const MaterialStatePropertyAll(
+                                        RoundedRectangleBorder(
+                                            side:
+                                                BorderSide(color: primaryColor),
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(8)))),
+                                    overlayColor: MaterialStatePropertyAll(
+                                        primaryColor.withOpacity(0.3))),
+                                onPressed: () {
+                                  Navigator.of(context)
+                                      .pushReplacement(MaterialPageRoute(
+                                          builder: (ctx) => SelectDateScreen(
+                                                location: widget.location,
+                                                isCreate: false,
+                                              )));
+                                },
+                                child: const Text(
+                                  "Chỉnh sửa",
+                                  style: TextStyle(
+                                      color: primaryColor, fontSize: 16),
+                                ),
+                              ),
+                            )
+                          ],
                         ),
                         Container(
                           height: 1.8,
@@ -397,7 +455,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                             ]),
                         Container(
                           margin: const EdgeInsets.only(top: 8),
-                          height: _listRestaurant.length == 0 && _listMotel.length == 0
+                          height: _listRestaurant.length == 0 &&
+                                  _listMotel.length == 0
                               ? 0.h
                               : 35.h,
                           child:

@@ -9,8 +9,10 @@ import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectDateScreen extends StatefulWidget {
-  const SelectDateScreen({super.key, required this.location});
+  const SelectDateScreen({super.key, required this.location, required this.isCreate});
   final LocationViewModel location;
+  final bool isCreate;
+  
 
   @override
   State<SelectDateScreen> createState() => _SelectDateScreenState();
@@ -88,14 +90,13 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
     PlanDraft draft = PlanDraft(startDate: selectedDates.start, endDate: selectedDates.end, locationId: widget.location.id, memberLimit: _selectedQuantity, schedule: finalSchedule);
     var rs = await _planService.createPlanDraft(draft);
     if(rs){
-      Navigator.of(context).push(MaterialPageRoute(
-                      builder: (ctx) => CreatePlanScreen(
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder: (ctx) => CreatePlanScreen(
                             location: widget.location,
                             endDate: selectedDates.end,
                             startDate: selectedDates.start,
                             numberOfMember: _selectedQuantity,
                             duration: selectedDates.duration.inDays + 1,
-                          )));
+                          )),);
     }
   }
   
@@ -109,9 +110,10 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
         child: Scaffold(
       appBar: AppBar(
         backgroundColor: primaryColor,
-        title: const Text(
-          "Thông tin ban đầu",
-          style: TextStyle(fontSize: 20, color: Colors.white),
+        title: Text(
+          widget.isCreate ? 
+          "Thông tin ban đầu" : "Cập nhật thông tin",
+          style:const TextStyle(fontSize: 20, color: Colors.white),
         ),
       ),
       body: Column(
@@ -217,5 +219,9 @@ class _SelectDateScreenState extends State<SelectDateScreen> {
         ],
       ),
     ));
+  }
+
+  updateInformation() async{
+
   }
 }
