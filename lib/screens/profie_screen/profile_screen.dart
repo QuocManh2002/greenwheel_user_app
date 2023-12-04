@@ -311,7 +311,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               clipBehavior: Clip.hardEdge,
               decoration: const BoxDecoration(shape: BoxShape.circle),
               child: Image.network(
-                "https://cdn.gametv.vn/gtv-photo/GTVNews/1604629662/api_cdn.gametv.vn-e21206645ee357227c2f354ea4c0eb50.png",
+                _customer!.avatarUrl ?? defaultUserAvatarLink ,
                 fit: BoxFit.cover,
               ),
             ),
