@@ -1,17 +1,13 @@
-
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:qr_flutter/qr_flutter.dart';
-import 'package:screenshot/screenshot.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -23,7 +19,6 @@ class QRScreen extends StatefulWidget {
 }
 
 class _QRScreenState extends State<QRScreen> {
-  final ScreenshotController screenshotController = ScreenshotController();
 
   final GlobalKey _qrkey = GlobalKey();
   Future<Uint8List> convertQRToBytes() async {
@@ -57,22 +52,14 @@ class _QRScreenState extends State<QRScreen> {
 
   onSave() async {
     try {
-      // final Uint8List? uint8list = await screenshotController.capture();
-      // if(uint8list != null){
-        Uint8List? uint8list = await convertQRToBytes();
-        // final PermissionStatus status = await Permission.storage.request();
-        // if(status.isGranted){
-          final result = await ImageGallerySaver.saveImage(uint8list);
-          if(result['isSuccess']){
-            print('Image saved!');
-          }else{
-            print('Something wrong when saving image!');
-            print('${result['error']}');
-          }
-        // }else{
-        //   print('Permission to access storage denied!');
-        // }
-      // }
+      Uint8List? uint8list = await convertQRToBytes();
+      final result = await ImageGallerySaver.saveImage(uint8list);
+      if (result['isSuccess']) {
+        print('Image saved!');
+      } else {
+        print('Something wrong when saving image!');
+        print('${result['error']}');
+      }
     } catch (e) {
       print(e);
     }
@@ -105,24 +92,20 @@ class _QRScreenState extends State<QRScreen> {
               SizedBox(
                 height: 8.h,
               ),
-              Screenshot(
-                controller: screenshotController,
-                child: RepaintBoundary(
-                  key: _qrkey,
-                    child: QrImageView(
-                      data: "quoc manh",
-                      version: QrVersions.auto,
-                      size: 80.w,
-                      gapless: true,
-                      errorStateBuilder: (context, error) {
-                        return const Text(
-                          "Something went wrong! please try again!",
-                          textAlign: TextAlign.center,
-                        );
-                      },
-                    ),
+              RepaintBoundary(
+                key: _qrkey,
+                child: QrImageView(
+                  data: "quoc manh",
+                  version: QrVersions.auto,
+                  size: 80.w,
+                  gapless: true,
+                  errorStateBuilder: (context, error) {
+                    return const Text(
+                      "Something went wrong! please try again!",
+                      textAlign: TextAlign.center,
+                    );
+                  },
                 ),
-                
               ),
               SizedBox(
                 height: 5.h,
