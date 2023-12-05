@@ -6,12 +6,9 @@ import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:gallery_saver/gallery_saver.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
-import 'package:greenwheel_user_app/widgets/shimmer_widget.dart';
-import 'package:greenwheel_user_app/widgets/test_screen1.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -56,7 +53,6 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   onSave() async {
-    await GallerySaver.saveImage("https://wallpapercave.com/wp/wp7851688.jpg");
   }
 
   @override
