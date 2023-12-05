@@ -4,11 +4,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/screens/sub_screen/topup_successfull_screen.dart';
+import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
+import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/tag.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:vnpay_client/vnpay_client.dart';
 import 'package:intl/intl.dart';
 
@@ -24,7 +26,10 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   TextEditingController newBalanceController = TextEditingController();
   bool isSelected = false;
   OrderService orderService = OrderService();
+  CustomerService customerService = CustomerService();
+  CustomerViewModel? _customer;
   bool isLoading = true;
+  int? refreshedBalance;
   String? paymentData;
 
   @override
@@ -32,6 +37,18 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
     // TODO: implement dispose
     super.dispose();
     newBalanceController.dispose();
+  }
+
+  setUpData() async {
+    String phone = sharedPreferences.getString("userPhone")!;
+    _customer = null;
+    _customer = await customerService.GetCustomerByPhone(phone);
+    if (_customer != null) {
+      setState(() {
+        refreshedBalance = _customer!.balance;
+      });
+    }
+    print(phone);
   }
 
   @override
@@ -74,7 +91,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                         locale: 'en-US',
                                         decimalDigits: 0,
                                         name: "")
-                                    .format(widget.balance),
+                                    .format(refreshedBalance ?? widget.balance),
                                 style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
@@ -278,17 +295,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                         onPaymentError: _onPaymentFailure,
                       );
 
-                      if (paymentData != null) {
-                        print(paymentData);
-                        // ignore: use_build_context_synchronously
-                        // Navigator.of(context).push(
-                        //   MaterialPageRoute(
-                        //     builder: (ctx) => TopupSuccessfulScreen(
-                        //       data: paymentData!,
-                        //     ),
-                        //   ),
-                        // );
-                      }
+                      setUpData();
                       // print(request.transactionId);
                       // TopupViewModel? topup = await orderService
                       //     .topUpSubcription(request.transactionId);
@@ -297,6 +304,11 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                       // } else {
                       //   // ignore: use_build_context_synchronously
                       // }
+//                       Ngân hàng	NCB
+// Số thẻ	9704198526191432198
+// Tên chủ thẻ	NGUYEN VAN A
+// Ngày phát hành	07/15
+// Mật khẩu OTP	123456
                     } else {
                       // ignore: use_build_context_synchronously
                       AwesomeDialog(
@@ -320,9 +332,6 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
 
   void _onPaymentSuccess(data) {
     print(data);
-    setState(() {
-      paymentData = data;
-    });
   }
 
   void _onPaymentFailure(error) {
