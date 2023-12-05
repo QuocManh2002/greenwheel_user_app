@@ -273,9 +273,9 @@ query GetPlanById(\$planId: Int){
     }
   }
 
-  List<List<String>> GetPlanDetailFormJson(String planText){
+  List<List<String>> GetPlanDetailFormJson(List<dynamic> details){
     List<List<String>> schedule = [];
-    for(final detail in json.decode(planText)){
+    for(final detail in details){
       List<String> items = [];
       for(final item in detail){
         items.add(json.encode(item));

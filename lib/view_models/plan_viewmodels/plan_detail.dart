@@ -14,13 +14,13 @@ class PlanDetail {
     int id;
     DateTime startDate;
     DateTime endDate;
-    String? schedule;
+    List<dynamic> schedule;
     int memberLimit;
     String status;
     bool isOpenToJoin;
     String locationName;
     int locationId;
-    String imageUrls;
+    List<dynamic> imageUrls;
     List<OrderViewModel>? orders;
 
     PlanDetail({

@@ -131,7 +131,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                   child: FadeInImage(
                     height: 15.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(json.decode(widget.location.imageUrls)[0]),
+                    image: NetworkImage(widget.location.imageUrls[0]),
                     fit: BoxFit.cover,
                     width: 15.h,
                     filterQuality: FilterQuality.high,

@@ -16,7 +16,7 @@ class _SplashScreenState extends State<SplashScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    Future.delayed(const Duration(seconds: 2), () {
+    Future.delayed(const Duration(seconds: 1), () {
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 0)), (route) => false);
     });
   }

@@ -6,7 +6,7 @@ final elevatedButtonStyle = ElevatedButton.styleFrom(
   foregroundColor: Colors.white,
   elevation: 0,
   textStyle: const TextStyle(fontSize: 18),
-  minimumSize: const Size(340, 45),
+  minimumSize: const Size(300, 45),
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.all(
       Radius.circular(10),

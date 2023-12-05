@@ -36,7 +36,7 @@ class LocationCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 20.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(json.decode(location.imageUrls)[0]),
+                    image: NetworkImage(location.imageUrls[0]),
                     fit: BoxFit.cover,
                     width: double.infinity,
                     filterQuality: FilterQuality.high,

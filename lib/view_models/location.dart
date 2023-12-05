@@ -7,12 +7,12 @@ String provinceToJson(LocationViewModel data) => json.encode(data.toJson());
 class LocationViewModel {
     int id;
     String description;
-    String imageUrls;
+    List<dynamic> imageUrls;
     String name;
     List<String> activities;
     List<String> seasons;
     String topographic;
-    String templatePlan;
+    List<dynamic> templatePlan;
     double latitude;
     double longitude;
     String address;

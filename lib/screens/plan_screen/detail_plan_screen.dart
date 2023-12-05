@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
@@ -159,7 +160,7 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
         }
       }
     } else {
-      planSchedule = generateItems(_planDetail!.schedule!);
+      planSchedule = generateItems(_planDetail!.schedule);
     }
 
     List<Widget> listRestaurant = [];
@@ -218,7 +219,7 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                                   placeholder: MemoryImage(kTransparentImage),
                                   height: 35.h,
                                   image: NetworkImage(
-                                      json.decode(_planDetail!.imageUrls)[0]),
+                                      _planDetail!.imageUrls[0]),
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                 )),
@@ -412,43 +413,57 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                         )),
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                         child: Container(
                           height: 6.h,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.noHeader,
-                                      animType: AnimType.topSlide,
-                                      btnOkColor: primaryColor,
-                                      btnOkText: "Lưu",
-                                      desc: "Lưu kế hoạch thành công",
-                                      body: Container(
-                                        alignment: Alignment.topLeft,
-                                        height: 50.h,
-                                        // child: ConfirmPlan(
-                                        //   duration: widget.duration,
-                                        //   endDate: widget.endDate,
-                                        //   location: widget.location,
-                                        //   numberOfMember: widget.numberOfMember,
-                                        //   planDetail: planDetail,
-                                        //   startDate: widget.startDate,
-                                        //   orders: _orderList!,
-                                        // ),
-                                      ),
-                                      btnOkOnPress: () {},
-                                      btnCancelText: "Chỉnh sửa",
-                                      btnCancelOnPress: () {},
-                                      btnCancelColor: secondaryColor)
-                                  .show();
-                            },
-                            style: elevatedButtonStyle,
-                            child:  Text(
-                              widget.isEnableToJoin?"Tham gia kế hoạch" : "Chỉnh sửa kế hoạch",
-                              style:const TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    AwesomeDialog(
+                                            context: context,
+                                            dialogType: DialogType.noHeader,
+                                            animType: AnimType.topSlide,
+                                            btnOkColor: primaryColor,
+                                            btnOkText: "Lưu",
+                                            desc: "Lưu kế hoạch thành công",
+                                            body: Container(
+                                              alignment: Alignment.topLeft,
+                                              height: 50.h,
+                                              // child: ConfirmPlan(
+                                              //   duration: widget.duration,
+                                              //   endDate: widget.endDate,
+                                              //   location: widget.location,
+                                              //   numberOfMember: widget.numberOfMember,
+                                              //   planDetail: planDetail,
+                                              //   startDate: widget.startDate,
+                                              //   orders: _orderList!,
+                                              // ),
+                                            ),
+                                            btnOkOnPress: () {},
+                                            btnCancelText: "Chỉnh sửa",
+                                            btnCancelOnPress: () {},
+                                            btnCancelColor: secondaryColor)
+                                        .show();
+                                  },
+                                  style: elevatedButtonStyle,
+                                  child:  Text(
+                                    widget.isEnableToJoin?"Tham gia kế hoạch" : "Chỉnh sửa kế hoạch",
+                                    style:const TextStyle(
+                                        fontSize: 20, fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 12,),
+                              ElevatedButton(
+                                style: elevatedButtonStyle.copyWith(
+                                  minimumSize:const MaterialStatePropertyAll(Size(45,45)),
+                                  backgroundColor:const MaterialStatePropertyAll(Colors.blue)
+                                ),
+                                onPressed: (){}, 
+                                child:const Icon(Icons.share, size: 35,))
+                            ],
                           ),
                         ),
                       )

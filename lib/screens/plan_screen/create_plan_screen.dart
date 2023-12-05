@@ -262,7 +262,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                         placeholder: MemoryImage(kTransparentImage),
                         height: 35.h,
                         image: NetworkImage(
-                            json.decode(widget.location.imageUrls)[0]),
+                            widget.location.imageUrls[0]),
                         fit: BoxFit.cover,
                         width: double.infinity,
                       )),

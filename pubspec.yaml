@@ -19,7 +19,7 @@ dependencies:
   input_quantity: ^2.1.1
   syncfusion_flutter_datepicker: ^23.1.42
   graphql_flutter: ^5.1.2
-  http: ^1.1.0
+  http: ^0.13.6
   readmore: ^2.2.0
   collection: ^1.17.2
   mapbox_gl: ^0.16.0
@@ -33,6 +33,10 @@ dependencies:
   shimmer: ^3.0.0
   vnpay_client: ^0.0.3
   intl: ^0.18.1
+  share_plus: ^7.2.1
+  path_provider: ^2.1.1
+  gallery_saver: ^2.3.2
+  qr_flutter: ^4.1.0
   uni_links: ^0.5.1
 
 dev_dependencies:

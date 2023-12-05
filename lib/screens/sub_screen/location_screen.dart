@@ -45,7 +45,7 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   getData() {
-    imageUrls = json.decode(widget.location.imageUrls);
+    imageUrls = widget.location.imageUrls;
     // province tag
     tagList.add(getTag(widget.location.topographic));
     for (final activity in widget.location.activities) {

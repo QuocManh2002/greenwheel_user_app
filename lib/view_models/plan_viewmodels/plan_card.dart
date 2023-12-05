@@ -9,7 +9,7 @@ class PlanCardViewModel {
     DateTime startDate;
     DateTime endDate;
     String locationName;
-    String imageUrls;
+    List<dynamic> imageUrls;
     String provinceName;
     String status;
 

@@ -18,12 +18,12 @@ List<PlanItem> planItems (int numberOfDays){
   );
 }
 
-List<PlanItem> generateItems(String itemText) {
-      var rs = json.decode(itemText);
+List<PlanItem> generateItems(List<dynamic> plans) {
+      // var rs = json.decode(itemText);
       List<PlanItem> items = [];
-      for (int index = 0; index < rs.length; index++) {
+      for (int index = 0; index < plans.length; index++) {
         List<String> details = [];
-        for (final detail in rs[index]) {
+        for (final detail in plans[index]) {
           details.add(detail.toString());
         }
         items.add(PlanItem(title: "Ngày ${index + 1}", details: details));

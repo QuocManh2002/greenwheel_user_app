@@ -2,6 +2,7 @@ import 'dart:ffi';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
 
@@ -81,7 +82,7 @@ mutation{
     }
   }
 
-  Future<Int?> registerTraveler(RegisterViewModel model) async{
+  Future<int?> registerTraveler(RegisterViewModel model) async{
     try{
       QueryResult result = await client.mutate(
         MutationOptions(
@@ -103,12 +104,12 @@ mutation {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['registerTraveler']['id'];
-      if (res == null || res.isEmpty) {
+      int? res = result.data!['registerTraveler']['id'];
+      if (res == null ) {
         return null;
       }
-      
-      return res[0];
+      TokenRefresher.refreshToken();
+      return res;
     }catch (error) {
       throw Exception(error);
     }
