@@ -1,10 +1,9 @@
-
-
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
@@ -17,7 +16,10 @@ import '../../widgets/button_style.dart';
 
 class DetailPlanScreen extends StatefulWidget {
   const DetailPlanScreen(
-      {super.key, required this.planId, required this.locationName, required this.isEnableToJoin});
+      {super.key,
+      required this.planId,
+      required this.locationName,
+      required this.isEnableToJoin});
   final int planId;
   final String locationName;
   final bool isEnableToJoin;
@@ -174,8 +176,8 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                 quantity: item.details!.length,
                 supplierName: item.details![0].supplierName,
                 type: item.details![0].type)));
-      }else{
-         listMotel.add(SupplierOrderCard(
+      } else {
+        listMotel.add(SupplierOrderCard(
             order: SupplierOrder(
                 id: item.id,
                 imgUrl: item.details![0].supplierThumbnailUrl,
@@ -191,8 +193,8 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
       // _orderList = orderList;
     });
     setState(() {
-        isLoading = false;
-      });
+      isLoading = false;
+    });
   }
 
   @override
@@ -217,8 +219,8 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                                 child: FadeInImage(
                                   placeholder: MemoryImage(kTransparentImage),
                                   height: 35.h,
-                                  image: NetworkImage(
-                                      _planDetail!.imageUrls[0]),
+                                  image:
+                                      NetworkImage(_planDetail!.imageUrls[0]),
                                   fit: BoxFit.cover,
                                   width: double.infinity,
                                 )),
@@ -412,7 +414,8 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                         )),
                       ),
                       Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 24, vertical: 8),
                         child: Container(
                           height: 6.h,
                           child: Row(
@@ -447,26 +450,41 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                                         .show();
                                   },
                                   style: elevatedButtonStyle,
-                                  child:  Text(
-                                    widget.isEnableToJoin?"Tham gia kế hoạch" : "Chỉnh sửa kế hoạch",
-                                    style:const TextStyle(
-                                        fontSize: 20, fontWeight: FontWeight.bold),
+                                  child: Text(
+                                    widget.isEnableToJoin
+                                        ? "Tham gia kế hoạch"
+                                        : "Chỉnh sửa kế hoạch",
+                                    style: const TextStyle(
+                                        fontSize: 20,
+                                        fontWeight: FontWeight.bold),
                                   ),
                                 ),
                               ),
-                              const SizedBox(width: 12,),
+                              const SizedBox(
+                                width: 12,
+                              ),
                               ElevatedButton(
-                                style: elevatedButtonStyle.copyWith(
-                                  minimumSize:const MaterialStatePropertyAll(Size(45,45)),
-                                  backgroundColor:const MaterialStatePropertyAll(Colors.blue)
-                                ),
-                                onPressed: (){}, 
-                                child:const Icon(Icons.share, size: 35,))
+                                  style: elevatedButtonStyle.copyWith(
+                                      minimumSize:
+                                          const MaterialStatePropertyAll(
+                                              Size(45, 45)),
+                                      backgroundColor:
+                                          const MaterialStatePropertyAll(
+                                              Colors.blue)),
+                                  onPressed: onShare,
+                                  child: const Icon(
+                                    Icons.share,
+                                    size: 25,
+                                  ))
                             ],
                           ),
                         ),
                       )
                     ],
                   )));
+  }
+
+  onShare() async {
+    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const SharePlanScreen()));
   }
 }

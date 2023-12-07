@@ -123,7 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     padding: const EdgeInsets.only(bottom: 5, right: 0),
                                     child: IconButton(
                                         onPressed: () {
-                                          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) =>const QRScreen()));
+                                          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => QRScreen()));
                                         },
                                         icon: const Icon(
                                           Icons.qr_code_2,

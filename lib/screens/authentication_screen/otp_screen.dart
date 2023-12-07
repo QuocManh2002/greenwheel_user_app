@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -194,8 +195,9 @@ class _OTPScreenState extends State<OTPScreen> {
         CustomerViewModel? customer =
             await customerService.GetCustomerByPhone(payload['phone_number']);
         if (customer != null) {
+          String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
+          sharedPreferences.setString('deviceToken', deviceToken);
           sharedPreferences.setString("userPhone", payload['phone_number']);
-
           // ignore: use_build_context_synchronously
           Navigator.push(context,
               MaterialPageRoute(builder: (_) => const TabScreen(pageIndex: 0)));

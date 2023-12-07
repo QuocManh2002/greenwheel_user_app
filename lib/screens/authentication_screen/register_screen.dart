@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
@@ -333,6 +334,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
   _register() async{
     var id = await _customerService.registerTraveler(RegisterViewModel(birthday: selectedDate, isMale: isMale, email: emailController.text, name: nameController.text));
     if(id != null){
+      await TokenRefresher.refreshToken();
+      // ignore: use_build_context_synchronously
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) =>const TabScreen(pageIndex: 0)), (route) => false);
     }
   }

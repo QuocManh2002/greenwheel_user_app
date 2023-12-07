@@ -204,7 +204,18 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
             style: TextStyle(fontSize: 18),
             textAlign: TextAlign.center,
           ),
-        )).show();
+        ),
+        btnOkColor: Colors.amber,
+        btnOkText: "Rời khỏi",
+        btnCancelColor: Colors.red,
+        btnCancelText: "Hủy",
+        btnCancelOnPress: () {
+          
+        },
+        btnOkOnPress: () {
+          Navigator.of(context).pop();
+        },
+        ).show();
   }
 
   finishPlan() async {

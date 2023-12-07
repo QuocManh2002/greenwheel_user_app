@@ -197,7 +197,6 @@ query GetPlanById(\$planId: Int){
             }
             }
             }
-      isOpenToJoin
       location{id name imageUrls}
     }
   }

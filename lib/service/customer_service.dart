@@ -20,16 +20,14 @@ class CustomerService {
     (
       where: { 
         phone: {eq: \$phone } 
-        isBlocked: {eq: false}
         }
       )
         {
         nodes{
           id
-          name
+          account{name avatarUrl}
           email
           isMale
-          avatarUrl
           birthday
           phone
           balance
