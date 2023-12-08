@@ -413,78 +413,78 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                           ],
                         )),
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 24, vertical: 8),
-                        child: Container(
-                          height: 6.h,
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: ElevatedButton(
-                                  onPressed: () {
-                                    AwesomeDialog(
-                                            context: context,
-                                            dialogType: DialogType.noHeader,
-                                            animType: AnimType.topSlide,
-                                            btnOkColor: primaryColor,
-                                            btnOkText: "Lưu",
-                                            desc: "Lưu kế hoạch thành công",
-                                            body: Container(
-                                              alignment: Alignment.topLeft,
-                                              height: 50.h,
-                                              // child: ConfirmPlan(
-                                              //   duration: widget.duration,
-                                              //   endDate: widget.endDate,
-                                              //   location: widget.location,
-                                              //   numberOfMember: widget.numberOfMember,
-                                              //   planDetail: planDetail,
-                                              //   startDate: widget.startDate,
-                                              //   orders: _orderList!,
-                                              // ),
-                                            ),
-                                            btnOkOnPress: () {},
-                                            btnCancelText: "Chỉnh sửa",
-                                            btnCancelOnPress: () {},
-                                            btnCancelColor: secondaryColor)
-                                        .show();
-                                  },
-                                  style: elevatedButtonStyle,
-                                  child: Text(
-                                    widget.isEnableToJoin
-                                        ? "Tham gia kế hoạch"
-                                        : "Chỉnh sửa kế hoạch",
-                                    style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(
-                                width: 12,
-                              ),
-                              ElevatedButton(
-                                  style: elevatedButtonStyle.copyWith(
-                                      minimumSize:
-                                          const MaterialStatePropertyAll(
-                                              Size(45, 45)),
-                                      backgroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.blue)),
-                                  onPressed: onShare,
-                                  child: const Icon(
-                                    Icons.share,
-                                    size: 25,
-                                  ))
-                            ],
-                          ),
-                        ),
-                      )
+                      buildFooter()
                     ],
                   )));
   }
 
   onShare() async {
-    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const SharePlanScreen()));
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (ctx) => const SharePlanScreen()));
   }
+
+  Widget buildFooter() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: Container(
+          height: 6.h,
+          child: Row(
+            children: [
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () {
+                    AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.noHeader,
+                            animType: AnimType.topSlide,
+                            btnOkColor: primaryColor,
+                            btnOkText: "Lưu",
+                            desc: "Lưu kế hoạch thành công",
+                            body: Container(
+                              alignment: Alignment.topLeft,
+                              height: 50.h,
+                              // child: ConfirmPlan(
+                              //   duration: widget.duration,
+                              //   endDate: widget.endDate,
+                              //   location: widget.location,
+                              //   numberOfMember: widget.numberOfMember,
+                              //   planDetail: planDetail,
+                              //   startDate: widget.startDate,
+                              //   orders: _orderList!,
+                              // ),
+                            ),
+                            btnOkOnPress: () {},
+                            btnCancelText: "Chỉnh sửa",
+                            btnCancelOnPress: () {},
+                            btnCancelColor: secondaryColor)
+                        .show();
+                  },
+                  style: elevatedButtonStyle,
+                  child: Text(
+                    widget.isEnableToJoin
+                        ? "Tham gia kế hoạch"
+                        : "Chỉnh sửa kế hoạch",
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              if (_planDetail!.status == "OFFICIAL")
+                Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: ElevatedButton(
+                      style: elevatedButtonStyle.copyWith(
+                          minimumSize:
+                              const MaterialStatePropertyAll(Size(45, 45)),
+                          backgroundColor:
+                              const MaterialStatePropertyAll(Colors.blue)),
+                      onPressed: onShare,
+                      child: const Icon(
+                        Icons.share,
+                        size: 25,
+                      )),
+                )
+            ],
+          ),
+        ),
+      );
 }

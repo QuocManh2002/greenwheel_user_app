@@ -3,10 +3,8 @@ import 'dart:convert';
 class CustomerViewModel {
   int id;
   String name;
-  String? email;
   bool isMale;
   String? avatarUrl;
-  DateTime birthday;
   String phone;
   int balance;
 
@@ -18,10 +16,8 @@ class CustomerViewModel {
   CustomerViewModel({
     required this.id,
     required this.name,
-    required this.email,
     required this.isMale,
     required this.avatarUrl,
-    required this.birthday,
     required this.phone,
     required this.balance,
   });
@@ -29,11 +25,9 @@ class CustomerViewModel {
   factory CustomerViewModel.fromJson(Map<String, dynamic> json) =>
       CustomerViewModel(
         id: json["id"],
-        name: json["name"],
-        email: json["email"],
+        name: json["account"]["name"],
         isMale: json["isMale"],
-        avatarUrl: json["avatarUrl"],
-        birthday: DateTime.parse(json["birthday"]),
+        avatarUrl: json['account']["avatarUrl"],
         phone: json["phone"],
         balance: json["balance"],
       );
@@ -41,10 +35,8 @@ class CustomerViewModel {
   Map<String, dynamic> toJson() => {
         "id": id,
         "name": name,
-        "email": email,
         "isMale": isMale,
         "avatarUrl": avatarUrl,
-        "birthday": birthday,
         "phone": phone,
         "balance": balance,
       };

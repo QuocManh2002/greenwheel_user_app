@@ -99,6 +99,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
+          backgroundColor: Colors.white.withOpacity(0.94),
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Chia sẻ kế hoạch"),
@@ -198,7 +199,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
           ]),
           if (_isSearch)
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 15.h),
+              padding: EdgeInsets.symmetric(horizontal: 32, vertical: 13.h),
               child: Container(
                 height: 13.h,
                 width: double.infinity,
@@ -281,6 +282,13 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                               )
                             ],
                           ),
+                          Padding(
+                            padding: EdgeInsets.only(left: 20.w, right: 12),
+                            child: Container(
+                              height: 1.7,
+                              color: Colors.black26,
+                            ),
+                          )
                   ],
                 ),
               ),

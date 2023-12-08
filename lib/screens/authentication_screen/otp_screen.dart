@@ -188,8 +188,8 @@ class _OTPScreenState extends State<OTPScreen> {
       print(sharedPreferences.getString("userToken"));
       Map<String, dynamic> payload = Jwt.parseJwt(token);
 
-      if (payload['Id'] != null) {
-        sharedPreferences.setString('userId', payload['Id'].toString());
+      if (payload['id'] != null) {
+        sharedPreferences.setString('userId', payload['id'].toString());
         print("NEW PAYLOAD: $payload");
 
         CustomerViewModel? customer =
@@ -201,7 +201,8 @@ class _OTPScreenState extends State<OTPScreen> {
           // ignore: use_build_context_synchronously
           Navigator.push(context,
               MaterialPageRoute(builder: (_) => const TabScreen(pageIndex: 0)));
-        } else {}
+        } else {
+        }
       }else{
         // sharedPreferences.setString("userPhone", payload['phone_number']);
         Navigator.push(context,

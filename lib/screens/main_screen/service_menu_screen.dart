@@ -25,6 +25,7 @@ class ServiceMenuScreen extends StatefulWidget {
     this.iniReturnDate,
     this.iniNote = "",
     required this.location,
+    required this.numberOfMember
   });
   final SupplierViewModel supplier;
   final ServiceType serviceType;
@@ -33,6 +34,7 @@ class ServiceMenuScreen extends StatefulWidget {
   final DateTime? iniReturnDate;
   final String iniNote;
   final LocationViewModel location;
+  final int numberOfMember;
 
   @override
   State<ServiceMenuScreen> createState() => _ServiceMenuScreenState();
@@ -149,6 +151,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                             builder: (ctx) => ServiceMainScreen(
                               serviceType: widget.serviceType,
                               location: widget.location,
+                              numberOfMember: widget.numberOfMember,
                               callbackFunction:
                                   (List<OrderCreatePlan> orderList) {},
                             ),
@@ -266,6 +269,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (ctx) => CartScreen(
+                            numberOfMember: widget.numberOfMember,
                             location: widget.location,
                             supplier: widget.supplier,
                             list: items,

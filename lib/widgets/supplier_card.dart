@@ -7,22 +7,19 @@ import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-class SupplierCard extends StatefulWidget {
+class SupplierCard extends StatelessWidget {
   const SupplierCard({
     super.key,
     required this.supplier,
     required this.serviceType,
     required this.location,
+    required this.numberOfMember
   });
   final SupplierViewModel supplier;
   final ServiceType serviceType;
   final LocationViewModel location;
+  final int numberOfMember;
 
-  @override
-  State<SupplierCard> createState() => _SupplierCardState();
-}
-
-class _SupplierCardState extends State<SupplierCard> {
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -39,14 +36,15 @@ class _SupplierCardState extends State<SupplierCard> {
                 backgroundColor: Colors.white),
             onPressed: () async {
               var service =
-                  services.firstWhere((s) => s.name == widget.supplier.type);
+                  services.firstWhere((s) => s.name == supplier.type);
               // Navigator.of(context).pop();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => ServiceMenuScreen(
-                    supplier: widget.supplier,
+                    numberOfMember: 0,
+                    supplier: supplier,
                     serviceType: service,
-                    location: widget.location,
+                    location: location,
                   ),
                 ),
               );
@@ -65,7 +63,7 @@ class _SupplierCardState extends State<SupplierCard> {
                     child: FadeInImage(
                       height: 15.h,
                       placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage(widget.supplier.thumbnailUrl),
+                      image: NetworkImage(supplier.thumbnailUrl),
                       fit: BoxFit.cover,
                       width: 15.h,
                       filterQuality: FilterQuality.high,
@@ -83,7 +81,7 @@ class _SupplierCardState extends State<SupplierCard> {
                       Padding(
                         padding: const EdgeInsets.only(left: 8, top: 10),
                         child: Text(
-                          widget.supplier.name,
+                          supplier.name,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 16,
@@ -113,7 +111,7 @@ class _SupplierCardState extends State<SupplierCard> {
                           Padding(
                             padding: EdgeInsets.only(left: 8, top: 0.5.h),
                             child: Text(
-                              widget.supplier.phone,
+                              supplier.phone,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.black54,
@@ -131,7 +129,7 @@ class _SupplierCardState extends State<SupplierCard> {
                         child: Padding(
                           padding: EdgeInsets.only(left: 8, top: 0.5.h),
                           child: Text(
-                            widget.supplier.address,
+                            supplier.address,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Colors.grey,

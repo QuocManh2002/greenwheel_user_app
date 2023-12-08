@@ -504,6 +504,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                                 case 0:
                                   Navigator.of(context).push(MaterialPageRoute(
                                     builder: (ctx) => ServiceMainScreen(
+                                      numberOfMember: widget.numberOfMember,
                                       serviceType: services[1],
                                       location: widget.location,
                                       callbackFunction: callback,
@@ -513,6 +514,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                                 case 1:
                                   Navigator.of(context).push(MaterialPageRoute(
                                     builder: (ctx) => ServiceMainScreen(
+                                      numberOfMember: widget.numberOfMember,
                                       serviceType: services[0],
                                       location: widget.location,
                                       callbackFunction: callback,

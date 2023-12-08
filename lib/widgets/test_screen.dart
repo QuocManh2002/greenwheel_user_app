@@ -14,6 +14,7 @@ import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:http/http.dart' as http;
+import 'package:collection/collection.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
@@ -39,138 +40,81 @@ class _TestScreenState extends State<TestScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    setUpData();
   }
 
-  onSend() async {
-    final urlImage = defaultUserAvatarLink;
-    final url = Uri.parse(urlImage);
-    final response = await http.get(url);
-    final bytes = response.bodyBytes;
-    final temp = await getTemporaryDirectory();
-    final path = '${temp.path}/image.jpg';
-    File(path).writeAsBytes(bytes);
-    await Share.shareXFiles([XFile(path)], text: "quoc manh");
+  setUpData() {
+    // List<List<Room>> rs = [];
+    List<List<Room>> listResult = [];
+
+    findCheapestRooms(5, listResult);
+    List<Room> rss = getResult(listResult);
+    print(rss);
   }
 
-  onSave() async {
+  void findCheapestRooms(int numberOfMember, List<List<Room>> listResult) {
+    List<Room> rooms = [
+      Room(id: 1, price: 500, size: 1),
+      Room(id: 2, price: 800, size: 2),
+      Room(id: 3, price: 700, size: 1),
+      Room(id: 4, price: 1000, size: 2),
+    ];
+
+    findSumCombination(rooms, numberOfMember, 0, [], listResult);
+  }
+
+  void findSumCombination(List<Room> roomList, int target, int startIndex,
+      List<Room> combinations, List<List<Room>> listResult) {
+    if (target == 0) {
+      double price = 0;
+      combinations.forEach(
+        (element) => price += element.price,
+      );
+      listResult.add(combinations);
+      return;
+    }
+    for (int i = startIndex; i < roomList.length; i++) {
+      if (roomList[i].size <= target) {
+        combinations.add(roomList[i]);
+        findSumCombination(
+            roomList, target - roomList[i].size, i, combinations, listResult);
+        combinations.removeLast();
+      }
+    }
+  }
+
+  List<Room> getResult(List<List<Room>> list) {
+    List<Room> listRoomsCheapest = [];
+    double minPriceRooms = 0;
+    list[0].forEach((element) {
+      minPriceRooms += element.price;
+    });
+    for (final rooms in list) {
+      double price = 0;
+      rooms.forEach((element) {
+        price += element.price;
+      });
+      if (price <= minPriceRooms) {
+        minPriceRooms = price;
+        listRoomsCheapest = rooms;
+      }
+    }
+    return listRoomsCheapest;
   }
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-            body: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(32),
-          child: Image.network(
-            defaultUserAvatarLink,
-            height: 30.h,
-            fit: BoxFit.cover,
-          ),
-        ),
-        const SizedBox(
-          height: 32,
-        ),
-        Row(
-          children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                  style: elevatedButtonStyle,
-                  onPressed: onSend,
-                  child: Text('Send'),
-                ),
-              ),
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: ElevatedButton(
-                  style: elevatedButtonStyle,
-                  onPressed: onSave,
-                  child: Text('Save'),
-                ),
-              ),
-            ),
-          ],
-        ),
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ElevatedButton(
-              style: elevatedButtonStyle.copyWith(
-                  minimumSize: MaterialStatePropertyAll(Size(50.w, 45))),
-              onPressed: _captureAndSaveQr,
-              child: Text("Generate QR")),
-        ),
-        const SizedBox(
-          height: 50,
-        ),
-        RepaintBoundary(
-          key: qrkey,
-          child: QrImageView(
-            data: data,
-            version: QrVersions.auto,
-            size: 60.w,
-            gapless: true,
-            errorStateBuilder: (context, error) {
-              return const Text(
-                "Something went wrong! please try again!",
-                textAlign: TextAlign.center,
-              );
-            },
-          ),
-        )
-      ],
+            body: Center(
+      child: Text("Chill chill chill"),
     )));
   }
+}
 
-  Future<void> _captureAndSaveQr() async {
-    try {
-      RenderRepaintBoundary boundary =
-          qrkey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-      var image = await boundary.toImage(pixelRatio: 3);
-      final whietPaint = Paint()..color = Colors.white;
-      final recorder = PictureRecorder();
-      final canvas = Canvas(recorder,
-          Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()));
-      canvas.drawRect(
-          Rect.fromLTRB(0, 0, image.width.toDouble(), image.height.toDouble()),
-          whietPaint);
-      canvas.drawImage(image, Offset.zero, Paint());
-      final picture = recorder.endRecording();
-      final img = await picture.toImage(image.width, image.height);
-      ByteData? byteData = await img.toByteData(format: ImageByteFormat.png);
-      Uint8List pngBytes = byteData!.buffer.asUint8List();
-      String filename = 'qr_code';
-
-      // GallerySaver.saveImage(path)T
-
-      int i = 1;
-      while (await File('$externalDir/$filename.png').exists()) {
-        filename = 'qr_code_$i';
-        i++;
-      }
-
-      dirExists = await File(externalDir).exists();
-      if (!dirExists) {
-        await Directory(externalDir).create(recursive: true);
-        dirExists = true;
-      }
-
-      final file = await File('$externalDir/$filename.png').create();
-      await file.writeAsBytes(pngBytes);
-      if (!mounted) return;
-      const snackbar = SnackBar(content: Text("QR code saved"));
-      ScaffoldMessenger.of(context).showSnackBar(snackbar);
-    } catch (e) {
-      if (!mounted) return;
-      print(e);
-      const snackbar = SnackBar(content: Text("Something went wrong"));
-      ScaffoldMessenger.of(context).showSnackBar(snackbar);
-    }
-  }
+class Room {
+  final int id;
+  final int size;
+  final double price;
+  const Room({required this.id, required this.price, required this.size});
 }

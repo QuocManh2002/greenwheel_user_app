@@ -179,10 +179,6 @@ query GetPlanById(\$planId: Int){
       orders{
         id
         note
-        transactionId 
-        transaction{
-          amount
-        }
         details{
           id
           quantity

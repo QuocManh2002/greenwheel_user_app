@@ -18,6 +18,7 @@ class SelectOrderDateScreen extends StatefulWidget {
     this.iniPickupDate,
     this.iniReturnDate,
     this.iniNote = "",
+    required this.numberOfMember
   });
   final LocationViewModel location;
   final SupplierViewModel supplier;
@@ -27,6 +28,7 @@ class SelectOrderDateScreen extends StatefulWidget {
   final DateTime? iniPickupDate;
   final DateTime? iniReturnDate;
   final String iniNote;
+  final int numberOfMember;
 
   @override
   State<SelectOrderDateScreen> createState() => _SelectOrderDateScreenState();
@@ -119,6 +121,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (ctx) => CartScreen(
+                          numberOfMember: widget.numberOfMember,
                           location: widget.location,
                           supplier: widget.supplier,
                           list: widget.list,

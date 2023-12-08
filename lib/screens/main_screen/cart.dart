@@ -30,6 +30,7 @@ class CartScreen extends StatefulWidget {
     this.pickupDate,
     this.returnDate,
     this.note = "",
+    required this.numberOfMember
   });
   final LocationViewModel location;
   final SupplierViewModel supplier;
@@ -39,6 +40,7 @@ class CartScreen extends StatefulWidget {
   final DateTime? pickupDate;
   final DateTime? returnDate;
   final String note;
+  final int numberOfMember;
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -129,6 +131,7 @@ class _CartScreenState extends State<CartScreen> {
                           iniReturnDate: widget.returnDate,
                           iniNote: noteController.text,
                           location: widget.location,
+                          numberOfMember: widget.numberOfMember,
                         ),
                       ),
                     );
@@ -189,6 +192,7 @@ class _CartScreenState extends State<CartScreen> {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (ctx) => ServiceMenuScreen(
+                                        numberOfMember: widget.numberOfMember,
                                         location: widget.location,
                                         supplier: widget.supplier,
                                         currentCart: list,
@@ -320,6 +324,7 @@ class _CartScreenState extends State<CartScreen> {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(
                                       builder: (ctx) => SelectOrderDateScreen(
+                                        numberOfMember: widget.numberOfMember,
                                         location: widget.location,
                                         supplier: widget.supplier,
                                         list: list,

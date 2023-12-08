@@ -26,9 +26,7 @@ class CustomerService {
         nodes{
           id
           account{name avatarUrl}
-          email
           isMale
-          birthday
           phone
           balance
         }
@@ -90,7 +88,7 @@ mutation {
     name:"${model.name}"
     birthday:"${model.birthday}"
     isMale:${model.isMale}
-    email:"${model.email}"
+    avatarUrl:""
   }){
     id
   }
