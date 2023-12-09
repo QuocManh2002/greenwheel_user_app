@@ -13,8 +13,12 @@ class SupplierCard extends StatelessWidget {
     required this.supplier,
     required this.serviceType,
     required this.location,
-    required this.numberOfMember
+    required this.numberOfMember,
+    required this.startDate,
+    required this.endDate
   });
+  final DateTime startDate ;
+  final DateTime endDate;
   final SupplierViewModel supplier;
   final ServiceType serviceType;
   final LocationViewModel location;
@@ -41,6 +45,8 @@ class SupplierCard extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => ServiceMenuScreen(
+                    startDate: startDate,
+                    endDate: endDate,
                     numberOfMember: 0,
                     supplier: supplier,
                     serviceType: service,

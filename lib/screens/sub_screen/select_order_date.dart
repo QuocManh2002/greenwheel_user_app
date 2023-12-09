@@ -121,6 +121,8 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (ctx) => CartScreen(
+                          startDate: DateTime.now(),
+                          endDate: DateTime.now(),
                           numberOfMember: widget.numberOfMember,
                           location: widget.location,
                           supplier: widget.supplier,

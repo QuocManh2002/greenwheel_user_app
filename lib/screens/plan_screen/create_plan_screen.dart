@@ -213,6 +213,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
           
         },
         btnOkOnPress: () {
+          sharedPreferences.setInt("planId", 0);
           Navigator.of(context).pop();
         },
         ).show();
@@ -238,6 +239,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
           body: const Text("Tạo kế hoạch thành công"),
           btnOkColor: primaryColor,
           btnOkOnPress: () {
+            sharedPreferences.setInt("planId",0);
             Navigator.of(context).pop();
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (ctx) => const TabScreen(
@@ -504,6 +506,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                                 case 0:
                                   Navigator.of(context).push(MaterialPageRoute(
                                     builder: (ctx) => ServiceMainScreen(
+                                      startDate: widget.startDate,
+                                      endDate: widget.endDate,
                                       numberOfMember: widget.numberOfMember,
                                       serviceType: services[1],
                                       location: widget.location,
@@ -514,6 +518,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                                 case 1:
                                   Navigator.of(context).push(MaterialPageRoute(
                                     builder: (ctx) => ServiceMainScreen(
+                                      endDate: widget.endDate,
+                                      startDate: widget.startDate,
                                       numberOfMember: widget.numberOfMember,
                                       serviceType: services[0],
                                       location: widget.location,
@@ -551,6 +557,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
               height: 6.h,
               child: ElevatedButton(
                 onPressed: () {
+                  
                   AwesomeDialog(
                           context: context,
                           dialogType: DialogType.noHeader,
@@ -573,11 +580,13 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                           ),
                           btnOkOnPress: () {
                             finishPlan();
+                            
                           },
                           btnCancelText: "Chỉnh sửa",
                           btnCancelOnPress: () {},
                           btnCancelColor: secondaryColor)
                       .show();
+                      
                 },
                 style: elevatedButtonStyle,
                 child: const Text(

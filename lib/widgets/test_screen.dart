@@ -6,6 +6,7 @@ import 'package:carousel_slider/carousel_controller.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
@@ -40,7 +41,7 @@ class _TestScreenState extends State<TestScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    setUpData();
+    // showDa
   }
 
   setUpData() {
@@ -100,6 +101,35 @@ class _TestScreenState extends State<TestScreen> {
       }
     }
     return listRoomsCheapest;
+  }
+
+  DateTime selectedDate = DateTime.now();
+
+  void _showDatePicker(BuildContext context) async {
+    
+    DateTime? newDay = await showDatePicker(
+        context: context,
+        initialDate: DateTime.now(),
+        firstDate: DateTime(1900),
+        lastDate: DateTime(2024),
+        builder: (context, child) {
+          return Theme(
+            data: ThemeData().copyWith(
+                colorScheme: const ColorScheme.light(
+                    primary: primaryColor, onPrimary: Colors.white)),
+            child: DatePickerDialog(
+              
+              initialDate: DateTime.now(),
+              firstDate: DateTime(1900),
+              lastDate: DateTime(2024),
+            ),
+          );
+        });
+    if (newDay != null) {
+      setState(() {
+        selectedDate = newDay;
+      });
+    }
   }
 
   @override

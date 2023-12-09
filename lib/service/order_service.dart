@@ -21,23 +21,20 @@ class OrderService extends Iterable {
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
-          mutation CreateOrder(\$input: CreateOrderModelInput!) {
-            createOrder(model: \$input) {
-              id
-            }
-          }
+          mutation {
+  createOrder(
+    model: {
+      details: $details
+      note: ${order.note}
+      period: ${order.period}
+      planId: ${order.planId}
+      servingDates: ${order.servingDates}
+    }
+  ) {
+    id
+  }
+}
           '''),
-          variables: {
-            "input": {
-              "planId": order.planId,
-              "from": DateFormat('yyyy-MM-dd').format(order.pickupDate),
-              "to": order.returnDate != null
-                  ? DateFormat('yyyy-MM-dd').format(order.returnDate!)
-                  : null,
-              "note": order.note ?? "",
-              "details": details,
-            },
-          },
         ),
       );
 

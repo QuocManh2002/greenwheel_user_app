@@ -69,7 +69,7 @@ class SupplierOrderCard extends StatelessWidget {
                   const SizedBox(
                     height: 8,
                   ),
-                  Text("Tổng: ${order.price.ceil().toString()}VND", style:const TextStyle(fontWeight: FontWeight.bold),)
+                  Text("Tổng: ${order.price.ceil().toString()} GCOIN", style:const TextStyle(fontWeight: FontWeight.bold),)
                 ],
               ),
             )

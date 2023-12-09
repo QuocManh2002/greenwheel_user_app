@@ -18,7 +18,6 @@ class PlanDetail {
   List<dynamic> schedule;
   int memberLimit;
   String status;
-
   String locationName;
   int locationId;
   List<dynamic> imageUrls;

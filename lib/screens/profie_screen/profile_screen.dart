@@ -178,7 +178,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                                   locale: 'en-US',
                                                   decimalDigits: 0,
                                                   name: "")
-                                              .format(int.parse(_customer!
+                                              .format(double.parse(_customer!
                                                   .balance
                                                   .toString())),
                                           style: const TextStyle(
@@ -210,6 +210,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                               Radius.circular(14))),
                                       child: IconButton(
                                           onPressed: () {
+                                            Navigator.of(context).pop();
                                             Navigator.of(context).push(
                                                 MaterialPageRoute(
                                                     builder: (ctx) =>
@@ -358,7 +359,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     clipBehavior: Clip.hardEdge,
                     decoration: const BoxDecoration(shape: BoxShape.circle),
                     child: Image.network(
-                      _customer!.avatarUrl ?? defaultUserAvatarLink,
+                      _customer!.avatarUrl == null || _customer!.avatarUrl == ""  ? defaultUserAvatarLink : _customer!.avatarUrl! ,
                       fit: BoxFit.cover,
                     ),
                   ),

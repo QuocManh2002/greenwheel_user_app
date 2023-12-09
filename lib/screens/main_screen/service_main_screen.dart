@@ -16,10 +16,14 @@ class ServiceMainScreen extends StatefulWidget {
       required this.serviceType,
       required this.location,
       required this.numberOfMember,
+      required this.startDate,
+      required this.endDate,
       required this.callbackFunction});
   final int numberOfMember;
   final ServiceType serviceType;
   final LocationViewModel location;
+  final DateTime startDate;
+  final DateTime endDate;
   final void Function(List<OrderCreatePlan> list) callbackFunction;
 
   @override
@@ -184,6 +188,8 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                       itemCount: list.length,
                       itemBuilder: (context, index) {
                         return SupplierCard(
+                          startDate: widget.startDate,
+                          endDate: widget.endDate,
                           numberOfMember: widget.numberOfMember,
                           supplier: list[index],
                           serviceType: widget.serviceType,

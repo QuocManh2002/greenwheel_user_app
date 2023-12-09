@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
+import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
@@ -16,7 +17,7 @@ import 'package:intl/intl.dart';
 
 class AddBalanceScreen extends StatefulWidget {
   const AddBalanceScreen({super.key, required this.balance});
-  final int balance;
+  final double balance;
 
   @override
   State<AddBalanceScreen> createState() => _AddBalanceScreenState();
@@ -29,7 +30,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   CustomerService customerService = CustomerService();
   CustomerViewModel? _customer;
   bool isLoading = true;
-  int? refreshedBalance;
+  double? refreshedBalance;
   String? paymentData;
 
   @override
@@ -58,6 +59,10 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
       backgroundColor: Colors.white.withOpacity(0.92),
       appBar: AppBar(
         title: const Text("Nạp tiền vào ví"),
+        leading: BackButton(onPressed: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => TabScreen(pageIndex: 3)));
+        }),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -291,11 +296,23 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                       showVNPayScreen(
                         context,
                         paymentUrl: request.paymentUrl,
-                        onPaymentSuccess: _onPaymentSuccess,
+                        onPaymentSuccess: (data) {
+                          print(data);
+                          Navigator.of(context).pop();
+                          // Navigator.of(context).pop();
+                          AwesomeDialog(context: context,
+                          dialogType: DialogType.success,
+                          body: Center(child: Text('Nạp GCOIN vào ví thành công'),),
+                          btnOkColor: primaryColor,
+                          btnOkOnPress: () => Navigator.of(context).push(MaterialPageRoute(
+                              builder: (ctx) => const TabScreen(pageIndex: 3))),
+                          ).show();
+                          
+                        },
                         onPaymentError: _onPaymentFailure,
                       );
 
-                      setUpData();
+                      // setUpData();
                       // print(request.transactionId);
                       // TopupViewModel? topup = await orderService
                       //     .topUpSubcription(request.transactionId);
@@ -332,6 +349,9 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
 
   void _onPaymentSuccess(data) {
     print(data);
+    Navigator.of(context).pop();
+    Navigator.of(context).push(
+        MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 3)));
   }
 
   void _onPaymentFailure(error) {

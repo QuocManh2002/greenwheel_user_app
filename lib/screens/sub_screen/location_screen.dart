@@ -337,6 +337,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (ctx) => ServiceMainScreen(
+                                          startDate: DateTime.now(),
+                                          endDate: DateTime.now(),
                                           numberOfMember: 0,
                                           serviceType: services[1],
                                           location: widget.location,
@@ -365,6 +367,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (ctx) => ServiceMainScreen(
+                                          startDate: DateTime.now(),
+                                          endDate: DateTime.now(),
                                           numberOfMember: 0,
                                           serviceType: services[0],
                                           location: widget.location,
@@ -393,6 +397,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (ctx) => ServiceMainScreen(
+                                          startDate: DateTime.now(),
+                                          endDate: DateTime.now(),
                                           numberOfMember: 0,
                                           serviceType: services[2],
                                           location: widget.location,
@@ -421,6 +427,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                     Navigator.of(context).push(
                                       MaterialPageRoute(
                                         builder: (ctx) => ServiceMainScreen(
+                                          startDate: DateTime.now(),
+                                          endDate: DateTime.now(),
                                           numberOfMember: 0,
                                           serviceType: services[3],
                                           location: widget.location,

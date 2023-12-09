@@ -6,7 +6,7 @@ class CustomerViewModel {
   bool isMale;
   String? avatarUrl;
   String phone;
-  int balance;
+  double balance;
 
   CustomerViewModel customerFromJson(String str) =>
       CustomerViewModel.fromJson(json.decode(str));
@@ -29,7 +29,7 @@ class CustomerViewModel {
         isMale: json["isMale"],
         avatarUrl: json['account']["avatarUrl"],
         phone: json["phone"],
-        balance: json["balance"],
+        balance: double.parse(json["balance"].toString()),
       );
 
   Map<String, dynamic> toJson() => {

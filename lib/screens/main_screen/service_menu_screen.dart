@@ -25,8 +25,12 @@ class ServiceMenuScreen extends StatefulWidget {
     this.iniReturnDate,
     this.iniNote = "",
     required this.location,
-    required this.numberOfMember
+    required this.numberOfMember,
+    required this.endDate,
+    required this.startDate
   });
+  final DateTime startDate;
+  final DateTime endDate;
   final SupplierViewModel supplier;
   final ServiceType serviceType;
   final List<ItemCart> currentCart;
@@ -149,6 +153,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                         Navigator.of(context).push(
                           MaterialPageRoute(
                             builder: (ctx) => ServiceMainScreen(
+                              startDate: widget.startDate,
+                              endDate: widget.endDate,
                               serviceType: widget.serviceType,
                               location: widget.location,
                               numberOfMember: widget.numberOfMember,
@@ -269,6 +275,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (ctx) => CartScreen(
+                            startDate: widget.startDate,
+                            endDate: widget.endDate,
                             numberOfMember: widget.numberOfMember,
                             location: widget.location,
                             supplier: widget.supplier,

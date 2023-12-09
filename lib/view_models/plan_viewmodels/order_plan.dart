@@ -25,7 +25,7 @@ class OrderCreatePlan {
         id: json["id"],
         planId: json["planId"],
         type: json['details'][0]['product']['supplier']["type"],
-        deposit: json['transaction']["amount"],
+        deposit: json['deposit'],
         thumbnailUrl: json['details'][0]['product']['supplier']["thumbnailUrl"],
         details: List<OrderCreatePlanDetail>.from(json["details"].map((x) => OrderCreatePlanDetail.fromJson(x))),
     );

@@ -126,9 +126,7 @@ query getOrderDetailsByPlanId(\$planId: Int) {
     nodes {
       id
       planId
-      transaction{
-        amount
-      }
+      deposit
       details {
         price
         quantity
@@ -178,7 +176,11 @@ query GetPlanById(\$planId: Int){
       status
       orders{
         id
+        travelerId
         note
+        deposit
+        servingDates
+        total
         details{
           id
           quantity
@@ -233,7 +235,7 @@ query GetPlanById(\$planId: Int){
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  plans{
+  plans(first: 20){
     nodes{
       id
       startDate
