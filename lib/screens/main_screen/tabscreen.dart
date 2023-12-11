@@ -6,6 +6,7 @@ import 'package:greenwheel_user_app/screens/main_screen/notificationscreen.dart'
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/service/notification_service.dart';
 
 class TabScreen extends StatefulWidget {
   const TabScreen({super.key, required this.pageIndex});
@@ -17,6 +18,7 @@ class TabScreen extends StatefulWidget {
 class _TabScreenState extends State<TabScreen> {
   int _selectedPageIndex = 0;
   CustomerService _customerService = CustomerService();
+  NotificationService _notificationService = NotificationService();
 
   void selectPage(int index) {
     setState(() {
@@ -30,6 +32,8 @@ class _TabScreenState extends State<TabScreen> {
     super.initState();
     _selectedPageIndex = widget.pageIndex;
     sendDeviceToken();
+    _notificationService.requestNotificationPermission();
+    _notificationService.firebaseInit(context);
   }
 
   sendDeviceToken() async{

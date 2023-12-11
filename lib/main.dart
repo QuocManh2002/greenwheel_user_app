@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
@@ -34,12 +35,18 @@ ThemeData theme = ThemeData(
       // dayBackgroundColor: const MaterialStatePropertyAll(primaryColor)
     ));
 
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async{
+  await Firebase.initializeApp();
+  print(message.notification!.title.toString());
+}
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   sharedPreferences = await SharedPreferences.getInstance();
   auth = FirebaseAuth.instance;
   await initHiveForFlutter();
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   runApp(const MainApp());
 }
 

@@ -158,6 +158,7 @@ class _QRScreenState extends State<QRScreen> {
             //     ),
             //   ),
             // ),
+            SizedBox(height: 10.h,),
             RepaintBoundary(
               key: _qrkey,
               child: QrImageView(
