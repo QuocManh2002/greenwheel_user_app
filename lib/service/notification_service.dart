@@ -3,8 +3,10 @@ import 'dart:math';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 
 class NotificationService {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -19,7 +21,9 @@ class NotificationService {
         InitializationSettings(android: androidInitialization);
     await _flutterLocalNotificationsPlugin.initialize(
       initializationSetting,
-      onDidReceiveNotificationResponse: (payload) {},
+      onDidReceiveNotificationResponse: (payload) {
+        handleMessage(context, message);
+      },
     );
   }
 
@@ -94,6 +98,9 @@ class NotificationService {
   }
 
   void handleMessage(BuildContext context, RemoteMessage message){
-    
+    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DetailPlanScreen(
+      planId: int.parse(message.data['planId']), 
+      locationName: "locationName", 
+      isEnableToJoin: true)));
   }
 }
