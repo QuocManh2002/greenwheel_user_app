@@ -1,6 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
@@ -177,7 +178,7 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
             order: SupplierOrder(
                 id: item.id,
                 imgUrl: item.details![0].supplierThumbnailUrl,
-                price: item.deposit.toDouble(),
+                price: item.total.toDouble(),
                 quantity: item.details!.length,
                 supplierName: item.details![0].supplierName,
                 type: item.details![0].type)));
@@ -186,7 +187,7 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
             order: SupplierOrder(
                 id: item.id,
                 imgUrl: item.details![0].supplierThumbnailUrl,
-                price: item.deposit.toDouble(),
+                price: item.total.toDouble(),
                 quantity: item.details!.length,
                 supplierName: item.details![0].supplierName,
                 type: item.details![0].type)));
@@ -351,8 +352,8 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                                                 vertical: 6, horizontal: 12),
                                             child: Text(
                                               member.status == "LEADING"
-                                                  ? "- ${member.name} (Bạn)"
-                                                  : "- ${member.name} - 0${member.phone.substring(3)}",
+                                                  ? member.travelerId == int.parse(sharedPreferences.getString('userId')!)? "${member.name} (Bạn)":"${member.name} - LEADING - 0${member.phone.substring(3)}"
+                                                  : member.travelerId == int.parse(sharedPreferences.getString('userId')!)? "- ${member.name} (Bạn)": "${member.name} - 0${member.phone.substring(3)}",
                                               style:
                                                   const TextStyle(fontSize: 18),
                                             ),

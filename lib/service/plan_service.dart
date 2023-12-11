@@ -1,5 +1,3 @@
-
-
 import 'dart:convert';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -21,8 +19,9 @@ class PlanService {
 
   Future<bool> createPlanDraft(PlanDraft draft) async {
     try {
-      QueryResult result = await client.mutate(
-          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+      QueryResult result = await client.mutate(MutationOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
 mutation{
   createDraftPlan(model: {
     memberLimit: ${draft.memberLimit}
@@ -35,7 +34,8 @@ mutation{
     status
   }
 }
-"""), ));
+"""),
+      ));
 
       if (result.hasException) {
         throw Exception(result.exception);
@@ -53,8 +53,9 @@ mutation{
 
   Future<int> finishPlan(PlanFinish finish) async {
     try {
-      QueryResult result = await client.mutate(
-          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+      QueryResult result = await client.mutate(MutationOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
 mutation {
   updatePlan(model: {
     memberLimit: ${finish.memberLimit}
@@ -68,13 +69,14 @@ mutation {
     locationId
   }
 }
-"""), 
+"""),
       ));
 
       if (result.hasException) {
         throw Exception(result.exception);
       } else {
         int planId = result.data!['updatePlan']['id'];
+        await updateJoinMethod(planId);
         return planId;
       }
     } catch (error) {
@@ -119,9 +121,7 @@ mutation {
   Future<List<OrderCreatePlan>> getOrderCreatePlan(int planId) async {
     try {
       QueryResult result = await client.query(
-          QueryOptions(
-            fetchPolicy: FetchPolicy.noCache, 
-            document: gql("""
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query getOrderDetailsByPlanId(\$planId: Int) {
   orders(where: { planId: { eq: \$planId } }) {
     nodes {
@@ -162,7 +162,7 @@ query getOrderDetailsByPlanId(\$planId: Int) {
     }
   }
 
-  Future<PlanDetail?> GetPlanById(int planId) async{
+  Future<PlanDetail?> GetPlanById(int planId) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -210,15 +210,16 @@ query GetPlanById(\$planId: Int){
       if (res == null || res.isEmpty) {
         return null;
       }
-      List<PlanDetail> plan = res.map((plan) => PlanDetail.fromJson(plan)).toList();
+      List<PlanDetail> plan =
+          res.map((plan) => PlanDetail.fromJson(plan)).toList();
       var rs = plan[0];
       // rs.orders = res[0]["orders"];
       // List<OrderViewModel>? orders = res[0]["orders"].map((order) => OrderViewModel.fromJson(order)).toList();
       List<OrderViewModel>? orders = [];
-      for(final item in res[0]["orders"]){
+      for (final item in res[0]["orders"]) {
         List<OrderDetailViewModel>? details = [];
         OrderViewModel order = OrderViewModel.fromJson(item);
-        for(final detail in item["details"]){
+        for (final detail in item["details"]) {
           details.add(OrderDetailViewModel.fromJson(detail));
         }
         order.details = details;
@@ -271,11 +272,11 @@ query GetPlanById(\$planId: Int){
     }
   }
 
-  List<List<String>> GetPlanDetailFormJson(List<dynamic> details){
+  List<List<String>> GetPlanDetailFormJson(List<dynamic> details) {
     List<List<String>> schedule = [];
-    for(final detail in details){
+    for (final detail in details) {
       List<String> items = [];
-      for(final item in detail){
+      for (final item in detail) {
         items.add(json.encode(item));
       }
       schedule.add(items);
@@ -283,11 +284,11 @@ query GetPlanById(\$planId: Int){
     return schedule;
   }
 
-  List<List<String>> GetPlanDetailFromListPlanItem(List<PlanItem> planDetail){
+  List<List<String>> GetPlanDetailFromListPlanItem(List<PlanItem> planDetail) {
     List<List<String>> schedule = [];
-    for(final detail in planDetail){
+    for (final detail in planDetail) {
       List<String> items = [];
-      for(final item in detail.details){
+      for (final item in detail.details) {
         items.add(json.encode(item));
       }
       schedule.add(items);
@@ -295,7 +296,7 @@ query GetPlanById(\$planId: Int){
     return schedule;
   }
 
-  Future<int?> joinPlan(int planId) async{
+  Future<int?> joinPlan(int planId) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -319,8 +320,8 @@ mutation{
     }
   }
 
-  Future<List<PlanMemberViewModel>> getPlanMember(int planId) async{
-      try {
+  Future<List<PlanMemberViewModel>> getPlanMember(int planId) async {
+    try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
@@ -349,11 +350,37 @@ mutation{
         return [];
       }
 
-      List<PlanMemberViewModel> listResult = res.map((e) => PlanMemberViewModel.fromJson(e)).toList();
+      List<PlanMemberViewModel> listResult =
+          res.map((e) => PlanMemberViewModel.fromJson(e)).toList();
       return listResult;
     } catch (error) {
       throw Exception(error);
     }
   }
- 
+
+  Future<bool> updateJoinMethod(int planId) async {
+    try {
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+mutation{
+  updatePlanJoinMethod(model: {planId: $planId,
+  joinMethod: QR
+  }){
+    id
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      int? res = result.data!['updatePlanJoinMethod']['id'];
+      if (res == null || res == 0) {
+        return false;
+      }
+      return true;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
 }

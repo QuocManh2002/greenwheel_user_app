@@ -14,18 +14,24 @@ class PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget buildStatusPoint(PlanCardViewModel plan) {
-      Color pointColor = Colors.white;
-      if (plan.startDate.isBefore(DateTime.now()) &&
-          plan.endDate.isAfter(DateTime.now())) {
+      Color pointColor = Colors.red;
+      print("${plan.startDate} - ${plan.endDate}");
+      print(DateTime.now());
+      DateTime now = DateTime.now();
+      if (now.isBefore(plan.startDate) &&
+          now.isAfter(plan.endDate)) {
         pointColor = primaryColor;
-      } else if (plan.endDate.isBefore(DateTime.now())) {
+      } else if (now.isBefore(plan.endDate)) {
         pointColor = Colors.orange;
-      } else if (plan.startDate.isBefore(DateTime.now())) {
+      } else if (now.isBefore(plan.startDate)) {
         pointColor = Colors.blue;
       }
+      print(now.difference(plan.startDate));
+      
 
       return Container(
-        height: 2.h,
+        height: 1.5.h,
+        width: 1.5.h,
         decoration: BoxDecoration(shape: BoxShape.circle, color: pointColor),
       );
     }
@@ -86,7 +92,6 @@ class PlanCard extends StatelessWidget {
                       height: 8,
                     ),
                     Row(
-                      
                       children: [
                         Expanded(
                           child: Text("Chuyến đi ${plan.locationName}",
@@ -95,7 +100,7 @@ class PlanCard extends StatelessWidget {
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
-                        if(plan.status == "OFFICIAL")buildStatusPoint(plan)
+                        
                       ],
                     ),
                     const SizedBox(
@@ -105,8 +110,14 @@ class PlanCard extends StatelessWidget {
                     const SizedBox(
                       height: 8,
                     ),
-                    Text(
-                        '${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year} - ${plan.endDate.day}/${plan.endDate.month}/${plan.endDate.year}')
+                    Row(
+                      children: [
+                        Text(
+                            '${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year} - ${plan.endDate.day}/${plan.endDate.month}/${plan.endDate.year}'),
+                      const SizedBox(width: 16,),
+                      // if (plan.status == "OFFICIAL") buildStatusPoint(plan)
+                      ],
+                    )
                   ],
                 ),
               )
