@@ -3,7 +3,8 @@ import 'package:greenwheel_user_app/main.dart';
 class TokenRefresher {
   static Future<void> refreshToken() async {
     // Check if the user is already signed in
-    if (auth.currentUser != null) {
+    try{
+      if (auth.currentUser != null) {
       await auth.currentUser!.getIdToken(true).then(
             (value) => {
               // tokenController.text = value.token ?? "";
@@ -11,7 +12,13 @@ class TokenRefresher {
               print(auth.currentUser),
               print(value),
             },
-          );
+          ).catchError( (error) {
+            print(error);
+            return error;
+          },);
+    }
+    }catch(e){
+      print(e);
     }
   }
 }

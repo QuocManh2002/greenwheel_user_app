@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
@@ -292,7 +294,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
               Row(
                 children: [
                   Checkbox(
-                    shape:const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(3))),
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(3))),
                     value: isPolicyAccept,
                     activeColor: primaryColor,
                     onChanged: (value) {
@@ -303,10 +306,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   ),
                   const Expanded(
                     child: Text(
-                        "Tôi đã đọc và đồng ý tất cả các điều khoản về chính sách sử dụng và quyền lợi của người dùng", textAlign: TextAlign.left, maxLines: 2,
-                        style: TextStyle(
-                          decoration: TextDecoration.underline,                      ),
-                        ),
+                      "Tôi đã đọc và đồng ý tất cả các điều khoản về chính sách sử dụng và quyền lợi của người dùng",
+                      textAlign: TextAlign.left,
+                      maxLines: 2,
+                      style: TextStyle(
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
                   )
                 ],
               ),
@@ -331,12 +337,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
     ));
   }
 
-  _register() async{
-    var id = await _customerService.registerTraveler(RegisterViewModel(birthday: selectedDate, isMale: isMale, email: emailController.text, name: nameController.text));
-    if(id != null){
-      await TokenRefresher.refreshToken();
+  _register() async {
+    var id = await _customerService.registerTraveler(RegisterViewModel(
+        birthday: selectedDate,
+        isMale: isMale,
+        email: emailController.text,
+        name: nameController.text));
+    if (id != null || id != 0) {
+      TokenRefresher.refreshToken();
+      print("2: ${sharedPreferences.getString('userToken')}");
+
       // ignore: use_build_context_synchronously
-      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) =>const TabScreen(pageIndex: 0)), (route) => false);
+      Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (ctx) => const SplashScreen()),
+          (route) => false);
     }
   }
 }

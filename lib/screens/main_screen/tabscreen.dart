@@ -1,10 +1,12 @@
-
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/notificationscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
+import 'package:greenwheel_user_app/service/customer_service.dart';
 
 class TabScreen extends StatefulWidget {
   const TabScreen({super.key, required this.pageIndex});
@@ -15,23 +17,34 @@ class TabScreen extends StatefulWidget {
 
 class _TabScreenState extends State<TabScreen> {
   int _selectedPageIndex = 0;
+  CustomerService _customerService = CustomerService();
 
   void selectPage(int index) {
     setState(() {
       _selectedPageIndex = index;
     });
   }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _selectedPageIndex = widget.pageIndex;
+    sendDeviceToken();
+  }
+
+  sendDeviceToken() async{
+    var isDeviceTokenSended = sharedPreferences.getBool('isDeviceTokenSended');
+    if (isDeviceTokenSended == null || !isDeviceTokenSended) {
+      await _customerService.sendDeviceToken();
+      sharedPreferences.setBool("isDeviceTokenSended", true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     // _selectedPageIndex = widget.pageIndex;
-    late Widget activePage ;
+    late Widget activePage;
     switch (_selectedPageIndex) {
       case 0:
         activePage = const HomeScreen();

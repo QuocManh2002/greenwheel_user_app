@@ -9,6 +9,7 @@ import 'package:greenwheel_user_app/screens/loading_screen/profile_loading_scree
 import 'package:greenwheel_user_app/screens/profie_screen/qr_screen.dart';
 import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/service/device_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -22,6 +23,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   CustomerService _customerService = CustomerService();
+  DeviceService _deviceService = DeviceService();
   CustomerViewModel? _customer;
   bool _isLoading = true;
 
@@ -328,6 +330,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       desc:
                                           "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
                                       btnOkOnPress: () {
+                                        _deviceService.stopNotification();
                                         sharedPreferences.clear();
                                         Navigator.push(
                                             context,

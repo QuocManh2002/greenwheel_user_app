@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -29,8 +29,6 @@ class CartScreen extends StatefulWidget {
       required this.list,
       required this.total,
       required this.serviceType,
-      this.pickupDate,
-      this.returnDate,
       required this.endDate,
       required this.startDate,
       this.note = "",
@@ -40,8 +38,6 @@ class CartScreen extends StatefulWidget {
   final List<ItemCart> list;
   final double total;
   final ServiceType serviceType;
-  final DateTime? pickupDate;
-  final DateTime? returnDate;
   final DateTime startDate;
   final DateTime endDate;
   final String note;
@@ -72,26 +68,26 @@ class _CartScreenState extends State<CartScreen> {
   int? days;
   DateTimeRange selectedDates =
       DateTimeRange(start: DateTime.now(), end: DateTime.now());
+  List<DateTime> _servingDates = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    pickDateRange();
     finalTotal = widget.total;
     list = widget.list;
     supplier = widget.supplier;
-    if (widget.pickupDate != null) {
-      _range =
-          '${DateFormat('dd/MM/yyyy').format(widget.pickupDate ?? DateTime.now())} - ${DateFormat('dd/MM/yyyy').format(widget.returnDate ?? DateTime.now())}';
-      if (widget.serviceType.id == 1 || widget.serviceType.id == 4) {
-        days = widget.returnDate!.difference(widget.pickupDate!).inDays + 1;
-      } else {
-        days = 1;
-      }
-    } else {
-      days = 1;
-    }
+    // if (widget.pickupDate != null) {
+    //   _range =
+    //       '${DateFormat('dd/MM/yyyy').format(widget.pickupDate ?? DateTime.now())} - ${DateFormat('dd/MM/yyyy').format(widget.returnDate ?? DateTime.now())}';
+    //   if (widget.serviceType.id == 1 || widget.serviceType.id == 4) {
+    //     days = widget.returnDate!.difference(widget.pickupDate!).inDays + 1;
+    //   } else {
+    //     days = 1;
+    //   }
+    // } else {
+    //   days = 1;
+    // }
     noteController.text = widget.note;
 
     planId = sharedPreferences.getInt("planId");
@@ -110,8 +106,6 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final start = selectedDates.start;
-    final end = selectedDates.end;
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: true,
@@ -140,8 +134,8 @@ class _CartScreenState extends State<CartScreen> {
                           supplier: widget.supplier,
                           currentCart: list,
                           serviceType: widget.serviceType,
-                          iniPickupDate: widget.pickupDate,
-                          iniReturnDate: widget.returnDate,
+                          iniPickupDate: widget.startDate,
+                          iniReturnDate: widget.endDate,
                           iniNote: noteController.text,
                           location: widget.location,
                           numberOfMember: widget.numberOfMember,
@@ -212,8 +206,8 @@ class _CartScreenState extends State<CartScreen> {
                                         supplier: widget.supplier,
                                         currentCart: list,
                                         serviceType: widget.serviceType,
-                                        iniPickupDate: widget.pickupDate,
-                                        iniReturnDate: widget.returnDate,
+                                        iniPickupDate: widget.startDate,
+                                        iniReturnDate: widget.endDate,
                                         iniNote: noteController.text,
                                       ),
                                     ),
@@ -323,16 +317,40 @@ class _CartScreenState extends State<CartScreen> {
                             color: Colors.grey.withOpacity(0.4),
                           ),
                           child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                '${start.day}/${start.month}/${start.year} - ${end.day}/${end.month}/${end.year}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontFamily: 'NotoSans',
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const Spacer(), // Add space between the two elements
+                              _servingDates.isEmpty
+                                  ? Text(
+                                      '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year} - ${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}',
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        fontFamily: 'NotoSans',
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    )
+                                  : isConsecutiveDates(_servingDates)
+                                      ? Text(
+                                          '${_servingDates.first.day}/${_servingDates.first.month}/${_servingDates.first.year} - ${_servingDates.last.day}/${_servingDates.last.month}/${_servingDates.last.year}',
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontFamily: 'NotoSans',
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        )
+                                      : Column(
+                                          children: [
+                                            for (final date in _servingDates)
+                                              Text(
+                                                '${date.day}/${date.month}/${date.year}',
+                                                style: const TextStyle(
+                                                  fontSize: 14,
+                                                  fontFamily: 'NotoSans',
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              )
+                                          ],
+                                        ),
+                              // const Spacer(), // Add space between the two elements
                               TextButton(
                                 onPressed: pickDateRange,
                                 child: const Text(
@@ -503,43 +521,43 @@ class _CartScreenState extends State<CartScreen> {
                           const SizedBox(
                             height: 20,
                           ),
-                          days != 1
-                              ? Column(
-                                  children: [
-                                    Container(
-                                      width: 90.w,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text(
-                                            'Tạm tổng', // Replace with your first text
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontFamily: 'NotoSans',
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            currencyFormat.format(((finalTotal *
-                                                        30 /
-                                                        100) /
-                                                    1000) *
-                                                quantity), // Replace with your second text
-                                            style: const TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.bold,
-                                              fontFamily: 'NotoSans',
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 12,
-                                    ),
-                                  ],
-                                )
-                              : Container(),
+                          // days != 1
+                          //     ? Column(
+                          //         children: [
+                          //           Container(
+                          //             width: 90.w,
+                          //             child: Row(
+                          //               mainAxisAlignment:
+                          //                   MainAxisAlignment.spaceBetween,
+                          //               children: [
+                          //                 const Text(
+                          //                   'Tạm tổng', // Replace with your first text
+                          //                   style: TextStyle(
+                          //                       fontSize: 16,
+                          //                       fontFamily: 'NotoSans',
+                          //                       color: Colors.black),
+                          //                 ),
+                          //                 Text(
+                          //                   currencyFormat.format(((finalTotal *
+                          //                               30 /
+                          //                               100) /
+                          //                           1000) *
+                          //                       quantity), // Replace with your second text
+                          //                   style: const TextStyle(
+                          //                     fontSize: 17,
+                          //                     fontWeight: FontWeight.bold,
+                          //                     fontFamily: 'NotoSans',
+                          //                   ),
+                          //                 ),
+                          //               ],
+                          //             ),
+                          //           ),
+                          //           const SizedBox(
+                          //             height: 12,
+                          //           ),
+                          //         ],
+                          //       )
+                          //     : Container(),
                           Container(
                             width: 90.w,
                             child: Row(
@@ -572,7 +590,7 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                                 Text(
                                   currencyFormat.format((finalTotal / 1000) *
-                                      quantity!), // Replace with your second text
+                                      (_servingDates.isEmpty ? 1:_servingDates.length)), // Replace with your second text
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
@@ -604,7 +622,7 @@ class _CartScreenState extends State<CartScreen> {
                                               30 /
                                               100) /
                                           1000) *
-                                      quantity), // Replace with your second text
+                                      (_servingDates.isEmpty ? 1: _servingDates.length)), // Replace with your second text
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
@@ -726,15 +744,9 @@ class _CartScreenState extends State<CartScreen> {
     }).toList();
 
     List<dynamic> dates = [];
-    DateTime startDate = selectedDates.start;
-    DateTime endDate = selectedDates.end;
 
-    dates.add(json.encode(
-        "${startDate.year.toString().padLeft(4, '0')}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}"));
-    while (startDate.isBefore(endDate)) {
-      startDate = startDate.add(const Duration(days: 1));
-      dates.add(json.encode(
-          "${startDate.year.toString().padLeft(4, '0')}-${startDate.month.toString().padLeft(2, '0')}-${startDate.day.toString().padLeft(2, '0')}"));
+    for(final date in _servingDates){
+      dates.add(json.encode("${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}"));
     }
     OrderCreateViewModel order = OrderCreateViewModel(
         planId: sharedPreferences.getInt('planId'),
@@ -796,30 +808,40 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   Future pickDateRange() async {
-    DateTimeRange? newSelectedDate = await showDateRangePicker(
-      context: context,
-      initialDateRange: selectedDates,
-      firstDate: DateTime.now(),
-      lastDate: DateTime(2024),
-      builder: (context, child) {
-        return Theme(
-          data: ThemeData().copyWith(
-              colorScheme: const ColorScheme.light(
-                  primary: primaryColor, onPrimary: Colors.white)),
-          child: DateRangePickerDialog(
-            initialDateRange: selectedDates,
-            firstDate: widget.startDate,
-            lastDate: widget.endDate,
-          ),
-        );
-      },
-    );
-    if (newSelectedDate == null) {
-      return;
-    }
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (ctx) => SelectOrderDateScreen(
+            callbackFunction: callback,
+            location: widget.location,
+            supplier: widget.supplier,
+            list: list,
+            total: widget.total,
+            serviceType: widget.serviceType,
+            numberOfMember: widget.numberOfMember,
+            endDate: widget.endDate,
+            startDate: widget.startDate)));
+  }
+
+  callback(List<DateTime> servingDates) {
     setState(() {
-      quantity = newSelectedDate.duration.inDays + 1;
-      selectedDates = newSelectedDate;
+      _servingDates = servingDates;
     });
+    servingDates.sort((a, b) => a.compareTo(b));
+    print(servingDates);
+    print(isConsecutiveDates(servingDates));
+  }
+
+  isConsecutiveDates(List<DateTime> dates) {
+    if (dates.length <= 1) {
+      return true;
+    }
+
+    for (int i = 1; i < dates.length; i++) {
+      DateTime current = dates[i];
+      DateTime previous = dates[i - 1];
+      if (current.difference(previous).inDays != 1) {
+        return false;
+      }
+    }
+    return true;
   }
 }

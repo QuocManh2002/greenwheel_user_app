@@ -28,4 +28,27 @@ mutation{
       throw Exception(error);
     }
   }
+
+  Future<void> stopNotification() async{
+    try{
+      String? deviceToken = sharedPreferences.getString('deviceToken');
+    QueryResult result = await client.mutate(
+        MutationOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql("""
+mutation{
+  stopReceiveNotification(deviceToken: "$deviceToken")
+}
+"""))
+      );
+      if (result.hasException) {
+        throw Exception(result.exception);
+      } else {
+        
+        return ;
+      }
+    }catch (error) {
+      throw Exception(error);
+    }
+  }
 }

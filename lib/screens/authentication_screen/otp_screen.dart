@@ -204,7 +204,7 @@ class _OTPScreenState extends State<OTPScreen> {
         } else {
         }
       }else{
-        // sharedPreferences.setString("userPhone", payload['phone_number']);
+        sharedPreferences.setString("userPhone", payload['phone_number']);
         Navigator.push(context,
               MaterialPageRoute(builder: (_) => const RegisterScreen()));
       }

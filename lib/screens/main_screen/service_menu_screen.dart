@@ -283,8 +283,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                             list: items,
                             total: total,
                             serviceType: widget.serviceType,
-                            pickupDate: pickupDate,
-                            returnDate: returnDate,
                             note: note,
                           ),
                         ),

@@ -3,7 +3,6 @@ import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
 import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
-import 'package:intl/intl.dart';
 
 class OrderService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();

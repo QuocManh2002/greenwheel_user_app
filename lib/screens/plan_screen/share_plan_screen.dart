@@ -9,6 +9,8 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
@@ -35,6 +37,19 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   final TextEditingController phoneSearch = TextEditingController();
   bool _isSearch = false;
   bool _isSearchingLoading = true;
+  CustomerViewModel? _customer;
+  CustomerService customerService = CustomerService();
+
+  searchCustomer() async {
+    _customer = null;
+    _customer = await customerService.GetCustomerByPhone(
+        '+84${phoneSearch.text.substring(1)}');
+    if (_customer != null) {
+      setState(() {
+        _isSearchingLoading = false;
+      });
+    }
+  }
 
   Future<Uint8List> convertQRToBytes() async {
     RenderRepaintBoundary boundary =
@@ -99,7 +114,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-          backgroundColor: Colors.white.withOpacity(0.94),
+      backgroundColor: Colors.white.withOpacity(0.94),
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Chia sẻ kế hoạch"),
@@ -127,15 +142,19 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                   setState(() {
                     _isSearch = true;
                   });
-                  Future.delayed(const Duration(seconds: 2), () {
-                    setState(() {
-                      _isSearchingLoading = false;
-                    });
-                  });
+                  // Future.delayed(const Duration(seconds: 2), () {
+                  //   setState(() {
+                  //     _isSearchingLoading = false;
+                  //   });
+                  // });
+                  if (value.length == 10) {
+                    searchCustomer();
+                  } else {
+                    _isSearchingLoading = true;
+                  }
                   if (value.isEmpty) {
                     setState(() {
                       _isSearch = false;
-                      _isSearchingLoading = true;
                     });
                   }
                 },
@@ -230,7 +249,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                     _isSearchingLoading
                         ? Container(
                             alignment: Alignment.center,
-                            child:const CircularProgressIndicator(
+                            child: const CircularProgressIndicator(
                               color: primaryColor,
                             ))
                         : Row(
@@ -242,21 +261,21 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                                 clipBehavior: Clip.hardEdge,
                                 child: Image.network(defaultUserAvatarLink),
                               ),
-                              const Column(
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    "Vai bờ",
-                                    style: TextStyle(
+                                    _customer!.name,
+                                    style: const TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 18),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 5,
                                   ),
                                   Text(
-                                    "0988123123",
-                                    style: TextStyle(fontSize: 16),
+                                    "0${_customer!.phone.substring(3)}",
+                                    style: const TextStyle(fontSize: 16),
                                   )
                                 ],
                               ),
@@ -282,13 +301,13 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                               )
                             ],
                           ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 20.w, right: 12),
-                            child: Container(
-                              height: 1.7,
-                              color: Colors.black26,
-                            ),
-                          )
+                    // Padding(
+                    //   padding: EdgeInsets.only(left: 20.w, right: 12),
+                    //   child: Container(
+                    //     height: 1.7,
+                    //     color: Colors.black26,
+                    //   ),
+                    // )
                   ],
                 ),
               ),
