@@ -1,23 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierCard extends StatelessWidget {
-  const SupplierCard({
-    super.key,
-    required this.supplier,
-    required this.serviceType,
-    required this.location,
-    required this.numberOfMember,
-    required this.startDate,
-    required this.endDate
-  });
-  final DateTime startDate ;
+  const SupplierCard(
+      {super.key,
+      required this.supplier,
+      required this.serviceType,
+      required this.location,
+      required this.numberOfMember,
+      required this.startDate,
+      required this.endDate});
+  final DateTime startDate;
   final DateTime endDate;
   final SupplierViewModel supplier;
   final ServiceType serviceType;
@@ -39,12 +38,11 @@ class SupplierCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              var service =
-                  services.firstWhere((s) => s.name == supplier.type);
+              var service = services.firstWhere((s) => s.name == supplier.type);
               // Navigator.of(context).pop();
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (ctx) => ServiceMenuScreen(
+                  builder: (ctx) => SelectSessionScreen(
                     startDate: startDate,
                     endDate: endDate,
                     numberOfMember: 0,

@@ -100,7 +100,6 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
             widget.callbackFunction(p0 as List<DateTime>);
             Navigator.of(context).pop();
           },
-
           selectionMode: DateRangePickerSelectionMode.multiple,
         ),
         // bottomNavigationBar: Container(

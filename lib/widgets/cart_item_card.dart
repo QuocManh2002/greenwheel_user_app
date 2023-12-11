@@ -67,10 +67,7 @@ class _CartItemCardState extends State<CartItemCard>
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8),
                           child: Text(
-                            currencyFormat.format(
-                                (widget.cartItem.product.price *
-                                        widget.cartItem.qty) /
-                                    1000),
+                            "${currencyFormat.format((widget.cartItem.product.price * widget.cartItem.qty) / 1000)} * ${(widget.days != 1) ? "${widget.days} ngày" : ""}",
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Colors.grey,

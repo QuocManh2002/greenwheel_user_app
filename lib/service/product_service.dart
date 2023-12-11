@@ -6,17 +6,36 @@ class ProductService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
   static GraphQLClient client = config.getClient();
 
-  Future<List<ProductViewModel>> getProductsBySupplierId(int supplierId) async {
+  Future<List<ProductViewModel>> getProductsBySupplierId(
+      int supplierId, String session) async {
     try {
+      String sessionEnum = "";
+
+      switch (session) {
+        case "Buổi sáng":
+          sessionEnum = "MORNING";
+          break;
+        case "Buổi trưa":
+          sessionEnum = "NOON";
+          break;
+        case "Buổi chiều":
+          sessionEnum = "AFTERNOON";
+          break;
+        case "Buổi tối":
+          sessionEnum = "EVENING";
+          break;
+      }
+
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
-          query getSupplierById(\$id: Int!) {
+          query getSupplierById(\$id: Int!, \$period: [Period!]) {
             products(
               where: {
                 supplierId: { eq: \$id },
-                isHidden: { eq: false }
+                isHidden: { eq: false },
+                periods: { some: {in: \$period} }
               },
               order: {
                 id: ASC
@@ -37,7 +56,10 @@ class ProductService extends Iterable {
             }
           }
         '''),
-          variables: {"id": supplierId},
+          variables: {
+            "id": supplierId,
+            "period": [sessionEnum],
+          },
         ),
       );
 

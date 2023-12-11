@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/service_menu_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -25,8 +26,10 @@ class ServiceMenuScreen extends StatefulWidget {
     required this.location,
     required this.numberOfMember,
     required this.endDate,
-    required this.startDate
+    required this.startDate,
+    required this.session,
   });
+  final Session session;
   final DateTime startDate;
   final DateTime endDate;
   final SupplierViewModel supplier;
@@ -66,7 +69,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   }
 
   setUpData() async {
-    list = await productService.getProductsBySupplierId(widget.supplier.id);
+    list = await productService.getProductsBySupplierId(
+        widget.supplier.id, widget.session.name);
 
     if (list.isNotEmpty) {
       setState(() {
@@ -231,6 +235,17 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                         ),
                       ),
                     ),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 14, top: 10),
+                      child: Text(
+                        "Check-in ${widget.session.name.toLowerCase()}",
+                        style: const TextStyle(
+                          fontSize: 15,
+                          fontFamily: 'NotoSans',
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
                     const SizedBox(
                       width: 8,
                     ),
@@ -269,7 +284,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                   height: 6.h,
                   child: ElevatedButton(
                     onPressed: () async {
-                      // Navigator.of(context).pop();
+                      Navigator.of(context).pop();
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (ctx) => CartScreen(
@@ -282,6 +297,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                             total: total,
                             serviceType: widget.serviceType,
                             note: note,
+                            session: widget.session,
                           ),
                         ),
                       );
