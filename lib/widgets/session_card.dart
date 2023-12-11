@@ -42,7 +42,7 @@ class SessionCard extends StatelessWidget {
                 backgroundColor: Colors.white),
             onPressed: () async {
               var service = services.firstWhere((s) => s.name == supplier.type);
-              // Navigator.of(context).pop();
+              Navigator.of(context).pop();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => ServiceMenuScreen(
