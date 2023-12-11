@@ -3,12 +3,10 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -64,7 +62,7 @@ class _CartScreenState extends State<CartScreen> {
 
   TextEditingController noteController = TextEditingController();
   var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
-  var _range = "";
+
   int? days;
   DateTimeRange selectedDates =
       DateTimeRange(start: DateTime.now(), end: DateTime.now());
@@ -126,22 +124,22 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => ServiceMenuScreen(
-                          startDate: widget.startDate,
-                          endDate: widget.endDate,
-                          supplier: widget.supplier,
-                          currentCart: list,
-                          serviceType: widget.serviceType,
-                          iniPickupDate: widget.startDate,
-                          iniReturnDate: widget.endDate,
-                          iniNote: noteController.text,
-                          location: widget.location,
-                          numberOfMember: widget.numberOfMember,
-                        ),
-                      ),
-                    );
+                    // Navigator.of(context).push(
+                    //   MaterialPageRoute(
+                    //     builder: (ctx) => ServiceMenuScreen(
+                    //       startDate: widget.startDate,
+                    //       endDate: widget.endDate,
+                    //       supplier: widget.supplier,
+                    //       currentCart: list,
+                    //       serviceType: widget.serviceType,
+                    //       iniPickupDate: widget.startDate,
+                    //       iniReturnDate: widget.endDate,
+                    //       iniNote: noteController.text,
+                    //       location: widget.location,
+                    //       numberOfMember: widget.numberOfMember,
+                    //     ),
+                    //   ),
+                    // );
                   },
                 ),
                 const Padding(
@@ -196,22 +194,22 @@ class _CartScreenState extends State<CartScreen> {
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (ctx) => ServiceMenuScreen(
-                                        startDate: widget.startDate,
-                                        endDate: widget.endDate,
-                                        numberOfMember: widget.numberOfMember,
-                                        location: widget.location,
-                                        supplier: widget.supplier,
-                                        currentCart: list,
-                                        serviceType: widget.serviceType,
-                                        iniPickupDate: widget.startDate,
-                                        iniReturnDate: widget.endDate,
-                                        iniNote: noteController.text,
-                                      ),
-                                    ),
-                                  );
+                                  // Navigator.of(context).push(
+                                  //   MaterialPageRoute(
+                                  //     builder: (ctx) => ServiceMenuScreen(
+                                  //       startDate: widget.startDate,
+                                  //       endDate: widget.endDate,
+                                  //       numberOfMember: widget.numberOfMember,
+                                  //       location: widget.location,
+                                  //       supplier: widget.supplier,
+                                  //       currentCart: list,
+                                  //       serviceType: widget.serviceType,
+                                  //       iniPickupDate: widget.startDate,
+                                  //       iniReturnDate: widget.endDate,
+                                  //       iniNote: noteController.text,
+                                  //     ),
+                                  //   ),
+                                  // );
                                 },
                                 child: const Text(
                                   '+  Thêm món',
@@ -815,6 +813,7 @@ class _CartScreenState extends State<CartScreen> {
             supplier: widget.supplier,
             list: list,
             total: widget.total,
+            selectedDate: _servingDates.isEmpty ? [widget.startDate]: _servingDates,
             serviceType: widget.serviceType,
             numberOfMember: widget.numberOfMember,
             endDate: widget.endDate,

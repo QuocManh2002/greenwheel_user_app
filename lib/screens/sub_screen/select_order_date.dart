@@ -20,6 +20,7 @@ class SelectOrderDateScreen extends StatefulWidget {
       required this.numberOfMember,
       required this.endDate,
       required this.startDate,
+      required this.selectedDate,
       required this.callbackFunction});
   final DateTime startDate;
   final DateTime endDate;
@@ -30,6 +31,7 @@ class SelectOrderDateScreen extends StatefulWidget {
   final ServiceType serviceType;
   final String iniNote;
   final int numberOfMember;
+  final List<DateTime>? selectedDate;
   final void Function(List<DateTime> servingsDates) callbackFunction;
 
   @override
@@ -91,6 +93,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
           maxDate: widget.endDate,
           showActionButtons: true,
           todayHighlightColor: primaryColor,
+          initialSelectedDates: widget.selectedDate,
           onCancel: () {
             Navigator.of(context).pop();
           },
