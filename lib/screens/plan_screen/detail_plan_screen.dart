@@ -431,27 +431,23 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
   onJoinPlan() async {
     int? rs = await _planService.joinPlan(widget.planId);
     if (rs != null) {
+      // ignore: use_build_context_synchronously
       AwesomeDialog(
-              context: context,
-              dialogType: DialogType.noHeader,
-              animType: AnimType.topSlide,
-              btnOkColor: primaryColor,
-              btnOkText: "Lưu",
-              desc: "Tham gia kế hoạch thành công",
-              body: Container(
-                alignment: Alignment.topLeft,
-                height: 50.h,
-              ),
-              btnOkOnPress: () {
-                Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                        builder: (ctx) => TabScreen(pageIndex: 0)),
-                    (route) => false);
-              },
-              btnCancelText: "Chỉnh sửa",
-              btnCancelOnPress: () {},
-              btnCancelColor: secondaryColor)
-          .show();
+        context: context,
+        dialogType: DialogType.success,
+        animType: AnimType.topSlide,
+        showCloseIcon: true,
+        title: "Tham gia kế hoạch thành công",
+        desc: "Ấn tiếp tục để trở về",
+        btnOkText: "Tiếp tục",
+        btnOkOnPress: () {
+          Navigator.of(context).pop();
+          Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                  builder: (ctx) => const TabScreen(pageIndex: 0)),
+              (route) => false);
+        },
+      ).show();
     }
   }
 
@@ -476,15 +472,6 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                                 body: Container(
                                   alignment: Alignment.topLeft,
                                   height: 50.h,
-                                  // child: ConfirmPlan(
-                                  //   duration: widget.duration,
-                                  //   endDate: widget.endDate,
-                                  //   location: widget.location,
-                                  //   numberOfMember: widget.numberOfMember,
-                                  //   planDetail: planDetail,
-                                  //   startDate: widget.startDate,
-                                  //   orders: _orderList!,
-                                  // ),
                                 ),
                                 btnOkOnPress: () {},
                                 btnCancelText: "Chỉnh sửa",
