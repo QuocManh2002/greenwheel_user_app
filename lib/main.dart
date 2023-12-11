@@ -13,6 +13,7 @@ import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/qr_screen.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/topup_successfull_screen.dart';
 import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
 import 'package:greenwheel_user_app/widgets/test_screen.dart';
@@ -57,9 +58,7 @@ class MainApp extends StatelessWidget {
 
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        home: userToken != null
-            ? const SplashScreen()
-            : const LoginScreen(),
+        home: userToken != null ? const SplashScreen() : const LoginScreen(),
         // home: const TopupSuccessfulScreen(data: null),
         // home: const RegisterScreen(),
         // home : const TestScreen(),

@@ -7,6 +7,8 @@ import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/models/session.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -20,17 +22,19 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CartScreen extends StatefulWidget {
-  CartScreen(
-      {super.key,
-      required this.location,
-      required this.supplier,
-      required this.list,
-      required this.total,
-      required this.serviceType,
-      required this.endDate,
-      required this.startDate,
-      this.note = "",
-      required this.numberOfMember});
+  const CartScreen({
+    super.key,
+    required this.location,
+    required this.supplier,
+    required this.list,
+    required this.total,
+    required this.serviceType,
+    required this.endDate,
+    required this.startDate,
+    this.note = "",
+    required this.numberOfMember,
+    required this.session,
+  });
   final LocationViewModel location;
   final SupplierViewModel supplier;
   final List<ItemCart> list;
@@ -40,6 +44,7 @@ class CartScreen extends StatefulWidget {
   final DateTime endDate;
   final String note;
   final int numberOfMember;
+  final Session session;
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -59,11 +64,11 @@ class _CartScreenState extends State<CartScreen> {
   int? planId;
   PlanDetail? plan;
   int quantity = 1;
+  int selectedDays = 1;
 
   TextEditingController noteController = TextEditingController();
   var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
 
-  int? days;
   DateTimeRange selectedDates =
       DateTimeRange(start: DateTime.now(), end: DateTime.now());
   List<DateTime> _servingDates = [];
@@ -75,17 +80,6 @@ class _CartScreenState extends State<CartScreen> {
     finalTotal = widget.total;
     list = widget.list;
     supplier = widget.supplier;
-    // if (widget.pickupDate != null) {
-    //   _range =
-    //       '${DateFormat('dd/MM/yyyy').format(widget.pickupDate ?? DateTime.now())} - ${DateFormat('dd/MM/yyyy').format(widget.returnDate ?? DateTime.now())}';
-    //   if (widget.serviceType.id == 1 || widget.serviceType.id == 4) {
-    //     days = widget.returnDate!.difference(widget.pickupDate!).inDays + 1;
-    //   } else {
-    //     days = 1;
-    //   }
-    // } else {
-    //   days = 1;
-    // }
     noteController.text = widget.note;
 
     planId = sharedPreferences.getInt("planId");
@@ -124,22 +118,23 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
-                    // Navigator.of(context).push(
-                    //   MaterialPageRoute(
-                    //     builder: (ctx) => ServiceMenuScreen(
-                    //       startDate: widget.startDate,
-                    //       endDate: widget.endDate,
-                    //       supplier: widget.supplier,
-                    //       currentCart: list,
-                    //       serviceType: widget.serviceType,
-                    //       iniPickupDate: widget.startDate,
-                    //       iniReturnDate: widget.endDate,
-                    //       iniNote: noteController.text,
-                    //       location: widget.location,
-                    //       numberOfMember: widget.numberOfMember,
-                    //     ),
-                    //   ),
-                    // );
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (ctx) => ServiceMenuScreen(
+                          startDate: widget.startDate,
+                          endDate: widget.endDate,
+                          supplier: widget.supplier,
+                          currentCart: list,
+                          serviceType: widget.serviceType,
+                          iniPickupDate: widget.startDate,
+                          iniReturnDate: widget.endDate,
+                          iniNote: noteController.text,
+                          location: widget.location,
+                          numberOfMember: widget.numberOfMember,
+                          session: widget.session,
+                        ),
+                      ),
+                    );
                   },
                 ),
                 const Padding(
@@ -261,7 +256,7 @@ class _CartScreenState extends State<CartScreen> {
                                   child: CartItemCard(
                                     cartItem: list[index],
                                     updateFinalCart: updateFinalCart,
-                                    days: days,
+                                    days: selectedDays,
                                     serviceType: widget.serviceType,
                                   ),
                                 );
@@ -373,7 +368,7 @@ class _CartScreenState extends State<CartScreen> {
                                     padding:
                                         EdgeInsets.symmetric(horizontal: 5.w),
                                     child: const Text(
-                                      "Đối với mặt hàng thuộc thức ăn và như yếu phẩm, số lượng sẽ được nhân lên tương ứng với số ngày được chọn.",
+                                      "Đối với mặt hàng thuộc thức ăn và nhu yếu phẩm, số lượng sẽ được nhân lên tương ứng với số ngày được chọn.",
                                       style: TextStyle(
                                         fontSize: 13,
                                         fontFamily: 'NotoSans',
@@ -492,7 +487,7 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                               ),
                             ),
-                            Spacer(),
+                            const Spacer(),
                             const SizedBox(
                               width: 20,
                             ),
@@ -511,7 +506,7 @@ class _CartScreenState extends State<CartScreen> {
                 : Visibility(
                     visible: finalTotal != 0,
                     child: Container(
-                      height: days == 1 ? 19.h : 23.h,
+                      height: selectedDays == 1 ? 19.h : 23.h,
                       width: double.infinity,
                       color: Colors.white,
                       child: Column(
@@ -519,43 +514,41 @@ class _CartScreenState extends State<CartScreen> {
                           const SizedBox(
                             height: 20,
                           ),
-                          // days != 1
-                          //     ? Column(
-                          //         children: [
-                          //           Container(
-                          //             width: 90.w,
-                          //             child: Row(
-                          //               mainAxisAlignment:
-                          //                   MainAxisAlignment.spaceBetween,
-                          //               children: [
-                          //                 const Text(
-                          //                   'Tạm tổng', // Replace with your first text
-                          //                   style: TextStyle(
-                          //                       fontSize: 16,
-                          //                       fontFamily: 'NotoSans',
-                          //                       color: Colors.black),
-                          //                 ),
-                          //                 Text(
-                          //                   currencyFormat.format(((finalTotal *
-                          //                               30 /
-                          //                               100) /
-                          //                           1000) *
-                          //                       quantity), // Replace with your second text
-                          //                   style: const TextStyle(
-                          //                     fontSize: 17,
-                          //                     fontWeight: FontWeight.bold,
-                          //                     fontFamily: 'NotoSans',
-                          //                   ),
-                          //                 ),
-                          //               ],
-                          //             ),
-                          //           ),
-                          //           const SizedBox(
-                          //             height: 12,
-                          //           ),
-                          //         ],
-                          //       )
-                          //     : Container(),
+                          selectedDays != 1
+                              ? Column(
+                                  children: [
+                                    Container(
+                                      width: 90.w,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          const Text(
+                                            'Tạm tổng', // Replace with your first text
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontFamily: 'NotoSans',
+                                                color: Colors.black),
+                                          ),
+                                          Text(
+                                            currencyFormat.format((finalTotal *
+                                                    quantity) /
+                                                1000), // Replace with your second text
+                                            style: const TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'NotoSans',
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      height: 12,
+                                    ),
+                                  ],
+                                )
+                              : Container(),
                           Container(
                             width: 90.w,
                             child: Row(
@@ -571,24 +564,27 @@ class _CartScreenState extends State<CartScreen> {
                                         color: Colors.black,
                                       ),
                                     ),
-                                    // (widget.serviceType.id == 1 ||
-                                    //         widget.serviceType.id == 4)
-                                    //     ? Text(
-                                    //         days == 1
-                                    //             ? ""
-                                    //             : "( ${days.toString()} ngày )", // Replace with your first text
-                                    //         style: const TextStyle(
-                                    //           fontSize: 16,
-                                    //           fontFamily: 'NotoSans',
-                                    //           color: Colors.black38,
-                                    //         ),
-                                    //       )
-                                    //     : Container(),
+                                    (widget.serviceType.id == 1 ||
+                                            widget.serviceType.id == 4)
+                                        ? Text(
+                                            selectedDays == 1
+                                                ? ""
+                                                : "( ${selectedDays.toString()} ngày )", // Replace with your first text
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontFamily: 'NotoSans',
+                                              color: Colors.black38,
+                                            ),
+                                          )
+                                        : Container(),
                                   ],
                                 ),
                                 Text(
                                   currencyFormat.format((finalTotal / 1000) *
-                                      (_servingDates.isEmpty ? 1:_servingDates.length)), // Replace with your second text
+                                      (_servingDates.isEmpty
+                                          ? 1
+                                          : _servingDates
+                                              .length)), // Replace with your second text
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
@@ -620,7 +616,10 @@ class _CartScreenState extends State<CartScreen> {
                                               30 /
                                               100) /
                                           1000) *
-                                      (_servingDates.isEmpty ? 1: _servingDates.length)), // Replace with your second text
+                                      (_servingDates.isEmpty
+                                          ? 1
+                                          : _servingDates
+                                              .length)), // Replace with your second text
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
@@ -638,27 +637,6 @@ class _CartScreenState extends State<CartScreen> {
                             height: 6.h,
                             child: ElevatedButton(
                               onPressed: () async {
-                                // if (widget.pickupDate == null) {
-                                //   Fluttertoast.showToast(
-                                //     msg: 'Vui lòng thêm ngày nhận!',
-                                //     toastLength: Toast.LENGTH_LONG,
-                                //     gravity: ToastGravity.BOTTOM,
-                                //     timeInSecForIosWeb:
-                                //         1, // Duration in seconds
-                                //   );
-                                // }
-                                // else if (plan != null &&
-                                //     plan!.endDate
-                                //         .isBefore(widget.returnDate!)) {
-                                //   Fluttertoast.showToast(
-                                //     msg:
-                                //         'Ngày kết thúc kế hoạch không thể sớm hơn ngày nhận đơn!',
-                                //     toastLength: Toast.LENGTH_LONG,
-                                //     gravity: ToastGravity.BOTTOM,
-                                //     timeInSecForIosWeb:
-                                //         1, // Duration in seconds
-                                //   );
-                                // } else {
                                 if (isIndividual) {
                                   AwesomeDialog(
                                     context: context,
@@ -743,8 +721,9 @@ class _CartScreenState extends State<CartScreen> {
 
     List<dynamic> dates = [];
 
-    for(final date in _servingDates){
-      dates.add(json.encode("${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}"));
+    for (final date in _servingDates) {
+      dates.add(json.encode(
+          "${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}"));
     }
     OrderCreateViewModel order = OrderCreateViewModel(
         planId: sharedPreferences.getInt('planId'),
@@ -813,7 +792,8 @@ class _CartScreenState extends State<CartScreen> {
             supplier: widget.supplier,
             list: list,
             total: widget.total,
-            selectedDate: _servingDates.isEmpty ? [widget.startDate]: _servingDates,
+            selectedDate:
+                _servingDates.isEmpty ? [widget.startDate] : _servingDates,
             serviceType: widget.serviceType,
             numberOfMember: widget.numberOfMember,
             endDate: widget.endDate,
@@ -823,6 +803,7 @@ class _CartScreenState extends State<CartScreen> {
   callback(List<DateTime> servingDates) {
     setState(() {
       _servingDates = servingDates;
+      selectedDays = servingDates.length;
     });
     servingDates.sort((a, b) => a.compareTo(b));
     print(servingDates);

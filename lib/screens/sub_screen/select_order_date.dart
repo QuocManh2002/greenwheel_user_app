@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
@@ -101,7 +100,6 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
             widget.callbackFunction(p0 as List<DateTime>);
             Navigator.of(context).pop();
           },
-
           selectionMode: DateRangePickerSelectionMode.multiple,
         ),
         // bottomNavigationBar: Container(
