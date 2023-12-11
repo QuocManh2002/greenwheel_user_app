@@ -174,7 +174,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
             RepaintBoundary(
               key: _qrkey,
               child: QrImageView(
-                data: "quoc manh1",
+                data: "planId: ..., ",
                 version: QrVersions.auto,
                 size: 80.w,
                 gapless: true,

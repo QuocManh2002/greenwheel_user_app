@@ -573,19 +573,19 @@ class _CartScreenState extends State<CartScreen> {
                                         color: Colors.black,
                                       ),
                                     ),
-                                    (widget.serviceType.id == 1 ||
-                                            widget.serviceType.id == 4)
-                                        ? Text(
-                                            days == 1
-                                                ? ""
-                                                : "( ${days.toString()} ngày )", // Replace with your first text
-                                            style: const TextStyle(
-                                              fontSize: 16,
-                                              fontFamily: 'NotoSans',
-                                              color: Colors.black38,
-                                            ),
-                                          )
-                                        : Container(),
+                                    // (widget.serviceType.id == 1 ||
+                                    //         widget.serviceType.id == 4)
+                                    //     ? Text(
+                                    //         days == 1
+                                    //             ? ""
+                                    //             : "( ${days.toString()} ngày )", // Replace with your first text
+                                    //         style: const TextStyle(
+                                    //           fontSize: 16,
+                                    //           fontFamily: 'NotoSans',
+                                    //           color: Colors.black38,
+                                    //         ),
+                                    //       )
+                                    //     : Container(),
                                   ],
                                 ),
                                 Text(
