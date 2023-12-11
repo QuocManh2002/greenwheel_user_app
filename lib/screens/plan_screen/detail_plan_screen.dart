@@ -7,6 +7,7 @@ import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
 import 'package:greenwheel_user_app/widgets/supplier_order_card.dart';
@@ -41,6 +42,8 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
   late TabController tabController;
   late TextEditingController newItemController;
   List<PlanItem>? planSchedule;
+  List<PlanMemberViewModel> _planMembers = [];
+  int total = 0;
 
   @override
   void initState() {
@@ -167,6 +170,7 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
 
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
+    
     for (var item in _planDetail!.orders!) {
       if (item.details![0].type == "RESTAURANT") {
         listRestaurant.add(SupplierOrderCard(
@@ -187,7 +191,10 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                 supplierName: item.details![0].supplierName,
                 type: item.details![0].type)));
       }
+      total += item.total;
     }
+    _planMembers = await _planService.getPlanMember(widget.planId);
+
     setState(() {
       _listMotel = listMotel;
       _listRestaurant = listRestaurant;
@@ -326,6 +333,44 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                                     height: 16,
                                   ),
                                   Container(
+                                    alignment: Alignment.topLeft,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "Thành viên đã tham gia: ",
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black),
+                                        ),
+                                        for (final member in _planMembers)
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                vertical: 6, horizontal: 12),
+                                            child: Text(
+                                              member.status == "LEADING"
+                                                  ? "- ${member.name} (Bạn)"
+                                                  : "- ${member.name} - 0${member.phone.substring(3)}",
+                                              style:
+                                                  const TextStyle(fontSize: 18),
+                                            ),
+                                          )
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(
+                                    height: 16,
+                                  ),
+                                  Container(
+                                    height: 1.8,
+                                    color: Colors.grey.withOpacity(0.4),
+                                  ),
+                                  const SizedBox(
+                                    height: 16,
+                                  ),
+                                  Container(
                                       alignment: Alignment.centerLeft,
                                       child: const Text(
                                         "Lịch trình",
@@ -414,7 +459,7 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                           ],
                         )),
                       ),
-                      buildFooter()
+                      buildNewFooter()
                     ],
                   )));
   }
@@ -429,7 +474,15 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
   }
 
   onJoinPlan() async {
-    int? rs = await _planService.joinPlan(widget.planId);
+    AwesomeDialog(context: context,
+    dialogType: DialogType.question,
+    body: Container(
+      child: Text(
+        "Kinh phí cho chuyến đi này là ${(total / _planDetail!.memberLimit).ceil()} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?"
+      ),
+    ),
+    btnOkOnPress: () async{
+      int? rs = await _planService.joinPlan(widget.planId);
     if (rs != null) {
       // ignore: use_build_context_synchronously
       AwesomeDialog(
@@ -449,63 +502,40 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
         },
       ).show();
     }
+    }
+    ).show();
   }
 
-  Widget buildFooter() => Padding(
+  Widget buildNewFooter() => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         child: Container(
           height: 6.h,
-          child: Row(
-            children: [
-              Expanded(
-                child: ElevatedButton(
+          child: widget.isEnableToJoin
+              ? ElevatedButton(
                   onPressed: () {
-                    widget.isEnableToJoin
-                        ? onJoinPlan
-                        : AwesomeDialog(
-                                context: context,
-                                dialogType: DialogType.noHeader,
-                                animType: AnimType.topSlide,
-                                btnOkColor: primaryColor,
-                                btnOkText: "Lưu",
-                                desc: "Lưu kế hoạch thành công",
-                                body: Container(
-                                  alignment: Alignment.topLeft,
-                                  height: 50.h,
-                                ),
-                                btnOkOnPress: () {},
-                                btnCancelText: "Chỉnh sửa",
-                                btnCancelOnPress: () {},
-                                btnCancelColor: secondaryColor)
-                            .show();
+                    onJoinPlan();
                   },
                   style: elevatedButtonStyle,
-                  child: Text(
-                    widget.isEnableToJoin
-                        ? "Tham gia kế hoạch"
-                        : "Chỉnh sửa kế hoạch",
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+                  child: const Text(
+                    "Tham gia kế hoạch",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ),
-              if (_planDetail!.status == "OFFICIAL")
-                Padding(
-                  padding: const EdgeInsets.only(left: 12),
-                  child: ElevatedButton(
-                      style: elevatedButtonStyle.copyWith(
-                          minimumSize:
-                              const MaterialStatePropertyAll(Size(45, 45)),
-                          backgroundColor:
-                              const MaterialStatePropertyAll(Colors.blue)),
-                      onPressed: onShare,
-                      child: const Icon(
-                        Icons.share,
-                        size: 25,
-                      )),
                 )
-            ],
-          ),
+              : Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon:const Icon(Icons.share),
+                        onPressed: onShare,
+                        style: elevatedButtonStyle,
+                        label:const Text("Chia sẻ kế hoạch",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
         ),
       );
 }

@@ -443,10 +443,54 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                         ),
                         Container(
                             alignment: Alignment.centerLeft,
-                            child: const Text(
-                              "Các loại dịch vụ",
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  "Các loại dịch vụ",
+                                  style: TextStyle(
+                                      fontSize: 20, fontWeight: FontWeight.bold),
+                                ),
+                                Container(
+                          height: 5.h,
+                          width: 18.h,
+                          child: ElevatedButton.icon(
+                            label: const Text("Tìm & đặt"),
+                            icon: const Icon(Icons.search),
+                            onPressed: () {
+                              switch (tabController.index) {
+                                case 0:
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (ctx) => ServiceMainScreen(
+                                      startDate: widget.startDate,
+                                      endDate: widget.endDate,
+                                      numberOfMember: widget.numberOfMember,
+                                      serviceType: services[1],
+                                      location: widget.location,
+                                      callbackFunction: callback,
+                                    ),
+                                  ));
+                                  break;
+                                case 1:
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (ctx) => ServiceMainScreen(
+                                      endDate: widget.endDate,
+                                      startDate: widget.startDate,
+                                      numberOfMember: widget.numberOfMember,
+                                      serviceType: services[0],
+                                      location: widget.location,
+                                      callbackFunction: callback,
+                                    ),
+                                  ));
+                                  break;
+                              }
+                              // Navigator.of(context).push(MaterialPageRoute(
+                              //     builder: (ctx) => const TestScreen()));
+                            },
+                            style: elevatedButtonStyle,
+                          ),
+                        ),
+                              ],
                             )),
                         const SizedBox(
                           height: 16,
@@ -495,45 +539,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                         const SizedBox(
                           height: 16,
                         ),
-                        Container(
-                          height: 5.h,
-                          width: 18.h,
-                          child: ElevatedButton.icon(
-                            label: const Text("Tìm & đặt"),
-                            icon: const Icon(Icons.search),
-                            onPressed: () {
-                              switch (tabController.index) {
-                                case 0:
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => ServiceMainScreen(
-                                      startDate: widget.startDate,
-                                      endDate: widget.endDate,
-                                      numberOfMember: widget.numberOfMember,
-                                      serviceType: services[1],
-                                      location: widget.location,
-                                      callbackFunction: callback,
-                                    ),
-                                  ));
-                                  break;
-                                case 1:
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => ServiceMainScreen(
-                                      endDate: widget.endDate,
-                                      startDate: widget.startDate,
-                                      numberOfMember: widget.numberOfMember,
-                                      serviceType: services[0],
-                                      location: widget.location,
-                                      callbackFunction: callback,
-                                    ),
-                                  ));
-                                  break;
-                              }
-                              // Navigator.of(context).push(MaterialPageRoute(
-                              //     builder: (ctx) => const TestScreen()));
-                            },
-                            style: elevatedButtonStyle,
-                          ),
-                        ),
+                        
                         const SizedBox(
                           height: 16,
                         ),
@@ -590,7 +596,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                 },
                 style: elevatedButtonStyle,
                 child: const Text(
-                  "Lưu kế hoạch",
+                  "Hoàn tất",
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),

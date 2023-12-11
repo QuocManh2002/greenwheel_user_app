@@ -8,6 +8,7 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
@@ -296,8 +297,8 @@ query GetPlanById(\$planId: Int){
 
   Future<int?> joinPlan(int planId) async{
     try {
-      QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
   joinPlan(planId: $planId){
     id
@@ -317,4 +318,42 @@ mutation{
       throw Exception(error);
     }
   }
+
+  Future<List<PlanMemberViewModel>> getPlanMember(int planId) async{
+      try {
+      QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+{
+  plans(where: { id: { eq: $planId } }) {
+    nodes {
+      members {
+        status
+        traveler {
+          account {
+            name
+          }
+          phone
+        }
+        travelerId
+      }
+    }
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      List? res = result.data!['plans']['nodes'][0]['members'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+
+      List<PlanMemberViewModel> listResult = res.map((e) => PlanMemberViewModel.fromJson(e)).toList();
+      return listResult;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+ 
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:sizer2/sizer2.dart';
@@ -12,12 +13,33 @@ class PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget buildStatusPoint(PlanCardViewModel plan) {
+      Color pointColor = Colors.white;
+      if (plan.startDate.isBefore(DateTime.now()) &&
+          plan.endDate.isAfter(DateTime.now())) {
+        pointColor = primaryColor;
+      } else if (plan.endDate.isBefore(DateTime.now())) {
+        pointColor = Colors.orange;
+      } else if (plan.startDate.isBefore(DateTime.now())) {
+        pointColor = Colors.blue;
+      }
+
+      return Container(
+        height: 2.h,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: pointColor),
+      );
+    }
+
     return InkWell(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DetailPlanScreen(planId: plan.id,locationName: plan.locationName,isEnableToJoin: false,)));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => DetailPlanScreen(
+                  planId: plan.id,
+                  locationName: plan.locationName,
+                  isEnableToJoin: false,
+                )));
       },
       child: Container(
-        
         decoration: BoxDecoration(
           boxShadow: const [
             BoxShadow(
@@ -37,9 +59,7 @@ class PlanCard extends StatelessWidget {
           elevation: 2,
           child: Padding(
             padding: const EdgeInsets.only(right: 16),
-            child: Row(
-              
-              children: [
+            child: Row(children: [
               Container(
                 decoration:
                     BoxDecoration(borderRadius: BorderRadius.circular(14)),
@@ -65,11 +85,19 @@ class PlanCard extends StatelessWidget {
                     const SizedBox(
                       height: 8,
                     ),
-                    Text("Chuyến đi ${plan.locationName}" ,
-                    overflow: TextOverflow.clip,
-                    maxLines: 2,
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    Row(
+                      
+                      children: [
+                        Expanded(
+                          child: Text("Chuyến đi ${plan.locationName}",
+                              overflow: TextOverflow.clip,
+                              maxLines: 2,
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold)),
+                        ),
+                        if(plan.status == "OFFICIAL")buildStatusPoint(plan)
+                      ],
+                    ),
                     const SizedBox(
                       height: 8,
                     ),
@@ -77,7 +105,8 @@ class PlanCard extends StatelessWidget {
                     const SizedBox(
                       height: 8,
                     ),
-                    Text('${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year} - ${plan.endDate.day}/${plan.endDate.month}/${plan.endDate.year}')
+                    Text(
+                        '${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year} - ${plan.endDate.day}/${plan.endDate.month}/${plan.endDate.year}')
                   ],
                 ),
               )
