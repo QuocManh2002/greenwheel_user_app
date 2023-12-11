@@ -1,12 +1,16 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:fluttertoast/fluttertoast.dart';
+import 'package:greenwheel_user_app/config/token_generator.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
@@ -48,7 +52,19 @@ class _QRScreenState extends State<QRScreen> {
       final qrCorde = await FlutterBarcodeScanner.scanBarcode(
           "#ff6666", "Cancel", true, ScanMode.QR);
       if (qrCorde.isNotEmpty) {
-        print("My qrcode data: $qrCorde");
+        final jwt = JWT.decode(qrCorde);
+        if (jwt.payload['planId'] != null) {
+          print("Payload: ${jwt.payload}");
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (ctx) => DetailPlanScreen(
+                    isEnableToJoin: jwt.payload["isEnableToJoin"],
+                    locationName: jwt.payload["locationName"],
+                    planId: jwt.payload["planId"],
+                  )));
+        } else {
+          print('Payload for travelerId!');
+        }
       }
     } on PlatformException {
       print("exception");
@@ -70,6 +86,12 @@ class _QRScreenState extends State<QRScreen> {
       Uint8List? uint8list = await convertQRToBytes();
       final result = await ImageGallerySaver.saveImage(uint8list);
       if (result['isSuccess']) {
+        Fluttertoast.showToast(
+          msg: 'Lưu hình ảnh thành công!',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1, // Duration in seconds
+        );
         print('Image saved!');
         String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
         sharedPreferences.setString('deviceToken', deviceToken);
@@ -139,7 +161,7 @@ class _QRScreenState extends State<QRScreen> {
             RepaintBoundary(
               key: _qrkey,
               child: QrImageView(
-                data: "quoc manh1",
+                data: TokenGenerator.generateToken("quoc manh1", "plan"),
                 version: QrVersions.auto,
                 size: 80.w,
                 gapless: true,
@@ -181,7 +203,6 @@ class _QRScreenState extends State<QRScreen> {
               ),
             )
           ]),
-          
         ],
       ),
     ));

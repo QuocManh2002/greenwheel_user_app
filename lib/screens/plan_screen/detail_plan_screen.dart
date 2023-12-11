@@ -419,8 +419,12 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
   }
 
   onShare() async {
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (ctx) => const SharePlanScreen()));
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (ctx) => SharePlanScreen(
+              isEnableToJoin: widget.isEnableToJoin,
+              locationName: widget.locationName,
+              planId: widget.planId,
+            )));
   }
 
   Widget buildFooter() => Padding(

@@ -1,14 +1,18 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:greenwheel_user_app/config/token_generator.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/temp_plan.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
@@ -19,7 +23,14 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SharePlanScreen extends StatefulWidget {
-  const SharePlanScreen({super.key});
+  const SharePlanScreen(
+      {super.key,
+      required this.planId,
+      required this.locationName,
+      required this.isEnableToJoin});
+  final int planId;
+  final String locationName;
+  final bool isEnableToJoin;
 
   @override
   State<SharePlanScreen> createState() => _SharePlanScreenState();
@@ -75,7 +86,12 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
       final qrCorde = await FlutterBarcodeScanner.scanBarcode(
           "#ff6666", "Cancel", true, ScanMode.QR);
       if (qrCorde.isNotEmpty) {
-        print("My qrcode data: $qrCorde");
+        final jwt = JWT.decode(qrCorde);
+        if (jwt.payload['planId'] != null) {
+          print('Payload for planId!');
+        } else {
+          print('Payload for travelerId!');
+        }
       }
     } on PlatformException {
       print("exception");
@@ -97,6 +113,12 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
       Uint8List? uint8list = await convertQRToBytes();
       final result = await ImageGallerySaver.saveImage(uint8list);
       if (result['isSuccess']) {
+        Fluttertoast.showToast(
+          msg: 'Lưu hình ảnh thành công!',
+          toastLength: Toast.LENGTH_LONG,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1, // Duration in seconds
+        );
         print('Image saved!');
         String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
         sharedPreferences.setString('deviceToken', deviceToken);
@@ -174,7 +196,13 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
             RepaintBoundary(
               key: _qrkey,
               child: QrImageView(
-                data: "planId: ..., ",
+                data: TokenGenerator.generateToken(
+                    TempPlan(
+                      planId: widget.planId,
+                      isEnableToJoin: widget.isEnableToJoin,
+                      locationName: widget.locationName,
+                    ),
+                    "plan"),
                 version: QrVersions.auto,
                 size: 80.w,
                 gapless: true,
