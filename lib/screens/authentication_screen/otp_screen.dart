@@ -196,7 +196,9 @@ class _OTPScreenState extends State<OTPScreen> {
             await customerService.GetCustomerByPhone(payload['phone_number']);
         if (customer != null) {
           String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
-          sharedPreferences.setString('deviceToken', deviceToken);
+          if(deviceToken != ''){
+            sharedPreferences.setString('deviceToken', deviceToken);
+          }
           sharedPreferences.setString("userPhone", payload['phone_number']);
           // ignore: use_build_context_synchronously
           Navigator.push(context,

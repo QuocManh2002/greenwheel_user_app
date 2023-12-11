@@ -3,11 +3,9 @@ import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/service_menu_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
@@ -150,19 +148,19 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                       ),
                       onPressed: () {
                         Navigator.of(context).pop(); // Close the current page
-                        Navigator.of(context).push(
-                          MaterialPageRoute(
-                            builder: (ctx) => ServiceMainScreen(
-                              startDate: widget.startDate,
-                              endDate: widget.endDate,
-                              serviceType: widget.serviceType,
-                              location: widget.location,
-                              numberOfMember: widget.numberOfMember,
-                              callbackFunction:
-                                  (List<OrderCreatePlan> orderList) {},
-                            ),
-                          ),
-                        );
+                        // Navigator.of(context).push(
+                        //   MaterialPageRoute(
+                        //     builder: (ctx) => ServiceMainScreen(
+                        //       startDate: widget.startDate,
+                        //       endDate: widget.endDate,
+                        //       serviceType: widget.serviceType,
+                        //       location: widget.location,
+                        //       numberOfMember: widget.numberOfMember,
+                        //       callbackFunction:
+                        //           (List<OrderCreatePlan> orderList) {},
+                        //     ),
+                        //   ),
+                        // );
                       },
                     ),
                     Padding(
@@ -271,7 +269,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                   height: 6.h,
                   child: ElevatedButton(
                     onPressed: () async {
-                      Navigator.of(context).pop();
+                      // Navigator.of(context).pop();
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (ctx) => CartScreen(

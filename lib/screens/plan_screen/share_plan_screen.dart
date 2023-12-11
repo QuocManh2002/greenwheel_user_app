@@ -196,7 +196,13 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
             RepaintBoundary(
               key: _qrkey,
               child: QrImageView(
-                //quoc manh1
+                data: TokenGenerator.generateToken(
+                    TempPlan(
+                      planId: widget.planId,
+                      isEnableToJoin: widget.isEnableToJoin,
+                      locationName: widget.locationName,
+                    ),
+                    "plan"),
                 data: TokenGenerator.generateToken(
                     TempPlan(
                       planId: widget.planId,

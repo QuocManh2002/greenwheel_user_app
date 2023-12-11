@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
