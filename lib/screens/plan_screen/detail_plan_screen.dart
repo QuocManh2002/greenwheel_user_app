@@ -171,7 +171,7 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
 
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
-    
+
     for (var item in _planDetail!.orders!) {
       if (item.details![0].type == "RESTAURANT") {
         listRestaurant.add(SupplierOrderCard(
@@ -475,36 +475,36 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
   }
 
   onJoinPlan() async {
-    AwesomeDialog(context: context,
-    dialogType: DialogType.question,
-    body: Container(
-      child: Text(
-        "Kinh phí cho chuyến đi này là ${(total / _planDetail!.memberLimit).ceil()} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?"
-      ),
-    ),
-    btnOkOnPress: () async{
-      int? rs = await _planService.joinPlan(widget.planId);
-    if (rs != null) {
-      // ignore: use_build_context_synchronously
-      AwesomeDialog(
+    AwesomeDialog(
         context: context,
-        dialogType: DialogType.success,
+        dialogType: DialogType.question,
         animType: AnimType.topSlide,
-        showCloseIcon: true,
-        title: "Tham gia kế hoạch thành công",
-        desc: "Ấn tiếp tục để trở về",
-        btnOkText: "Tiếp tục",
-        btnOkOnPress: () {
-          Navigator.of(context).pop();
-          Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                  builder: (ctx) => const TabScreen(pageIndex: 0)),
-              (route) => false);
-        },
-      ).show();
-    }
-    }
-    ).show();
+        title: "Xác nhận tham gia",
+        desc:
+            "Kinh phí cho chuyến đi này là ${(total / _planDetail!.memberLimit).ceil()} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
+        btnOkText: "Xác nhận",
+        btnOkOnPress: () async {
+          int? rs = await _planService.joinPlan(widget.planId);
+          if (rs != null) {
+            // ignore: use_build_context_synchronously
+            AwesomeDialog(
+              context: context,
+              dialogType: DialogType.success,
+              animType: AnimType.topSlide,
+              showCloseIcon: true,
+              title: "Tham gia kế hoạch thành công",
+              desc: "Ấn tiếp tục để trở về",
+              btnOkText: "Tiếp tục",
+              btnOkOnPress: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (ctx) => const TabScreen(pageIndex: 0)),
+                    (route) => false);
+              },
+            ).show();
+          }
+        }).show();
   }
 
   Widget buildNewFooter() => Padding(
@@ -526,10 +526,11 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        icon:const Icon(Icons.share),
+                        icon: const Icon(Icons.share),
                         onPressed: onShare,
                         style: elevatedButtonStyle,
-                        label:const Text("Chia sẻ kế hoạch",
+                        label: const Text(
+                          "Chia sẻ kế hoạch",
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),

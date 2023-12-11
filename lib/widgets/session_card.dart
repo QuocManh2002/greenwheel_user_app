@@ -42,7 +42,7 @@ class SessionCard extends StatelessWidget {
                 backgroundColor: Colors.white),
             onPressed: () async {
               var service = services.firstWhere((s) => s.name == supplier.type);
-              // Navigator.of(context).pop();
+              Navigator.of(context).pop();
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => ServiceMenuScreen(
@@ -57,44 +57,70 @@ class SessionCard extends StatelessWidget {
                 ),
               );
             },
-            child: SizedBox(
-              height: 15.h,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.only(left: 4.w, top: 2.h),
-                    child: Text(
-                      session.name.toUpperCase(),
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black,
-                        fontFamily: 'NotoSans',
-                      ),
+            child: Row(
+              children: [
+                const SizedBox(
+                  width: 20,
+                ),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(8),
+                      bottomLeft: Radius.circular(8),
+                    ),
+                    child: Image.asset(
+                      session.image,
+                      height: 12.h,
+                      fit: BoxFit.cover,
                     ),
                   ),
-                  const SizedBox(
-                    height: 6,
-                  ),
-                  Row(
+                ),
+                const SizedBox(
+                  width: 8,
+                ),
+                SizedBox(
+                  height: 15.h,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
-                        padding: EdgeInsets.only(left: 4.w, top: 0.5.h),
+                        padding: EdgeInsets.only(left: 4.w, top: 4.h),
                         child: Text(
-                          session.range,
+                          session.name.toUpperCase(),
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            color: Colors.black54,
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
                             fontFamily: 'NotoSans',
                           ),
                         ),
                       ),
+                      const SizedBox(
+                        height: 6,
+                      ),
+                      Row(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.only(left: 4.w, top: 0.5.h),
+                            child: Text(
+                              session.range,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                color: Colors.black54,
+                                fontFamily: 'NotoSans',
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),
