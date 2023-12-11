@@ -58,7 +58,7 @@ class _QRScreenState extends State<QRScreen> {
           // ignore: use_build_context_synchronously
           Navigator.of(context).push(MaterialPageRoute(
               builder: (ctx) => DetailPlanScreen(
-                    isEnableToJoin: jwt.payload["isEnableToJoin"],
+                    isEnableToJoin: true,
                     locationName: jwt.payload["locationName"],
                     planId: jwt.payload["planId"],
                   )));

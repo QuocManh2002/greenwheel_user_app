@@ -293,4 +293,28 @@ query GetPlanById(\$planId: Int){
     }
     return schedule;
   }
+
+  Future<int?> joinPlan(int planId) async{
+    try {
+      QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+mutation{
+  joinPlan(planId: $planId){
+    id
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      int? res = result.data!['joinPlan']['id'];
+      if (res == null || res == 0) {
+        return null;
+      }
+      return res;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
 }

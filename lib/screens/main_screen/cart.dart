@@ -330,19 +330,26 @@ class _CartScreenState extends State<CartScreen> {
                                             fontWeight: FontWeight.bold,
                                           ),
                                         )
-                                      : Column(
-                                          children: [
-                                            for (final date in _servingDates)
-                                              Text(
-                                                '${date.day}/${date.month}/${date.year}',
-                                                style: const TextStyle(
-                                                  fontSize: 14,
-                                                  fontFamily: 'NotoSans',
-                                                  fontWeight: FontWeight.bold,
-                                                ),
-                                              )
-                                          ],
-                                        ),
+                                      // : Column(
+                                      //     children: [
+                                      //       for (final date in _servingDates)
+                                      //         Text(
+                                      //           '${date.day}/${date.month}/${date.year}',
+                                      //           style: const TextStyle(
+                                      //             fontSize: 14,
+                                      //             fontFamily: 'NotoSans',
+                                      //             fontWeight: FontWeight.bold,
+                                      //           ),
+                                      //         )
+                                      //     ],
+                                      //   ),
+                                      : Text(
+                                          "${_servingDates.first.day}/${_servingDates.first.month}/${_servingDates.first.year} + ${_servingDates.length - 1} ngày",
+                                          style: const TextStyle(
+                                            fontSize: 14,
+                                            fontFamily: 'NotoSans',
+                                            fontWeight: FontWeight.bold,
+                                          ),),
                               // const Spacer(), // Add space between the two elements
                               TextButton(
                                 onPressed: pickDateRange,

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
+import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -427,6 +428,33 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
             )));
   }
 
+  onJoinPlan() async {
+    int? rs = await _planService.joinPlan(widget.planId);
+    if (rs != null) {
+      AwesomeDialog(
+              context: context,
+              dialogType: DialogType.noHeader,
+              animType: AnimType.topSlide,
+              btnOkColor: primaryColor,
+              btnOkText: "Lưu",
+              desc: "Tham gia kế hoạch thành công",
+              body: Container(
+                alignment: Alignment.topLeft,
+                height: 50.h,
+              ),
+              btnOkOnPress: () {
+                Navigator.of(context).pushAndRemoveUntil(
+                    MaterialPageRoute(
+                        builder: (ctx) => TabScreen(pageIndex: 0)),
+                    (route) => false);
+              },
+              btnCancelText: "Chỉnh sửa",
+              btnCancelOnPress: () {},
+              btnCancelColor: secondaryColor)
+          .show();
+    }
+  }
+
   Widget buildFooter() => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
         child: Container(
@@ -436,31 +464,33 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
               Expanded(
                 child: ElevatedButton(
                   onPressed: () {
-                    AwesomeDialog(
-                            context: context,
-                            dialogType: DialogType.noHeader,
-                            animType: AnimType.topSlide,
-                            btnOkColor: primaryColor,
-                            btnOkText: "Lưu",
-                            desc: "Lưu kế hoạch thành công",
-                            body: Container(
-                              alignment: Alignment.topLeft,
-                              height: 50.h,
-                              // child: ConfirmPlan(
-                              //   duration: widget.duration,
-                              //   endDate: widget.endDate,
-                              //   location: widget.location,
-                              //   numberOfMember: widget.numberOfMember,
-                              //   planDetail: planDetail,
-                              //   startDate: widget.startDate,
-                              //   orders: _orderList!,
-                              // ),
-                            ),
-                            btnOkOnPress: () {},
-                            btnCancelText: "Chỉnh sửa",
-                            btnCancelOnPress: () {},
-                            btnCancelColor: secondaryColor)
-                        .show();
+                    widget.isEnableToJoin
+                        ? onJoinPlan
+                        : AwesomeDialog(
+                                context: context,
+                                dialogType: DialogType.noHeader,
+                                animType: AnimType.topSlide,
+                                btnOkColor: primaryColor,
+                                btnOkText: "Lưu",
+                                desc: "Lưu kế hoạch thành công",
+                                body: Container(
+                                  alignment: Alignment.topLeft,
+                                  height: 50.h,
+                                  // child: ConfirmPlan(
+                                  //   duration: widget.duration,
+                                  //   endDate: widget.endDate,
+                                  //   location: widget.location,
+                                  //   numberOfMember: widget.numberOfMember,
+                                  //   planDetail: planDetail,
+                                  //   startDate: widget.startDate,
+                                  //   orders: _orderList!,
+                                  // ),
+                                ),
+                                btnOkOnPress: () {},
+                                btnCancelText: "Chỉnh sửa",
+                                btnCancelOnPress: () {},
+                                btnCancelColor: secondaryColor)
+                            .show();
                   },
                   style: elevatedButtonStyle,
                   child: Text(

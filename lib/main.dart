@@ -35,7 +35,7 @@ ThemeData theme = ThemeData(
       rangeSelectionBackgroundColor: primaryColor.withOpacity(0.3),
       // dayBackgroundColor: const MaterialStatePropertyAll(primaryColor)
     ));
-
+@pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async{
   await Firebase.initializeApp();
   print(message.notification!.title.toString());

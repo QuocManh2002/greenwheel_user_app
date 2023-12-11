@@ -71,12 +71,12 @@ class NotificationService {
             priority: Priority.high,
             ticker: 'ticker');
 
-    const DarwinNotificationDetails darwinNotificationDetails =
-        DarwinNotificationDetails(
-      presentAlert: true,
-      presentSound: true,
-      presentBadge: true,
-    );
+    // const DarwinNotificationDetails darwinNotificationDetails =
+    //     DarwinNotificationDetails(
+    //   presentAlert: true,
+    //   presentSound: true,
+    //   presentBadge: true,
+    // );
 
     NotificationDetails notificationDetails =
         NotificationDetails(android: androidNotificationDetails);
@@ -91,5 +91,9 @@ class NotificationService {
             notificationDetails);
       },
     );
+  }
+
+  void handleMessage(BuildContext context, RemoteMessage message){
+    
   }
 }
