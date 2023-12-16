@@ -34,7 +34,6 @@ class ProductService extends Iterable {
             products(
               where: {
                 supplierId: { eq: \$id },
-                isHidden: { eq: false },
                 periods: { some: {in: \$period} }
               },
               order: {

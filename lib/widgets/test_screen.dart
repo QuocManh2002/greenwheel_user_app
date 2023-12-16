@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 import 'dart:ui';
 
@@ -8,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/service/notification_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/test_screen_date.dart';
@@ -35,100 +37,77 @@ class _TestScreenState extends State<TestScreen> {
   final GlobalKey qrkey = GlobalKey();
   bool dirExists = false;
   dynamic externalDir = '/storage/emulated/0/Download/QR_Code';
-
+  NotificationService _notificationService = NotificationService();
+  List<List<Room>> _listResult = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    // _notificationService.requestNotificationPermission();
+    // _notificationService.firebaseInit(context);
+    // _notificationService.setupInteractMessage(context);
+    setUpData();
   }
 
-  // setUpData() {
-  //   // List<List<Room>> rs = [];
-  //   List<List<Room>> listResult = [];
+  setUpData() {
+    List<Room> rooms = [
+      Room(id: 1, price: 700, size: 1),
+      Room(id: 2, price: 1000, size: 2),
+      Room(id: 3, price: 500, size: 1),
+      Room(id: 4, price: 800, size: 2),
+    ];
+    findSumCombinations(rooms, 5);
+    print(_listResult.length);
+    List<Room> rs = getResult(_listResult);
+    print(rs);
+  }
 
-  //   findCheapestRooms(5, listResult);
-  //   List<Room> rss = getResult(listResult);
-  //   print(rss);
-  // }
-
-  // void findCheapestRooms(int numberOfMember, List<List<Room>> listResult) {
-  //   List<Room> rooms = [
-  //     Room(id: 1, price: 500, size: 1),
-  //     Room(id: 2, price: 800, size: 2),
-  //     Room(id: 3, price: 700, size: 1),
-  //     Room(id: 4, price: 1000, size: 2),
-  //   ];
-
-  //   findSumCombination(rooms, numberOfMember, 0, [], listResult);
-  // }
-
-  // void findSumCombination(List<Room> roomList, int target, int startIndex,
-  //     List<Room> combinations, List<List<Room>> listResult) {
-  //   if (target == 0) {
-  //     double price = 0;
-  //     combinations.forEach(
-  //       (element) => price += element.price,
-  //     );
-  //     listResult.add(combinations);
-  //     return;
-  //   }
-  //   for (int i = startIndex; i < roomList.length; i++) {
-  //     if (roomList[i].size <= target) {
-  //       combinations.add(roomList[i]);
-  //       findSumCombination(
-  //           roomList, target - roomList[i].size, i, combinations, listResult);
-  //       combinations.removeLast();
-  //     }
-  //   }
-  // }
-
-  // List<Room> getResult(List<List<Room>> list) {
-  //   List<Room> listRoomsCheapest = [];
-  //   double minPriceRooms = 0;
-  //   list[0].forEach((element) {
-  //     minPriceRooms += element.price;
-  //   });
-  //   for (final rooms in list) {
-  //     double price = 0;
-  //     rooms.forEach((element) {
-  //       price += element.price;
-  //     });
-  //     if (price <= minPriceRooms) {
-  //       minPriceRooms = price;
-  //       listRoomsCheapest = rooms;
-  //     }
-  //   }
-  //   return listRoomsCheapest;
-  // }
-
-  DateTime selectedDate = DateTime.now();
-
-  void _showDatePicker(BuildContext context) async {
+  
     
-    DateTime? newDay = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(1900),
-        lastDate: DateTime(2024),
-        builder: (context, child) {
-          return Theme(
-            data: ThemeData().copyWith(
-                colorScheme: const ColorScheme.light(
-                    primary: primaryColor, onPrimary: Colors.white)),
-            child: DatePickerDialog(
-              
-              initialDate: DateTime.now(),
-              firstDate: DateTime(1900),
-              lastDate: DateTime(2024),
-            ),
-          );
-        });
-    if (newDay != null) {
-      setState(() {
-        selectedDate = newDay;
-      });
+
+    
+
+    // _listResult = listResult;
+  
+
+  void findSumCombinations(List<Room> roomList, int targetSum,
+      {List<Room> combination = const [], int startIndex = 0}) {
+    int currentSum = 0;
+    combination.forEach((element) => currentSum += element.size);
+    if (currentSum == targetSum) {
+      _listResult.add(combination);
+      return;
     }
+
+    if (currentSum > targetSum) {
+      return;
+    }
+
+    for (int i = startIndex; i < roomList.length; i++) {
+      List<Room> newCombination = List.from(combination)..add(roomList[i]);
+      findSumCombinations(roomList, targetSum,
+          combination: newCombination, startIndex: i);
+    }
+  }
+
+  List<Room> getResult(List<List<Room>> list) {
+    List<Room> listRoomsCheapest = [];
+    double minPriceRooms = 0;
+    list[0].forEach((element) {
+      minPriceRooms += element.price;
+    });
+    for (final rooms in list) {
+      double price = 0;
+      rooms.forEach((element) {
+        price += element.price;
+      });
+      if (price <= minPriceRooms) {
+        minPriceRooms = price;
+        listRoomsCheapest = rooms;
+      }
+    }
+    return listRoomsCheapest;
   }
 
   @override
@@ -137,7 +116,8 @@ class _TestScreenState extends State<TestScreen> {
         child: Scaffold(
             body: Center(
       child: ElevatedButton(
-        onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => TestScreenDate())),
+        onPressed: () => Navigator.of(context)
+            .push(MaterialPageRoute(builder: (ctx) => TestScreenDate())),
         child: Text("chon ngay"),
       ),
     )));

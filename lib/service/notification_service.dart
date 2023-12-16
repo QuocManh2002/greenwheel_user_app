@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
+import 'package:greenwheel_user_app/widgets/test_screen_date.dart';
 
 class NotificationService {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -53,10 +53,9 @@ class NotificationService {
         print(message.notification!.title.toString());
         print(message.notification!.body.toString());
       }
-      if(Platform.isAndroid){
+      if (Platform.isAndroid) {
         initLocalNotification(context, message);
-      showNotification(message);
-
+        showNotification(message);
       }
     });
   }
@@ -65,6 +64,9 @@ class NotificationService {
     AndroidNotificationChannel androidNotificationChannel =
         AndroidNotificationChannel(Random.secure().nextInt(100000).toString(),
             "High Important Notification",
+            playSound: true,
+            sound: const RawResourceAndroidNotificationSound('jetsons_doorbell'),
+            showBadge: true,
             importance: Importance.max);
 
     AndroidNotificationDetails androidNotificationDetails =
@@ -97,10 +99,26 @@ class NotificationService {
     );
   }
 
-  void handleMessage(BuildContext context, RemoteMessage message){
-    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DetailPlanScreen(
-      planId: int.parse(message.data['planId']), 
-      locationName: "locationName", 
-      isEnableToJoin: true)));
+  void handleMessage(BuildContext context, RemoteMessage message) {
+    // Navigator.of(context).push(MaterialPageRoute(
+    //     builder: (ctx) => DetailPlanScreen(
+    //         planId: int.parse(message.data['planId']),
+    //         locationName: "locationName",
+    //         isEnableToJoin: true)));
+
+    Navigator.of(context)
+        .push(MaterialPageRoute(builder: (ctx) => TestScreenDate()));
+  }
+
+  Future<void> setupInteractMessage(BuildContext context) async {
+    RemoteMessage? initialMessage =
+        await FirebaseMessaging.instance.getInitialMessage();
+    if (initialMessage != null) {
+      handleMessage(context, initialMessage);
+    }
+
+    FirebaseMessaging.onMessageOpenedApp.listen((event) {
+      handleMessage(context, event);
+    });
   }
 }

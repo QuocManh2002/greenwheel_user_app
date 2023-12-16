@@ -26,10 +26,10 @@ class CustomerViewModel {
       CustomerViewModel(
         id: json["id"],
         name: json["account"]["name"],
-        isMale: json["isMale"],
+        isMale: json["account"]["isMale"],
         avatarUrl: json['account']["avatarUrl"],
         phone: json["phone"],
-        balance: double.parse(json["balance"].toString()),
+        balance: double.parse(json["account"]["balance"].toString()),
       );
 
   Map<String, dynamic> toJson() => {

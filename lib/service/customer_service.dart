@@ -27,10 +27,8 @@ class CustomerService {
         {
         nodes{
           id
-          account{name avatarUrl}
-          isMale
+          account{name avatarUrl isMale balance}
           phone
-          balance
         }
     }
 }
@@ -86,7 +84,6 @@ mutation{
 mutation {
   registerTraveler(model: {
     name:"${model.name}"
-    birthday:"${model.birthday}"
     isMale:${model.isMale}
     avatarUrl:""
   }){

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
@@ -40,18 +41,34 @@ class SupplierCard extends StatelessWidget {
             onPressed: () async {
               var service = services.firstWhere((s) => s.name == supplier.type);
               // Navigator.of(context).pop();
-              Navigator.of(context).push(
+              if (service.id == 1) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => SelectSessionScreen(
+                      startDate: startDate,
+                      endDate: endDate,
+                      numberOfMember: 0,
+                      supplier: supplier,
+                      serviceType: service,
+                      location: location,
+                    ),
+                  ),
+                );
+              }else{
+                Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (ctx) => SelectSessionScreen(
+                  builder: (ctx) => ServiceMenuScreen(
                     startDate: startDate,
                     endDate: endDate,
                     numberOfMember: 0,
                     supplier: supplier,
                     serviceType: service,
                     location: location,
+                    
                   ),
                 ),
               );
+              }
             },
             child: Row(
               children: [

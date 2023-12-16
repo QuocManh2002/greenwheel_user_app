@@ -16,7 +16,7 @@ class LocationService extends Iterable {
 {
     locations
     (
-      first: 5, 
+      first: 10, 
       order: { 
         id:ASC
       },

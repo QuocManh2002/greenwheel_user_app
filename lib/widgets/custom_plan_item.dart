@@ -118,14 +118,22 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                           ),
                           alignment: Alignment.centerLeft,
                           height: 5.h,
-                          color: redColor,
+                          clipBehavior: Clip.antiAlias,
+                          decoration: const BoxDecoration(
+                            color: redColor,
+                            borderRadius: BorderRadius.all(Radius.circular(8))
+                          ),
                           child: const Icon(Icons.delete),
                         ),
                         secondaryBackground: Container(
                           padding: const EdgeInsets.only(right: 16),
                           alignment: Alignment.centerRight,
                           height: 5.h,
-                          color: redColor,
+                          decoration: const BoxDecoration(
+                            color: redColor,
+                            borderRadius: BorderRadius.all(Radius.circular(8))
+                          ),
+                          clipBehavior: Clip.antiAlias,
                           child: const Icon(Icons.delete),
                         ),
                         onDismissed: (direction) {

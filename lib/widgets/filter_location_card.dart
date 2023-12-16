@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/location_screen.dart';
@@ -36,7 +35,6 @@ class FilterLocationCard extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           elevation: 2,
           child: Row(
-            
             children: [
             Container(
               decoration:
