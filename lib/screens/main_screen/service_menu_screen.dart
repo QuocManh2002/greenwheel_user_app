@@ -235,17 +235,35 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 14, top: 10),
-                      child: Text(
-                        "Check-in ${widget.session!.name.toLowerCase()}",
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontFamily: 'NotoSans',
-                          color: Colors.grey,
-                        ),
-                      ),
+                    (widget.serviceType.id == 2)
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: 14, top: 10),
+                            child: Text(
+                              "Check-in ${widget.session!.name.toLowerCase()}",
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontFamily: 'NotoSans',
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )
+                        : Container(),
+                    const SizedBox(
+                      width: 8,
                     ),
+                    (widget.serviceType.id == 1)
+                        ? Padding(
+                            padding: const EdgeInsets.only(left: 14, top: 10),
+                            child: Text(
+                              "Phục vụ vào ${widget.session!.name.toLowerCase()}",
+                              style: const TextStyle(
+                                fontSize: 15,
+                                fontFamily: 'NotoSans',
+                                color: Colors.grey,
+                              ),
+                            ),
+                          )
+                        : Container(),
                     const SizedBox(
                       width: 8,
                     ),

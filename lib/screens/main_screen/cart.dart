@@ -501,7 +501,7 @@ class _CartScreenState extends State<CartScreen> {
                 : Visibility(
                     visible: finalTotal != 0,
                     child: Container(
-                      height: selectedDays == 1 ? 19.h : 23.h,
+                      height: 19.h,
                       width: double.infinity,
                       color: Colors.white,
                       child: Column(
@@ -509,41 +509,6 @@ class _CartScreenState extends State<CartScreen> {
                           const SizedBox(
                             height: 20,
                           ),
-                          selectedDays != 1
-                              ? Column(
-                                  children: [
-                                    Container(
-                                      width: 90.w,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.spaceBetween,
-                                        children: [
-                                          const Text(
-                                            'Tạm tổng', // Replace with your first text
-                                            style: TextStyle(
-                                                fontSize: 16,
-                                                fontFamily: 'NotoSans',
-                                                color: Colors.black),
-                                          ),
-                                          Text(
-                                            currencyFormat.format((finalTotal *
-                                                    quantity) /
-                                                1000), // Replace with your second text
-                                            style: const TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.bold,
-                                              fontFamily: 'NotoSans',
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      height: 12,
-                                    ),
-                                  ],
-                                )
-                              : Container(),
                           Container(
                             width: 90.w,
                             child: Row(
@@ -722,7 +687,7 @@ class _CartScreenState extends State<CartScreen> {
     }
     OrderCreateViewModel order = OrderCreateViewModel(
         planId: sharedPreferences.getInt('planId'),
-        period: "AFTERNOON",
+        period: widget.session.enumName,
         details: details,
         servingDates: dates);
 
