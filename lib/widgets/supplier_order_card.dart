@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierOrderCard extends StatelessWidget {
-  const SupplierOrderCard({super.key , required this.order});
+  const SupplierOrderCard({super.key, required this.order});
   final SupplierOrder order;
 
   @override
@@ -29,9 +30,7 @@ class SupplierOrderCard extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           clipBehavior: Clip.hardEdge,
           elevation: 2,
-          child: Row(
-            
-            children: [
+          child: Row(children: [
             Container(
               decoration:
                   BoxDecoration(borderRadius: BorderRadius.circular(14)),
@@ -58,8 +57,8 @@ class SupplierOrderCard extends StatelessWidget {
                     height: 12,
                   ),
                   Text(order.supplierName,
-                  overflow: TextOverflow.clip,
-                  maxLines: 2,
+                      overflow: TextOverflow.clip,
+                      maxLines: 2,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(
@@ -69,7 +68,10 @@ class SupplierOrderCard extends StatelessWidget {
                   const SizedBox(
                     height: 8,
                   ),
-                  Text("Tổng: ${order.price.ceil().toString()} GCOIN", style:const TextStyle(fontWeight: FontWeight.bold),)
+                  Text(
+                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.price)} VND",
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  )
                 ],
               ),
             )

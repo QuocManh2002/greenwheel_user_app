@@ -45,7 +45,7 @@ mutation{
       if (result.hasException) {
         throw Exception(result.exception);
       } else {
-        
+        sharedPreferences.clear();
         return ;
       }
     }catch (error) {

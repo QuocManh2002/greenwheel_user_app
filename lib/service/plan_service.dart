@@ -56,14 +56,15 @@ mutation{
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
+
 mutation {
   updatePlan(model: {
     memberLimit: ${finish.memberLimit}
-    endDate: "${finish.endDate.year.toString().padLeft(4, '0')}-${finish.endDate.month.toString().padLeft(2, '0')}-${finish.endDate.day.toString().padLeft(2, '0')}"
-    startDate: "${finish.startDate.year.toString().padLeft(4, '0')}-${finish.startDate.month.toString().padLeft(2, '0')}-${finish.startDate.day.toString().padLeft(2, '0')}"
-    isOpenToJoin: true
+    endDate: "${finish.endDate.year}-${finish.endDate.month}-${finish.endDate.day}"
+    startDate: "${finish.startDate.year}-${finish.startDate.month}-${finish.startDate.day}"
     planId: ${finish.planId}
     schedule: ${finish.schedule}
+    status:FUTURE
   }) {
     id
     locationId
@@ -76,7 +77,7 @@ mutation {
         throw Exception(result.exception);
       } else {
         int planId = result.data!['updatePlan']['id'];
-        await updateJoinMethod(planId);
+        // await updateJoinMethod(planId);
         return planId;
       }
     } catch (error) {
@@ -237,7 +238,7 @@ query GetPlanById(\$planId: Int){
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  plans(first: 20){
+  plans(first: 50){
     nodes{
       id
       startDate

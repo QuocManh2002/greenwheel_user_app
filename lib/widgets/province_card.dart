@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/filter_location_screen.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:sizer2/sizer2.dart';
@@ -31,7 +32,7 @@ class ProvinceCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 25.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(province.thumbnailUrl),
+                    image: NetworkImage("https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0"),
                     fit: BoxFit.cover,
                     width: double.infinity,
                     filterQuality: FilterQuality.high,

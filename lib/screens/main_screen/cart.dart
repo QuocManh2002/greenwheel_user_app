@@ -297,7 +297,25 @@ class _CartScreenState extends State<CartScreen> {
                           ],
                         ),
                         const SizedBox(
-                          height: 10,
+                          height: 5,
+                        ),
+                        if ((widget.startDate.difference(DateTime.now()).inDays + 1) <= 3)
+                       Padding(
+                         padding: const EdgeInsets.only(left: 24, right: 24),
+                         child: RichText(
+                          text:const TextSpan(
+                              style: TextStyle(color: Colors.black, fontSize: 16),
+                              children: [
+                                TextSpan(
+                                    text: "Lưu ý: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                TextSpan(text: "Bạn chỉ có thể đặt dịch vụ sau 3 ngày kể từ ngày hôm nay")
+                              ]),
+                                             ),
+                       ),
+                        const SizedBox(
+                          height: 5,
                         ),
                         Container(
                           margin: EdgeInsets.symmetric(
@@ -314,10 +332,13 @@ class _CartScreenState extends State<CartScreen> {
                             children: [
                               _servingDates.isEmpty
                                   ? Text(
-                                      '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}',
+                                      widget.startDate.difference(DateTime.now()).inDays + 1 <= 3 ?
+                                      '${DateTime.now().add(const Duration(days: 3)).day}/${DateTime.now().add(const Duration(days: 3)).month}/${DateTime.now().add(const Duration(days: 3)).year}':
+                                      '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}'
+                                      ,
                                       style: const TextStyle(
                                         fontSize: 14,
-                                        fontFamily: 'NotoSans',
+                                        fontFamily: 'NotoSans', 
                                         fontWeight: FontWeight.bold,
                                       ),
                                     )
@@ -712,7 +733,7 @@ class _CartScreenState extends State<CartScreen> {
         btnOkText: "Tiếp tục",
         btnOkOnPress: () {
           Navigator.of(context).pop();
-          Navigator.of(context).pop();
+          // Navigator.of(context).pop();
 
           // Navigator.of(context).push(
           //   MaterialPageRoute(
@@ -754,11 +775,13 @@ class _CartScreenState extends State<CartScreen> {
             list: list,
             total: widget.total,
             selectedDate:
-                _servingDates.isEmpty ? [widget.startDate] : _servingDates,
+                _servingDates.isEmpty ? [] : _servingDates,
             serviceType: widget.serviceType,
             numberOfMember: widget.numberOfMember,
             endDate: widget.endDate,
-            startDate: widget.startDate)));
+            startDate: widget.startDate.difference(DateTime.now()).inDays + 1 <= 3 ? 
+              DateTime.now().add(const Duration(days: 0)) : widget.startDate
+            )));
   }
 
   callback(List<DateTime> servingDates) {

@@ -330,8 +330,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       desc:
                                           "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
                                       btnOkOnPress: () {
-                                        _deviceService.stopNotification();
-                                        sharedPreferences.clear();
+                                         _deviceService.stopNotification();
+                                        // sharedPreferences.clear();
                                         Navigator.push(
                                             context,
                                             MaterialPageRoute(

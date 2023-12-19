@@ -110,7 +110,7 @@ mutation {
   Future<bool?> sendDeviceToken() async {
     try {
       String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
-      print(client.link);
+      print(deviceToken);
       if (deviceToken != '') {
         QueryResult result =
             await client.mutate(MutationOptions(document: gql("""
@@ -125,6 +125,7 @@ mutation{
         if (res == null) {
         return null;
       }
+        print("Devicetoken sended!");
         return res;
       }
       return false;

@@ -1,5 +1,3 @@
-
-
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
@@ -14,6 +12,7 @@ import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/button_style.dart';
 import 'package:greenwheel_user_app/widgets/confirm_plan_dialog.dart';
 import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
@@ -46,9 +45,12 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
   List<PlanItem> planDetail = [];
+  List<PlanItem> clonePlanDetail = [];
   late TextEditingController newItemController;
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   List<OrderCreatePlan> _orderList = [];
+  List<List<String>> cloneSchedule = [];
+
   @override
   void initState() {
     // TODO: implement initState
@@ -64,7 +66,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
     });
   }
 
-  callback(List<OrderCreatePlan> orderList) {
+  callback(List<OrderCreatePlan> orderList) async {
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
     for (var item in orderList) {
@@ -88,11 +90,17 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                 type: item.type)));
       }
     }
+    if (orderList.isNotEmpty) {
+      PlanDetail? _planDetail =
+          await _planService.GetPlanById(sharedPreferences.getInt("planId")!);
+
     setState(() {
+      planDetail = generateItems(_planDetail!.schedule, _planDetail.startDate, _planDetail.orders!);
       _listMotel = listMotel;
       _listRestaurant = listRestaurant;
       _orderList = orderList;
     });
+    }
   }
 
   @override
@@ -177,49 +185,38 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
   }
 
   setUpData() {
-    var templatePlan = generateItems(widget.location.templatePlan);
-    if (widget.duration <= templatePlan.length) {
-      for (int i = 0; i < widget.duration; i++) {
-        planDetail.add(templatePlan[i]);
-      }
-    } else {
-      for (int i = 0; i < widget.duration; i++) {
-        if (i < templatePlan.length) {
-          planDetail.add(templatePlan[i]);
-        } else {
-          planDetail.add(PlanItem(title: "Ngày ${i + 1}", details: []));
-        }
-      }
-    }
+    planDetail = generateDefaultItems(
+        widget.location.templatePlan, widget.startDate, widget.duration);
+    clonePlanDetail = planDetail;
+    cloneSchedule = _planService.GetPlanDetailFromListPlanItem(planDetail);
   }
 
   handleQuitScreen() {
     AwesomeDialog(
-        context: context,
-        dialogType: DialogType.warning,
-        body: const Padding(
-          padding: EdgeInsets.all(18.0),
-          child: Text(
-            "Kế hoạch cho chuyến đi này chưa được lưu, bạn có chắc chắn muốn rời khỏi màn hình này không?",
-            style: TextStyle(fontSize: 18),
-            textAlign: TextAlign.center,
-          ),
+      context: context,
+      dialogType: DialogType.warning,
+      body: const Padding(
+        padding: EdgeInsets.all(18.0),
+        child: Text(
+          "Kế hoạch cho chuyến đi này chưa được lưu, bạn có chắc chắn muốn rời khỏi màn hình này không?",
+          style: TextStyle(fontSize: 18),
+          textAlign: TextAlign.center,
         ),
-        btnOkColor: Colors.amber,
-        btnOkText: "Rời khỏi",
-        btnCancelColor: Colors.red,
-        btnCancelText: "Hủy",
-        btnCancelOnPress: () {
-          
-        },
-        btnOkOnPress: () {
-          sharedPreferences.setInt("planId", 0);
-          Navigator.of(context).pop();
-        },
-        ).show();
+      ),
+      btnOkColor: Colors.amber,
+      btnOkText: "Rời khỏi",
+      btnCancelColor: Colors.red,
+      btnCancelText: "Hủy",
+      btnCancelOnPress: () {},
+      btnOkOnPress: () {
+        sharedPreferences.setInt("planId", 0);
+        Navigator.of(context).pop();
+      },
+    ).show();
   }
 
   finishPlan() async {
+
     List<List<String>> schedule =
         _planService.GetPlanDetailFromListPlanItem(planDetail);
 
@@ -239,7 +236,8 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
           body: const Text("Tạo kế hoạch thành công"),
           btnOkColor: primaryColor,
           btnOkOnPress: () {
-            sharedPreferences.setInt("planId",0);
+            _planService.updateJoinMethod(sharedPreferences.getInt('planId')!);
+            sharedPreferences.setInt("planId", 0);
             Navigator.of(context).pop();
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (ctx) => const TabScreen(
@@ -274,8 +272,7 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                       child: FadeInImage(
                         placeholder: MemoryImage(kTransparentImage),
                         height: 35.h,
-                        image: NetworkImage(
-                            widget.location.imageUrls[0]),
+                        image: NetworkImage(widget.location.imageUrls[0]),
                         fit: BoxFit.cover,
                         width: double.infinity,
                       )),
@@ -449,47 +446,52 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                                 const Text(
                                   "Các loại dịch vụ",
                                   style: TextStyle(
-                                      fontSize: 20, fontWeight: FontWeight.bold),
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold),
                                 ),
                                 Container(
-                          height: 5.h,
-                          width: 18.h,
-                          child: ElevatedButton.icon(
-                            label: const Text("Tìm & đặt"),
-                            icon: const Icon(Icons.search),
-                            onPressed: () {
-                              switch (tabController.index) {
-                                case 0:
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => ServiceMainScreen(
-                                      startDate: widget.startDate,
-                                      endDate: widget.endDate,
-                                      numberOfMember: widget.numberOfMember,
-                                      serviceType: services[1],
-                                      location: widget.location,
-                                      callbackFunction: callback,
-                                    ),
-                                  ));
-                                  break;
-                                case 1:
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => ServiceMainScreen(
-                                      endDate: widget.endDate,
-                                      startDate: widget.startDate,
-                                      numberOfMember: widget.numberOfMember,
-                                      serviceType: services[0],
-                                      location: widget.location,
-                                      callbackFunction: callback,
-                                    ),
-                                  ));
-                                  break;
-                              }
-                              // Navigator.of(context).push(MaterialPageRoute(
-                              //     builder: (ctx) => const TestScreen()));
-                            },
-                            style: elevatedButtonStyle,
-                          ),
-                        ),
+                                  height: 5.h,
+                                  width: 18.h,
+                                  child: ElevatedButton.icon(
+                                    label: const Text("Tìm & đặt"),
+                                    icon: const Icon(Icons.search),
+                                    onPressed: () {
+                                      switch (tabController.index) {
+                                        case 0:
+                                          Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                            builder: (ctx) => ServiceMainScreen(
+                                              startDate: widget.startDate,
+                                              endDate: widget.endDate,
+                                              numberOfMember:
+                                                  widget.numberOfMember,
+                                              serviceType: services[1],
+                                              location: widget.location,
+                                              callbackFunction: callback,
+                                            ),
+                                          ));
+                                          break;
+                                        case 1:
+                                          Navigator.of(context)
+                                              .push(MaterialPageRoute(
+                                            builder: (ctx) => ServiceMainScreen(
+                                              endDate: widget.endDate,
+                                              startDate: widget.startDate,
+                                              numberOfMember:
+                                                  widget.numberOfMember,
+                                              serviceType: services[0],
+                                              location: widget.location,
+                                              callbackFunction: callback,
+                                            ),
+                                          ));
+                                          break;
+                                      }
+                                      // Navigator.of(context).push(MaterialPageRoute(
+                                      //     builder: (ctx) => const TestScreen()));
+                                    },
+                                    style: elevatedButtonStyle,
+                                  ),
+                                ),
                               ],
                             )),
                         const SizedBox(
@@ -539,7 +541,6 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                         const SizedBox(
                           height: 16,
                         ),
-                        
                         const SizedBox(
                           height: 16,
                         ),
@@ -562,15 +563,19 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
             child: Container(
               height: 6.h,
               child: ElevatedButton(
-                onPressed: () {
-                  
-                  AwesomeDialog(
+                onPressed: () async{
+                  // PlanDetail? temp = await _planService.GetPlanById(sharedPreferences.getInt('planId')!);
+                  // if(temp != null){
+                  //   setState(() {
+                  //     planDetail = generateItems(temp.schedule, temp.startDate, temp.orders!);
+                  //   });
+                    // ignore: use_build_context_synchronously
+                    AwesomeDialog(
                           context: context,
                           dialogType: DialogType.noHeader,
                           animType: AnimType.topSlide,
                           btnOkColor: primaryColor,
                           btnOkText: "Lưu",
-                          desc: "Lưu kế hoạch thành công",
                           body: Container(
                             alignment: Alignment.topLeft,
                             height: 50.h,
@@ -586,13 +591,12 @@ class _CreatePlanScreenState extends State<CreatePlanScreen>
                           ),
                           btnOkOnPress: () {
                             finishPlan();
-                            
                           },
                           btnCancelText: "Chỉnh sửa",
                           btnCancelOnPress: () {},
                           btnCancelColor: secondaryColor)
                       .show();
-                      
+                  // }
                 },
                 style: elevatedButtonStyle,
                 child: const Text(

@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
@@ -58,6 +59,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   String title = "";
   bool isLoading = true;
   double total = 0;
+  List<List<ProductViewModel>> _listResult = [];
 
   var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
 
@@ -66,6 +68,46 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     // TODO: implement initState
     super.initState();
     setUpData();
+    
+  }
+
+  void findSumCombinations(List<ProductViewModel> roomList, int targetSum,
+      {List<ProductViewModel> combination = const [], int startIndex = 0}) {
+    int currentSum = 0;
+    combination.forEach((element) => currentSum += element.partySize!);
+    if (currentSum == targetSum) {
+      _listResult.add(combination);
+      return;
+    }
+
+    if (currentSum > targetSum) {
+      return;
+    }
+
+    for (int i = startIndex; i < roomList.length; i++) {
+      List<ProductViewModel> newCombination = List.from(combination)..add(roomList[i]);
+      findSumCombinations(roomList, targetSum,
+          combination: newCombination, startIndex: i);
+    }
+  }
+
+  List<ProductViewModel> getResult(List<List<ProductViewModel>> list) {
+    List<ProductViewModel> listRoomsCheapest = [];
+    double minPriceRooms = 0;
+    list[0].forEach((element) {
+      minPriceRooms += element.price;
+    });
+    for (final rooms in list) {
+      double price = 0;
+      rooms.forEach((element) {
+        price += element.price;
+      });
+      if (price <= minPriceRooms) {
+        minPriceRooms = price;
+        listRoomsCheapest = rooms;
+      }
+    }
+    return listRoomsCheapest;
   }
 
   setUpData() async {
@@ -117,6 +159,14 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       title = "Món ăn";
     } else if (widget.serviceType.id == 2) {
       title = "Phòng nghỉ";
+      findSumCombinations(list, widget.numberOfMember);
+      List<ProductViewModel> rs = getResult(_listResult);
+      print(rs);
+      Map gr = rs.groupListsBy((element) => element.id);
+      print(gr);
+      for(final item in gr.keys ){
+        updateCart(list.firstWhere((element) => element.id == item), rs.where((element) => element.id == item).toList().length);
+      }
     } else if (widget.serviceType.id == 3) {
       title = "Phương tiện";
     } else if (widget.serviceType.id == 4) {
@@ -126,6 +176,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     } else {
       title = "Vật dụng";
     }
+
   }
 
   @override
@@ -238,13 +289,22 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                     (widget.serviceType.id == 2)
                         ? Padding(
                             padding: const EdgeInsets.only(left: 14, top: 10),
-                            child: Text(
-                              "Check-in ${widget.session!.name.toLowerCase()}",
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontFamily: 'NotoSans',
-                                color: Colors.grey,
-                              ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  "Check-in ${widget.session!.name.toLowerCase()}",
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    fontFamily: 'NotoSans',
+                                    color: Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 8,),
+                                Text("Chúng tôi đã đề xuất cho bạn combo phòng có giá hợp lý nhất ứng với số lượng thành viên của chuyến đi.", style: TextStyle(
+                                  color: Colors.grey
+                                ),)
+                              ],
                             ),
                           )
                         : Container(),

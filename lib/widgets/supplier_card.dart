@@ -61,7 +61,7 @@ class SupplierCard extends StatelessWidget {
                     builder: (ctx) => ServiceMenuScreen(
                       startDate: startDate,
                       endDate: endDate,
-                      numberOfMember: 0,
+                      numberOfMember: numberOfMember,
                       supplier: supplier,
                       serviceType: service,
                       location: location,

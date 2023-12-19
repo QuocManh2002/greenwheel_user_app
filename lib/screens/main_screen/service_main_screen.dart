@@ -182,6 +182,22 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    // print(().toString()),
+                    if ((widget.startDate.difference(DateTime.now()).inDays + 1) <= 3)
+                       Padding(
+                         padding: const EdgeInsets.symmetric(horizontal: 16),
+                         child: RichText(
+                          text:const TextSpan(
+                              style: TextStyle(color: Colors.black, fontSize: 16),
+                              children: [
+                                TextSpan(
+                                    text: "Lưu ý: ",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold)),
+                                TextSpan(text: "Bạn chỉ có thể đặt dịch vụ sau 3 ngày kể từ ngày hôm nay")
+                              ]),
+                                             ),
+                       ),
                     ListView.builder(
                       physics: const BouncingScrollPhysics(),
                       shrinkWrap: true,

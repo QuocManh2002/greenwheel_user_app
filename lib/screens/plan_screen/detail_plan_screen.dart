@@ -146,28 +146,29 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
     _planDetail = null;
     _planDetail = await _planService.GetPlanById(widget.planId);
     planSchedule = [];
-    if (_planDetail!.schedule == "") {
-      var location =
-          await _locationService.GetLocationById(_planDetail!.locationId);
-      var templatePlans = generateItems(location!.templatePlan);
-      var duration =
-          _planDetail!.endDate.difference(_planDetail!.startDate).inDays + 1;
-      if (duration <= templatePlans.length) {
-        for (int i = 0; i < duration; i++) {
-          planSchedule!.add(templatePlans[i]);
-        }
-      } else {
-        for (int i = 0; i < duration; i++) {
-          if (i < templatePlans.length) {
-            planSchedule!.add(templatePlans[i]);
-          } else {
-            planSchedule!.add(PlanItem(title: "Ngày ${i + 1}", details: []));
-          }
-        }
-      }
-    } else {
-      planSchedule = generateItems(_planDetail!.schedule);
-    }
+    // if (_planDetail!.schedule == "") {
+    //   var location =
+    //       await _locationService.GetLocationById(_planDetail!.locationId);
+    //   var templatePlans = generateItems(location!.templatePlan,_planDetail!.startDate, _planDetail!.orders!);
+    //   var duration =
+    //       _planDetail!.endDate.difference(_planDetail!.startDate).inDays + 1;
+    //   if (duration <= templatePlans.length) {
+    //     for (int i = 0; i < duration; i++) {
+    //       planSchedule!.add(templatePlans[i]);
+    //     }
+    //   } else {
+    //     for (int i = 0; i < duration; i++) {
+    //       if (i < templatePlans.length) {
+    //         planSchedule!.add(templatePlans[i]);
+    //       } else {
+    //         planSchedule!.add(PlanItem(title: "Ngày ${i + 1} ()", details: []));
+    //       }
+    //     }
+    //   }
+    // } 
+    // else {
+      planSchedule = generateItems(_planDetail!.schedule, _planDetail!.startDate, _planDetail!.orders!);
+    // }
 
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
