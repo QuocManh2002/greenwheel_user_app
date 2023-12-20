@@ -13,10 +13,10 @@ import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/widgets/button_style.dart';
-import 'package:greenwheel_user_app/widgets/confirm_plan_dialog.dart';
-import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
-import 'package:greenwheel_user_app/widgets/supplier_order_card.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_dialog.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/custom_plan_item.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 

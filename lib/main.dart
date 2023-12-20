@@ -6,21 +6,10 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/firebase_options.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/login_success_screen.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
-import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
-import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
-import 'package:greenwheel_user_app/screens/profie_screen/qr_screen.dart';
-import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
-import 'package:greenwheel_user_app/screens/sub_screen/topup_successfull_screen.dart';
-import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
 import 'package:greenwheel_user_app/widgets/test_screen.dart';
-import 'package:greenwheel_user_app/widgets/test_screen1.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
 late SharedPreferences sharedPreferences;
 late FirebaseAuth auth;
@@ -48,7 +37,9 @@ void main() async {
   auth = FirebaseAuth.instance;
   await initHiveForFlutter();
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  runApp(const MainApp());
+  initializeDateFormatting('vi_VN', null).then((_) {
+    runApp(const MainApp());
+  });
 }
 
 class MainApp extends StatelessWidget {
@@ -65,11 +56,11 @@ class MainApp extends StatelessWidget {
 
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        home: userToken != null ? const SplashScreen() : const LoginScreen(),
+        // home: userToken != null ? const SplashScreen() : const LoginScreen(),
         // home: const LoginScreen(),
         // home: const TopupSuccessfulScreen(data: null),
         // home: const RegisterScreen(),
-        // home : const TestScreen(),
+        home: const TestScreen(),
         // home: QRScreen(),
         // home: SharePlanScreen(),
         theme: theme,

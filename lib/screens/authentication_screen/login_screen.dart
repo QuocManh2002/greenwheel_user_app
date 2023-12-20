@@ -7,7 +7,7 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/otp_screen.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:greenwheel_user_app/widgets/button_style.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

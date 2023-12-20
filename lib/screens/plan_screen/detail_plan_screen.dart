@@ -10,12 +10,12 @@ import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/widgets/custom_plan_item.dart';
-import 'package:greenwheel_user_app/widgets/supplier_order_card.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/custom_plan_item.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-import '../../widgets/button_style.dart';
+import '../../widgets/style_widget/button_style.dart';
 
 class DetailPlanScreen extends StatefulWidget {
   const DetailPlanScreen(

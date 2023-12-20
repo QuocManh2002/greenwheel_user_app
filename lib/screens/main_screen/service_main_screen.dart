@@ -7,7 +7,7 @@ import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
-import 'package:greenwheel_user_app/widgets/supplier_card.dart';
+import 'package:greenwheel_user_app/widgets/order_screen_widget/supplier_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ServiceMainScreen extends StatefulWidget {

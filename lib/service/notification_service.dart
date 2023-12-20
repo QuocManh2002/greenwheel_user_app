@@ -6,7 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:greenwheel_user_app/widgets/test_screen_date.dart';
+import 'package:greenwheel_user_app/widgets/test_screen.dart';
 
 class NotificationService {
   FirebaseMessaging messaging = FirebaseMessaging.instance;
@@ -107,7 +107,7 @@ class NotificationService {
     //         isEnableToJoin: true)));
 
     Navigator.of(context)
-        .push(MaterialPageRoute(builder: (ctx) => TestScreenDate()));
+        .push(MaterialPageRoute(builder: (ctx) => TestScreen()));
   }
 
   Future<void> setupInteractMessage(BuildContext context) async {

@@ -6,9 +6,9 @@ import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
-import 'package:greenwheel_user_app/widgets/activity_card.dart';
-import 'package:greenwheel_user_app/widgets/location_card.dart';
-import 'package:greenwheel_user_app/widgets/province_card.dart';
+import 'package:greenwheel_user_app/widgets/home_screen_widget/activity_card.dart';
+import 'package:greenwheel_user_app/widgets/home_screen_widget/location_card.dart';
+import 'package:greenwheel_user_app/widgets/home_screen_widget/province_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 

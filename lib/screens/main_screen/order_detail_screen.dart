@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/models/order.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/widgets/order_detail_card.dart';
-import 'package:greenwheel_user_app/widgets/rating_bar.dart';
+import 'package:greenwheel_user_app/widgets/order_screen_widget/order_detail_card.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 

@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
-import 'package:greenwheel_user_app/widgets/button_style.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 
 class RegisterScreen extends StatefulWidget {

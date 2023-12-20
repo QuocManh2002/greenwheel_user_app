@@ -3,8 +3,8 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
-import 'package:greenwheel_user_app/widgets/empty_plan.dart';
-import 'package:greenwheel_user_app/widgets/plan_card.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/empty_plan.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class PlanScreen extends StatefulWidget {

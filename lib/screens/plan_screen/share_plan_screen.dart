@@ -15,7 +15,7 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/temp_plan.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
-import 'package:greenwheel_user_app/widgets/button_style.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';

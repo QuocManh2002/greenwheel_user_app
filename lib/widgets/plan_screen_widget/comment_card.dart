@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/comment.dart';
-import 'package:greenwheel_user_app/widgets/rating_bar.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
