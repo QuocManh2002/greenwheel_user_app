@@ -6,6 +6,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/firebase_options.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
@@ -60,7 +61,8 @@ class MainApp extends StatelessWidget {
         // home: const LoginScreen(),
         // home: const TopupSuccessfulScreen(data: null),
         // home: const RegisterScreen(),
-        home: const TestScreen(),
+        // home: const TestScreen(),
+        home: const CreateNewPlanScreen(),
         // home: QRScreen(),
         // home: SharePlanScreen(),
         theme: theme,
