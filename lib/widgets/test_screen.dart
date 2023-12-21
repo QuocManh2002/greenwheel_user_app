@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 
 class TestScreen extends StatefulWidget {
@@ -66,7 +68,26 @@ class _TestScreenState extends State<TestScreen>
       backgroundColor: Colors.white.withOpacity(0.94),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                    backgroundColor: primaryColor,
+                    shape: const RoundedRectangleBorder(
+                      borderRadius: BorderRadius.all(
+                        Radius.circular(10),
+                      ),
+                    ),
+                    maximumSize: const Size(100, 50)),
+                onPressed: () {
+                  Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => const NewScheduleItemScreen()));
+                },
+                child: const Row(
+                  children: [Icon(Icons.add), Text('Thêm')],
+                )),
+          ),
           SizedBox(
             height: 14.h,
             child: ListView.builder(
@@ -84,9 +105,8 @@ class _TestScreenState extends State<TestScreen>
                         _pageController.animateToPage(index,
                             duration: Duration(milliseconds: 300),
                             curve: Curves.bounceIn);
-                            // _pageController.jumpToPage(index);
+                        // _pageController.jumpToPage(index);
                       });
-                      
                     },
                     child: PlanScheduleTitle(
                       date: listDates[index],

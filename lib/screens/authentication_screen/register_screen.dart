@@ -132,38 +132,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(
                 height: 32,
               ),
-              TextFormField(
-                controller: emailController,
-                cursorColor: primaryColor,
-                keyboardType: TextInputType.emailAddress,
-                style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold),
-                decoration: const InputDecoration(
-                    hintText: "vana@gmail.com",
-                    hintStyle: TextStyle(color: Colors.grey),
-                    labelText: "Email",
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                    labelStyle: TextStyle(color: primaryColor, fontSize: 20),
-                    floatingLabelStyle:
-                        TextStyle(color: Colors.grey, fontSize: 20),
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: primaryColor,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(14))),
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.grey,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(14)))),
-              ),
-              //male
+              // TextFormField(
+              //   controller: emailController,
+              //   cursorColor: primaryColor,
+              //   keyboardType: TextInputType.emailAddress,
+              //   style: const TextStyle(
+              //       fontSize: 20,
+              //       color: Colors.black87,
+              //       fontWeight: FontWeight.bold),
+              //   decoration: const InputDecoration(
+              //       hintText: "vana@gmail.com",
+              //       hintStyle: TextStyle(color: Colors.grey),
+              //       labelText: "Email",
+              //       floatingLabelBehavior: FloatingLabelBehavior.always,
+              //       labelStyle: TextStyle(color: primaryColor, fontSize: 20),
+              //       floatingLabelStyle:
+              //           TextStyle(color: Colors.grey, fontSize: 20),
+              //       focusedBorder: OutlineInputBorder(
+              //           borderSide: BorderSide(
+              //             color: primaryColor,
+              //           ),
+              //           borderRadius: BorderRadius.all(Radius.circular(14))),
+              //       border: OutlineInputBorder(
+              //           borderSide: BorderSide(
+              //             color: Colors.grey,
+              //           ),
+              //           borderRadius: BorderRadius.all(Radius.circular(14)))),
+              // ),
+              // //male
 
-              const SizedBox(
-                height: 16,
-              ),
+              // const SizedBox(
+              //   height: 16,
+              // ),
               const Padding(
                 padding: EdgeInsets.only(left: 8.0),
                 child: Text(

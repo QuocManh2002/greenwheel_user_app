@@ -8,6 +8,7 @@ import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_date_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -542,9 +543,8 @@ class _LocationScreenState extends State<LocationScreen> {
                             child: ElevatedButton(
                                 onPressed: () {
                                   Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (ctx) => SelectDateScreen(
+                                      builder: (ctx) => CreateNewPlanScreen(
                                             location: widget.location,
-                                            isCreate: true,
                                           )));
                                 },
                                 style: elevatedButtonStyle,
