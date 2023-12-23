@@ -203,9 +203,12 @@ class _OTPScreenState extends State<OTPScreen> {
           // ignore: use_build_context_synchronously
           Navigator.push(context,
               MaterialPageRoute(builder: (_) => const TabScreen(pageIndex: 0)));
-        } else {
-        }
+        } 
       }else{
+          String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
+        if(deviceToken != ''){
+            sharedPreferences.setString('deviceToken', deviceToken);
+          }
         sharedPreferences.setString("userPhone", payload['phone_number']);
         Navigator.push(context,
               MaterialPageRoute(builder: (_) => const RegisterScreen()));

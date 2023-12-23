@@ -1,13 +1,13 @@
 class RegisterViewModel{
   String name;
-  DateTime birthday;
   bool isMale;
   String email;
+  String deviceToken;
 
   RegisterViewModel({
-    required this.birthday,
     required this.isMale,
     required this.email,
-    required this.name
+    required this.name,
+    required this.deviceToken
   });
 }

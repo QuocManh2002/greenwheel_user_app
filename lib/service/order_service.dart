@@ -57,19 +57,22 @@ class OrderService extends Iterable {
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
-          mutation createTopUp (\$input: TopUpRequestModelInput!) {
-  createTopUpRequest(model: \$input)  {
+          mutation {
+  createTopUpRequest(dto: {
+    amount:$amount
+    gateway:VNPAY
+  })  {
     transactionId
     paymentUrl
   }
 }
           '''),
-          variables: {
-            "input": {
-              "amount": amount,
-              "gateway": "VNPAY",
-            },
-          },
+          // variables: {
+          //   "input": {
+          //     "amount": amount,
+          //     "gateway": "VNPAY",
+          //   },
+          // },
         ),
       );
 

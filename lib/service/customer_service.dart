@@ -27,7 +27,7 @@ class CustomerService {
         {
         nodes{
           id
-          account{name avatarUrl isMale balance}
+          account{name avatarUrl isMale gcoinBalance}
           phone
         }
     }
@@ -82,10 +82,11 @@ mutation{
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''
 mutation {
-  registerTraveler(model: {
-    name:"${model.name}"
-    isMale:${model.isMale}
+  registerTraveler(dto: {
     avatarUrl:""
+     deviceToken:${json.encode(model.deviceToken)}
+     isMale: ${model.isMale}
+     name:${json.encode(model.name)}
   }){
     id
   }

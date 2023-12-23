@@ -29,7 +29,7 @@ class CustomerViewModel {
         isMale: json["account"]["isMale"],
         avatarUrl: json['account']["avatarUrl"],
         phone: json["phone"],
-        balance: double.parse(json["account"]["balance"].toString()),
+        balance: double.parse(json["account"]["gcoinBalance"].toString()),
       );
 
   Map<String, dynamic> toJson() => {

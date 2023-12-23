@@ -37,30 +37,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     emailController.dispose();
   }
 
-  void _showDatePicker(BuildContext context) async {
-    DateTime? newDay = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(),
-        firstDate: DateTime(1900),
-        lastDate: DateTime(2024),
-        builder: (context, child) {
-          return Theme(
-            data: ThemeData().copyWith(
-                colorScheme: const ColorScheme.light(
-                    primary: primaryColor, onPrimary: Colors.white)),
-            child: DatePickerDialog(
-              initialDate: DateTime.now(),
-              firstDate: DateTime(1900),
-              lastDate: DateTime(2024),
-            ),
-          );
-        });
-    if (newDay != null) {
-      setState(() {
-        selectedDate = newDay;
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -130,7 +106,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
 
               const SizedBox(
-                height: 32,
+                height: 16,
               ),
               // TextFormField(
               //   controller: emailController,
@@ -238,58 +214,58 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(
                 height: 16,
               ),
-              const Padding(
-                padding: EdgeInsets.only(left: 8.0),
-                child: Text(
-                  "Ngày sinh",
-                  style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.grey,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
+              // const Padding(
+              //   padding: EdgeInsets.only(left: 8.0),
+              //   child: Text(
+              //     "Ngày sinh",
+              //     style: TextStyle(
+              //         fontSize: 16,
+              //         color: Colors.grey,
+              //         fontWeight: FontWeight.bold),
+              //   ),
+              // ),
+              // const SizedBox(
+              //   height: 8,
+              // ),
 
-              //birthday
-              Row(
-                children: [
-                  Expanded(
-                    child: Container(
-                      height: 6.h,
-                      alignment: Alignment.centerLeft,
-                      padding: const EdgeInsets.only(left: 16),
-                      decoration: BoxDecoration(
-                          border: Border.all(color: primaryColor, width: 1),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(8))),
-                      child: Text(
-                        '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(
-                    width: 16,
-                  ),
-                  ElevatedButton(
-                      style: elevatedButtonStyle.copyWith(
-                        minimumSize: MaterialStatePropertyAll(Size(20.w, 6.h)),
-                      ),
-                      onPressed: () {
-                        _showDatePicker(context);
-                      },
-                      child: const Text(
-                        "Chọn ngày",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ))
-                ],
-              ),
-              const SizedBox(
-                height: 16,
-              ),
+              // //birthday
+              // Row(
+              //   children: [
+              //     Expanded(
+              //       child: Container(
+              //         height: 6.h,
+              //         alignment: Alignment.centerLeft,
+              //         padding: const EdgeInsets.only(left: 16),
+              //         decoration: BoxDecoration(
+              //             border: Border.all(color: primaryColor, width: 1),
+              //             borderRadius:
+              //                 const BorderRadius.all(Radius.circular(8))),
+              //         child: Text(
+              //           '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
+              //           style: const TextStyle(
+              //               fontSize: 18, fontWeight: FontWeight.bold),
+              //         ),
+              //       ),
+              //     ),
+              //     const SizedBox(
+              //       width: 16,
+              //     ),
+              //     ElevatedButton(
+              //         style: elevatedButtonStyle.copyWith(
+              //           minimumSize: MaterialStatePropertyAll(Size(20.w, 6.h)),
+              //         ),
+              //         onPressed: () {
+              //           _showDatePicker(context);
+              //         },
+              //         child: const Text(
+              //           "Chọn ngày",
+              //           style: TextStyle(fontWeight: FontWeight.bold),
+              //         ))
+              //   ],
+              // ),
+              // const SizedBox(
+              //   height: 16,
+              // ),
               Row(
                 children: [
                   Checkbox(
@@ -337,8 +313,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   _register() async {
+
     var id = await _customerService.registerTraveler(RegisterViewModel(
-        birthday: selectedDate,
+        deviceToken: sharedPreferences.getString('deviceToken')!,
         isMale: isMale,
         email: emailController.text,
         name: nameController.text));

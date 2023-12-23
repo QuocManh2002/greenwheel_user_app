@@ -31,18 +31,18 @@ class _TabScreenState extends State<TabScreen> {
     // TODO: implement initState
     super.initState();
     _selectedPageIndex = widget.pageIndex;
-    sendDeviceToken();
+    // sendDeviceToken();
     _notificationService.requestNotificationPermission();
     _notificationService.firebaseInit(context);
   }
 
-  sendDeviceToken() async{
-    var isDeviceTokenSended = sharedPreferences.getBool('isDeviceTokenSended');
-    if (isDeviceTokenSended == null || !isDeviceTokenSended) {
-      await _customerService.sendDeviceToken();
-      sharedPreferences.setBool("isDeviceTokenSended", true);
-    }
-  }
+  // sendDeviceToken() async{
+  //   var isDeviceTokenSended = sharedPreferences.getBool('isDeviceTokenSended');
+  //   if (isDeviceTokenSended == null || !isDeviceTokenSended) {
+  //     await _customerService.sendDeviceToken();
+  //     sharedPreferences.setBool("isDeviceTokenSended", true);
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
