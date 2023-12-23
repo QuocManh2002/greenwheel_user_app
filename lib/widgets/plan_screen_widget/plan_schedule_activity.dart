@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class PlanScheduleActivity extends StatelessWidget {
-  const PlanScheduleActivity({super.key, required this.date});
-  final DateTime date;
+  const PlanScheduleActivity(
+      {super.key, required this.item, required this.showBottomSheet});
+  final PlanScheduleItem item;
+  final void Function(PlanScheduleItem item) showBottomSheet;
 
   @override
   Widget build(BuildContext context) {
@@ -16,20 +19,17 @@ class PlanScheduleActivity extends StatelessWidget {
           child: Container(
             width: 100.w,
             clipBehavior: Clip.hardEdge,
-            decoration: const BoxDecoration(
-                // gradient: LinearGradient(
-                //     colors: [primaryColor, Color(0xFF82E0AA)],
-                //     begin: Alignment.topLeft,
-                //     end: Alignment.bottomRight),
+            decoration:  BoxDecoration(
                 color: Colors.white,
-                boxShadow: [
+                boxShadow: const [
                   BoxShadow(
                     blurRadius: 3,
                     color: Colors.black12,
                     offset: Offset(2, 4),
                   )
                 ],
-                borderRadius: BorderRadius.all(Radius.circular(12))),
+                border: item.orderId != null ? Border.all(color: primaryColor, width: 2): Border(),
+                borderRadius: const BorderRadius.all(Radius.circular(12))),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Column(
@@ -37,21 +37,27 @@ class PlanScheduleActivity extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      const Expanded(
+                      Expanded(
                         child: Text(
-                          "Dùng bữa tại nhà hàng Ngàn Sao",
-                          style: TextStyle(
+                          item.title,
+                          style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                           overflow: TextOverflow.clip,
                         ),
                       ),
-                      IconButton(
-                          highlightColor: Colors.transparent,
-                          splashColor: Colors.transparent,
-                          onPressed: () {},
-                          icon: const Icon(
-                            Icons.more_horiz,
-                          ))
+                      item.orderId == null
+                          ? IconButton(
+                              highlightColor: Colors.transparent,
+                              splashColor: Colors.transparent,
+                              onPressed: () {
+                                showBottomSheet(item);
+                              },
+                              icon: const Icon(
+                                Icons.more_horiz,
+                              ))
+                          : SizedBox(
+                            height: 4.h,
+                            child:const Icon(Icons.restaurant, color: primaryColor,))
                     ],
                   ),
                   Container(
@@ -68,8 +74,8 @@ class PlanScheduleActivity extends StatelessWidget {
                         width: 16,
                       ),
                       Text(
-                        DateFormat.yMMMMEEEEd('vi_VN').format(date),
-                        style:const  TextStyle(
+                        DateFormat.yMMMMEEEEd('vi_VN').format(item.date),
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       )
                     ],
@@ -77,15 +83,15 @@ class PlanScheduleActivity extends StatelessWidget {
                   SizedBox(
                     height: 1.h,
                   ),
-                  const Row(
+                  Row(
                     children: [
-                      Icon(Icons.watch_later_outlined),
-                      SizedBox(
+                      const Icon(Icons.watch_later_outlined),
+                      const SizedBox(
                         width: 16,
                       ),
                       Text(
-                        '3:55 PM',
-                        style: TextStyle(
+                        item.time.format(context),
+                        style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       )
                     ],

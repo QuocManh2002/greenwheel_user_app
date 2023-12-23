@@ -59,11 +59,11 @@ class MainApp extends StatelessWidget {
 
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        // home: userToken != null ? const SplashScreen() : const LoginScreen(),
+        home: userToken != null ? const SplashScreen() : const LoginScreen(),
         // home: const LoginScreen(),
         // home: const TopupSuccessfulScreen(data: null),
         // home: const RegisterScreen(),
-        home: const TestScreen(),
+        // home: const TestScreen(),
         // home: const CreateNewPlanScreen(),
         // home: QRScreen(),
         // home: SharePlanScreen(),

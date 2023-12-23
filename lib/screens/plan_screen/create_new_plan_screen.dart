@@ -1,12 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/base_information_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CreateNewPlanScreen extends StatefulWidget {

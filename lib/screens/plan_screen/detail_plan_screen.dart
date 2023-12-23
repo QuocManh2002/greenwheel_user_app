@@ -6,7 +6,6 @@ import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
-import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
@@ -35,7 +34,6 @@ class _DetailPlanScreenState extends State<DetailPlanScreen>
     with TickerProviderStateMixin {
   bool isLoading = true;
   PlanService _planService = PlanService();
-  LocationService _locationService = LocationService();
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
   // List<OrderCreatePlan> _orderList = [];
