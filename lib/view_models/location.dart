@@ -22,6 +22,7 @@ class LocationViewModel {
     String clinicAddress;
     String hotline;
     int provinceId;
+    double suggestedTripLength;
 
     LocationViewModel({
         required this.id,
@@ -41,6 +42,7 @@ class LocationViewModel {
         required this.clinicAddress,
         required this.hotline,
         required this.provinceId,
+        required this.suggestedTripLength
     });
 
     factory LocationViewModel.fromJson(Map<String, dynamic> json) => LocationViewModel(
@@ -60,6 +62,7 @@ class LocationViewModel {
         clinicPhone: json["clinicPhone"],
         clinicAddress: json["clinicAddress"],
         hotline: json["hotline"],
+        suggestedTripLength: json['suggestedTripLength'],
         provinceId: json["provinceId"],
     );
 

@@ -13,5 +13,8 @@ const String success_icon = "${baseImage}success.png";
 const String share_icon = "${baseImage}share.png";
 const String empty_plan = "${baseImage}empty_plan.png";
 const String calendar_search = "${baseImage}calendar_search.png";
+const String current_location = "${baseImage}current_location.png";
+const String from_location = "${baseImage}from_icon.png";
+const String to_location = "${baseImage}to_icon.png";
 const String defaultUserAvatarLink =
     "https://media.altchar.com/prod/images/gm_article_promo_image/23364b481aa9-edg-viper.jpg";

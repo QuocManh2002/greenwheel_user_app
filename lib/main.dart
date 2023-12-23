@@ -21,6 +21,9 @@ ThemeData theme = ThemeData(
     brightness: Brightness.light,
     primaryColor: primaryColor,
     appBarTheme: const AppBarTheme(color: primaryColor),
+    timePickerTheme: TimePickerThemeData(
+      dayPeriodColor: primaryColor
+    ),
     datePickerTheme: DatePickerThemeData(
       headerBackgroundColor: primaryColor,
       dayOverlayColor: MaterialStatePropertyAll(primaryColor),

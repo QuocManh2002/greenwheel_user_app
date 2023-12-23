@@ -7,6 +7,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_it
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
 import 'package:sizer2/sizer2.dart';
+import 'package:table_calendar/table_calendar.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
@@ -20,6 +21,14 @@ class _TestScreenState extends State<TestScreen>
   late AnimationController _animationController;
   double _currentPage = 0;
   PageController _pageController = PageController(initialPage: 0);
+  DateTime _focusedDay = DateTime.now();
+  DateTime? _selectedDate;
+  CalendarFormat _calendarFormat = CalendarFormat.month;
+
+  DateTime? _rangeStart;
+  DateTime? _rangeEnd;
+
+
 
   final List<PlanSchedule> _schedule = [
     PlanSchedule(date: DateTime.parse("2023-12-19"), items: [
@@ -54,6 +63,18 @@ class _TestScreenState extends State<TestScreen>
         _currentPage = _pageController.page!;
       });
     });
+    _selectedDate = _focusedDay;
+  }
+
+  _onDaySelected(DateTime selectDay, DateTime focusDay){
+    if(!isSameDay(_selectedDate, selectDay)){
+      setState(() {
+        _selectedDate = selectDay;
+        _focusedDay = focusDay;
+        _rangeStart = _selectedDate;
+        _rangeEnd = _selectedDate!.add(Duration(days: 2));
+      });
+    }
   }
 
   onTap(int index) {
@@ -227,23 +248,60 @@ class _TestScreenState extends State<TestScreen>
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Image.asset(
-                  empty_plan,
-                  width: 70.w,
-                ),
-                const SizedBox(
-                  height: 12,
-                ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 18),
-                  child: Text(
-                    'Bạn không có lịch trình nào trong ngày này',
-                    style: TextStyle(
-                        color: Colors.black54,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
+                
+                TableCalendar(
+                  locale: 'vi_VN',
+                  focusedDay: _focusedDay, 
+                  selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+                  calendarFormat: _calendarFormat,
+                  onDaySelected: _onDaySelected,
+                  firstDay: DateTime(2023), 
+                  lastDay: DateTime(2025),
+                  rangeStartDay: _rangeStart,
+                  rangeEndDay: _rangeEnd,
+                  calendarStyle: CalendarStyle(
+                    selectedDecoration:const BoxDecoration(
+                      color: primaryColor,
+                      shape: BoxShape.circle
+                    ),
+                    todayDecoration:const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.greenAccent
+                    ),
+                    rangeEndDecoration:const BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: primaryColor
+                    ),
+                    rangeHighlightColor: primaryColor.withOpacity(0.5)
                   ),
-                )
+                  onFormatChanged: (format) {
+                    if(_calendarFormat != format){
+                      setState(() {
+                        _calendarFormat = format;
+                      });
+                    }
+                  },
+                  onPageChanged: (focusedDay) {
+                    _focusedDay = focusedDay;
+                  },
+                  )
+                // Image.asset(
+                //   empty_plan,
+                //   width: 70.w,
+                // ),
+                // const SizedBox(
+                //   height: 12,
+                // ),
+                // const Padding(
+                //   padding: EdgeInsets.symmetric(horizontal: 18),
+                //   child: Text(
+                //     'Bạn không có lịch trình nào trong ngày này',
+                //     style: TextStyle(
+                //         color: Colors.black54,
+                //         fontSize: 18,
+                //         fontWeight: FontWeight.bold),
+                //   ),
+                // )
               ],
             )
           : SingleChildScrollView(
