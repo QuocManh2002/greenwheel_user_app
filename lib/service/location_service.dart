@@ -30,6 +30,7 @@ class LocationService extends Iterable {
           activities
           seasons
           topographic
+          suggestedTripLength
           templateSchedule
           coordinate{coordinates}
           address

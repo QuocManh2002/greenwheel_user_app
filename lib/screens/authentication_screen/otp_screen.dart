@@ -210,6 +210,7 @@ class _OTPScreenState extends State<OTPScreen> {
             sharedPreferences.setString('deviceToken', deviceToken);
           }
         sharedPreferences.setString("userPhone", payload['phone_number']);
+        // ignore: use_build_context_synchronously
         Navigator.push(context,
               MaterialPageRoute(builder: (_) => const RegisterScreen()));
       }

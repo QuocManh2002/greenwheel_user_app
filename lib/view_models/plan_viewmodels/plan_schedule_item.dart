@@ -7,6 +7,7 @@ class PlanScheduleItem {
   final TimeOfDay time;
   final DateTime date;
   final String? orderId;
+  final String? orderType;
 
-  PlanScheduleItem({String? id, required this.time, required this.title, required this.date, this.orderId}): id = id ?? uuid.v4();
+  PlanScheduleItem({String? id, required this.time, required this.title, required this.date, this.orderId, this.orderType}): id = id ?? uuid.v4();
 }

@@ -2,11 +2,14 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:sizer2/sizer2.dart';
 
 class BaseInformationScreen extends StatefulWidget {
-  const BaseInformationScreen({super.key});
+  const BaseInformationScreen({super.key, required this.location});
+  final LocationViewModel location;
 
   @override
   State<BaseInformationScreen> createState() => _BaseInformationState();
@@ -15,6 +18,7 @@ class BaseInformationScreen extends StatefulWidget {
 class _BaseInformationState extends State<BaseInformationScreen> {
   int _selectedCombo = 0;
   int _selectedQuantity = 1;
+  late FixedExtentScrollController _scrollController;
 
   onChangeQuantity(String type) {
     if (type == "add") {
@@ -24,6 +28,30 @@ class _BaseInformationState extends State<BaseInformationScreen> {
     } else {
       setState(() {
         _selectedQuantity -= 1;
+      });
+    }
+    sharedPreferences.setInt('plan_number_of_member', _selectedQuantity);
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    int? member = sharedPreferences.getInt('plan_number_of_member');
+    int? combodate = sharedPreferences.getInt('plan_combo_date');
+    if (combodate != null) {
+      _scrollController = FixedExtentScrollController(initialItem: combodate);
+    } else {
+      _scrollController = FixedExtentScrollController(
+          initialItem: listComboDate
+                  .firstWhere((element) =>
+                      element.duration == widget.location.suggestedTripLength)
+                  .id -
+              1);
+    }
+    if (member != null) {
+      setState(() {
+        _selectedQuantity = member;
       });
     }
   }
@@ -52,18 +80,21 @@ class _BaseInformationState extends State<BaseInformationScreen> {
           child: CupertinoPicker(
               itemExtent: 64,
               diameterRatio: 0.7,
+              looping: true,
+              scrollController: _scrollController,
               selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
                   background: primaryColor.withOpacity(0.12)),
               onSelectedItemChanged: (value) {
                 setState(() {
                   _selectedCombo = value;
                 });
+                sharedPreferences.setInt('plan_combo_date', value);
               },
               children: Utils.modelBuilder(
-                  listComboDates(),
+                  listComboDate,
                   (index, model) => Center(
                         child: Text(
-                          model,
+                          '${model.numberOfDay} ngày, ${model.numberOfNight} đêm',
                           style: TextStyle(
                               fontWeight: _selectedCombo == index
                                   ? FontWeight.bold
