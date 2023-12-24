@@ -56,6 +56,7 @@ class SearchCard extends StatelessWidget {
                 ),
                 SizedBox(
                   height: 15.h,
+                  width: 55.w,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [

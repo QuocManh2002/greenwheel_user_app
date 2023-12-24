@@ -61,7 +61,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
         title: const Text("Nạp tiền vào ví"),
         leading: BackButton(onPressed: () {
           Navigator.of(context).pop();
-          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => TabScreen(pageIndex: 3)));
+          Navigator.of(context).push(
+              MaterialPageRoute(builder: (ctx) => TabScreen(pageIndex: 3)));
         }),
       ),
       body: SingleChildScrollView(
@@ -194,6 +195,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                 tag: Tag(
                                     id: "100",
                                     title: "100 GCOIN",
+                                    type: "cash",
+                                    enumName: "GCOIN",
                                     mainColor: Colors.white,
                                     strokeColor: Colors.grey)),
                           ),
@@ -207,6 +210,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                 tag: Tag(
                                     id: "200",
                                     title: "200 GCOIN",
+                                    type: "cash",
+                                    enumName: "GCOIN",
                                     mainColor: Colors.white,
                                     strokeColor: Colors.grey)),
                           ),
@@ -220,6 +225,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                 tag: Tag(
                                     id: "500",
                                     title: "500 GCOIN",
+                                    type: "cash",
+                                    enumName: "GCOIN",
                                     mainColor: Colors.white,
                                     strokeColor: Colors.grey)),
                           ),
@@ -300,14 +307,18 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                           print(data);
                           Navigator.of(context).pop();
                           // Navigator.of(context).pop();
-                          AwesomeDialog(context: context,
-                          dialogType: DialogType.success,
-                          body: Center(child: Text('Nạp GCOIN vào ví thành công'),),
-                          btnOkColor: primaryColor,
-                          btnOkOnPress: () => Navigator.of(context).push(MaterialPageRoute(
-                              builder: (ctx) => const TabScreen(pageIndex: 3))),
+                          AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.success,
+                            body: Center(
+                              child: Text('Nạp GCOIN vào ví thành công'),
+                            ),
+                            btnOkColor: primaryColor,
+                            btnOkOnPress: () => Navigator.of(context).push(
+                                MaterialPageRoute(
+                                    builder: (ctx) =>
+                                        const TabScreen(pageIndex: 3))),
                           ).show();
-                          
                         },
                         onPaymentError: _onPaymentFailure,
                       );

@@ -54,6 +54,7 @@ class _TagSearchCardState extends State<TagSearchCard> {
                   widget.tag.id == "21" ||
                   widget.tag.id == "22") {
                 widget.updateProvinces!(widget.tag, isPress);
+                print("update provinces triggered!");
               }
             });
           },
