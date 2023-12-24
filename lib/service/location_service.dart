@@ -170,11 +170,6 @@ query search(\$search: String!) {
         $activities
         $topographic
         $provinces
-        # province: {
-        #   name: {
-        #      eq: "Bình Dương"
-        #   }
-        # }
       }
       )
         {
@@ -186,6 +181,7 @@ query search(\$search: String!) {
           activities
           seasons
           topographic
+          suggestedTripLength
           templateSchedule
           coordinate{coordinates}
           address

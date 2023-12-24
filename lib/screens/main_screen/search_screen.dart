@@ -52,7 +52,6 @@ class _SearchScreenState extends State<SearchScreen> {
     setState(() {
       locations = result;
     });
-    print("PROVINCES: ${widget.provinces.length}");
   }
 
   @override
