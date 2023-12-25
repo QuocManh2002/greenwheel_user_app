@@ -44,7 +44,9 @@ class _TagSearchCardState extends State<TagSearchCard> {
                 // Add a rounded shape if desired
                 borderRadius: BorderRadius.circular(10),
               ),
-              backgroundColor: isPress ? Colors.black : Colors.white),
+              backgroundColor: isPress
+                  ? Color.fromARGB(255, 94, 212, 98)
+                  : Color.fromARGB(255, 233, 233, 233)),
           onPressed: () async {
             setState(() {
               isPress = !isPress;
@@ -59,13 +61,13 @@ class _TagSearchCardState extends State<TagSearchCard> {
             });
           },
           child: Container(
-            decoration: BoxDecoration(
-              shape: BoxShape.rectangle,
-              borderRadius: const BorderRadius.all(
-                Radius.circular(10),
-              ),
-              border: Border.all(width: 1.7),
-            ),
+            // decoration: BoxDecoration(
+            //   shape: BoxShape.rectangle,
+            //   borderRadius: const BorderRadius.all(
+            //     Radius.circular(10),
+            //   ),
+            //   border: Border.all(width: 1.7),
+            // ),
             child: Container(
               alignment: Alignment.center,
               child: Text(
