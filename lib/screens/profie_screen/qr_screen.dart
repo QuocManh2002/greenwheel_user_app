@@ -10,7 +10,7 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/config/token_generator.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
@@ -57,7 +57,7 @@ class _QRScreenState extends State<QRScreen> {
           print("Payload: ${jwt.payload}");
           // ignore: use_build_context_synchronously
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (ctx) => DetailPlanScreen(
+              builder: (ctx) => DetailPlanNewScreen(
                     isEnableToJoin: true,
                     locationName: jwt.payload["locationName"],
                     planId: jwt.payload["planId"],

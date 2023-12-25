@@ -300,7 +300,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   Container(
                                       height: 70.h,
                                       child: CreatePlanScheduleScreen(
-                                        isCreate: false,
+                                          planId: widget.planId,
+                                          isCreate: false,
                                           templatePlan: _planDetail!.schedule)),
                                   const SizedBox(
                                     height: 16,
@@ -382,12 +383,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onShare() async {
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (ctx) => SharePlanScreen(
-              isEnableToJoin: widget.isEnableToJoin,
-              locationName: widget.locationName,
-              planId: widget.planId,
-            )));
+    bool updateJoinMethod = await _planService.updateJoinMethod(widget.planId);
+    if (updateJoinMethod) {
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (ctx) => SharePlanScreen(
+                isEnableToJoin: widget.isEnableToJoin,
+                locationName: widget.locationName,
+                planId: widget.planId,
+              )));
+    }
   }
 
   onJoinPlan() async {

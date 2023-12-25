@@ -485,8 +485,9 @@ mutation{
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
-  updatePlanJoinMethod(model: {planId: $planId,
-  joinMethod: QR
+  changePlanJoinMethod(dto: {
+    id: ${planId}
+    joinMethod:QR
   }){
     id
   }
@@ -496,7 +497,7 @@ mutation{
         throw Exception(result.exception);
       }
 
-      int? res = result.data!['updatePlanJoinMethod']['id'];
+      int? res = result.data!['changePlanJoinMethod']['id'];
       if (res == null || res == 0) {
         return false;
       }

@@ -6,6 +6,7 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
@@ -13,10 +14,14 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_tit
 import 'package:sizer2/sizer2.dart';
 
 class CreatePlanScheduleScreen extends StatefulWidget {
-  const CreatePlanScheduleScreen(
-      {super.key, required this.templatePlan, required this.isCreate});
+  CreatePlanScheduleScreen(
+      {super.key,
+      required this.templatePlan,
+      required this.isCreate,
+      this.planId});
   final List<dynamic> templatePlan;
   final bool isCreate;
+  final int? planId;
 
   @override
   State<CreatePlanScheduleScreen> createState() =>
@@ -46,24 +51,29 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
     setUpData();
   }
 
-  setUpData() {
+  setUpData() async {
     if (widget.isCreate) {
       testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
     } else {
-      testList = _planService.GetPlanScheduleFromJsonNew(
-          widget.templatePlan,
-          DateTime.parse(sharedPreferences.getString('selectedDate')!),
-          sharedPreferences.getInt('selectedDuration')!);
+      PlanDetail? plan = await _planService.GetPlanById(widget.planId!);
+      if (plan != null) {
+        setState(() {
+          testList = _planService.GetPlanScheduleFromJsonNew(
+              widget.templatePlan,
+              plan.startDate,
+              plan.endDate.difference(plan.startDate).inDays + 1);
+        });
+      }
     }
   }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    _pageController.dispose();
-    _animationController.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   // TODO: implement dispose
+  //   super.dispose();
+  //   _pageController.dispose();
+  //   _animationController.dispose();
+  // }
 
   onTap(int index) {
     setState(() {
