@@ -46,7 +46,9 @@ void main() async {
   auth = FirebaseAuth.instance;
   await initHiveForFlutter();
   await Hive.initFlutter();
-  var plans = await Hive.openBox('myplans');
+  await Hive.openBox('myPlans');
+  // final _myPlans = Hive.box('myPlans');
+  // _myPlans.clear();
   hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   initializeDateFormatting('vi_VN', null).then((_) {

@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
@@ -15,8 +14,9 @@ import 'package:sizer2/sizer2.dart';
 
 class CreatePlanScheduleScreen extends StatefulWidget {
   const CreatePlanScheduleScreen(
-      {super.key, required this.templatePlan});
+      {super.key, required this.templatePlan, required this.isCreate});
   final List<dynamic> templatePlan;
+  final bool isCreate;
 
   @override
   State<CreatePlanScheduleScreen> createState() =>
@@ -47,7 +47,14 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   }
 
   setUpData() {
-    testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
+    if (widget.isCreate) {
+      testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
+    } else {
+      testList = _planService.GetPlanScheduleFromJsonNew(
+          widget.templatePlan,
+          DateTime.parse(sharedPreferences.getString('selectedDate')!),
+          sharedPreferences.getInt('selectedDuration')!);
+    }
   }
 
   @override

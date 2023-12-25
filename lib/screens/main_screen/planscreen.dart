@@ -50,28 +50,36 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
 
     if (totalPlans != null) {
       for (final plan in totalPlans) {
-        switch (plan.status) {
-          case "CANCELED":
-            canceledPlans.add(plan);
-            break;
-          case "DRAFT":
-            draftPlans.add(plan);
-            break;
-          case "FUTURE":
-            futurePlans.add(plan);
-            break;
-          case "VERIFIED":
-            onGoingPlans.add(plan);
-            break;
-          case "FINISHED":
-            historyPlans.add(plan);
-            break;
-          case "ONGOING":
-            onGoingPlans.add(plan);
-            break;
-          case "PAST":
-            historyPlans.add(plan);
-            break;
+        // switch (plan.status) {
+        //   case "CANCELED":
+        //     canceledPlans.add(plan);
+        //     break;
+        //   case "DRAFT":
+        //     draftPlans.add(plan);
+        //     break;
+        //   case "FUTURE":
+        //     futurePlans.add(plan);
+        //     break;
+        //   case "VERIFIED":
+        //     onGoingPlans.add(plan);
+        //     break;
+        //   case "FINISHED":
+        //     historyPlans.add(plan);
+        //     break;
+        //   case "ONGOING":
+        //     onGoingPlans.add(plan);
+        //     break;
+        //   case "PAST":
+        //     historyPlans.add(plan);
+        //     break;
+        // }
+        if (plan.startDate.isAfter(DateTime.now())) {
+          futurePlans.add(plan);
+        } else if (plan.startDate.isBefore(DateTime.now()) &&
+            plan.endDate.isAfter(DateTime.now())) {
+          onGoingPlans.add(plan);
+        } else if (plan.endDate.isBefore(DateTime.now())) {
+          historyPlans.add(plan);
         }
       }
       setState(() {
@@ -114,7 +122,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                       tabs: [
                         Tab(
                           text: "Sắp đến",
-                          height: 5.h,                         
+                          height: 5.h,
                         ),
                         Tab(
                           text: "Đang diễn ra",
@@ -133,58 +141,63 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                     child: Container(
                       margin: const EdgeInsets.only(top: 8),
                       child: TabBarView(controller: tabController, children: [
-                        _futuredPlans.isEmpty?
-                        const EmptyPlan():
-                        ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _futuredPlans.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: PlanCard(plan: _futuredPlans[index]),
-                            );
-                          },
-                        ),
-                        _onGoingPlans.isEmpty?
-                        const EmptyPlan():
-                        ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _onGoingPlans.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: PlanCard(plan: _onGoingPlans[index]),
-                            );
-                          },
-                        ),
-                        _historyPlans.isEmpty?
-                        const EmptyPlan():
-                        ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _historyPlans.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: PlanCard(plan: _historyPlans[index]),
-                            );
-                          },
-                        ),
-                        _canceledPlans.isEmpty?
-                        const EmptyPlan():
-                        ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _canceledPlans.length,
-                          itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.symmetric(vertical: 4),
-                              child: PlanCard(plan: _canceledPlans[index]),
-                            );
-                          },
-                        ),
+                        _futuredPlans.isEmpty
+                            ? const EmptyPlan()
+                            : ListView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: _futuredPlans.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: PlanCard(plan: _futuredPlans[index]),
+                                  );
+                                },
+                              ),
+                        _onGoingPlans.isEmpty
+                            ? const EmptyPlan()
+                            : ListView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: _onGoingPlans.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: PlanCard(plan: _onGoingPlans[index]),
+                                  );
+                                },
+                              ),
+                        _historyPlans.isEmpty
+                            ? const EmptyPlan()
+                            : ListView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: _historyPlans.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child: PlanCard(plan: _historyPlans[index]),
+                                  );
+                                },
+                              ),
+                        _canceledPlans.isEmpty
+                            ? const EmptyPlan()
+                            : ListView.builder(
+                                physics: const BouncingScrollPhysics(),
+                                shrinkWrap: true,
+                                itemCount: _canceledPlans.length,
+                                itemBuilder: (context, index) {
+                                  return Padding(
+                                    padding:
+                                        const EdgeInsets.symmetric(vertical: 4),
+                                    child:
+                                        PlanCard(plan: _canceledPlans[index]),
+                                  );
+                                },
+                              ),
                       ]),
                     ),
                   ),

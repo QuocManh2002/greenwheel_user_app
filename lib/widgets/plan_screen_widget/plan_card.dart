@@ -1,7 +1,7 @@
-
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -17,8 +17,7 @@ class PlanCard extends StatelessWidget {
       print("${plan.startDate} - ${plan.endDate}");
       print(DateTime.now());
       DateTime now = DateTime.now();
-      if (now.isBefore(plan.startDate) &&
-          now.isAfter(plan.endDate)) {
+      if (now.isBefore(plan.startDate) && now.isAfter(plan.endDate)) {
         pointColor = primaryColor;
       } else if (now.isBefore(plan.endDate)) {
         pointColor = Colors.orange;
@@ -26,7 +25,6 @@ class PlanCard extends StatelessWidget {
         pointColor = Colors.blue;
       }
       print(now.difference(plan.startDate));
-      
 
       return Container(
         height: 1.5.h,
@@ -37,8 +35,11 @@ class PlanCard extends StatelessWidget {
 
     return InkWell(
       onTap: () {
+        sharedPreferences.setString('selectedDate', plan.startDate.toString());
+        sharedPreferences.setInt('selectedDuration',
+            plan.endDate.difference(plan.startDate).inDays +1);
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (ctx) => DetailPlanScreen(
+            builder: (ctx) => DetailPlanNewScreen(
                   planId: plan.id,
                   locationName: plan.locationName,
                   isEnableToJoin: false,
@@ -99,7 +100,6 @@ class PlanCard extends StatelessWidget {
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold)),
                         ),
-                        
                       ],
                     ),
                     const SizedBox(
@@ -113,8 +113,10 @@ class PlanCard extends StatelessWidget {
                       children: [
                         Text(
                             '${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year} - ${plan.endDate.day}/${plan.endDate.month}/${plan.endDate.year}'),
-                      const SizedBox(width: 16,),
-                      // if (plan.status == "OFFICIAL") buildStatusPoint(plan)
+                        const SizedBox(
+                          width: 16,
+                        ),
+                        // if (plan.status == "OFFICIAL") buildStatusPoint(plan)
                       ],
                     )
                   ],

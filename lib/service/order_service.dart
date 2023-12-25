@@ -21,8 +21,8 @@ class OrderService extends Iterable {
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
           mutation {
-  createOrder(
-    model: {
+  createOrder(         
+    dto: {
       details: $details
       note: ${order.note}
       period: ${order.period}

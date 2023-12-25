@@ -357,6 +357,37 @@ query GetPlanById(\$planId: Int){
     return schedule;
   }
 
+  List<PlanSchedule> GetPlanScheduleFromJsonNew(List<dynamic> schedules, DateTime startDate, int duration) {
+    List<PlanSchedule> schedule = [];
+    // final startDate =
+    //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    // final _selectCombo =
+    //     listComboDate[sharedPreferences.getInt('plan_combo_date')!];
+    for (int i = 0; i < duration; i++) {
+      List<PlanScheduleItem> item = [];
+      final date = startDate.add(Duration(days: i));
+      if (i < schedules.length) {
+        for (final planItem in schedules[i]) {
+          item.add(PlanScheduleItem(
+              orderId: planItem['orderId'],
+              orderType: planItem['orderType'],
+              time: Utils().convertStringToTime(planItem['time']),
+              title: planItem['description'],
+              date: date));
+        }
+        item.sort(
+          (a, b) {
+            var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
+            var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
+            return adate.compareTo(bdate);
+          },
+        );
+      }
+      schedule.add(PlanSchedule(date: date, items: item));
+    }
+    return schedule;
+  }
+
   List<dynamic> convertPlanScheduleToJson(List<PlanSchedule> list) {
     List<dynamic> rs = [];
     for (final schedule in list) {
@@ -473,5 +504,9 @@ mutation{
     } catch (error) {
       throw Exception(error);
     }
+  }
+
+  void saveToHive(){
+
   }
 }

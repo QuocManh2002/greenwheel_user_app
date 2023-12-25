@@ -4,6 +4,7 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -19,6 +20,8 @@ class _BaseInformationState extends State<BaseInformationScreen> {
   int _selectedCombo = 0;
   int _selectedQuantity = 1;
   late FixedExtentScrollController _scrollController;
+  bool isWarning = false;
+  ComboDate? _suggestComboDate;
 
   onChangeQuantity(String type) {
     if (type == "add") {
@@ -56,6 +59,8 @@ class _BaseInformationState extends State<BaseInformationScreen> {
         _selectedQuantity = member;
       });
     }
+    _suggestComboDate = listComboDate.firstWhere(
+        (element) => element.duration == widget.location.suggestedTripLength);
   }
 
   @override
@@ -90,6 +95,16 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                 setState(() {
                   _selectedCombo = value;
                 });
+                if (listComboDate[value].duration <
+                    widget.location.suggestedTripLength) {
+                  setState(() {
+                    isWarning = true;
+                  });
+                }else{
+                  setState(() {
+                    isWarning = false;
+                  });
+                }
                 sharedPreferences.setBool("plan_is_change", false);
                 sharedPreferences.setInt('plan_combo_date', value);
               },
@@ -109,7 +124,16 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                       ))),
         ),
         SizedBox(
-          height: 4.h,
+          height: 2.h,
+        ),
+        if (isWarning)
+          Text(
+            '(Địa điểm này thích hợp hơn với các chuyến đi có thời gian trải nghiệm từ ${_suggestComboDate!.numberOfDay} ngày, ${_suggestComboDate!.numberOfNight} đêm.)',
+            style: const TextStyle(fontSize: 14, color: Colors.grey),
+            textAlign: TextAlign.center,
+          ),
+        SizedBox(
+          height: 2.h,
         ),
         const Text(
           'Số lượng thành viên ước tính',

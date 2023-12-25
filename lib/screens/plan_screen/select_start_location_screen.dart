@@ -143,7 +143,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     }
 
     String? dateText = sharedPreferences.getString('plan_start_date');
-    if(dateText != null){
+    if (dateText != null) {
       setState(() {
         _selectedDate = DateTime.parse(dateText);
         _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
@@ -246,7 +246,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                                   _selectTime.minute));
                           sharedPreferences.setString(
                               'plan_start_time', _timeController.text);
-                              sharedPreferences.setBool('plan_is_change', false);
+                          sharedPreferences.setBool('plan_is_change', false);
                         });
                       },
                       onValidate: (value) {

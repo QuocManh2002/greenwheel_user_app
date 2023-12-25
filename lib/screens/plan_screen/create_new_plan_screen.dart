@@ -2,6 +2,8 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/base_information_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
@@ -9,6 +11,7 @@ import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.da
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:sizer2/sizer2.dart';
@@ -44,15 +47,15 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         content: Container(),
       ),
       Step(
-        state: _currentStep > 6 ? StepState.complete : StepState.indexed,
-        title: const Text("Chuẩn bị dịch vụ"),
-        content: Container(),
-      ),
-      Step(
-        state: _currentStep > 7 ? StepState.complete : StepState.indexed,
+        state: _currentStep > 5 ? StepState.complete : StepState.indexed,
         title: const Text("Hoàn tất kế hoạch"),
         content: Container(),
       ),
+      // Step(
+      //   state: _currentStep > 7 ? StepState.complete : StepState.indexed,
+      //   title: const Text("Hoàn tất kế hoạch"),
+      //   content: Container(),
+      // ),
     ];
   }
 
@@ -98,7 +101,10 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         activePage = const SelectStartDateScreen();
         break;
       case 3:
-        activePage = CreatePlanScheduleScreen(templatePlan: widget.location.templatePlan, );
+        activePage = CreatePlanScheduleScreen(
+          templatePlan: widget.location.templatePlan,
+          isCreate: true,
+        );
         break;
       case 4:
         activePage = SelectPlanName(
@@ -107,11 +113,11 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         break;
       case 5:
         activePage = SelectServiceScreen(location: widget.location);
-        break;  
+        break;
     }
     return SafeArea(
         child: Scaffold(
-          resizeToAvoidBottomInset: false,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text("Lập kế hoạch"),
         leading: BackButton(
@@ -128,13 +134,13 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                   scrollDirection: Axis.horizontal,
                   child: SizedBox(
                       height: 10.h,
-                      width: 800,
+                      width: 600,
                       child: Stepper(
                         type: StepperType.horizontal,
                         steps: getSteps(),
                         connectorColor:
                             const MaterialStatePropertyAll(primaryColor),
-                        currentStep: 3,
+                        currentStep: 2,
                       )),
                 ),
                 Expanded(child: activePage)
@@ -180,14 +186,149 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                   SizedBox(
                     width: 2.h,
                   ),
+                 if(_currentStep < 4) 
                 Expanded(
                   child: ElevatedButton(
                       style: elevatedButtonStyle,
                       onPressed: () {
-                        setState(() {
-                          _currentStep++;
-                        });
-                        getScrollLocation();
+                        if (_currentStep == 2) {
+                          ComboDate _selectedComboDate = listComboDate[
+                              sharedPreferences.getInt('plan_combo_date')!];
+                          DateTime startDate = DateTime.parse(
+                              sharedPreferences.getString('plan_start_date')!);
+                          DateTime endDate = DateTime.parse(
+                              sharedPreferences.getString('plan_end_date')!);
+                          int numberOfMember = sharedPreferences.getInt('plan_number_of_member')!;    
+                          AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.info,
+                              title: "Xác nhận thông tin",
+                              btnCancelText: 'Chỉnh sửa',
+                              btnCancelColor: Colors.orange,
+                              btnCancelOnPress: () {
+                                
+                              },
+                              btnOkColor: Colors.blue,
+                              btnOkText: 'Lưu',
+                              btnOkOnPress: () {
+                                setState(() {
+                                  _currentStep++;
+                                });
+                                getScrollLocation();
+                              },
+                              body: Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Container(
+                                      alignment: Alignment.center,
+                                      child: const Text(
+                                        'Xác nhận thông tin',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      height: 1.h,
+                                    ),
+                                    const Text(
+                                      '(Bạn sẽ không thể chỉnh sửa những thông tin này trong các bước tiếp theo)',
+                                      style: TextStyle(
+                                          fontSize: 14, color: Colors.grey),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                    SizedBox(
+                                      height: 2.h,
+                                    ),
+                                    RichText(
+                                        textAlign: TextAlign.start,
+                                        text: TextSpan(
+                                            text: "Tổng thời gian chuyến đi:  ",
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '${_selectedComboDate.numberOfDay} ngày, ${_selectedComboDate.numberOfNight} đêm',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal))
+                                            ])),
+                                    SizedBox(
+                                      height: 1.h,
+                                    ),
+                                    RichText(
+                                        textAlign: TextAlign.start,
+                                        text: TextSpan(
+                                            text: "Ngày khởi hành:  ",
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '${startDate.day}/${startDate.month}/${startDate.year}',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal))
+                                            ])),
+                                    SizedBox(
+                                      height: 1.h,
+                                    ),
+                                    RichText(
+                                        textAlign: TextAlign.start,
+                                        text: TextSpan(
+                                            text: "Ngày kết thúc:  ",
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '${endDate.day}/${endDate.month}/${endDate.year}',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal))
+                                            ])),
+                                    SizedBox(
+                                      height: 1.h,
+                                    ),
+                                    RichText(
+                                        textAlign: TextAlign.start,
+                                        text: TextSpan(
+                                            text: "Số lượng thành viên:  ",
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black),
+                                            children: [
+                                              TextSpan(
+                                                  text:
+                                                      '$numberOfMember',
+                                                  style: const TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal))
+                                            ])),        
+                                    SizedBox(
+                                      height: 2.h,
+                                    ),
+                                  ],
+                                ),
+                              )).show();
+                        } else {
+                          setState(() {
+                            _currentStep++;
+                          });
+                          getScrollLocation();
+                        }
                       },
                       child: const Text(
                         "Tiếp tục",
@@ -209,16 +350,15 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     double targetOffset = 0;
     if (_currentStep < 3) {
       targetOffset = _scrollController.position.minScrollExtent;
-    } else if (_currentStep < 5) {
-      targetOffset = _scrollController.position.minScrollExtent + 150;
-    } else if (_currentStep < 6) {
-      targetOffset = _scrollController.position.minScrollExtent + 300;
+    } else if (_currentStep < 4) {
+      targetOffset = _scrollController.position.minScrollExtent + 200;
+    // } 
+    // else if (_currentStep < 6) {
+    //   targetOffset = _scrollController.position.minScrollExtent + 300;
     } else {
       targetOffset = _scrollController.position.maxScrollExtent;
     }
     _scrollController.animateTo(targetOffset,
         duration: const Duration(milliseconds: 300), curve: Curves.bounceInOut);
   }
-
-  
 }
