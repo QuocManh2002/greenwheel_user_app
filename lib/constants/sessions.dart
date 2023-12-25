@@ -19,7 +19,7 @@ const List<Session> sessions = [
       enumName: "AFTERNOON"),
   Session(
       name: "Buổi tối",
-      range: "18:00 CH - 23:00 CH",
+      range: "18:00 CH - 22:00 CH",
       image: evening,
       enumName: "EVENING"),
 ];

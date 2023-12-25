@@ -70,7 +70,12 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
       select = List.from(widget.list);
       print(isExpand);
       provinces = List.from(widget.provinceList);
-      provinces.add(tags[22]);
+      if (provinces.length == 1 && provinces[0].title == "Tỉnh") {
+        provinces = [];
+        provinces.add(tags[22]);
+      } else {
+        provinces.add(tags[22]);
+      }
       if (provinces.length > 9) {
         isExpand = false;
       }
@@ -448,6 +453,8 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
       provinceTags.add(Tag(
         id: (startingId + i).toString(),
         title: provinces[i],
+        type: "province",
+        enumName: "PROVINCE",
         mainColor: Colors.white,
         strokeColor: Colors.black,
       ));

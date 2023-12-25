@@ -46,16 +46,12 @@ class _SearchScreenState extends State<SearchScreen> {
 
   _setUpData() async {
     searchController.text = widget.search;
-    currentTags = widget.list;
-    if (locations.isEmpty) {
-      locations = await locationService.getLocations();
-    }
-
-    if (locations.isNotEmpty) {
-      setState(() {
-        isLoading = false;
-      });
-    }
+    currentTags = List.from(widget.list);
+    List<LocationViewModel> result = await locationService.searchLocations(
+        searchController.text, currentTags);
+    setState(() {
+      locations = result;
+    });
   }
 
   @override
@@ -109,20 +105,35 @@ class _SearchScreenState extends State<SearchScreen> {
                           Icons.search,
                           color: Colors.black,
                         ),
-                        onPressed: () {
+                        onPressed: () async {
                           setState(() {
                             var tagsByName =
                                 searchTagsByName(searchController.text);
                             if (tagsByName.isEmpty) {
                               // var locationsByName =
                               //     searchTagsByName(searchController.text);
-                              print("empty");
                             } else {
-                              print("not empty");
                               setState(() {
-                                currentTags.addAll(tagsByName);
+                                // Iterate over tagsByName
+                                for (Tag tag in tagsByName) {
+                                  // Check if any tag in currentTags has the same title
+                                  bool titleExists = currentTags.any(
+                                      (existingTag) =>
+                                          existingTag.title == tag.title);
+
+                                  // If the title doesn't exist, add the tag to currentTags
+                                  if (!titleExists) {
+                                    currentTags.add(tag);
+                                  }
+                                }
                               });
                             }
+                          });
+                          List<LocationViewModel> result =
+                              await locationService.searchLocations(
+                                  searchController.text, currentTags);
+                          setState(() {
+                            locations = result;
                           });
                         },
                       ),
@@ -321,10 +332,9 @@ class _SearchScreenState extends State<SearchScreen> {
                         : Container(),
                     widget.list.isEmpty
                         ? Padding(
-                            padding: const EdgeInsets.only(
-                                left: 14, top: 14, bottom: 14),
+                            padding: const EdgeInsets.only(left: 16, top: 14),
                             child: Text(
-                              'Kết quả tìm kiếm của "${searchController.text}"',
+                              'Kết quả tìm kiếm của "${searchController.text.trim()}"',
                               style: const TextStyle(
                                 fontSize: 19,
                                 fontFamily: 'NotoSans',
