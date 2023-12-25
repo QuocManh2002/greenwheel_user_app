@@ -22,7 +22,7 @@ class LocationViewModel {
     String clinicAddress;
     String hotline;
     int provinceId;
-    double suggestedTripLength;
+    int suggestedTripLength;
 
     LocationViewModel({
         required this.id,

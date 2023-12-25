@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
+import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:table_calendar/table_calendar.dart';
 
@@ -12,23 +15,20 @@ class SelectStartDateScreen extends StatefulWidget {
 }
 
 class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
-
-  TextEditingController _timeController = TextEditingController();
-  TimeOfDay _selectTime = TimeOfDay.now();
-  DateTime _focusedDay = DateTime.now();
+  DateTime? _focusedDay;
   DateTime? _selectedDate;
   CalendarFormat _calendarFormat = CalendarFormat.month;
-
   DateTime? _rangeStart;
   DateTime? _rangeEnd;
+  late ComboDate _selectedComboDate;
+  String? _startTime;
 
-  _onDaySelected(DateTime selectDay, DateTime focusDay){
-    if(!isSameDay(_selectedDate, selectDay)){
+  _onDaySelected(DateTime selectDay, DateTime focusDay) {
+    if (!isSameDay(_selectedDate, selectDay)) {
       setState(() {
         _selectedDate = selectDay;
         _focusedDay = focusDay;
-        _rangeStart = _selectedDate;
-        _rangeEnd = _selectedDate!.add(Duration(days: 2));
+        _rangeEnd = _selectedDate;
       });
     }
   }
@@ -37,14 +37,42 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    _selectedDate = _focusedDay;
-  }
+    _selectedComboDate =
+        listComboDate[sharedPreferences.getInt('plan_combo_date')!];
+    final startDate = sharedPreferences.getString('plan_start_date');
+    _startTime = sharedPreferences.getString('plan_start_time');
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    _timeController.dispose();
+    if (startDate != null) {
+      setState(() {
+        handleChangeComboDate();
+        _selectedDate = DateTime.parse(startDate);
+        _rangeStart = _selectedDate;
+        _rangeEnd = _selectedDate!
+            .add(Duration(days: _selectedComboDate.numberOfDay - 1));
+        _focusedDay = _rangeStart;
+        sharedPreferences.setString('plan_end_date', _rangeEnd.toString());
+      });
+    }
+  }
+  
+  handleChangeComboDate(){
+    final isChanged = sharedPreferences.getBool('plan_is_change');
+    if(isChanged == null || !isChanged){
+      setState(() {
+        final initialDateTime = DateFormat.Hm().parse(sharedPreferences.getString('plan_start_time')!);
+        final startTime =
+            DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
+        final arrivedTime = startTime.add(Duration(
+            seconds:
+                (sharedPreferences.getDouble('plan_duration')! * 3600).ceil()));
+        if (arrivedTime.isAfter(DateTime(0, 0, 0, 6, 0))) {
+          _selectedComboDate = listComboDate.firstWhere((element) => element.duration == _selectedComboDate.duration + 2);
+          sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id - 1);
+          sharedPreferences.setBool("plan_is_change", true);
+        }
+        
+      });
+    }
   }
 
   @override
@@ -52,65 +80,76 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          SizedBox(height: 3.h,),
-          const Text('Tổng thời gian chuyến đi', style: TextStyle(
-            fontSize: 16, fontWeight: FontWeight.bold
-          ),),
-          SizedBox(height: 2.h,),
-          const Text('(Bao gồm thời gian di chuyển từ địa điểm xuất phát)', 
-          style: TextStyle(
-            fontSize: 16,
-            color: Colors.grey
+          SizedBox(
+            height: 3.h,
           ),
+          const Text(
+            'Tổng thời gian chuyến đi',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 3.h,),
-          const Text('3 ngày 3 đêm', 
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.bold
-          ),),
-          const Text('7:00 AM 11/4/2023 - 1:00 PM 13/04/2023',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold
-          ),),
-          SizedBox(height: 3.h,),
-          TableCalendar(
-                  locale: 'vi_VN',
-                  focusedDay: _focusedDay, 
-                  selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
-                  calendarFormat: _calendarFormat,
-                  onDaySelected: _onDaySelected,
-                  firstDay: DateTime(2023), 
-                  lastDay: DateTime(2025),
-                  rangeStartDay: _rangeStart,
-                  rangeEndDay: _rangeEnd,
-                  calendarStyle: CalendarStyle(
-                    selectedDecoration:const BoxDecoration(
-                      color: primaryColor,
-                      shape: BoxShape.circle
-                    ),
-                    todayDecoration:const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.greenAccent
-                    ),
-                    rangeEndDecoration:const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: primaryColor
-                    ),
-                    rangeHighlightColor: primaryColor.withOpacity(0.5)
-                  ),
-                  onFormatChanged: (format) {
-                    if(_calendarFormat != format){
-                      setState(() {
-                        _calendarFormat = format;
-                      });
-                    }
-                  },
-                  onPageChanged: (focusedDay) {
-                    _focusedDay = focusedDay;
-                  },
-                  )
+          SizedBox(
+            height: 2.h,
+          ),
+          const Text(
+            '(Bao gồm thời gian di chuyển từ địa điểm xuất phát)',
+            style: TextStyle(fontSize: 16, color: Colors.grey),
+          ),
+          SizedBox(
+            height: 3.h,
+          ),
+          Text(
+            '${_selectedComboDate.numberOfDay} ngày ${_selectedComboDate.numberOfNight} đêm',
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          if (_selectedDate != null)
+            Text(
+              '${_startTime} ${_rangeStart!.day}/${_rangeStart!.month}/${_rangeStart!.year} - 22:00 ${_rangeEnd!.day}/${_rangeEnd!.month}/${_rangeEnd!.year}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          SizedBox(
+            height: 2.h,
+          ),
+          const Text(
+            'Hãy chọn thời gian trải nghiệm',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(
+            height: 2.h,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: TableCalendar(
+              locale: 'vi_VN',
+              focusedDay: _focusedDay!,
+              selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
+              calendarFormat: _calendarFormat,
+              onDaySelected: _onDaySelected,
+              firstDay: _rangeStart!,
+              lastDay: DateTime(2025),
+              rangeStartDay: _rangeStart,
+              rangeEndDay: _rangeEnd,
+              calendarStyle: CalendarStyle(
+                  rangeStartDecoration: const BoxDecoration(
+                      shape: BoxShape.circle, color: primaryColor),
+                  selectedDecoration: const BoxDecoration(
+                      color: primaryColor, shape: BoxShape.circle),
+                  todayDecoration: const BoxDecoration(
+                      shape: BoxShape.circle, color: Colors.greenAccent),
+                  rangeEndDecoration: const BoxDecoration(
+                      shape: BoxShape.circle, color: primaryColor),
+                  rangeHighlightColor: primaryColor.withOpacity(0.3)),
+              onFormatChanged: (format) {
+                if (_calendarFormat != format) {
+                  setState(() {
+                    _calendarFormat = format;
+                  });
+                }
+              },
+              onPageChanged: (focusedDay) {
+                _focusedDay = focusedDay;
+              },
+            ),
+          )
         ],
       ),
     );

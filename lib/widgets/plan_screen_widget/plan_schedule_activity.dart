@@ -19,7 +19,7 @@ class PlanScheduleActivity extends StatelessWidget {
           child: Container(
             width: 100.w,
             clipBehavior: Clip.hardEdge,
-            decoration:  BoxDecoration(
+            decoration: BoxDecoration(
                 color: Colors.white,
                 boxShadow: const [
                   BoxShadow(
@@ -28,7 +28,9 @@ class PlanScheduleActivity extends StatelessWidget {
                     offset: Offset(2, 4),
                   )
                 ],
-                border: item.orderId != null ? Border.all(color: primaryColor, width: 2): Border(),
+                border: item.orderId != null
+                    ? Border.all(color: primaryColor, width: 2)
+                    : Border(),
                 borderRadius: const BorderRadius.all(Radius.circular(12))),
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -56,8 +58,11 @@ class PlanScheduleActivity extends StatelessWidget {
                                 Icons.more_horiz,
                               ))
                           : SizedBox(
-                            height: 4.h,
-                            child:const Icon(Icons.restaurant, color: primaryColor,))
+                              height: 4.h,
+                              child: const Icon(
+                                Icons.restaurant,
+                                color: primaryColor,
+                              ))
                     ],
                   ),
                   Container(
@@ -90,7 +95,8 @@ class PlanScheduleActivity extends StatelessWidget {
                         width: 16,
                       ),
                       Text(
-                        item.time.format(context),
+                        DateFormat.Hm().format(DateTime(
+                            0, 0, 0, item.time.hour, item.time.minute)),
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       )

@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
@@ -11,11 +12,51 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:intl/intl.dart';
 
 class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
+
+  Future<int> createPlan(PlanCreate model) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
+mutation{
+  createPlan(dto: {
+    locationId: ${model.locationId}
+    latitude: ${model.latitude}
+    longitude: ${model.longitude} 
+    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
+    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day}"
+    memberLimit:${model.memberLimit}
+    name: ${json.encode(model.name)}
+    schedule:${model.schedule}
+  }){
+    id
+  }
+}
+"""),
+      ));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      } else {
+        var rstext = result.data!;
+        // bool isSuccess = rstext['createPlanDraft']['result']['success'];
+        int planId = rstext['createPlan']['id'];
+        sharedPreferences.setInt("planId", planId);
+        return planId;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
 
   Future<bool> createPlanDraft(PlanDraft draft) async {
     try {
@@ -283,6 +324,55 @@ query GetPlanById(\$planId: Int){
       schedule.add(items);
     }
     return schedule;
+  }
+
+  List<PlanSchedule> GetPlanScheduleFromJson(List<dynamic> schedules) {
+    List<PlanSchedule> schedule = [];
+    final startDate =
+        DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    final _selectCombo =
+        listComboDate[sharedPreferences.getInt('plan_combo_date')!];
+    for (int i = 0; i < _selectCombo.numberOfDay; i++) {
+      List<PlanScheduleItem> item = [];
+      final date = startDate.add(Duration(days: i));
+      if (i < schedules.length) {
+        for (final planItem in schedules[i]) {
+          item.add(PlanScheduleItem(
+              orderId: planItem['orderId'],
+              orderType: planItem['orderType'],
+              time: Utils().convertStringToTime(planItem['time']),
+              title: planItem['description'],
+              date: date));
+        }
+        item.sort(
+          (a, b) {
+            var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
+            var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
+            return adate.compareTo(bdate);
+          },
+        );
+      }
+      schedule.add(PlanSchedule(date: date, items: item));
+    }
+    return schedule;
+  }
+
+  List<dynamic> convertPlanScheduleToJson(List<PlanSchedule> list) {
+    List<dynamic> rs = [];
+    for (final schedule in list) {
+      var items = [];
+      for (final item in schedule.items) {
+        items.add({
+          'time': json.encode(DateFormat.Hms()
+              .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))),
+          'orderId': item.orderId,
+          'description': json.encode(item.title),
+          'supplierType': item.orderType
+        });
+      }
+      rs.add(items);
+    }
+    return rs;
   }
 
   List<List<String>> GetPlanDetailFromListPlanItem(List<PlanItem> planDetail) {

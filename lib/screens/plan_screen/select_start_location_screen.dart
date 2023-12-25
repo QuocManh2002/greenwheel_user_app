@@ -25,12 +25,14 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   late MapboxMapController controller;
   TimeOfDay _selectTime = TimeOfDay.now();
   TextEditingController _timeController = TextEditingController();
+  TextEditingController _dateController = TextEditingController();
   Location _locationController = new Location();
   bool isLoading = true;
   LatLng _currentP = LatLng(0, 0);
   num distance = 0;
   num duration = 0;
   TimeOfDay? _initialTime;
+  DateTime? _selectedDate = DateTime.now();
 
   _onMapCreated(MapboxMapController controller) {
     this.controller = controller;
@@ -97,14 +99,13 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         geometry: LatLng(widget.location.latitude, widget.location.longitude),
         iconSize: 5,
         iconImage: to_location));
-    
+
     final lat = sharedPreferences.getDouble('plan_start_lat');
     final lng = sharedPreferences.getDouble('plan_start_lng');
-    if(lat != null){
-       await controller.addSymbol(SymbolOptions(
-        geometry: LatLng(lat, lng!),
-        iconSize: 5,
-        iconImage: from_location));
+    if (lat != null) {
+      Symbol symbol = await controller.addSymbol(SymbolOptions(
+          geometry: LatLng(lat, lng!), iconSize: 5, iconImage: from_location));
+      sharedPreferences.setString('symbolId', symbol.id);
     }
   }
 
@@ -140,6 +141,22 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         _timeController.text = timeText;
       });
     }
+
+    String? dateText = sharedPreferences.getString('plan_start_date');
+    if(dateText != null){
+      setState(() {
+        _selectedDate = DateTime.parse(dateText);
+        _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
+      });
+    }
+    double? plan_distance = sharedPreferences.getDouble('plan_distance');
+    if (plan_distance != null) {
+      double? plan_duration = sharedPreferences.getDouble('plan_duration');
+      setState(() {
+        duration = plan_duration!;
+        distance = plan_distance;
+      });
+    }
   }
 
   @override
@@ -147,15 +164,60 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
+          const Text(
+            'Thời điểm xuất phát',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(
+            height: 2.h,
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Row(
               children: [
-                const Expanded(
-                    child: Text(
-                  'Thời điểm xuất phát',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                )),
+                Expanded(
+                  child: defaultTextFormField(
+                      readonly: true,
+                      controller: _dateController,
+                      inputType: TextInputType.datetime,
+                      text: 'Ngày',
+                      onTap: () async {
+                        DateTime? newDay = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(1900),
+                            lastDate: DateTime(2024),
+                            builder: (context, child) {
+                              return Theme(
+                                data: ThemeData().copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                        primary: primaryColor,
+                                        onPrimary: Colors.white)),
+                                child: DatePickerDialog(
+                                  initialDate: _selectedDate!,
+                                  firstDate: DateTime.now(),
+                                  lastDate: DateTime(2025),
+                                ),
+                              );
+                            });
+                        if (newDay != null) {
+                          _selectedDate = newDay;
+                          _dateController.text =
+                              DateFormat('dd/MM/yyyy').format(newDay);
+                          sharedPreferences.setString(
+                              'plan_start_date', newDay.toString());
+                        }
+                      },
+                      prefixIcon: const Icon(Icons.calendar_month),
+                      onValidate: (value) {
+                        if (value!.isEmpty) {
+                          return "Ngày của hoạt động không được để trống";
+                        }
+                      }),
+                ),
+                SizedBox(
+                  width: 3.w,
+                ),
                 Expanded(
                   child: defaultTextFormField(
                       readonly: true,
@@ -184,6 +246,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                                   _selectTime.minute));
                           sharedPreferences.setString(
                               'plan_start_time', _timeController.text);
+                              sharedPreferences.setBool('plan_is_change', false);
                         });
                       },
                       onValidate: (value) {
@@ -197,7 +260,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
             ),
           ),
           SizedBox(
-            height: 3.h,
+            height: 1.h,
           ),
           const Text(
             'Chọn địa điểm xuất phát',
@@ -207,7 +270,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
             height: 1.h,
           ),
           SizedBox(
-            height: 57.h,
+            height: 55.h,
             child: Stack(
               children: [
                 MapboxMap(
@@ -224,7 +287,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                   minMaxZoomPreference: const MinMaxZoomPreference(6, 17),
                   myLocationRenderMode: MyLocationRenderMode.NORMAL,
                 ),
-                if (duration != 0)
+                if (distance != 0)
                   Positioned(
                     left: 0,
                     right: 0,

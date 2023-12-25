@@ -1,7 +1,12 @@
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
@@ -9,8 +14,9 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_tit
 import 'package:sizer2/sizer2.dart';
 
 class CreatePlanScheduleScreen extends StatefulWidget {
-  const CreatePlanScheduleScreen({super.key, required this.templateSchedule});
-  final List<PlanSchedule> templateSchedule;
+  const CreatePlanScheduleScreen(
+      {super.key, required this.templatePlan});
+  final List<dynamic> templatePlan;
 
   @override
   State<CreatePlanScheduleScreen> createState() =>
@@ -20,7 +26,13 @@ class CreatePlanScheduleScreen extends StatefulWidget {
 class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   late AnimationController _animationController;
   double _currentPage = 0;
-  PageController _pageController = PageController(initialPage: 0);
+  final PageController _pageController = PageController(initialPage: 0);
+  final ComboDate _selectCombo =
+      listComboDate[sharedPreferences.getInt('plan_combo_date')!];
+  List<PlanSchedule> testList = [];
+  final PlanService _planService = PlanService();
+  final DateTime _startDate =
+      DateTime.parse(sharedPreferences.getString('plan_start_date')!);
 
   @override
   void initState() {
@@ -31,6 +43,11 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
         _currentPage = _pageController.page!;
       });
     });
+    setUpData();
+  }
+
+  setUpData() {
+    testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
   }
 
   @override
@@ -51,21 +68,29 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
     if (isCreate) {
       setState(() {
         print(item.date);
-        widget.templateSchedule
+        testList
             .firstWhere((element) => element.date == item.date)
             .items
             .add(item);
+        testList.firstWhere((element) => element.date == item.date).items.sort(
+          (a, b) {
+            var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
+            var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
+            return adate.compareTo(bdate);
+          },
+        );
       });
-      // ScaffoldMessenger.of(context).clearSnackBars();
-      // ScaffoldMessenger.of(context)
-      //     .showSnackBar(const SnackBar(content: Text('Đã thêm hoạt động mới')));
+
+      var finalList = _planService.convertPlanScheduleToJson(testList);
+
+      sharedPreferences.setString('plan_schedule', finalList.toString());
     } else {
       setState(() {
-        widget.templateSchedule
+        testList
             .firstWhere((element) => element.date == oldItem!.date)
             .items
             .remove(oldItem);
-        widget.templateSchedule
+        testList
             .firstWhere((element) => element.date == item.date)
             .items
             .add(item);
@@ -133,7 +158,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   Widget getPageView(int _index) {
     return SizedBox(
       width: 100.w,
-      child: widget.templateSchedule[_index].items.isEmpty
+      child: testList[_index].items.isEmpty
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -160,9 +185,9 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               child: ListView.builder(
               physics: const BouncingScrollPhysics(),
               shrinkWrap: true,
-              itemCount: widget.templateSchedule[_index].items.length,
+              itemCount: testList[_index].items.length,
               itemBuilder: (context, index) => PlanScheduleActivity(
-                  item: widget.templateSchedule[_index].items[index],
+                  item: testList[_index].items[index],
                   showBottomSheet: _showBottomSheet),
             )),
     );
@@ -173,20 +198,19 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
         builder: (ctx) => NewScheduleItemScreen(
             callback: callback,
             item: item,
-            startDate: widget.templateSchedule.first.date,
-            endDate: widget.templateSchedule.last.date)));
+            startDate: testList.first.date,
+            endDate: testList.last.date)));
   }
 
   _deleteItem(PlanScheduleItem item) {
     setState(() {
-      widget.templateSchedule
+      testList
           .firstWhere((element) => element.date == item.date)
           .items
           .remove(item);
     });
-    // ScaffoldMessenger.of(context).clearSnackBars();
-    // ScaffoldMessenger.of(context)
-    //     .showSnackBar(const SnackBar(content: Text('Đã xóa hoạt động')));
+    var finalList = _planService.convertPlanScheduleToJson(testList);
+    sharedPreferences.setString('plan_schedule', finalList.toString());
   }
 
   @override
@@ -201,9 +225,9 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               onTap: () {
                 showDatePicker(
                     context: context,
-                    initialDate: widget.templateSchedule.first.date,
-                    firstDate: widget.templateSchedule.first.date,
-                    lastDate: widget.templateSchedule.last.date,
+                    initialDate: testList.first.date,
+                    firstDate: testList.first.date,
+                    lastDate: testList.last.date,
                     builder: (context, child) {
                       return Theme(
                         data: ThemeData().copyWith(
@@ -211,17 +235,16 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                                 primary: primaryColor,
                                 onPrimary: Colors.white)),
                         child: DatePickerDialog(
-                          initialDate: widget
-                              .templateSchedule[_currentPage.toInt()].date,
-                          firstDate: widget.templateSchedule.first.date,
-                          lastDate: widget.templateSchedule.last.date,
+                          initialDate: testList[_currentPage.toInt()].date,
+                          firstDate: testList.first.date,
+                          lastDate: testList.last.date,
                         ),
                       );
                     }).then((value) {
                   if (value != null) {
                     setState(() {
-                      _currentPage = widget.templateSchedule
-                          .indexOf(widget.templateSchedule
+                      _currentPage = testList
+                          .indexOf(testList
                               .firstWhere((element) => element.date == value))
                           .toDouble();
                       _pageController.animateToPage(_currentPage.toInt(),
@@ -267,8 +290,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (ctx) => NewScheduleItemScreen(
                               callback: callback,
-                              startDate: widget.templateSchedule[0].date,
-                              endDate: widget.templateSchedule.last.date,
+                              startDate: testList[0].date,
+                              endDate: testList.last.date,
                             )));
                   },
                   child: const Row(
@@ -280,9 +303,9 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
         SizedBox(
           height: 14.h,
           child: ListView.builder(
-            itemCount: widget.templateSchedule.length,
+            itemCount: testList.length,
             physics: const BouncingScrollPhysics(),
-            shrinkWrap: true,
+            shrinkWrap: false,
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) => Padding(
               padding: EdgeInsets.all(2.w),
@@ -298,7 +321,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                     });
                   },
                   child: PlanScheduleTitle(
-                    date: widget.templateSchedule[index].date,
+                    date: testList[index].date,
                     isSelected: _currentPage == index.toDouble(),
                   )),
             ),
@@ -308,9 +331,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
           child: PageView(
             controller: _pageController,
             children: [
-              for (int index = 0;
-                  index < widget.templateSchedule.length;
-                  index++)
+              for (int index = 0; index < testList.length; index++)
                 getPageView(index)
             ],
           ),

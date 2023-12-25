@@ -42,12 +42,14 @@ class _BaseInformationState extends State<BaseInformationScreen> {
     if (combodate != null) {
       _scrollController = FixedExtentScrollController(initialItem: combodate);
     } else {
-      _scrollController = FixedExtentScrollController(
-          initialItem: listComboDate
-                  .firstWhere((element) =>
-                      element.duration == widget.location.suggestedTripLength)
-                  .id -
-              1);
+      final defaultComboDate = listComboDate
+              .firstWhere((element) =>
+                  element.duration == widget.location.suggestedTripLength)
+              .id -
+          1;
+      sharedPreferences.setInt('plan_combo_date', defaultComboDate);
+      _scrollController =
+          FixedExtentScrollController(initialItem: defaultComboDate);
     }
     if (member != null) {
       setState(() {
@@ -88,6 +90,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                 setState(() {
                   _selectedCombo = value;
                 });
+                sharedPreferences.setBool("plan_is_change", false);
                 sharedPreferences.setInt('plan_combo_date', value);
               },
               children: Utils.modelBuilder(

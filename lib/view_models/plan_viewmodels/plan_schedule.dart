@@ -2,7 +2,9 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_it
 
 class PlanSchedule{
   final DateTime date;
-  final List<PlanScheduleItem> items;
+  List<PlanScheduleItem> items;
 
-  const PlanSchedule({required this.date, required this.items});
+  PlanSchedule({required this.date, required this.items});
+
+  
 }

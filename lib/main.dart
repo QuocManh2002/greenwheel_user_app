@@ -8,22 +8,25 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/firebase_options.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
 import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
+import 'package:greenwheel_user_app/screens/offline_screen/offline_home_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/widgets/test_screen.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
 late SharedPreferences sharedPreferences;
 late FirebaseAuth auth;
+late bool hasConnection;
 
 ThemeData theme = ThemeData(
     brightness: Brightness.light,
     primaryColor: primaryColor,
     appBarTheme: const AppBarTheme(color: primaryColor),
-    timePickerTheme: TimePickerThemeData(
-      dayPeriodColor: primaryColor
-    ),
+    timePickerTheme: TimePickerThemeData(dayPeriodColor: primaryColor),
     datePickerTheme: DatePickerThemeData(
       headerBackgroundColor: primaryColor,
       dayOverlayColor: MaterialStatePropertyAll(primaryColor),
@@ -42,6 +45,9 @@ void main() async {
   sharedPreferences = await SharedPreferences.getInstance();
   auth = FirebaseAuth.instance;
   await initHiveForFlutter();
+  await Hive.initFlutter();
+  var plans = await Hive.openBox('myplans');
+  hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   initializeDateFormatting('vi_VN', null).then((_) {
     runApp(const MainApp());
@@ -62,7 +68,11 @@ class MainApp extends StatelessWidget {
 
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        home: userToken != null ? const SplashScreen() : const LoginScreen(),
+        home: hasConnection
+            ? userToken != null
+                ? const SplashScreen()
+                : const LoginScreen()
+            : const OfflineHomeScreen(),
         // home: const LoginScreen(),
         // home: const TopupSuccessfulScreen(data: null),
         // home: const RegisterScreen(),

@@ -46,12 +46,16 @@ dependencies:
   cupertino_icons: ^1.0.6
   uuid: ^3.0.7
   table_calendar: ^3.0.9
-  
+  internet_connection_checker: ^1.0.0+1
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^2.0.0
+  hive_generator: ^2.0.1
+  build_runner: ^2.4.7
 
 flutter:
   uses-material-design: true
