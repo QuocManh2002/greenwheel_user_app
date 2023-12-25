@@ -53,10 +53,10 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
       type.add("RESTAURANT");
     } else if (widget.serviceType.id == 2 || widget.serviceType.id == 6) {
       title = "Dịch vụ lưu trú";
-      type.addAll(["CAMPING", "MOTEL"]);
+      type.addAll(["CAMPING_SHOP", "MOTEL"]);
     } else if (widget.serviceType.id == 3 || widget.serviceType.id == 5) {
       title = "Dịch vụ đi lại";
-      type.addAll(["REPAIR", "TAXI"]);
+      type.addAll(["REPAIR_SHOP", "TAXI", "VEHICLE_SHOP"]);
     } else {
       title = "Dịch vụ tiện lợi";
       type.add("GROCERY");
@@ -183,21 +183,26 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // print(().toString()),
-                    if ((widget.startDate.difference(DateTime.now()).inDays + 1) <= 3)
-                       Padding(
-                         padding: const EdgeInsets.symmetric(horizontal: 16),
-                         child: RichText(
-                          text:const TextSpan(
-                              style: TextStyle(color: Colors.black, fontSize: 16),
+                    if ((widget.startDate.difference(DateTime.now()).inDays +
+                            1) <=
+                        3)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: RichText(
+                          text: const TextSpan(
+                              style:
+                                  TextStyle(color: Colors.black, fontSize: 16),
                               children: [
                                 TextSpan(
                                     text: "Lưu ý: ",
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold)),
-                                TextSpan(text: "Bạn chỉ có thể đặt dịch vụ sau 3 ngày kể từ ngày hôm nay")
+                                TextSpan(
+                                    text:
+                                        "Bạn chỉ có thể đặt dịch vụ sau 3 ngày kể từ ngày hôm nay")
                               ]),
-                                             ),
-                       ),
+                        ),
+                      ),
                     ListView.builder(
                       physics: const BouncingScrollPhysics(),
                       shrinkWrap: true,

@@ -28,16 +28,18 @@ class SupplierService extends Iterable {
           }
         },
       ''';
+
+      print(coordinateString);
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
-          query GetSuppliers(\$typeConditions: [SupplierFilterInput!]) {
+          query GetSuppliers {
             suppliers(
               where: {
                 isHidden: { eq: false },
                 $coordinateString
-                or: \$typeConditions
+                or: $typeConditions
               }
             ) {
               nodes {
@@ -54,7 +56,6 @@ class SupplierService extends Iterable {
             }
           }
         '''),
-          variables: {'typeConditions': typeConditions},
         ),
       );
 
