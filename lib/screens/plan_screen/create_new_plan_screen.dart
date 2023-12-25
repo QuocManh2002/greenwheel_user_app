@@ -209,9 +209,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     double targetOffset = 0;
     if (_currentStep < 3) {
       targetOffset = _scrollController.position.minScrollExtent;
-    } else if (_currentStep < 6) {
+    } else if (_currentStep < 5) {
       targetOffset = _scrollController.position.minScrollExtent + 150;
-    } else if (_currentStep < 7) {
+    } else if (_currentStep < 6) {
       targetOffset = _scrollController.position.minScrollExtent + 300;
     } else {
       targetOffset = _scrollController.position.maxScrollExtent;
