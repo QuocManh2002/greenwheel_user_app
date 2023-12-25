@@ -27,12 +27,12 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   late AnimationController _animationController;
   double _currentPage = 0;
   final PageController _pageController = PageController(initialPage: 0);
-  final ComboDate _selectCombo =
-      listComboDate[sharedPreferences.getInt('plan_combo_date')!];
+  // final ComboDate _selectCombo =
+  //     listComboDate[sharedPreferences.getInt('plan_combo_date')!];
   List<PlanSchedule> testList = [];
   final PlanService _planService = PlanService();
-  final DateTime _startDate =
-      DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+  // final DateTime _startDate =
+  //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
 
   @override
   void initState() {
