@@ -779,8 +779,8 @@ class _CartScreenState extends State<CartScreen> {
             serviceType: widget.serviceType,
             numberOfMember: widget.numberOfMember,
             endDate: widget.endDate,
-            startDate: widget.startDate.difference(DateTime.now()).inDays + 1 <= 3 ? 
-              DateTime.now().add(const Duration(days: 0)) : widget.startDate
+            startDate: widget.startDate.difference(DateTime.now()).inDays + 1 < 3 ? 
+              DateTime.now().add(const Duration(days: 3)) : widget.startDate
             )));
   }
 

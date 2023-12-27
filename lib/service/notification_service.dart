@@ -106,8 +106,8 @@ class NotificationService {
     //         locationName: "locationName",
     //         isEnableToJoin: true)));
 
-    Navigator.of(context)
-        .push(MaterialPageRoute(builder: (ctx) => TestScreen()));
+    // Navigator.of(context)
+    //     .push(MaterialPageRoute(builder: (ctx) => TestScreen()));
   }
 
   Future<void> setupInteractMessage(BuildContext context) async {

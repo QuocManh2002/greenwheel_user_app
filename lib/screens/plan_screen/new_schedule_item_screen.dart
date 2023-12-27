@@ -12,11 +12,14 @@ class NewScheduleItemScreen extends StatelessWidget {
       required this.callback,
       required this.startDate,
       required this.endDate,
+      required this.selectedIndex,
       this.item});
-  final void Function(PlanScheduleItem item, bool isCreate, PlanScheduleItem? oldItem) callback;
+  final void Function(
+      PlanScheduleItem item, bool isCreate, PlanScheduleItem? oldItem) callback;
   final DateTime startDate;
   final DateTime endDate;
   final PlanScheduleItem? item;
+  final int selectedIndex;
 
   @override
   Widget build(BuildContext context) {
@@ -33,6 +36,10 @@ class NewScheduleItemScreen extends StatelessWidget {
       _titleController.text = item!.title;
       _dateController.text = DateFormat.yMMMMEEEEd('vi_VN').format(item!.date);
       _timeController.text = item!.time.format(context).toString();
+    } else {
+      _dateController.text = DateFormat.yMMMMEEEEd('vi_VN')
+          .format(startDate.add(Duration(days: selectedIndex)));
+      _selectedDate = startDate.add(Duration(days: selectedIndex));
     }
 
     _appBar(BuildContext ctx) {
@@ -55,13 +62,17 @@ class NewScheduleItemScreen extends StatelessWidget {
                             time: _selectTime,
                             title: _titleController.text,
                             date: _selectedDate),
-                        true, null);
-                  }else{
-                    callback(PlanScheduleItem(
+                        true,
+                        null);
+                  } else {
+                    callback(
+                        PlanScheduleItem(
                             time: _selectTime,
                             title: _titleController.text,
                             date: _selectedDate,
-                            id: item!.id), false, item);
+                            id: item!.id),
+                        false,
+                        item);
                   }
 
                   Navigator.of(context).pop();
@@ -129,8 +140,10 @@ class NewScheduleItemScreen extends StatelessWidget {
                                             primary: primaryColor,
                                             onPrimary: Colors.white)),
                                     child: DatePickerDialog(
-                                      initialDate:
-                                          item != null ? item!.date : startDate,
+                                      initialDate: item != null
+                                          ? item!.date
+                                          : startDate.add(
+                                              Duration(days: selectedIndex)),
                                       firstDate: startDate,
                                       lastDate: endDate,
                                     ),

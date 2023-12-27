@@ -58,6 +58,8 @@ class _BaseInformationState extends State<BaseInformationScreen> {
       setState(() {
         _selectedQuantity = member;
       });
+    }else{
+      sharedPreferences.setInt('plan_number_of_member', 1);
     }
     _suggestComboDate = listComboDate.firstWhere(
         (element) => element.duration == widget.location.suggestedTripLength);

@@ -214,6 +214,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (ctx) => NewScheduleItemScreen(
             callback: callback,
+            selectedIndex: _currentPage.toInt(),
             item: item,
             startDate: testList.first.date,
             endDate: testList.last.date)));
@@ -309,6 +310,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                               callback: callback,
                               startDate: testList[0].date,
                               endDate: testList.last.date,
+                              selectedIndex: _currentPage.toInt(),
                             )));
                   },
                   child: const Row(

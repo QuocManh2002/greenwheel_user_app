@@ -267,6 +267,7 @@ query getById(\$id: Int) {
       activities
       seasons
       topographic
+      suggestedTripLength
       templateSchedule
       coordinate{coordinates}
       address

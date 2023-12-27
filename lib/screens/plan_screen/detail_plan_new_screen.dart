@@ -104,9 +104,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       _listRestaurant = listRestaurant;
       // _orderList = orderList;
     });
-    setState(() {
+    if(_planDetail != null){
+      setState(() {
       isLoading = false;
     });
+    }
   }
 
   @override
@@ -114,7 +116,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
-              title: Text("Chuyến đi ${widget.locationName}"),
+              title: Text('Kế hoạch'),
             ),
             body: isLoading
                 ? const Center(
@@ -147,7 +149,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   Container(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      "Chuyến đi ${_planDetail!.locationName}",
+                                      _planDetail!.name,
                                       style: const TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.bold),
@@ -260,15 +262,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                               sharedPreferences
                                                                   .getString(
                                                                       'userId')!)
-                                                      ? "${member.name} (Bạn)"
-                                                      : "${member.name} - LEADING - 0${member.phone.substring(3)}"
+                                                      ? "- ${member.name} (Bạn)"
+                                                      : "- ${member.name} - LEADING - 0${member.phone.substring(3)}"
                                                   : member.travelerId ==
                                                           int.parse(
                                                               sharedPreferences
                                                                   .getString(
                                                                       'userId')!)
                                                       ? "- ${member.name} (Bạn)"
-                                                      : "${member.name} - 0${member.phone.substring(3)}",
+                                                      : "- ${member.name} - 0${member.phone.substring(3)}",
                                               style:
                                                   const TextStyle(fontSize: 18),
                                             ),

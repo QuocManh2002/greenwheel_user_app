@@ -211,6 +211,7 @@ query getOrderDetailsByPlanId(\$planId: Int) {
 query GetPlanById(\$planId: Int){
   plans(where: {id: {eq: \$planId}}){
     nodes{
+      name
       id
       startDate
       endDate
@@ -282,6 +283,7 @@ query GetPlanById(\$planId: Int){
   plans(first: 50){
     nodes{
       id
+      name
       startDate
       endDate
       status

@@ -361,4 +361,5 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     _scrollController.animateTo(targetOffset,
         duration: const Duration(milliseconds: 300), curve: Curves.bounceInOut);
   }
+
 }

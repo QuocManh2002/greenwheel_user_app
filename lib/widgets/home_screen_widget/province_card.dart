@@ -12,7 +12,10 @@ class ProvinceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => FilterLocationScreen(province: province,)));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => FilterLocationScreen(
+                  province: province,
+                )));
       },
       child: Container(
         height: 25.h,
@@ -31,7 +34,7 @@ class ProvinceCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 25.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage("https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0"),
+                    image: NetworkImage(province.thumbnailUrl),
                     fit: BoxFit.cover,
                     width: double.infinity,
                     filterQuality: FilterQuality.high,
@@ -45,7 +48,10 @@ class ProvinceCard extends StatelessWidget {
                   padding: const EdgeInsets.all(12),
                   child: Text(
                     province.name,
-                    style:const TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold),
                   ),
                 ))
           ]),

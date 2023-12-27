@@ -75,9 +75,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         LatLng(widget.location.latitude, widget.location.longitude));
 
     if (mapInfo.isNotEmpty) {
-      print(mapInfo["duration"]);
-      print(mapInfo["distance"]);
-
       setState(() {
         distance = mapInfo["distance"] / 1000;
         duration = mapInfo["duration"] / 3600;
@@ -140,6 +137,11 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         _selectTime = TimeOfDay.fromDateTime(initialDateTime);
         _timeController.text = timeText;
       });
+    } else {
+      _selectTime = TimeOfDay.now();
+      _timeController.text = DateFormat.Hm()
+          .format(DateTime(0, 0, 0, _selectTime.hour, _selectTime.minute));
+      sharedPreferences.setString('plan_start_time', _timeController.text);
     }
 
     String? dateText = sharedPreferences.getString('plan_start_date');
@@ -148,6 +150,10 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         _selectedDate = DateTime.parse(dateText);
         _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
       });
+    } else {
+      _selectedDate = DateTime.now();
+      _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
+      sharedPreferences.setString('plan_start_date', _selectedDate.toString());
     }
     double? plan_distance = sharedPreferences.getDouble('plan_distance');
     if (plan_distance != null) {
@@ -184,6 +190,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                       onTap: () async {
                         DateTime? newDay = await showDatePicker(
                             context: context,
+                            locale:const Locale('vi_VN'),
                             initialDate: DateTime.now(),
                             firstDate: DateTime(1900),
                             lastDate: DateTime(2024),
@@ -194,6 +201,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                                         primary: primaryColor,
                                         onPrimary: Colors.white)),
                                 child: DatePickerDialog(
+                                  cancelText: 'HỦY',
+                                  confirmText: 'LƯU',
                                   initialDate: _selectedDate!,
                                   firstDate: DateTime.now(),
                                   lastDate: DateTime(2025),

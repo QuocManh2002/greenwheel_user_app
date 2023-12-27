@@ -94,7 +94,7 @@ class PlanCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text("Chuyến đi ${plan.locationName}",
+                          child: Text(plan.name,
                               overflow: TextOverflow.clip,
                               maxLines: 2,
                               style: const TextStyle(

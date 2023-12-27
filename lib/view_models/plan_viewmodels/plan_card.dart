@@ -6,6 +6,7 @@ String planCardToJson(PlanCardViewModel data) => json.encode(data.toJson());
 
 class PlanCardViewModel {
     int id;
+    String name;
     DateTime startDate;
     DateTime endDate;
     String locationName;
@@ -21,6 +22,7 @@ class PlanCardViewModel {
         required this.imageUrls,
         required this.provinceName,
         required this.status,
+        required this.name
     });
 
     factory PlanCardViewModel.fromJson(Map<String, dynamic> json) => PlanCardViewModel(
@@ -30,7 +32,8 @@ class PlanCardViewModel {
         locationName: json["location"]['name'],
         imageUrls: json["location"]["imageUrls"],
         provinceName: json["location"]["province"]["name"],
-        status: json["status"]
+        status: json["status"],
+        name: json["name"]
     );
 
     Map<String, dynamic> toJson() => {
