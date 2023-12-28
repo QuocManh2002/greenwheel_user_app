@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:intl/intl.dart';
+import 'package:http/http.dart' as http;
 
 class Utils {
   static List<Widget> modelBuilder<M>(
@@ -15,7 +18,7 @@ class Utils {
           .toList();
 
   TimeOfDay convertStringToTime(String timeString) {
-    final initialDateTime = DateFormat.Hm().parse(timeString);
+    final initialDateTime = DateFormat.Hms().parse(json.decode(timeString));
     return TimeOfDay.fromDateTime(initialDateTime);
   }
 
@@ -43,5 +46,17 @@ class Utils {
     sharedPreferences.remove('plan_is_change');
     sharedPreferences.remove('plan_end_date');
     sharedPreferences.remove('plan_schedule');
+  }
+
+  Future<String> getImageBase64Encoded(String imageUrl) async {
+    var rsBytes;
+    final response = await http.get(Uri.parse(imageUrl));
+
+    if (response.statusCode == 200) {
+      rsBytes = response.bodyBytes;
+      return base64Encode(rsBytes);
+    } else {
+      throw Exception('Failed to load image: $imageUrl');
+    }
   }
 }

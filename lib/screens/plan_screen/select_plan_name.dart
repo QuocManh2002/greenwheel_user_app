@@ -9,6 +9,8 @@ import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
@@ -115,10 +117,26 @@ class _SelectPlanNameState extends State<SelectPlanName> {
             btnOkOnPress: () async {
               PlanDetail? plan = await _planService.GetPlanById(rs);
               if (plan != null) {
-                await _offlineService.savePlanToHive(plan);
+                await _offlineService.savePlanToHive(PlanOfflineViewModel(
+                    id: rs,
+                    name: _nameController.text,
+                    imageBase64:
+                        await Utils().getImageBase64Encoded(plan.imageUrls[0]),
+                    startDate: plan.startDate,
+                    endDate: plan.endDate,
+                    memberLimit: memberLimit,
+                    memberList: [
+                      PlanOfflineMember(
+                          id: int.parse(sharedPreferences.getString('userId')!),
+                          name: "Quoc Manh",
+                          phone: sharedPreferences.getString('userPhone')!,
+                          isLeading: true)
+                    ]));
               }
               Utils().clearPlanSharePref();
+              // ignore: use_build_context_synchronously
               Navigator.of(context).pop();
+              // ignore: use_build_context_synchronously
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (ctx) => const TabScreen(pageIndex: 1)));
             }).show();

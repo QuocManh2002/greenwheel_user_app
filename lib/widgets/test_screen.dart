@@ -1,11 +1,13 @@
-import 'dart:convert';
+
 import 'dart:typed_data';
 
-import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:http/http.dart' as http;
 
 class TestScreen extends StatefulWidget {
@@ -19,6 +21,7 @@ class _TestScreenState extends State<TestScreen> {
   String bytes = '';
   OfflineService _offlineService = OfflineService();
   List<Map<String, dynamic>> planList = [];
+  PlanService _planService = PlanService();
 
   Future<Uint8List> fetchImageBytes(String imageUrl) async {
     final response = await http.get(Uri.parse(imageUrl));
@@ -45,11 +48,11 @@ class _TestScreenState extends State<TestScreen> {
     //   bytes = base64Encode(imageBytes);
     // });
     final list = await _offlineService.getOfflinePlans();
-    if (list.isNotEmpty) {
-      setState(() {
-        planList = list;
-      });
-    }
+    // if (list.isNotEmpty) {
+    //   setState(() {
+    //     planList = list;
+    //   });
+    // }
 
     // print(base64String);
     // final decodedBytes = base64Decode(base64String);
@@ -59,20 +62,23 @@ class _TestScreenState extends State<TestScreen> {
   //   final data =
   // }
 
-  saveData() {
-    _offlineService.savePlanToHive(PlanDetail(
+  saveData() async {
+    _offlineService.savePlanToHive(PlanOfflineViewModel(
         id: 1,
+        name: 'Chuyen di test',
+        imageBase64: await Utils().getImageBase64Encoded(
+            'https://cdn.tgdd.vn/2023/11/content/image--9--800x450.jpg'),
         startDate: DateTime.now(),
         endDate: DateTime.now(),
-        schedule: [],
         memberLimit: 3,
-        status: 'READY',
-        locationName: 'locationName',
-        locationId: 1,
-        imageUrls: [
-          'https://cdn.tgdd.vn/2023/11/content/image--9--800x450.jpg'
-        ],
-        name: 'chuyen di test'));
+        schedule: [],
+        orders: [],
+        memberList: [
+          PlanOfflineMember(
+              id: 1, name: 'Manh', phone: '0383519580', isLeading: true),
+          PlanOfflineMember(
+              id: 2, name: 'Thinh', phone: '0123456789', isLeading: false)
+        ]));
   }
 
   @override

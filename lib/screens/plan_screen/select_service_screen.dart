@@ -13,6 +13,8 @@ import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
@@ -219,7 +221,24 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                         PlanDetail? plan = await _planService.GetPlanById(
                             sharedPreferences.getInt('planId')!);
                         if (plan != null) {
-                          await _offlineService.savePlanToHive(plan);
+                          await _offlineService.savePlanToHive(
+                              PlanOfflineViewModel(
+                                  id: plan.id,
+                                  name: plan.name,
+                                  imageBase64: await Utils()
+                                      .getImageBase64Encoded(plan.imageUrls[0]),
+                                  startDate: plan.startDate,
+                                  endDate: plan.endDate,
+                                  memberLimit: plan.memberLimit,
+                                  memberList: [
+                                PlanOfflineMember(
+                                    id: int.parse(
+                                        sharedPreferences.getString('userId')!),
+                                    name: "Quoc Manh",
+                                    phone: sharedPreferences
+                                        .getString('userPhone')!,
+                                    isLeading: true)
+                              ]));
                         }
                         Utils().clearPlanSharePref();
                         Navigator.of(context).pop();

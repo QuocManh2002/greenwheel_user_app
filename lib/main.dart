@@ -45,11 +45,11 @@ void main() async {
   sharedPreferences = await SharedPreferences.getInstance();
   auth = FirebaseAuth.instance;
   await initHiveForFlutter();
-  await Hive.initFlutter();
-  await Hive.openBox('myPlans');
-  final _myPlans = Hive.box('myPlans');
-  _myPlans.clear();
-  hasConnection = await InternetConnectionChecker().hasConnection;
+  // await Hive.initFlutter();
+  // await Hive.openBox('myPlans');
+  // final _myPlans = Hive.box('myPlans');
+  // _myPlans.clear();
+  // hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   initializeDateFormatting('vi_VN', null).then((_) {
     runApp(const MainApp());
@@ -70,15 +70,18 @@ class MainApp extends StatelessWidget {
 
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        // home: hasConnection
-        //     ? userToken != null
-        //         ? const SplashScreen()
-        //         : const LoginScreen()
-        //     : const OfflineHomeScreen(),
+        home: 
+        // hasConnection
+        //     ?
+             userToken != null
+                ? const SplashScreen()
+                : const LoginScreen(),
+            // : 
+            // const OfflineHomeScreen(),
         // home: const LoginScreen(),
         // home: const TopupSuccessfulScreen(data: null),
         // home: const RegisterScreen(),
-        home: const TestScreen(),
+        // home: const TestScreen(),
         // home: const CreateNewPlanScreen(),
         // home: QRScreen(),
         // home: SharePlanScreen(),

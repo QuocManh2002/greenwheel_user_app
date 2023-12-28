@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
@@ -29,7 +27,6 @@ class CreatePlanScheduleScreen extends StatefulWidget {
 }
 
 class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
-  late AnimationController _animationController;
   double _currentPage = 0;
   final PageController _pageController = PageController(initialPage: 0);
   // final ComboDate _selectCombo =
