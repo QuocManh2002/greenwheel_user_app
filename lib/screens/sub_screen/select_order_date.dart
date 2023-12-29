@@ -44,6 +44,13 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    print(DateTime.now()
+        .add(Duration(days: 3))
+        .difference(widget.endDate)
+        .inDays);
+    print(widget.startDate);
+    print(widget.endDate);
+    print(widget.startDate.isBefore(widget.endDate));
   }
 
   @override

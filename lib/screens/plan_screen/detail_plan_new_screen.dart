@@ -5,11 +5,11 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -104,10 +104,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       _listRestaurant = listRestaurant;
       // _orderList = orderList;
     });
-    if(_planDetail != null){
+    if (_planDetail != null) {
       setState(() {
-      isLoading = false;
-    });
+        isLoading = false;
+      });
     }
   }
 
@@ -299,12 +299,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   const SizedBox(
                                     height: 16,
                                   ),
-                                  Container(
-                                      height: 70.h,
-                                      child: CreatePlanScheduleScreen(
-                                          planId: widget.planId,
-                                          isCreate: false,
-                                          templatePlan: _planDetail!.schedule)),
+                                  SizedBox(
+                                    height: 60.h,
+                                    child: PLanScheduleWidget(
+                                      schedule: _planDetail!.schedule,
+                                      startDate: _planDetail!.startDate,
+                                      endDate: _planDetail!.endDate,
+                                    ),
+                                  ),
                                   const SizedBox(
                                     height: 16,
                                   ),

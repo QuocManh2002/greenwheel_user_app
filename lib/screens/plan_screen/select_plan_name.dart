@@ -39,10 +39,14 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     String schedule = sharedPreferences.getString('plan_schedule')!;
 
     // print(json.decode(schedule));
+    DateTime _startDate = DateTime.parse(startDate);
+    if (_startDate.difference(DateTime.now()).inDays == 0) {
+      _startDate = DateTime.now().add(const Duration(hours: 1));
+    }
 
     int? rs = await _planService.createPlan(PlanCreate(
         locationId: widget.location.id,
-        startDate: DateTime.parse(startDate),
+        startDate: _startDate,
         endDate: DateTime.parse(endDate),
         latitude: lat,
         longitude: lng,
@@ -84,6 +88,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
             btnCancelText: 'Không',
             btnCancelColor: Colors.blue,
             btnCancelOnPress: () {
+              Utils().clearPlanSharePref();
               Navigator.of(context).pop();
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (ctx) => const TabScreen(
@@ -125,6 +130,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                     startDate: plan.startDate,
                     endDate: plan.endDate,
                     memberLimit: memberLimit,
+                    schedule: plan.schedule,
                     memberList: [
                       PlanOfflineMember(
                           id: int.parse(sharedPreferences.getString('userId')!),

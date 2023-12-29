@@ -299,21 +299,28 @@ class _CartScreenState extends State<CartScreen> {
                         const SizedBox(
                           height: 5,
                         ),
-                        if ((widget.startDate.difference(DateTime.now()).inDays + 1) <= 3)
-                       Padding(
-                         padding: const EdgeInsets.only(left: 24, right: 24),
-                         child: RichText(
-                          text:const TextSpan(
-                              style: TextStyle(color: Colors.black, fontSize: 16),
-                              children: [
-                                TextSpan(
-                                    text: "Lưu ý: ",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold)),
-                                TextSpan(text: "Bạn chỉ có thể đặt dịch vụ sau 3 ngày kể từ ngày hôm nay")
-                              ]),
-                                             ),
-                       ),
+                        if ((widget.startDate
+                                    .difference(DateTime.now())
+                                    .inDays +
+                                1) <=
+                            3)
+                          Padding(
+                            padding: const EdgeInsets.only(left: 24, right: 24),
+                            child: RichText(
+                              text: const TextSpan(
+                                  style: TextStyle(
+                                      color: Colors.black, fontSize: 16),
+                                  children: [
+                                    TextSpan(
+                                        text: "Lưu ý: ",
+                                        style: TextStyle(
+                                            fontWeight: FontWeight.bold)),
+                                    TextSpan(
+                                        text:
+                                            "Bạn chỉ có thể đặt dịch vụ sau 3 ngày kể từ ngày hôm nay")
+                                  ]),
+                            ),
+                          ),
                         const SizedBox(
                           height: 5,
                         ),
@@ -332,25 +339,42 @@ class _CartScreenState extends State<CartScreen> {
                             children: [
                               _servingDates.isEmpty
                                   ? Text(
-                                      widget.startDate.difference(DateTime.now()).inDays + 1 <= 3 ?
-                                      '${DateTime.now().add(const Duration(days: 3)).day}/${DateTime.now().add(const Duration(days: 3)).month}/${DateTime.now().add(const Duration(days: 3)).year}':
-                                      '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}'
-                                      ,
+                                      widget.startDate
+                                                      .difference(
+                                                          DateTime.now())
+                                                      .inDays +
+                                                  1 <=
+                                              3
+                                          ? '${DateTime.now().add(const Duration(days: 3)).day}/${DateTime.now().add(const Duration(days: 3)).month}/${DateTime.now().add(const Duration(days: 3)).year}'
+                                          : '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}',
                                       style: const TextStyle(
                                         fontSize: 14,
-                                        fontFamily: 'NotoSans', 
+                                        fontFamily: 'NotoSans',
                                         fontWeight: FontWeight.bold,
                                       ),
                                     )
                                   : isConsecutiveDates(_servingDates)
-                                      ? Text(
-                                          '${_servingDates.first.day}/${_servingDates.first.month}/${_servingDates.first.year} - ${_servingDates.last.day}/${_servingDates.last.month}/${_servingDates.last.year}',
-                                          style: const TextStyle(
-                                            fontSize: 14,
-                                            fontFamily: 'NotoSans',
-                                            fontWeight: FontWeight.bold,
-                                          ),
-                                        )
+                                      ? _servingDates.first
+                                                  .difference(
+                                                      _servingDates.last)
+                                                  .inDays ==
+                                              0
+                                          ? Text(
+                                              '${_servingDates.first.day}/${_servingDates.first.month}/${_servingDates.first.year}',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontFamily: 'NotoSans',
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )
+                                          : Text(
+                                              '${_servingDates.first.day}/${_servingDates.first.month}/${_servingDates.first.year} - ${_servingDates.last.day}/${_servingDates.last.month}/${_servingDates.last.year}',
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontFamily: 'NotoSans',
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            )
                                       : Text(
                                           "${_servingDates.first.day}/${_servingDates.first.month}/${_servingDates.first.year} + ${_servingDates.length - 1} ngày",
                                           style: const TextStyle(
@@ -774,14 +798,22 @@ class _CartScreenState extends State<CartScreen> {
             supplier: widget.supplier,
             list: list,
             total: widget.total,
-            selectedDate:
-                _servingDates.isEmpty ? [] : _servingDates,
+            selectedDate: _servingDates.isEmpty ? [] : _servingDates,
             serviceType: widget.serviceType,
             numberOfMember: widget.numberOfMember,
-            endDate: widget.endDate,
-            startDate: widget.startDate.difference(DateTime.now()).inDays + 1 < 3 ? 
-              DateTime.now().add(const Duration(days: 3)) : widget.startDate
-            )));
+            endDate: DateTime.now()
+                        .add(Duration(days: 3))
+                        .difference(widget.endDate)
+                        .inDays ==
+                    0
+                ? DateTime.now()
+                    .add(const Duration(days: 3))
+                    .add(const Duration(hours: 1))
+                : widget.endDate,
+            startDate:
+                widget.startDate.difference(DateTime.now()).inDays + 1 < 3
+                    ? DateTime.now().add(const Duration(days: 3))
+                    : widget.startDate)));
   }
 
   callback(List<DateTime> servingDates) {

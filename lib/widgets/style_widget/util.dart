@@ -18,7 +18,7 @@ class Utils {
           .toList();
 
   TimeOfDay convertStringToTime(String timeString) {
-    final initialDateTime = DateFormat.Hms().parse(json.decode(timeString));
+    final initialDateTime = DateFormat.Hms().parse(timeString);
     return TimeOfDay.fromDateTime(initialDateTime);
   }
 

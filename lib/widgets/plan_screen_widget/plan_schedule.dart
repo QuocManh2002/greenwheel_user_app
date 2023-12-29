@@ -110,7 +110,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                                 onPrimary: Colors.white)),
                         child: DatePickerDialog(
                           initialDate:
-                              widget.schedule[_currentPage.toInt()].date,
+                              _scheduleList[_currentPage.toInt()].date,
                           firstDate: _scheduleList.first.date,
                           lastDate: _scheduleList.last.date,
                         ),
@@ -118,7 +118,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                     }).then((value) {
                   if (value != null) {
                     setState(() {
-                      _currentPage = widget.schedule
+                      _currentPage = _scheduleList
                           .indexOf(_scheduleList
                               .firstWhere((element) => element.date == value))
                           .toDouble();

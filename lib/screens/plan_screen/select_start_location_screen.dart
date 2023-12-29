@@ -118,12 +118,12 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     sharedPreferences.setString('symbolId', symbol.id);
   }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    _timeController.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   // TODO: implement dispose
+  //   super.dispose();
+  //   _timeController.dispose();
+  // }
 
   @override
   void initState() {

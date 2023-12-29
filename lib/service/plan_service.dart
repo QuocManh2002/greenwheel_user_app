@@ -361,10 +361,6 @@ query GetPlanById(\$planId: Int){
 
   List<PlanSchedule> GetPlanScheduleFromJsonNew(List<dynamic> schedules, DateTime startDate, int duration) {
     List<PlanSchedule> schedule = [];
-    // final startDate =
-    //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-    // final _selectCombo =
-    //     listComboDate[sharedPreferences.getInt('plan_combo_date')!];
     for (int i = 0; i < duration; i++) {
       List<PlanScheduleItem> item = [];
       final date = startDate.add(Duration(days: i));

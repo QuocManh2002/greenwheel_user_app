@@ -1,10 +1,8 @@
-import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
 import 'package:hive/hive.dart';
 
 class OfflineService {
-  PlanService _planService = PlanService();
 
   Future<void> savePlanToHive(PlanOfflineViewModel plan) async {
     final _myPlans = Hive.box('myPlans');

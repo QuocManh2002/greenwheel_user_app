@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/main_screen/notificationscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
-import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
 
 class TabScreen extends StatefulWidget {
@@ -17,7 +15,6 @@ class TabScreen extends StatefulWidget {
 
 class _TabScreenState extends State<TabScreen> {
   int _selectedPageIndex = 0;
-  CustomerService _customerService = CustomerService();
   NotificationService _notificationService = NotificationService();
 
   void selectPage(int index) {

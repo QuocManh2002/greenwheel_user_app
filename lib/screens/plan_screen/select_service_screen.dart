@@ -80,12 +80,8 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       }
     }
     if (orderList.isNotEmpty) {
-      PlanDetail? _planDetail =
-          await _planService.GetPlanById(sharedPreferences.getInt("planId")!);
 
       setState(() {
-        // planDetail = generateItems(
-        //     _planDetail!.schedule, _planDetail.startDate, _planDetail.orders!);
         _listMotel = listMotel;
         _listRestaurant = listRestaurant;
         _orderList = orderList;
@@ -99,6 +95,15 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Thêm dịch vụ'),
+          leading: BackButton(
+            onPressed: () async {
+              await saveToOffline();
+              Utils().clearPlanSharePref();
+              Navigator.of(context).pop();
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (ctx) => const TabScreen(pageIndex: 1)));
+            },
+          ),
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -230,6 +235,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                   startDate: plan.startDate,
                                   endDate: plan.endDate,
                                   memberLimit: plan.memberLimit,
+                                  schedule: plan.schedule,
                                   memberList: [
                                 PlanOfflineMember(
                                     id: int.parse(
@@ -256,5 +262,27 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         ),
       ),
     );
+  }
+
+  saveToOffline() async {
+    PlanDetail? plan =
+        await _planService.GetPlanById(sharedPreferences.getInt('planId')!);
+    if (plan != null) {
+      await _offlineService.savePlanToHive(PlanOfflineViewModel(
+          id: plan.id,
+          name: plan.name,
+          imageBase64: await Utils().getImageBase64Encoded(plan.imageUrls[0]),
+          startDate: plan.startDate,
+          endDate: plan.endDate,
+          memberLimit: plan.memberLimit,
+          schedule: plan.schedule,
+          memberList: [
+            PlanOfflineMember(
+                id: int.parse(sharedPreferences.getString('userId')!),
+                name: "Quoc Manh",
+                phone: sharedPreferences.getString('userPhone')!,
+                isLeading: true)
+          ]));
+    }
   }
 }
