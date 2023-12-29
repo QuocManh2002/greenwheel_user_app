@@ -59,4 +59,11 @@ class Utils {
       throw Exception('Failed to load image: $imageUrl');
     }
   }
+
+  bool checkTimeAfterNow1Hour(TimeOfDay time, DateTime dateTime) {
+    return dateTime
+        .add(Duration(hours: time.hour))
+        .add(Duration(minutes: time.minute))
+        .isAfter(DateTime.now().add(const Duration(hours: 1)));
+  }
 }

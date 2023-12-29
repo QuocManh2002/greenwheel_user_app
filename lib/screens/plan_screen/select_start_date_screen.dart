@@ -54,23 +54,25 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
       });
     }
   }
-  
-  handleChangeComboDate(){
+
+  handleChangeComboDate() {
     final isChanged = sharedPreferences.getBool('plan_is_change');
-    if(isChanged == null || !isChanged){
+    if (isChanged == null || !isChanged) {
       setState(() {
-        final initialDateTime = DateFormat.Hm().parse(sharedPreferences.getString('plan_start_time')!);
+        final initialDateTime = DateFormat.Hm()
+            .parse(sharedPreferences.getString('plan_start_time')!);
         final startTime =
             DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
         final arrivedTime = startTime.add(Duration(
             seconds:
                 (sharedPreferences.getDouble('plan_duration')! * 3600).ceil()));
         if (arrivedTime.isAfter(DateTime(0, 0, 0, 6, 0))) {
-          _selectedComboDate = listComboDate.firstWhere((element) => element.duration == _selectedComboDate.duration + 2);
-          sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id - 1);
+          _selectedComboDate = listComboDate.firstWhere(
+              (element) => element.duration == _selectedComboDate.duration + 2);
+          sharedPreferences.setInt(
+              'plan_combo_date', _selectedComboDate.id - 1);
           sharedPreferences.setBool("plan_is_change", true);
         }
-        
       });
     }
   }
@@ -110,7 +112,7 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
             height: 2.h,
           ),
           const Text(
-            'Hãy chọn thời gian trải nghiệm',
+            'Thời gian trải nghiệm',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(
@@ -125,7 +127,7 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
               calendarFormat: _calendarFormat,
               onDaySelected: _onDaySelected,
               firstDay: _rangeStart!,
-              lastDay: DateTime(2025),
+              lastDay: _rangeEnd!.add(const Duration(days: 1)),
               rangeStartDay: _rangeStart,
               rangeEndDay: _rangeEnd,
               calendarStyle: CalendarStyle(

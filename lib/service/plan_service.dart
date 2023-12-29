@@ -33,8 +33,8 @@ mutation{
     locationId: ${model.locationId}
     latitude: ${model.latitude}
     longitude: ${model.longitude} 
-    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
-    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day}"
+    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day} ${model.startDate.hour}:${model.startDate.minute}:00.000Z"
+    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day} 22:00:00.000Z"
     memberLimit:${model.memberLimit}
     name: ${json.encode(model.name)}
     schedule:${model.schedule}
@@ -359,7 +359,8 @@ query GetPlanById(\$planId: Int){
     return schedule;
   }
 
-  List<PlanSchedule> GetPlanScheduleFromJsonNew(List<dynamic> schedules, DateTime startDate, int duration) {
+  List<PlanSchedule> GetPlanScheduleFromJsonNew(
+      List<dynamic> schedules, DateTime startDate, int duration) {
     List<PlanSchedule> schedule = [];
     for (int i = 0; i < duration; i++) {
       List<PlanScheduleItem> item = [];
@@ -505,7 +506,5 @@ mutation{
     }
   }
 
-  void saveToHive(){
-
-  }
+  void saveToHive() {}
 }

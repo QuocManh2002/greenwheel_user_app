@@ -14,6 +14,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_mem
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectPlanName extends StatefulWidget {
@@ -37,12 +38,17 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     String startDate = sharedPreferences.getString('plan_start_date')!;
     String endDate = sharedPreferences.getString('plan_end_date')!;
     String schedule = sharedPreferences.getString('plan_schedule')!;
+    String startTime = sharedPreferences.getString('plan_start_time')!;
 
+    final initialDateTime = DateFormat.Hm().parse(startTime);
+    DateTime _startDate = DateTime.parse(startDate)
+        .add(Duration(hours: initialDateTime.hour))
+        .add(Duration(minutes: initialDateTime.minute));
     // print(json.decode(schedule));
-    DateTime _startDate = DateTime.parse(startDate);
-    if (_startDate.difference(DateTime.now()).inDays == 0) {
-      _startDate = DateTime.now().add(const Duration(hours: 1));
-    }
+    // DateTime _startDate = DateTime.parse(startDate);
+    // if (_startDate.difference(DateTime.now()).inDays == 0) {
+    //   _startDate = DateTime.now().add(const Duration(hours: 1));
+    // }
 
     int? rs = await _planService.createPlan(PlanCreate(
         locationId: widget.location.id,

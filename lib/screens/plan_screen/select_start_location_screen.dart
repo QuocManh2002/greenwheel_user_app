@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
@@ -7,6 +8,7 @@ import 'package:greenwheel_user_app/helpers/direction_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
@@ -89,6 +91,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     // }
   }
 
+
   _onStyleLoadedCallback() async {
     await controller.addSymbol(SymbolOptions(
         geometry: _currentP, iconSize: 5, iconImage: current_location));
@@ -118,13 +121,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     sharedPreferences.setString('symbolId', symbol.id);
   }
 
-  // @override
-  // void dispose() {
-  //   // TODO: implement dispose
-  //   super.dispose();
-  //   _timeController.dispose();
-  // }
-
   @override
   void initState() {
     // TODO: implement initState
@@ -152,8 +148,9 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       });
     } else {
       _selectedDate = DateTime.now();
+      // final dateOnly = _selectedDate!.toLocal().toString().split(' ')[0];
       _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
-      sharedPreferences.setString('plan_start_date', _selectedDate.toString());
+      sharedPreferences.setString('plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
     }
     double? plan_distance = sharedPreferences.getDouble('plan_distance');
     if (plan_distance != null) {
@@ -190,7 +187,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                       onTap: () async {
                         DateTime? newDay = await showDatePicker(
                             context: context,
-                            locale:const Locale('vi_VN'),
+                            locale: const Locale('vi_VN'),
                             initialDate: DateTime.now(),
                             firstDate: DateTime(1900),
                             lastDate: DateTime(2024),

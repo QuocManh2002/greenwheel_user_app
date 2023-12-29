@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/empty_plan.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_card.dart';
-import 'package:sizer2/sizer2.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_button.dart';
 
 class PlanScreen extends StatefulWidget {
   const PlanScreen({super.key});
@@ -17,10 +16,12 @@ class PlanScreen extends StatefulWidget {
 class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   final PlanService _planService = PlanService();
   List<PlanCardViewModel> _onGoingPlans = [];
-  List<PlanCardViewModel> _draftPlans = [];
   List<PlanCardViewModel> _canceledPlans = [];
   List<PlanCardViewModel> _futuredPlans = [];
   List<PlanCardViewModel> _historyPlans = [];
+  List<List<PlanCardViewModel>> _totalPlans = [];
+
+  int _selectedTab = 0;
 
   bool isLoading = true;
   late TabController tabController;
@@ -41,7 +42,6 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   }
 
   _setUpData() async {
-    List<PlanCardViewModel> draftPlans = [];
     List<PlanCardViewModel> onGoingPlans = [];
     List<PlanCardViewModel> canceledPlans = [];
     List<PlanCardViewModel> historyPlans = [];
@@ -83,11 +83,14 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
         }
       }
       setState(() {
-        _draftPlans = draftPlans;
         _canceledPlans = canceledPlans;
         _futuredPlans = futurePlans;
         _onGoingPlans = onGoingPlans;
         _historyPlans = historyPlans;
+        _totalPlans.add(_futuredPlans);
+        _totalPlans.add(_onGoingPlans);
+        _totalPlans.add(historyPlans);        
+        _totalPlans.add(canceledPlans);
         isLoading = false;
       });
     }
@@ -112,98 +115,196 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  TabBar(
-                      controller: tabController,
-                      indicatorColor: primaryColor,
-                      labelColor: primaryColor,
-                      unselectedLabelColor: Colors.grey,
-                      labelStyle: const TextStyle(
-                          fontSize: 14, fontWeight: FontWeight.bold),
-                      tabs: [
-                        Tab(
-                          text: "Sắp đến",
-                          height: 5.h,
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      children: [
+                        const SizedBox(
+                          width: 16,
                         ),
-                        Tab(
-                          text: "Đang diễn ra",
-                          height: 5.h,
+                        InkWell(
+                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          onTap: () {
+                            setState(() {
+                              _selectedTab = 0;
+                            });
+                          },
+                          child: TabButton(
+                            text: 'Sắp đến',
+                            isSelected: _selectedTab == 0,
+                            index: 0,
+                          ),
                         ),
-                        Tab(
-                          text: "Lịch sử",
-                          height: 5.h,
+                        const SizedBox(
+                          width: 16,
                         ),
-                        Tab(
-                          text: "Đã hủy",
-                          height: 5.h,
-                        )
-                      ]),
-                  Expanded(
-                    child: Container(
-                      margin: const EdgeInsets.only(top: 8),
-                      child: TabBarView(controller: tabController, children: [
-                        _futuredPlans.isEmpty
-                            ? const EmptyPlan()
-                            : ListView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: _futuredPlans.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 4),
-                                    child: PlanCard(plan: _futuredPlans[index]),
-                                  );
-                                },
-                              ),
-                        _onGoingPlans.isEmpty
-                            ? const EmptyPlan()
-                            : ListView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: _onGoingPlans.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 4),
-                                    child: PlanCard(plan: _onGoingPlans[index]),
-                                  );
-                                },
-                              ),
-                        _historyPlans.isEmpty
-                            ? const EmptyPlan()
-                            : ListView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: _historyPlans.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 4),
-                                    child: PlanCard(plan: _historyPlans[index]),
-                                  );
-                                },
-                              ),
-                        _canceledPlans.isEmpty
-                            ? const EmptyPlan()
-                            : ListView.builder(
-                                physics: const BouncingScrollPhysics(),
-                                shrinkWrap: true,
-                                itemCount: _canceledPlans.length,
-                                itemBuilder: (context, index) {
-                                  return Padding(
-                                    padding:
-                                        const EdgeInsets.symmetric(vertical: 4),
-                                    child:
-                                        PlanCard(plan: _canceledPlans[index]),
-                                  );
-                                },
-                              ),
-                      ]),
+                        InkWell(
+                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          onTap: () {
+                            setState(() {
+                              _selectedTab = 1;
+                            });
+                          },
+                          child: TabButton(
+                            text: 'Đang diễn ra',
+                            isSelected: _selectedTab == 1,
+                            index: 1,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 16,
+                        ),
+                        InkWell(
+                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          onTap: () {
+                            setState(() {
+                              _selectedTab = 2;
+                            });
+                          },
+                          child: TabButton(
+                            text: 'Lịch sử',
+                            isSelected: _selectedTab == 2,
+                            index: 2,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 16,
+                        ),
+                        InkWell(
+                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          onTap: () {
+                            setState(() {
+                              _selectedTab = 3;
+                            });
+                          },
+                          child: TabButton(
+                            text: 'Đã hủy',
+                            isSelected: _selectedTab == 3,
+                            index: 3,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 16,
+                        ),
+                      ],
                     ),
                   ),
+
+                  Expanded(
+                      child: Container(
+                    margin: const EdgeInsets.only(top: 8),
+                    child: _totalPlans[_selectedTab].isEmpty
+                        ? const EmptyPlan()
+                        : ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: _totalPlans[_selectedTab].length,
+                            itemBuilder: (context, index) {
+                              return Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 4),
+                                child: PlanCard(plan: _totalPlans[_selectedTab][index]),
+                              );
+                            },
+                          ),
+                  ))
+                  // TabBar(
+                  //     controller: tabController,
+                  //     indicatorColor: primaryColor,
+                  //     labelColor: primaryColor,
+                  //     unselectedLabelColor: Colors.grey,
+                  //     labelStyle: const TextStyle(
+                  //         fontSize: 14, fontWeight: FontWeight.bold),
+                  //     tabs: [
+                  //       Tab(
+                  //         text: "Sắp đến",
+                  //         height: 5.h,
+                  //       ),
+                  //       Tab(
+                  //         text: "Đang diễn ra",
+                  //         height: 5.h,
+                  //       ),
+                  //       Tab(
+                  //         text: "Lịch sử",
+                  //         height: 5.h,
+                  //       ),
+                  //       Tab(
+                  //         text: "Đã hủy",
+                  //         height: 5.h,
+                  //       )
+                  //     ]),
+                  // Expanded(
+                  //   child: Container(
+                  //     margin: const EdgeInsets.only(top: 8),
+                  //     child: TabBarView(controller: tabController, children: [
+                  //       _futuredPlans.isEmpty
+                  //           ? const EmptyPlan()
+                  //           : ListView.builder(
+                  //               physics: const BouncingScrollPhysics(),
+                  //               shrinkWrap: true,
+                  //               itemCount: _futuredPlans.length,
+                  //               itemBuilder: (context, index) {
+                  //                 return Padding(
+                  //                   padding:
+                  //                       const EdgeInsets.symmetric(vertical: 4),
+                  //                   child: PlanCard(plan: _futuredPlans[index]),
+                  //                 );
+                  //               },
+                  //             ),
+                  //       _onGoingPlans.isEmpty
+                  //           ? const EmptyPlan()
+                  //           : ListView.builder(
+                  //               physics: const BouncingScrollPhysics(),
+                  //               shrinkWrap: true,
+                  //               itemCount: _onGoingPlans.length,
+                  //               itemBuilder: (context, index) {
+                  //                 return Padding(
+                  //                   padding:
+                  //                       const EdgeInsets.symmetric(vertical: 4),
+                  //                   child: PlanCard(plan: _onGoingPlans[index]),
+                  //                 );
+                  //               },
+                  //             ),
+                  //       _historyPlans.isEmpty
+                  //           ? const EmptyPlan()
+                  //           : ListView.builder(
+                  //               physics: const BouncingScrollPhysics(),
+                  //               shrinkWrap: true,
+                  //               itemCount: _historyPlans.length,
+                  //               itemBuilder: (context, index) {
+                  //                 return Padding(
+                  //                   padding:
+                  //                       const EdgeInsets.symmetric(vertical: 4),
+                  //                   child: PlanCard(plan: _historyPlans[index]),
+                  //                 );
+                  //               },
+                  //             ),
+                  //       _canceledPlans.isEmpty
+                  //           ? const EmptyPlan()
+                  //           : ListView.builder(
+                  //               physics: const BouncingScrollPhysics(),
+                  //               shrinkWrap: true,
+                  //               itemCount: _canceledPlans.length,
+                  //               itemBuilder: (context, index) {
+                  //                 return Padding(
+                  //                   padding:
+                  //                       const EdgeInsets.symmetric(vertical: 4),
+                  //                   child:
+                  //                       PlanCard(plan: _canceledPlans[index]),
+                  //                 );
+                  //               },
+                  //             ),
+                  //     ]),
+                  //   ),
+                  // ),
                 ],
               ),
             ),
     ));
   }
+
+  // Widget buildTabButtons() {
+  //   return
+  // }
 }
