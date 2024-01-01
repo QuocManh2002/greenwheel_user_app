@@ -57,7 +57,7 @@ class PlanScheduleTitle extends StatelessWidget {
               fontWeight: FontWeight.w500),
         ),
         const SizedBox(
-          height: 18,
+          height: 14,
         ),
       ]),
     );
