@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
@@ -12,8 +13,10 @@ import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_base_info_dialog.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
@@ -29,6 +32,8 @@ class CreateNewPlanScreen extends StatefulWidget {
 }
 
 class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
+  PlanService _planService = PlanService();
+
   @override
   void initState() {
     // TODO: implement initState
@@ -252,6 +257,28 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                         numberOfMember: numberOfMember,
                                         startDate: startDate))
                                 .show();
+                          } else if (_currentStep == 3 &&
+                              !checkValidStartActivityTime()) {
+                            AwesomeDialog(
+                                    context: context,
+                                    dialogType: DialogType.warning,
+                                    body: const Padding(
+                                      padding:
+                                          EdgeInsets.symmetric(horizontal: 32),
+                                      child: Center(
+                                        child: Text(
+                                          'Thời gian của các hoạt động phải sau thời điểm khởi hành của chuyến đi',
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                    ),
+                                    btnOkColor: Colors.orange,
+                                    btnOkText: 'OK',
+                                    btnOkOnPress: () {})
+                                .show();
                           } else {
                             setState(() {
                               _currentStep++;
@@ -314,5 +341,20 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     String? dateText = sharedPreferences.getString('plan_start_date');
     final _selectedDate = DateTime.parse(dateText!);
     return Utils().checkTimeAfterNow1Hour(_selectTime, _selectedDate);
+  }
+
+  bool checkValidStartActivityTime() {
+    String? timeText = sharedPreferences.getString('plan_start_time');
+    final startDateTime = DateFormat.Hm().parse(timeText!);
+    final _startDateTime =
+        DateTime(0, 0, 0, startDateTime.hour, startDateTime.minute, 0);
+    print(_startDateTime);
+    String _scheduleText = sharedPreferences.getString('plan_schedule')!;
+    final List<dynamic> _schedule = json.decode(_scheduleText);
+    final first = DateFormat.Hms().parse(json.decode(_schedule.first.first['time']));
+    final fistTimeActivity = DateTime(0, 0, 0, first.hour, first.minute, 0);
+    print(fistTimeActivity);
+    print(_startDateTime.isBefore(fistTimeActivity));
+    return _startDateTime.isBefore(fistTimeActivity);
   }
 }

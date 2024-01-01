@@ -68,7 +68,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     // TODO: implement initState
     super.initState();
     setUpData();
-    
   }
 
   void findSumCombinations(List<ProductViewModel> roomList, int targetSum,
@@ -85,7 +84,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     }
 
     for (int i = startIndex; i < roomList.length; i++) {
-      List<ProductViewModel> newCombination = List.from(combination)..add(roomList[i]);
+      List<ProductViewModel> newCombination = List.from(combination)
+        ..add(roomList[i]);
       findSumCombinations(roomList, targetSum,
           combination: newCombination, startIndex: i);
     }
@@ -164,8 +164,9 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       print(rs);
       Map gr = rs.groupListsBy((element) => element.id);
       print(gr);
-      for(final item in gr.keys ){
-        updateCart(list.firstWhere((element) => element.id == item), rs.where((element) => element.id == item).toList().length);
+      for (final item in gr.keys) {
+        updateCart(list.firstWhere((element) => element.id == item),
+            rs.where((element) => element.id == item).toList().length);
       }
     } else if (widget.serviceType.id == 3) {
       title = "Phương tiện";
@@ -176,7 +177,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     } else {
       title = "Vật dụng";
     }
-
   }
 
   @override
@@ -275,6 +275,87 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    Stack(
+        alignment: Alignment.topCenter,
+        children: [
+          SizedBox(
+            height: 30.h,
+            width: double.infinity,
+            child: Image.network(
+              widget.supplier.thumbnailUrl,
+              fit: BoxFit.fitWidth,
+              height: 30.h,
+            ),
+          ),
+          Container(
+              margin: EdgeInsets.only(top: 20.h),
+              width: 90.w,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 3,
+                    color: Colors.black12,
+                    offset: Offset(2, 4),
+                  )
+                ],
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    padding:
+                        EdgeInsets.only(top: 2.h, right: 2.h, left: 2.h, bottom: 1.h),
+                    child: Text(
+                      widget.supplier.name,
+                      style:
+                         const TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.7),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12))),
+                      height: 0.2.h,
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 2.h, vertical: 1.5.h),
+                    child: Text(
+                      widget.supplier.phone,
+                      style:const TextStyle(fontSize: 20, color: Colors.black54),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Container(
+                      decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.7),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12))),
+                      height: 0.2.h,
+                    ),
+                  ),
+                  Container(
+                    alignment: Alignment.centerLeft,
+                    padding:
+                        EdgeInsets.only(left: 2.h, right: 2.h, top: 1.5.h, bottom: 2.h),
+                    child: Text(
+                      widget.supplier.address,
+                      style:const TextStyle(fontSize: 15, color: Colors.black54),
+                    ),
+                  ),
+                ],
+              )),
+        ],
+      ),
                     Padding(
                       padding: const EdgeInsets.only(left: 14, top: 14),
                       child: Text(
@@ -300,10 +381,13 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                     color: Colors.black,
                                   ),
                                 ),
-                                const SizedBox(height: 8,),
-                                Text("Chúng tôi đã đề xuất cho bạn combo phòng có giá hợp lý nhất ứng với số lượng thành viên của chuyến đi.", style: TextStyle(
-                                  color: Colors.grey
-                                ),)
+                                const SizedBox(
+                                  height: 8,
+                                ),
+                                const Text(
+                                  "Chúng tôi đã đề xuất cho bạn combo phòng có giá hợp lý nhất ứng với số lượng thành viên của chuyến đi.",
+                                  style: TextStyle(color: Colors.grey),
+                                )
                               ],
                             ),
                           )

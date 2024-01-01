@@ -2,8 +2,6 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/plan_item.dart';
-import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -40,7 +38,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   PlanDetail? _planDetail;
   late TabController tabController;
   late TextEditingController newItemController;
-  List<PlanItem>? planSchedule;
   List<PlanMemberViewModel> _planMembers = [];
   int total = 0;
   // List<PlanSchedule> scheduleList = [];
@@ -54,13 +51,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     setupData();
   }
 
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    tabController.dispose();
-    newItemController.dispose();
-  }
+  // @override
+  // void dispose() {
+  //   // TODO: implement dispose
+  //   super.dispose();
+  //   tabController.dispose();
+  //   newItemController.dispose();
+  // }
 
   void removeItem(String item, List<String> list) {
     setState(() {
@@ -76,24 +73,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     List<Widget> listMotel = [];
 
     for (var item in _planDetail!.orders!) {
-      if (item.details![0].type == "RESTAURANT") {
-        listRestaurant.add(SupplierOrderCard(
-            order: SupplierOrder(
-                id: item.id,
-                imgUrl: item.details![0].supplierThumbnailUrl,
-                price: item.total.toDouble(),
-                quantity: item.details!.length,
-                supplierName: item.details![0].supplierName,
-                type: item.details![0].type)));
+      if (item.supplierType == "RESTAURANT") {
+        listRestaurant.add(SupplierOrderCard(order: item));
       } else {
-        listMotel.add(SupplierOrderCard(
-            order: SupplierOrder(
-                id: item.id,
-                imgUrl: item.details![0].supplierThumbnailUrl,
-                price: item.total.toDouble(),
-                quantity: item.details!.length,
-                supplierName: item.details![0].supplierName,
-                type: item.details![0].type)));
+        listMotel.add(SupplierOrderCard(order: item));
       }
       total += item.total;
     }
@@ -387,15 +370,16 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onShare() async {
-    bool updateJoinMethod = await _planService.updateJoinMethod(widget.planId);
-    if (updateJoinMethod) {
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => SharePlanScreen(
-                isEnableToJoin: widget.isEnableToJoin,
-                locationName: widget.locationName,
-                planId: widget.planId,
-              )));
+    if (_planDetail!.status != "READY") {
+      bool updateJoinMethod =
+          await _planService.updateJoinMethod(widget.planId);
     }
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (ctx) => SharePlanScreen(
+              isEnableToJoin: widget.isEnableToJoin,
+              locationName: widget.locationName,
+              planId: widget.planId,
+            )));
   }
 
   onJoinPlan() async {

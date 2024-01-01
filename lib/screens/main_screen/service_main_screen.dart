@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_load
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/supplier_card.dart';
 import 'package:sizer2/sizer2.dart';
@@ -24,7 +24,7 @@ class ServiceMainScreen extends StatefulWidget {
   final LocationViewModel location;
   final DateTime startDate;
   final DateTime endDate;
-  final void Function(List<OrderCreatePlan> list) callbackFunction;
+  final void Function(List<OrderViewModel> list) callbackFunction;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();
@@ -36,7 +36,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
   String title = "";
   bool isLoading = true;
   PlanService _planService = PlanService();
-  List<OrderCreatePlan>? orderList;
+  List<OrderViewModel>? orderList;
 
   @override
   void initState() {

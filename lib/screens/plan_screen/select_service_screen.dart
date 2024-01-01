@@ -11,6 +11,7 @@ import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
@@ -34,8 +35,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   PlanService _planService = PlanService();
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
-  List<PlanItem> planDetail = [];
-  List<OrderCreatePlan> _orderList = [];
+  List<OrderViewModel> _orderList = [];
   DateTime? startDate;
   DateTime? endDate;
   int? numberOfMember;
@@ -55,28 +55,16 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
   }
 
-  callback(List<OrderCreatePlan> orderList) async {
+  callback(List<OrderViewModel> orderList) async {
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
     for (var item in orderList) {
-      if (item.type == "RESTAURANT") {
+      if (item.supplierType == "RESTAURANT") {
         listRestaurant.add(SupplierOrderCard(
-            order: SupplierOrder(
-                id: item.id,
-                imgUrl: item.thumbnailUrl,
-                price: item.deposit.toDouble(),
-                quantity: item.details.length,
-                supplierName: item.details[0].supplierName,
-                type: item.type)));
+            order: item));
       } else {
         listMotel.add(SupplierOrderCard(
-            order: SupplierOrder(
-                id: item.id,
-                imgUrl: item.thumbnailUrl,
-                price: item.deposit.toDouble(),
-                quantity: item.details.length,
-                supplierName: item.details[0].supplierName,
-                type: item.type)));
+            order: item));
       }
     }
     if (orderList.isNotEmpty) {

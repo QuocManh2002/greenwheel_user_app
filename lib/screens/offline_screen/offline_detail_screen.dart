@@ -18,7 +18,9 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-      appBar: AppBar(),
+      appBar: AppBar(
+        title:const Text('Chi tiết kế hoạch'),
+      ),
       body: SingleChildScrollView(
         child: Column(
           children: [
@@ -135,7 +137,7 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
                                 vertical: 6, horizontal: 12),
                             child: Text(
                               member.isLeading
-                                  ? '- ${member.name} - ${member.phone} (Leading) '
+                                  ? '- ${member.name} - 0${member.phone.substring(3)} (Leading) '
                                   : '- ${member.name} - ${member.phone}',
                               style: const TextStyle(fontSize: 18),
                             ),

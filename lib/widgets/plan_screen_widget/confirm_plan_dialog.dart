@@ -11,7 +11,6 @@ class ConfirmPlan extends StatefulWidget {
       required this.location,
       required this.numberOfMember,
       required this.startDate,
-      required this.planDetail,
       required this.orders});
 
   final LocationViewModel location;
@@ -19,7 +18,6 @@ class ConfirmPlan extends StatefulWidget {
   final DateTime endDate;
   final int numberOfMember;
   final int duration;
-  final List<PlanItem> planDetail;
   final List<OrderCreatePlan> orders;
 
   @override
@@ -39,16 +37,6 @@ class _ConfirmPlanState extends State<ConfirmPlan> {
   }
 
   setUpData() {
-    for (var item in widget.planDetail) {
-      String str = "";
-      for (int index = 0; index < item.details.length; index++) {
-        str += item.details[index];
-        if (index != item.details.length - 1) {
-          str += ", ";
-        }
-      }
-      listDetail.add(str);
-    }
 
     for (var item in widget.orders) {
       if (item.type == "MOTEL") {
@@ -140,11 +128,7 @@ class _ConfirmPlanState extends State<ConfirmPlan> {
             "Lịch trình: ",
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          for (int i = 0; i < widget.planDetail.length; i++)
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Text("${widget.planDetail[i].title}: ${listDetail[i]}"),
-            ),
+
           const SizedBox(
             height: 12,
           ),

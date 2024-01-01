@@ -11,7 +11,7 @@ import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/comment_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency.dart';
@@ -342,7 +342,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           numberOfMember: 0,
                                           serviceType: services[1],
                                           location: widget.location,
-                                          callbackFunction: (List<OrderCreatePlan> orderList){},
+                                          callbackFunction: (List<OrderViewModel> orderList){},
                                         ),
                                       ),
                                     );
@@ -372,7 +372,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           numberOfMember: 0,
                                           serviceType: services[0],
                                           location: widget.location,
-                                          callbackFunction: (List<OrderCreatePlan> orderList){},
+                                          callbackFunction: (List<OrderViewModel> orderList){},
                                         ),
                                       ),
                                     );
@@ -402,7 +402,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           numberOfMember: 0,
                                           serviceType: services[2],
                                           location: widget.location,
-                                          callbackFunction: (List<OrderCreatePlan> orderList){},
+                                          callbackFunction: (List<OrderViewModel> orderList){},
                                         ),
                                       ),
                                     );
@@ -432,7 +432,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           numberOfMember: 0,
                                           serviceType: services[3],
                                           location: widget.location,
-                                          callbackFunction: (List<OrderCreatePlan> orderList){},
+                                          callbackFunction: (List<OrderViewModel> orderList){},
                                         ),
                                       ),
                                     );

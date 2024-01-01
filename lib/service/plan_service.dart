@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
@@ -160,7 +161,7 @@ mutation {
     }
   }
 
-  Future<List<OrderCreatePlan>> getOrderCreatePlan(int planId) async {
+  Future<List<OrderViewModel>> getOrderCreatePlan(int planId) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -170,16 +171,23 @@ query getOrderDetailsByPlanId(\$planId: Int) {
       id
       planId
       deposit
+      total
+      servingDates
+      note
+      createdAt
+      supplier{
+        id
+        phone
+        name
+        type
+        thumbnailUrl
+        address
+      }
       details {
         price
         quantity
         product {
           name
-          supplier {
-            thumbnailUrl
-            name
-            type
-          }
         }
       }
     }
@@ -196,8 +204,8 @@ query getOrderDetailsByPlanId(\$planId: Int) {
         return [];
       }
 
-      List<OrderCreatePlan> orders =
-          res.map((order) => OrderCreatePlan.fromJson(order)).toList();
+      List<OrderViewModel> orders =
+          res.map((order) => OrderViewModel.fromJson(order)).toList();
       return orders;
     } catch (error) {
       throw Exception(error);
@@ -220,25 +228,28 @@ query GetPlanById(\$planId: Int){
       status
       orders{
         id
-        travelerId
-        note
-        deposit
-        servingDates
-        total
-        details{
-          id
-          quantity
-          price
-          product{
-            name
-            supplier{
-              type
-              name
-              thumbnailUrl
-            }
-            }
-            }
-            }
+      planId
+      deposit
+      total
+      servingDates
+      note
+      createdAt
+      supplier{
+        id
+        phone
+        name
+        type
+        thumbnailUrl
+        address
+      }
+      details {
+        id
+        price
+        quantity
+        product {
+          name
+        }
+      }}
       location{id name imageUrls}
     }
   }
@@ -370,7 +381,7 @@ query GetPlanById(\$planId: Int){
           item.add(PlanScheduleItem(
               orderId: planItem['orderId'],
               orderType: planItem['orderType'],
-              time: Utils().convertStringToTime(planItem['time']),
+              time: TimeOfDay.fromDateTime(DateFormat.Hms().parse(planItem['time'])),
               title: planItem['description'],
               date: date));
         }
@@ -394,9 +405,9 @@ query GetPlanById(\$planId: Int){
       for (final item in schedule.items) {
         items.add({
           'time': json.encode(DateFormat.Hms()
-              .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))),
+              .format(DateTime(0, 0, 0, item.time.hour, item.time.minute)).toString()),
           'orderId': item.orderId,
-          'description': json.encode(item.title),
+          'description':  json.encode(item.title),
           'supplierType': item.orderType
         });
       }
@@ -405,17 +416,17 @@ query GetPlanById(\$planId: Int){
     return rs;
   }
 
-  List<List<String>> GetPlanDetailFromListPlanItem(List<PlanItem> planDetail) {
-    List<List<String>> schedule = [];
-    for (final detail in planDetail) {
-      List<String> items = [];
-      for (final item in detail.details) {
-        items.add(json.encode(item));
-      }
-      schedule.add(items);
-    }
-    return schedule;
-  }
+  // List<List<String>> GetPlanDetailFromListPlanItem(List<PlanItem> planDetail) {
+  //   List<List<String>> schedule = [];
+  //   for (final detail in planDetail) {
+  //     List<String> items = [];
+  //     for (final item in detail.details) {
+  //       items.add(json.encode(item));
+  //     }
+  //     schedule.add(items);
+  //   }
+  //   return schedule;
+  // }
 
   Future<int?> joinPlan(int planId) async {
     try {
@@ -506,5 +517,6 @@ mutation{
     }
   }
 
-  void saveToHive() {}
+  
+
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
@@ -61,6 +63,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               plan.endDate.difference(plan.startDate).inDays + 1);
         });
       }
+
     }
   }
 
@@ -97,7 +100,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
 
       var finalList = _planService.convertPlanScheduleToJson(testList);
 
-      sharedPreferences.setString('plan_schedule', finalList.toString());
+      sharedPreferences.setString('plan_schedule', json.encode(finalList));
     } else {
       setState(() {
         testList
@@ -110,6 +113,9 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             .add(item);
       });
       Navigator.of(context).pop();
+      var finalList = _planService.convertPlanScheduleToJson(testList);
+
+      sharedPreferences.setString('plan_schedule', json.encode(finalList));
     }
   }
 
@@ -225,7 +231,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
           .remove(item);
     });
     var finalList = _planService.convertPlanScheduleToJson(testList);
-    sharedPreferences.setString('plan_schedule', finalList.toString());
+    sharedPreferences.setString('plan_schedule', json.encode(finalList));
   }
 
   @override

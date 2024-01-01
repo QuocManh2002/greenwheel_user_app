@@ -1,14 +1,7 @@
-
-import 'dart:typed_data';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/service/offline_service.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
-import 'package:http/http.dart' as http;
+import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:sizer2/sizer2.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
@@ -18,20 +11,7 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
-  String bytes = '';
-  OfflineService _offlineService = OfflineService();
-  List<Map<String, dynamic>> planList = [];
-  PlanService _planService = PlanService();
-
-  Future<Uint8List> fetchImageBytes(String imageUrl) async {
-    final response = await http.get(Uri.parse(imageUrl));
-
-    if (response.statusCode == 200) {
-      return response.bodyBytes;
-    } else {
-      throw Exception('Failed to load image: $imageUrl');
-    }
-  }
+  TextEditingController noteController = TextEditingController();
 
   @override
   void initState() {
@@ -39,72 +19,227 @@ class _TestScreenState extends State<TestScreen> {
     super.initState();
   }
 
-  getData() async {
-    // const imageUrl =
-    //     'https://cdn.tgdd.vn/2023/11/content/image--9--800x450.jpg'; // Replace with the actual image URL
+  getData() async {}
 
-    // final imageBytes = await fetchImageBytes(imageUrl);
-    // setState(() {
-    //   bytes = base64Encode(imageBytes);
-    // });
-    final list = await _offlineService.getOfflinePlans();
-    // if (list.isNotEmpty) {
-    //   setState(() {
-    //     planList = list;
-    //   });
-    // }
-
-    // print(base64String);
-    // final decodedBytes = base64Decode(base64String);
-  }
-
-  // refreshData(){
-  //   final data =
-  // }
-
-  saveData() async {
-    _offlineService.savePlanToHive(PlanOfflineViewModel(
-        id: 1,
-        name: 'Chuyen di test',
-        imageBase64: await Utils().getImageBase64Encoded(
-            'https://cdn.tgdd.vn/2023/11/content/image--9--800x450.jpg'),
-        startDate: DateTime.now(),
-        endDate: DateTime.now(),
-        memberLimit: 3,
-        schedule: [],
-        orders: [],
-        memberList: [
-          PlanOfflineMember(
-              id: 1, name: 'Manh', phone: '0383519580', isLeading: true),
-          PlanOfflineMember(
-              id: 2, name: 'Thinh', phone: '0123456789', isLeading: false)
-        ]));
-  }
+  saveData() async {}
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-      appBar: AppBar(),
-      body: Column(
-        children: [
-          ElevatedButton(onPressed: saveData, child: const Text('Save Data')),
-          const SizedBox(
-            height: 32,
-          ),
-          ElevatedButton(onPressed: getData, child: const Text('Get Data')),
-          for (final plan in planList)
-            Container(
-              child: Column(children: [
-                Text(plan['name']),
-                Text(plan['startDate']),
-                Text(plan['endDate']),
-                Text(plan['memberLimit']),
-                Text(plan['imgUrl'])
-              ]),
-            )
-        ],
-      ),
-    ));
+            backgroundColor: Colors.white.withOpacity(0.94),
+            appBar: AppBar(),
+            body: SingleChildScrollView(
+              child: Padding(
+                padding: EdgeInsets.all(2.h),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_month,
+                            color: Colors.purple,
+                          ),
+                          SizedBox(
+                            width: 8,
+                          ),
+                          Text(
+                            'Ngày đặt: ',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '10/3/2023',
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.calendar_month,
+                            color: primaryColor,
+                          ),
+                          SizedBox(
+                            width: 8,
+                          ),
+                          Text(
+                            'Ngày phục vụ: ',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Text(
+                            '10/3/2023',
+                            style: TextStyle(
+                              fontSize: 18,
+                            ),
+                          )
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      const Row(
+                        children: [
+                          Icon(
+                            Icons.description,
+                            color: yellowColor,
+                          ),
+                          SizedBox(
+                            width: 8,
+                          ),
+                          Text(
+                            'Ghi chú:',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        height: 10.h,
+                        margin: EdgeInsets.symmetric(
+                            horizontal: 5.w, vertical: 1.h),
+                        padding: EdgeInsets.symmetric(horizontal: 4.w),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(
+                              10.0), // Set the border radius
+                          color: Colors.grey.withOpacity(0.4),
+                        ),
+                        child: TextField(
+                          controller: noteController,
+                          maxLines: null, // Allow for multiple lines of text
+                          decoration: const InputDecoration(
+                            hintText: 'Thêm ghi chú',
+                            border:
+                                InputBorder.none, // Remove the bottom border
+                            contentPadding:
+                                EdgeInsets.all(8.0), // Set the padding
+                          ),
+                          style: const TextStyle(
+                            height:
+                                1.8, // Adjust the line height (e.g., 1.5 for 1.5 times the font size)
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.7),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(12))),
+                        height: 0.5.h,
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      const Text(
+                        'Sản phẩm',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          children: [
+                            Text(
+                              '1x',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(width: 18,),
+                            Text('Phong doi (VIP)', style: TextStyle(
+                              fontSize: 18
+                            ),),
+                            Spacer(),
+                            Text('40.000', style: TextStyle(
+                              fontSize: 14
+                            ),)
+                          ],
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.7),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(12))),
+                        height: 0.2.h,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          children: [
+                            Text(
+                              '1x',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(width: 18,),
+                            Text('Phong doi (VIP)', style: TextStyle(
+                              fontSize: 18
+                            ),),
+                            Spacer(),
+                            Text('40.000', style: TextStyle(
+                              fontSize: 14
+                            ),)
+                          ],
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.7),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(12))),
+                        height: 0.2.h,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 16),
+                        child: Row(
+                          children: [
+                            Text(
+                              '1x',
+                              style: TextStyle(
+                                  fontSize: 16, fontWeight: FontWeight.bold),
+                            ),
+                            SizedBox(width: 18,),
+                            Text('Phong doi (VIP)', style: TextStyle(
+                              fontSize: 18
+                            ),),
+                            Spacer(),
+                            Text('40.000', style: TextStyle(
+                              fontSize: 14
+                            ),)
+                          ],
+                        ),
+                      ),
+                      Container(
+                        decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.7),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(12))),
+                        height: 0.2.h,
+                      ),
+                      const SizedBox(height: 12,),
+                      const Row(children: [
+                         Text('Tổng', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
+                         Spacer(),
+                         Text('120.000', style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold
+                         ),)
+                      ],)
+                    ]),
+              ),
+            )));
   }
 }

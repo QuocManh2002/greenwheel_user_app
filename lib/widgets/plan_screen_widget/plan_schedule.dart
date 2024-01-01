@@ -109,18 +109,24 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                                 primary: primaryColor,
                                 onPrimary: Colors.white)),
                         child: DatePickerDialog(
-                          initialDate:
-                              _scheduleList[_currentPage.toInt()].date,
+                          initialDate: _scheduleList[_currentPage.toInt()].date,
                           firstDate: _scheduleList.first.date,
                           lastDate: _scheduleList.last.date,
                         ),
                       );
                     }).then((value) {
                   if (value != null) {
+                    _scheduleList.map((e) {
+                      print(e.date.difference(value).inDays);
+                    });
                     setState(() {
                       _currentPage = _scheduleList
-                          .indexOf(_scheduleList
-                              .firstWhere((element) => element.date == value))
+                          .indexOf(_scheduleList.firstWhere((element) =>
+                              DateTime(value.year, value.month, value.day)
+                                  .difference(DateTime(element.date.year,
+                                      element.date.month, element.date.day))
+                                  .inDays ==
+                              0))
                           .toDouble();
                       _pageController.animateToPage(_currentPage.toInt(),
                           duration: const Duration(milliseconds: 300),

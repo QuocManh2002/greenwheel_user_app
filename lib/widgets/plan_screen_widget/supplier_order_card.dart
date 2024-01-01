@@ -1,17 +1,23 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/models/supplier_order.dart';
+import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierOrderCard extends StatelessWidget {
   const SupplierOrderCard({super.key, required this.order});
-  final SupplierOrder order;
+  final OrderViewModel order;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => OrderDetailScreen(
+                  order: order,
+                )));
+      },
       child: Container(
         decoration: BoxDecoration(
           boxShadow: const [
@@ -39,7 +45,7 @@ class SupplierOrderCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 15.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(order.imgUrl),
+                    image: NetworkImage(order.supplierThumbnailUrl),
                     fit: BoxFit.cover,
                     width: 15.h,
                     filterQuality: FilterQuality.high,
@@ -64,12 +70,12 @@ class SupplierOrderCard extends StatelessWidget {
                   const SizedBox(
                     height: 8,
                   ),
-                  Text("Đã đặt ${order.quantity.toString()} sản phẩm"),
+                  Text("Đã đặt ${order.details!.length.toString()} sản phẩm"),
                   const SizedBox(
                     height: 8,
                   ),
                   Text(
-                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.price)} VND",
+                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.total)} VND",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )
                 ],
