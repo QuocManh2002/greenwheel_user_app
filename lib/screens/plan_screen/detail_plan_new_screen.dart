@@ -370,7 +370,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onShare() async {
-    if (_planDetail!.status != "READY") {
+    if (_planDetail!.joinMethod == "NONE") {
       bool updateJoinMethod =
           await _planService.updateJoinMethod(widget.planId);
     }

@@ -236,6 +236,7 @@ query GetPlanById(\$planId: Int){
       schedule
       memberLimit
       status
+      joinMethod
       orders{
         id
       planId

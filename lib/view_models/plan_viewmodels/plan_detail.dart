@@ -16,6 +16,7 @@ class PlanDetail {
   String name;
   DateTime startDate;
   DateTime endDate;
+  String joinMethod;
   List<dynamic> schedule;
   int memberLimit;
   String status;
@@ -35,6 +36,7 @@ class PlanDetail {
       required this.locationId,
       required this.imageUrls,
       required this.name,
+      required this.joinMethod,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -48,6 +50,7 @@ class PlanDetail {
         locationName: json["location"]["name"],
         locationId: json["location"]["id"],
         imageUrls: json["location"]["imageUrls"],
+        joinMethod: json["joinMethod"]
       );
 
   Map<String, dynamic> toJson() => {
