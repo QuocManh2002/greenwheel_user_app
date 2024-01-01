@@ -106,29 +106,29 @@ class _SearchScreenState extends State<SearchScreen> {
                           color: Colors.black,
                         ),
                         onPressed: () async {
-                          setState(() {
-                            var tagsByName =
-                                searchTagsByName(searchController.text);
-                            if (tagsByName.isEmpty) {
-                              // var locationsByName =
-                              //     searchTagsByName(searchController.text);
-                            } else {
-                              setState(() {
-                                // Iterate over tagsByName
-                                for (Tag tag in tagsByName) {
-                                  // Check if any tag in currentTags has the same title
-                                  bool titleExists = currentTags.any(
-                                      (existingTag) =>
-                                          existingTag.title == tag.title);
+                          // setState(() {
+                          //   var tagsByName =
+                          //       searchTagsByName(searchController.text);
+                          //   if (tagsByName.isEmpty) {
+                          //     // var locationsByName =
+                          //     //     searchTagsByName(searchController.text);
+                          //   } else {
+                          //     setState(() {
+                          //       // Iterate over tagsByName
+                          //       for (Tag tag in tagsByName) {
+                          //         // Check if any tag in currentTags has the same title
+                          //         bool titleExists = currentTags.any(
+                          //             (existingTag) =>
+                          //                 existingTag.title == tag.title);
 
-                                  // If the title doesn't exist, add the tag to currentTags
-                                  if (!titleExists) {
-                                    currentTags.add(tag);
-                                  }
-                                }
-                              });
-                            }
-                          });
+                          //         // If the title doesn't exist, add the tag to currentTags
+                          //         if (!titleExists) {
+                          //           currentTags.add(tag);
+                          //         }
+                          //       }
+                          //     });
+                          //   }
+                          // });
                           List<LocationViewModel> result =
                               await locationService.searchLocations(
                                   searchController.text, currentTags);
