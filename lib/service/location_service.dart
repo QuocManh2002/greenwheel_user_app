@@ -156,16 +156,51 @@ class LocationService extends Iterable {
 ''';
       }
 
+      print("""
+query search(\$search: String!) {
+    searchLocations
+    (
+      first: 100, 
+      searchTerm: \$search,
+      where: {
+        $seasons
+        $activities
+        $topographic
+        $provinces
+      }
+      )
+        {
+        nodes{
+          id
+          description
+          imageUrls
+          name
+          activities
+          seasons
+          topographic
+          suggestedTripLength
+          templateSchedule
+          coordinate{coordinates}
+          address
+          lifeguardPhone
+          lifeguardAddress
+          clinicPhone
+          clinicAddress
+          hotline
+          provinceId
+        }
+    }
+}
+""");
+
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query search(\$search: String!) {
-    locations
+    searchLocations
     (
       first: 100, 
+      searchTerm: \$search,
       where: {
-        name: {
-          contains: \$search
-        }
         $seasons
         $activities
         $topographic
@@ -200,7 +235,7 @@ query search(\$search: String!) {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['locations']['nodes'];
+      List? res = result.data!['searchLocations']['nodes'];
       if (res == null || res.isEmpty) {
         return [];
       }
