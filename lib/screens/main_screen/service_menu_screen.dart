@@ -314,35 +314,40 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                          const TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.7),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(12))),
-                      height: 0.2.h,
-                    ),
-                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                  //   child: Container(
+                  //     decoration: BoxDecoration(
+                  //         color: Colors.grey.withOpacity(0.7),
+                  //         borderRadius:
+                  //             const BorderRadius.all(Radius.circular(12))),
+                  //     height: 0.2.h,
+                  //   ),
+                  // ),
                   Container(
                     alignment: Alignment.centerLeft,
                     padding:
                         EdgeInsets.symmetric(horizontal: 2.h, vertical: 1.5.h),
-                    child: Text(
-                      widget.supplier.phone,
-                      style:const TextStyle(fontSize: 20, color: Colors.black54),
+                    child: Row(
+                      children: [
+                        
+                        Text(
+                          widget.supplier.phone,
+                          style:const TextStyle(fontSize: 20, color: Colors.black54),
+                        ),
+                      ],
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: Container(
-                      decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.7),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(12))),
-                      height: 0.2.h,
-                    ),
-                  ),
+                  // Padding(
+                  //   padding: const EdgeInsets.symmetric(horizontal: 16),
+                  //   child: Container(
+                  //     decoration: BoxDecoration(
+                  //         color: Colors.grey.withOpacity(0.7),
+                  //         borderRadius:
+                  //             const BorderRadius.all(Radius.circular(12))),
+                  //     height: 0.2.h,
+                  //   ),
+                  // ),
                   Container(
                     alignment: Alignment.centerLeft,
                     padding:

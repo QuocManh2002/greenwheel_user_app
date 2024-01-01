@@ -46,15 +46,18 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     DateTime _startDate = DateTime.parse(startDate)
         .add(Duration(hours: initialDateTime.hour))
         .add(Duration(minutes: initialDateTime.minute));
-    print(json.decode(schedule).runtimeType);
 
-    final planSchedule = _planService.GetPlanScheduleFromJsonNew(
-        json.decode(schedule),
-        _startDate,
-        DateTime.parse(endDate).difference(DateTime.parse(startDate)).inDays +
-            1);
-    final _planSchedule = _planService.convertPlanScheduleToJson(planSchedule);
-    print(_planSchedule);        
+    // final planSchedule = _planService.GetPlanScheduleFromJsonNew(
+    //     json.decode(schedule),
+    //     _startDate,
+    //     DateTime.parse(endDate).difference(DateTime.parse(startDate)).inDays +
+    //         1);
+   
+    // print(schedule);
+    //  print(json.decode(schedule).toString());
+    // print(planSchedule);
+    // final _planSchedule = _planService.convertPlanScheduleToJson(planSchedule);
+    // print(_planSchedule);        
 
     // DateTime _startDate = DateTime.parse(startDate);
     // if (_startDate.difference(DateTime.now()).inDays == 0) {
@@ -69,7 +72,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
         longitude: lng,
         memberLimit: memberLimit,
         name: _nameController.text,
-        schedule: _planSchedule.toString()));
+        schedule: json.decode(schedule).toString()));
 
     if (rs != 0) {
       setState(() {

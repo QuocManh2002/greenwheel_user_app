@@ -190,7 +190,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                             locale: const Locale('vi_VN'),
                             initialDate: DateTime.now(),
                             firstDate: DateTime(1900),
-                            lastDate: DateTime(2024),
+                            lastDate: DateTime(2025),
                             builder: (context, child) {
                               return Theme(
                                 data: ThemeData().copyWith(

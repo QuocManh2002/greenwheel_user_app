@@ -184,6 +184,7 @@ query getOrderDetailsByPlanId(\$planId: Int) {
         address
       }
       details {
+        id
         price
         quantity
         product {
@@ -203,9 +204,18 @@ query getOrderDetailsByPlanId(\$planId: Int) {
       if (res == null || res.isEmpty) {
         return [];
       }
-
-      List<OrderViewModel> orders =
-          res.map((order) => OrderViewModel.fromJson(order)).toList();
+      List<OrderViewModel>? orders = [];
+      // List<OrderViewModel> orders =
+      //     res.map((order) => OrderViewModel.fromJson(order)).toList();
+      for (final item in res) {
+        OrderViewModel order = OrderViewModel.fromJson(item);
+        List<OrderDetailViewModel>? details = [];
+        for (final detail in item['details']) {
+          details.add(OrderDetailViewModel.fromJson(detail));
+        }
+        order.details = details;
+        orders.add(order);
+      }
       return orders;
     } catch (error) {
       throw Exception(error);
@@ -381,7 +391,8 @@ query GetPlanById(\$planId: Int){
           item.add(PlanScheduleItem(
               orderId: planItem['orderId'],
               orderType: planItem['orderType'],
-              time: TimeOfDay.fromDateTime(DateFormat.Hms().parse(planItem['time'])),
+              time: TimeOfDay.fromDateTime(
+                  DateFormat.Hms().parse(planItem['time'])),
               title: planItem['description'],
               date: date));
         }
@@ -405,9 +416,12 @@ query GetPlanById(\$planId: Int){
       for (final item in schedule.items) {
         items.add({
           'time': json.encode(DateFormat.Hms()
-              .format(DateTime(0, 0, 0, item.time.hour, item.time.minute)).toString()),
+              .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
+              .toString()),
           'orderId': item.orderId,
-          'description':  json.encode(item.title),
+          // 'description':  "${item.title}",
+          'description': json.encode(item.title),
+
           'supplierType': item.orderType
         });
       }
@@ -516,7 +530,4 @@ mutation{
       throw Exception(error);
     }
   }
-
-  
-
 }
