@@ -24,6 +24,7 @@ class PlanDetail {
   int locationId;
   List<dynamic> imageUrls;
   List<OrderViewModel>? orders;
+  List<dynamic>? savedSupplierIds;
 
   PlanDetail(
       {required this.id,
@@ -37,6 +38,7 @@ class PlanDetail {
       required this.imageUrls,
       required this.name,
       required this.joinMethod,
+      this.savedSupplierIds,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -50,7 +52,8 @@ class PlanDetail {
         locationName: json["location"]["name"],
         locationId: json["location"]["id"],
         imageUrls: json["location"]["imageUrls"],
-        joinMethod: json["joinMethod"]
+        joinMethod: json["joinMethod"],
+        savedSupplierIds: json["savedSupplierIds"]
       );
 
   Map<String, dynamic> toJson() => {

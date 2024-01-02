@@ -235,6 +235,7 @@ query GetPlanById(\$planId: Int){
       endDate
       schedule
       memberLimit
+      savedSupplierIds
       status
       joinMethod
       orders{
@@ -528,6 +529,41 @@ mutation{
       }
       return true;
     } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int> updateEmergencyService(PlanCreate model, List<int> serviceList, int planId) async{
+    try{
+      QueryResult result = await client.mutate(
+        MutationOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql("""
+mutation{
+  updatePlan(dto: {
+    id: $planId
+    latitude: ${model.latitude}
+    longitude: ${model.longitude} 
+    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day} ${model.startDate.hour}:${model.startDate.minute}:00.000Z"
+    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day} 22:00:00.000Z"
+    memberLimit:${model.memberLimit}
+    name: ${json.encode(model.name)}
+    schedule:${model.schedule}
+    savedSupplierIds: $serviceList
+  }){
+    id
+  }
+}
+"""))
+      );
+      if (result.hasException) {
+        throw Exception(result.exception);
+      } else {
+        var rstext = result.data!;
+        int planId = rstext['updatePlan']['id'];
+        return planId;
+      }
+    }catch (error) {
       throw Exception(error);
     }
   }

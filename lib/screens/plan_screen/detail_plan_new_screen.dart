@@ -5,8 +5,10 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:sizer2/sizer2.dart';
@@ -40,6 +42,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   late TextEditingController newItemController;
   List<PlanMemberViewModel> _planMembers = [];
   int total = 0;
+  SupplierService _supplierService = SupplierService();
+  List<SupplierViewModel>? _saveSupplier;
   // List<PlanSchedule> scheduleList = [];
 
   @override
@@ -50,14 +54,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     newItemController = TextEditingController();
     setupData();
   }
-
-  // @override
-  // void dispose() {
-  //   // TODO: implement dispose
-  //   super.dispose();
-  //   tabController.dispose();
-  //   newItemController.dispose();
-  // }
 
   void removeItem(String item, List<String> list) {
     setState(() {
@@ -88,9 +84,20 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       // _orderList = orderList;
     });
     if (_planDetail != null) {
+      if (_planDetail!.savedSupplierIds != null) {
+        List<int> ids = _planDetail!.savedSupplierIds!
+            .map((e) => int.parse(e.toString()))
+            .toList();
+        final rs = await _supplierService.getSuppliersByIds(ids);
+        setState(() {
+          _saveSupplier = rs;
+        });
+      }
+
       setState(() {
         isLoading = false;
       });
+      print(_saveSupplier);
     }
   }
 
@@ -221,6 +228,46 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   const SizedBox(
                                     height: 16,
                                   ),
+                                  if (_saveSupplier != null)
+                                    Container(
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          'Dịch vụ khẩn cấp đã lưu: ',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                        )),
+                                  if (_saveSupplier != null)
+                                    const SizedBox(
+                                      height: 16,
+                                    ),
+                                  if (_saveSupplier != null)
+                                    for (final sup in _saveSupplier!)
+                                      Container(
+                                        alignment: Alignment.centerLeft,
+                                        padding:const EdgeInsets.only(left: 16),
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(sup.name, style: const TextStyle(fontSize: 16),),
+                                            Text(sup.phone, style: const TextStyle(fontSize: 16),),
+                                            Text(sup.address, style: const TextStyle(fontSize: 16),),
+                                            const SizedBox(
+                                              height: 12,
+                                            )
+                                          ],
+                                        ),
+                                      ),
+                                  if (_saveSupplier != null)
+                                    Container(
+                                      height: 1.8,
+                                      color: Colors.grey.withOpacity(0.4),
+                                    ),
+                                  if (_saveSupplier != null)
+                                    const SizedBox(
+                                      height: 16,
+                                    ),
                                   Container(
                                     alignment: Alignment.topLeft,
                                     child: Column(

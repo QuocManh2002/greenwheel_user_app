@@ -14,12 +14,6 @@ class PlanScheduleTitle extends StatelessWidget {
     return Container(
       width: 18.w,
       decoration: BoxDecoration(
-          // gradient: isSelected
-          //     ? const LinearGradient(
-          //         colors: [primaryColor, Color(0xFF82E0AA)],
-          //         begin: Alignment.topCenter,
-          //         end: Alignment.bottomCenter)
-          //     : const LinearGradient(colors: [Colors.white,Colors.white]),
           color: isSelected ? primaryColor : Colors.white,
           boxShadow: const [
             BoxShadow(
@@ -31,7 +25,7 @@ class PlanScheduleTitle extends StatelessWidget {
           borderRadius: const BorderRadius.all(Radius.circular(12))),
       child: Column(children: [
         const SizedBox(
-          height: 18,
+          height: 16,
         ),
         Text(
           DateFormat.MMMM('vi_VN').format(date),
@@ -57,7 +51,7 @@ class PlanScheduleTitle extends StatelessWidget {
               fontWeight: FontWeight.w500),
         ),
         const SizedBox(
-          height: 14,
+          height: 16,
         ),
       ]),
     );

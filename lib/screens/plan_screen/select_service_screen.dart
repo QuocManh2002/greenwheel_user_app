@@ -8,6 +8,7 @@ import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -60,15 +61,12 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     List<Widget> listMotel = [];
     for (var item in orderList) {
       if (item.supplierType == "RESTAURANT") {
-        listRestaurant.add(SupplierOrderCard(
-            order: item));
+        listRestaurant.add(SupplierOrderCard(order: item));
       } else {
-        listMotel.add(SupplierOrderCard(
-            order: item));
+        listMotel.add(SupplierOrderCard(order: item));
       }
     }
     if (orderList.isNotEmpty) {
-
       setState(() {
         _listMotel = listMotel;
         _listRestaurant = listRestaurant;
@@ -204,13 +202,26 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                     AwesomeDialog(
                       context: context,
                       dialogType: DialogType.success,
-                      body: const Text(
-                        'Thêm dịch vụ thành công',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
+                      body: const Column(
+                        children: [
+                          Text(
+                            'Thêm dịch vụ thành công',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Text(
+                              'Bạn có muốn lưu lại các dịch vụ khẩn cấp cho chuyến đi không?',
+                              style: TextStyle(fontSize: 15),
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                        ],
                       ),
-                      btnOkColor: primaryColor,
-                      btnOkOnPress: () async {
+                      btnCancelText: "Không",
+                      btnCancelColor: Colors.blue,
+                      btnCancelOnPress: () async {
                         PlanDetail? plan = await _planService.GetPlanById(
                             sharedPreferences.getInt('planId')!);
                         if (plan != null) {
@@ -238,6 +249,15 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                         Navigator.of(context).pop();
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (ctx) => const TabScreen(pageIndex: 1)));
+                      },
+                      btnOkText: "Có",
+                      btnOkColor: primaryColor,
+                      btnOkOnPress: () async {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => SelectEmergencyService(
+                                location: widget.location,
+                                planId: sharedPreferences.getInt('planId')!)));
                       },
                     ).show();
                   },

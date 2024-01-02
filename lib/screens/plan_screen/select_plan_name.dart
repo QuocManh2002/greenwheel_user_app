@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -52,12 +53,12 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     //     _startDate,
     //     DateTime.parse(endDate).difference(DateTime.parse(startDate)).inDays +
     //         1);
-   
+
     // print(schedule);
     //  print(json.decode(schedule).toString());
     // print(planSchedule);
     // final _planSchedule = _planService.convertPlanScheduleToJson(planSchedule);
-    // print(_planSchedule);        
+    // print(_planSchedule);
 
     // DateTime _startDate = DateTime.parse(startDate);
     // if (_startDate.difference(DateTime.now()).inDays == 0) {
@@ -129,17 +130,29 @@ class _SelectPlanNameState extends State<SelectPlanName> {
         AwesomeDialog(
             context: context,
             dialogType: DialogType.success,
-            body: const Column(
+            body: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Text(
+                const Text(
                   "Tạo kế hoạch thành công",
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
+                SizedBox(
+                  height: 2.h,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'Bạn có muốn lưu lại các dịch vụ khẩn cấp cho kế hoạch này không ?',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    textAlign: TextAlign.center,
+                  ),
+                )
               ],
             ),
-            btnOkColor: primaryColor,
-            btnOkOnPress: () async {
+            btnCancelText: 'Không',
+            btnCancelColor: Colors.blue,
+            btnCancelOnPress: () async {
               PlanDetail? plan = await _planService.GetPlanById(rs);
               if (plan != null) {
                 await _offlineService.savePlanToHive(PlanOfflineViewModel(
@@ -165,6 +178,14 @@ class _SelectPlanNameState extends State<SelectPlanName> {
               // ignore: use_build_context_synchronously
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (ctx) => const TabScreen(pageIndex: 1)));
+            },
+            btnOkText: 'Có',
+            btnOkColor: primaryColor,
+            btnOkOnPress: () async {
+              Navigator.of(context).pop();
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (ctx) => SelectEmergencyService(
+                      location: widget.location, planId: rs)));
             }).show();
       }
     }

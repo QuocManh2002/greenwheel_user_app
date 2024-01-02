@@ -76,6 +76,52 @@ class SupplierService extends Iterable {
     }
   }
 
+  Future<List<SupplierViewModel>> getSuppliersByIds(List<int> ids) async {
+    try {
+      final QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+query getSupplierById(\$id: [Int]!) {
+            suppliers(
+              where: {
+                id: { in: \$id },
+                isHidden: { eq: false },
+              },
+              first: 100
+              order: {
+                id: ASC
+              }
+            ) {
+              nodes {
+                id
+                name
+                address
+                phone
+                thumbnailUrl
+                coordinate {
+                  coordinates
+                }
+                type
+              }
+            }
+          }
+"""), variables: {"id": ids}));
+      if (result.hasException) {
+        throw Exception(result.exception.toString());
+      }
+
+      final List<dynamic>? res = result.data?['suppliers']['nodes'];
+      if (res == null || res.isEmpty) {
+        return <SupplierViewModel>[];
+      }
+
+      final List<SupplierViewModel> suppliers =
+          res.map((supplier) => SupplierViewModel.fromJson(supplier)).toList();
+      return suppliers;
+    } catch (error) {
+      throw Exception(error.toString());
+    }
+  }
+
   @override
   // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();
