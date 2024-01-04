@@ -4,8 +4,6 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/plan_item.dart';
-import 'package:greenwheel_user_app/models/supplier_order.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
@@ -13,7 +11,6 @@ import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
@@ -209,22 +206,53 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                             style: TextStyle(
                                 fontSize: 16, fontWeight: FontWeight.bold),
                           ),
-                          Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Text(
-                              'Bạn có muốn lưu lại các dịch vụ khẩn cấp cho chuyến đi không?',
-                              style: TextStyle(fontSize: 15),
-                              textAlign: TextAlign.center,
-                            ),
-                          )
+                          // Padding(
+                          //   padding: EdgeInsets.all(8.0),
+                          //   child: Text(
+                          //     'Bạn có muốn lưu lại các dịch vụ khẩn cấp cho chuyến đi không?',
+                          //     style: TextStyle(fontSize: 15),
+                          //     textAlign: TextAlign.center,
+                          //   ),
+                          // )
                         ],
                       ),
-                      btnCancelText: "Không",
-                      btnCancelColor: Colors.blue,
-                      btnCancelOnPress: () async {
+                      // btnCancelText: "Không",
+                      // btnCancelColor: Colors.blue,
+                      // btnCancelOnPress: () async {
+                      //   PlanDetail? plan = await _planService.GetPlanById(
+                      //       sharedPreferences.getInt('planId')!);
+                      //   if (plan != null) {
+                      //     await _offlineService.savePlanToHive(
+                      //         PlanOfflineViewModel(
+                      //             id: plan.id,
+                      //             name: plan.name,
+                      //             imageBase64: await Utils()
+                      //                 .getImageBase64Encoded(plan.imageUrls[0]),
+                      //             startDate: plan.startDate,
+                      //             endDate: plan.endDate,
+                      //             memberLimit: plan.memberLimit,
+                      //             schedule: plan.schedule,
+                      //             memberList: [
+                      //           PlanOfflineMember(
+                      //               id: int.parse(
+                      //                   sharedPreferences.getString('userId')!),
+                      //               name: "Quoc Manh",
+                      //               phone: sharedPreferences
+                      //                   .getString('userPhone')!,
+                      //               isLeading: true)
+                      //         ]));
+                      //   }
+                      //   Utils().clearPlanSharePref();
+                      //   Navigator.of(context).pop();
+                      //   Navigator.of(context).push(MaterialPageRoute(
+                      //       builder: (ctx) => const TabScreen(pageIndex: 1)));
+                      // },
+                      // btnOkText: "Có",
+                      btnOkColor: primaryColor,
+                      btnOkOnPress: () async {
                         PlanDetail? plan = await _planService.GetPlanById(
                             sharedPreferences.getInt('planId')!);
-                        if (plan != null) {
+                                              if (plan != null) {
                           await _offlineService.savePlanToHive(
                               PlanOfflineViewModel(
                                   id: plan.id,
@@ -248,16 +276,9 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                         Utils().clearPlanSharePref();
                         Navigator.of(context).pop();
                         Navigator.of(context).push(MaterialPageRoute(
-                            builder: (ctx) => const TabScreen(pageIndex: 1)));
-                      },
-                      btnOkText: "Có",
-                      btnOkColor: primaryColor,
-                      btnOkOnPress: () async {
-                        Navigator.of(context).pop();
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (ctx) => SelectEmergencyService(
-                                location: widget.location,
-                                planId: sharedPreferences.getInt('planId')!)));
+                            builder: (ctx) => const TabScreen(
+                                  pageIndex: 1,
+                                )));
                       },
                     ).show();
                   },

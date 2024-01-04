@@ -33,79 +33,102 @@ class ConfirmBaseInfoDialog extends StatelessWidget {
             height: 1.h,
           ),
           const Text(
-            '(Bạn sẽ không thể chỉnh sửa những thông tin này trong các bước tiếp theo)',
+            'Bạn sẽ không thể chỉnh sửa những thông tin này trong các bước tiếp theo',
             style: TextStyle(fontSize: 14, color: Colors.grey),
             textAlign: TextAlign.center,
           ),
           SizedBox(
             height: 2.h,
           ),
-          RichText(
-              textAlign: TextAlign.start,
-              text: TextSpan(
-                  text: "Tổng thời gian chuyến đi:  ",
-                  style: const TextStyle(
+          Row(
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    "Tổng thời gian chuyến đi:",
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                  children: [
-                    TextSpan(
-                        text:
-                            '${selectedComboDate.numberOfDay} ngày, ${selectedComboDate.numberOfNight} đêm',
-                        style: const TextStyle(fontWeight: FontWeight.normal))
-                  ])),
-          SizedBox(
-            height: 1.h,
-          ),
-          RichText(
-              textAlign: TextAlign.start,
-              text: TextSpan(
-                  text: "Ngày khởi hành:  ",
-                  style: const TextStyle(
+                    ),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                  const Text(
+                    "Ngày khởi hành dự kiến:",
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                  children: [
-                    TextSpan(
-                        text:
-                            '${startDate.day}/${startDate.month}/${startDate.year}',
-                        style: const TextStyle(fontWeight: FontWeight.normal))
-                  ])),
-          SizedBox(
-            height: 1.h,
-          ),
-          RichText(
-              textAlign: TextAlign.start,
-              text: TextSpan(
-                  text: "Ngày kết thúc:  ",
-                  style: const TextStyle(
+                    ),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                  const Text(
+                    "Ngày kết thúc dự kiến:",
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                  children: [
-                    TextSpan(
-                        text: '${endDate.day}/${endDate.month}/${endDate.year}',
-                        style: const TextStyle(fontWeight: FontWeight.normal))
-                  ])),
-          SizedBox(
-            height: 1.h,
-          ),
-          RichText(
-              textAlign: TextAlign.start,
-              text: TextSpan(
-                  text: "Số lượng thành viên:  ",
-                  style: const TextStyle(
+                    ),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                  const Text(
+                    "Số lượng thành viên:",
+                    style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black),
-                  children: [
-                    TextSpan(
-                        text: '$numberOfMember',
-                        style: const TextStyle(fontWeight: FontWeight.normal))
-                  ])),
-          SizedBox(
-            height: 2.h,
-          ),
+                    ),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                ],
+              ),
+              SizedBox(width: 1.w,),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${selectedComboDate.numberOfDay} ngày, ${selectedComboDate.numberOfNight} đêm",
+                    style: const TextStyle(
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                  Text(
+                    "${startDate.hour}:${startDate.minute} ${startDate.day}/${startDate.month}/${startDate.year}",
+                    style: const TextStyle(
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                  Text(
+                    "22:00 ${endDate.day}/${endDate.month}/${endDate.year}",
+                    style: const TextStyle(fontSize: 14),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                  Text(
+                    "$numberOfMember",
+                    style: const TextStyle(
+                      fontSize: 14,
+                    ),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                ],
+              )
+            ],
+          )
         ],
       ),
     );

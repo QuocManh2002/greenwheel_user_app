@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,10 +12,8 @@ import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_base_info_dialog.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
@@ -32,7 +29,6 @@ class CreateNewPlanScreen extends StatefulWidget {
 }
 
 class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
-  PlanService _planService = PlanService();
 
   @override
   void initState() {
@@ -236,6 +232,12 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                 sharedPreferences.getString('plan_end_date')!);
                             int numberOfMember = sharedPreferences
                                 .getInt('plan_number_of_member')!;
+                            String? timeText =
+                                sharedPreferences.getString('plan_start_time');
+                            final initialDateTime =
+                                DateFormat.Hm().parse(timeText!);
+                            final _selectTime =
+                                TimeOfDay.fromDateTime(initialDateTime);
                             AwesomeDialog(
                                     context: context,
                                     dialogType: DialogType.info,
@@ -244,7 +246,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                     btnCancelColor: Colors.orange,
                                     btnCancelOnPress: () {},
                                     btnOkColor: Colors.blue,
-                                    btnOkText: 'Lưu',
+                                    btnOkText: 'Xác nhận',
                                     btnOkOnPress: () {
                                       setState(() {
                                         _currentStep++;
@@ -255,9 +257,14 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                         selectedComboDate: _selectedComboDate,
                                         endDate: endDate,
                                         numberOfMember: numberOfMember,
-                                        startDate: startDate))
+                                        startDate: DateTime(
+                                            startDate.year,
+                                            startDate.month,
+                                            startDate.day,
+                                            _selectTime.hour,
+                                            _selectTime.minute)))
                                 .show();
-                          } else if (_currentStep == 3 &&
+                          } else if (_currentStep == 3 && 
                               !checkValidStartActivityTime()) {
                             AwesomeDialog(
                                     context: context,
@@ -348,13 +355,11 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     final startDateTime = DateFormat.Hm().parse(timeText!);
     final _startDateTime =
         DateTime(0, 0, 0, startDateTime.hour, startDateTime.minute, 0);
-    print(_startDateTime);
     String _scheduleText = sharedPreferences.getString('plan_schedule')!;
     final List<dynamic> _schedule = json.decode(_scheduleText);
-    final first = DateFormat.Hms().parse(json.decode(_schedule.first.first['time']));
+    final first =
+        DateFormat.Hms().parse(json.decode(_schedule.first.first['time']));
     final fistTimeActivity = DateTime(0, 0, 0, first.hour, first.minute, 0);
-    print(fistTimeActivity);
-    print(_startDateTime.isBefore(fistTimeActivity));
     return _startDateTime.isBefore(fistTimeActivity);
   }
 }

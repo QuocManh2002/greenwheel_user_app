@@ -40,14 +40,17 @@ class _BaseInformationState extends State<BaseInformationScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    int? member = sharedPreferences.getInt('plan_number_of_member');
+    setUpData();
+  }
+  setUpData(){
+     int? member = sharedPreferences.getInt('plan_number_of_member');
     int? combodate = sharedPreferences.getInt('plan_combo_date');
     if (combodate != null) {
       _scrollController = FixedExtentScrollController(initialItem: combodate);
     } else {
       final defaultComboDate = listComboDate
               .firstWhere((element) =>
-                  element.duration == widget.location.suggestedTripLength)
+                  element.duration == widget.location.suggestedTripLength* 2)
               .id -
           1;
       sharedPreferences.setInt('plan_combo_date', defaultComboDate);
@@ -62,7 +65,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
       sharedPreferences.setInt('plan_number_of_member', 1);
     }
     _suggestComboDate = listComboDate.firstWhere(
-        (element) => element.duration == widget.location.suggestedTripLength);
+        (element) => element.duration == widget.location.suggestedTripLength * 2);
   }
 
   @override
