@@ -33,7 +33,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   LatLng _currentP = LatLng(0, 0);
   num distance = 0;
   num duration = 0;
-  TimeOfDay? _initialTime;
   DateTime? _selectedDate = DateTime.now();
 
   _onMapCreated(MapboxMapController controller) {
@@ -91,7 +90,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     // }
   }
 
-
   _onStyleLoadedCallback() async {
     await controller.addSymbol(SymbolOptions(
         geometry: _currentP, iconSize: 5, iconImage: current_location));
@@ -126,6 +124,10 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     // TODO: implement initState
     super.initState();
     getLocationUpdates();
+    setUpData();
+  }
+
+  setUpData() {
     String? timeText = sharedPreferences.getString('plan_start_time');
     if (timeText != null) {
       final initialDateTime = DateFormat.Hm().parse(timeText);
@@ -134,7 +136,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         _timeController.text = timeText;
       });
     } else {
-      _selectTime = TimeOfDay.now();
+      _selectTime =
+          TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 1)));
       _timeController.text = DateFormat.Hm()
           .format(DateTime(0, 0, 0, _selectTime.hour, _selectTime.minute));
       sharedPreferences.setString('plan_start_time', _timeController.text);
@@ -148,9 +151,9 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       });
     } else {
       _selectedDate = DateTime.now();
-      // final dateOnly = _selectedDate!.toLocal().toString().split(' ')[0];
       _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
-      sharedPreferences.setString('plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
+      sharedPreferences.setString(
+          'plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
     }
     double? plan_distance = sharedPreferences.getDouble('plan_distance');
     if (plan_distance != null) {
@@ -246,13 +249,43 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                             );
                           },
                         ).then((value) {
-                          _selectTime = value!;
-                          _timeController.text = DateFormat.Hm().format(
-                              DateTime(0, 0, 0, _selectTime.hour,
-                                  _selectTime.minute));
-                          sharedPreferences.setString(
-                              'plan_start_time', _timeController.text);
-                          sharedPreferences.setBool('plan_is_change', false);
+                          if (!Utils().checkTimeAfterNow1Hour(
+                              value!, DateTime(_selectedDate!.year, _selectedDate!.month, _selectedDate!.day))) {
+                            AwesomeDialog(
+                                context: context,
+                                dialogType: DialogType.warning,
+                                btnOkColor: Colors.orange,
+                                body: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  child: Center(
+                                    child: Text(
+                                      'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                          textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                                btnOkOnPress: () {
+                                  _selectTime = TimeOfDay.fromDateTime(
+                                      DateTime.now()
+                                          .add(const Duration(hours: 1)));
+                                  _timeController.text = DateFormat.Hm().format(
+                                      DateTime(0, 0, 0, _selectTime.hour,
+                                          _selectTime.minute));
+                                  sharedPreferences.setString(
+                                      'plan_start_time', _timeController.text);
+                                }).show();
+                          } else {
+                            _selectTime = value;
+                            _timeController.text = DateFormat.Hm().format(
+                                DateTime(0, 0, 0, _selectTime.hour,
+                                    _selectTime.minute));
+                            sharedPreferences.setString(
+                                'plan_start_time', _timeController.text);
+                            sharedPreferences.setBool('plan_is_change', false);
+                          }
                         });
                       },
                       onValidate: (value) {
@@ -339,5 +372,17 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         ),
       ]),
     );
+  }
+
+  handleTimeBeforeNow1Hour() {
+    print(_selectedDate!
+        .add(Duration(hours: _selectTime.hour))
+        .add(Duration(minutes: _selectTime.minute))
+        .isBefore(DateTime.now().add(const Duration(hours: 1))));
+    if (_selectedDate!.difference(DateTime.now()).inDays == 0 &&
+        _selectedDate!
+            .add(Duration(hours: _selectTime.hour))
+            .add(Duration(minutes: _selectTime.minute))
+            .isAfter(DateTime.now().add(const Duration(hours: 1)))) {}
   }
 }

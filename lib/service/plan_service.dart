@@ -5,13 +5,11 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/plan_item.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
@@ -25,6 +23,7 @@ class PlanService {
   static GraphQLClient client = graphQlConfig.getClient();
 
   Future<int> createPlan(PlanCreate model) async {
+    print(model.schedule);
     try {
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
@@ -39,6 +38,7 @@ mutation{
     memberLimit:${model.memberLimit}
     name: ${json.encode(model.name)}
     schedule:${model.schedule}
+    savedContacts:[]
   }){
     id
   }
@@ -235,7 +235,7 @@ query GetPlanById(\$planId: Int){
       endDate
       schedule
       memberLimit
-      savedSupplierIds
+      savedContacts
       status
       joinMethod
       orders{
@@ -363,8 +363,8 @@ query GetPlanById(\$planId: Int){
       if (i < schedules.length) {
         for (final planItem in schedules[i]) {
           item.add(PlanScheduleItem(
-              orderId: planItem['orderId'],
-              orderType: planItem['orderType'],
+              orderId: planItem['orderGuid'],
+              orderType: planItem['type'],
               time: Utils().convertStringToTime(planItem['time']),
               title: planItem['description'],
               date: date));
@@ -391,8 +391,8 @@ query GetPlanById(\$planId: Int){
       if (i < schedules.length) {
         for (final planItem in schedules[i]) {
           item.add(PlanScheduleItem(
-              orderId: planItem['orderId'],
-              orderType: planItem['orderType'],
+              orderId: planItem['orderGuid'],
+              orderType: planItem['type'].toString(),
               time: TimeOfDay.fromDateTime(
                   DateFormat.Hms().parse(planItem['time'])),
               title: planItem['description'],
@@ -420,11 +420,10 @@ query GetPlanById(\$planId: Int){
           'time': json.encode(DateFormat.Hms()
               .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
               .toString()),
-          'orderId': item.orderId,
+          'orderGuid': item.orderId,
           // 'description':  "${item.title}",
           'description': json.encode(item.title),
-
-          'supplierType': item.orderType
+          'type': "GATHER"
         });
       }
       rs.add(items);
@@ -533,7 +532,7 @@ mutation{
     }
   }
 
-  Future<int> updateEmergencyService(PlanCreate model, List<int> serviceList, int planId) async{
+  Future<int> updateEmergencyService(PlanCreate model, String serviceList, int planId) async{
     try{
       QueryResult result = await client.mutate(
         MutationOptions(
@@ -549,7 +548,7 @@ mutation{
     memberLimit:${model.memberLimit}
     name: ${json.encode(model.name)}
     schedule:${model.schedule}
-    savedSupplierIds: $serviceList
+    savedContacts: $serviceList
   }){
     id
   }

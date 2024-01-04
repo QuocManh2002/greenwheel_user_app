@@ -61,9 +61,17 @@ class Utils {
   }
 
   bool checkTimeAfterNow1Hour(TimeOfDay time, DateTime dateTime) {
+    print(dateTime
+        .add(Duration(hours: time.hour))
+        .add(Duration(minutes: time.minute)));
+        print(DateTime.now().add(const Duration(minutes: 59)));
+        print(dateTime
+        .add(Duration(hours: time.hour))
+        .add(Duration(minutes: time.minute))
+        .isAfter(DateTime.now().add(const Duration(minutes: 59))));
     return dateTime
         .add(Duration(hours: time.hour))
         .add(Duration(minutes: time.minute))
-        .isAfter(DateTime.now().add(const Duration(hours: 1)));
+        .isAfter(DateTime.now().add(const Duration(minutes: 59)));
   }
 }

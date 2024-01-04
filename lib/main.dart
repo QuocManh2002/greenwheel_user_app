@@ -9,8 +9,6 @@ import 'package:greenwheel_user_app/firebase_options.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
 import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
 import 'package:greenwheel_user_app/screens/offline_screen/offline_home_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
-import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';

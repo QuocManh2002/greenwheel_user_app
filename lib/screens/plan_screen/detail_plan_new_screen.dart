@@ -84,8 +84,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       // _orderList = orderList;
     });
     if (_planDetail != null) {
-      if (_planDetail!.savedSupplierIds != null) {
-        List<int> ids = _planDetail!.savedSupplierIds!
+      if (_planDetail!.savedContacts != null) {
+        List<int> ids = _planDetail!.savedContacts!
             .map((e) => int.parse(e.toString()))
             .toList();
         final rs = await _supplierService.getSuppliersByIds(ids);

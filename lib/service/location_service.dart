@@ -30,16 +30,13 @@ class LocationService extends Iterable {
           activities
           seasons
           topographic
-          suggestedTripLength
           templateSchedule
           coordinate{coordinates}
           address
-          lifeguardPhone
-          lifeguardAddress
-          clinicPhone
-          clinicAddress
           hotline
           provinceId
+          emergencyContacts
+          templateEvents
         }
     }
 }
@@ -58,6 +55,7 @@ class LocationService extends Iterable {
 
       List<LocationViewModel> locations =
           res.map((location) => LocationViewModel.fromJson(location)).toList();
+    
       return locations;
     } catch (error) {
       throw Exception(error);
