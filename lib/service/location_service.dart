@@ -346,14 +346,14 @@ query getByLocationId(\$id: Int) {
       seasons
       topographic
       templateSchedule
-      coordinate{coordinates}
+      coordinate {
+        coordinates
+      }
       address
-      lifeguardPhone
-      lifeguardAddress
-      clinicPhone
-      clinicAddress
       hotline
       provinceId
+      emergencyContacts
+      templateEvents
     }
   }
 }

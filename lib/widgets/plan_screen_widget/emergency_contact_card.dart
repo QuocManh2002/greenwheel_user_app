@@ -11,10 +11,12 @@ class EmergencyContactCard extends StatelessWidget {
       {super.key,
       required this.emergency,
       required this.index,
-      required this.callback});
+      required this.callback,
+      required this.isSelected});
   final EmergencyContactViewModel emergency;
   final int index;
   final void Function() callback;
+  final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +26,7 @@ class EmergencyContactCard extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 24),
+          padding: const EdgeInsets.symmetric(vertical: 12),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.zero, // Remove default padding
@@ -90,11 +92,15 @@ class EmergencyContactCard extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              if(isEnableToAdd)
-                              const Icon(
-                                Icons.check_circle_rounded,
-                                color: primaryColor,
-                              )
+                              if (isSelected)
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: primaryColor,
+                                ),
+                              if (isSelected)
+                                SizedBox(
+                                  width: 2.w,
+                                )
                             ],
                           ),
                         ),

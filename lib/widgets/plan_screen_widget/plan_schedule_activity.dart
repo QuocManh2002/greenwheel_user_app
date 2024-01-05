@@ -6,9 +6,10 @@ import 'package:sizer2/sizer2.dart';
 
 class PlanScheduleActivity extends StatelessWidget {
   const PlanScheduleActivity(
-      {super.key, required this.item, required this.showBottomSheet});
+      {super.key, required this.item, required this.showBottomSheet, required this.isSelected});
   final PlanScheduleItem item;
   final void Function(PlanScheduleItem item) showBottomSheet;
+  final bool isSelected ;
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +21,7 @@ class PlanScheduleActivity extends StatelessWidget {
             width: 100.w,
             clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
-                color: Colors.white,
+                color:isSelected? primaryColor.withOpacity(0.3): Colors.white,
                 boxShadow: const [
                   BoxShadow(
                     blurRadius: 3,

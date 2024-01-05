@@ -35,6 +35,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   //     listComboDate[sharedPreferences.getInt('plan_combo_date')!];
   List<PlanSchedule> testList = [];
   final PlanService _planService = PlanService();
+  PlanScheduleItem? _selectedItem;
   // final DateTime _startDate =
   //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
 
@@ -53,27 +54,16 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   setUpData() async {
     if (widget.isCreate) {
       testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
+      var finalList = _planService.convertPlanScheduleToJson(testList);
+      sharedPreferences.setString('plan_schedule', json.encode(finalList));
     } else {
-      PlanDetail? plan = await _planService.GetPlanById(widget.planId!);
-      if (plan != null) {
-        setState(() {
-          testList = _planService.GetPlanScheduleFromJsonNew(
-              widget.templatePlan,
-              plan.startDate,
-              plan.endDate.difference(plan.startDate).inDays + 1);
-        });
-      }
-
+      var scheduleText = sharedPreferences.getString('plan_schedule');
+      print(scheduleText);
+      var scheduleDynamic =
+          _planService.GetPlanScheduleFromJson(json.decode(scheduleText!));
+      print(scheduleDynamic.length);
     }
   }
-
-  // @override
-  // void dispose() {
-  //   // TODO: implement dispose
-  //   super.dispose();
-  //   _pageController.dispose();
-  //   _animationController.dispose();
-  // }
 
   onTap(int index) {
     setState(() {
@@ -120,6 +110,9 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   }
 
   _showBottomSheet(PlanScheduleItem item) {
+    setState(() {
+      _selectedItem = item;
+    });
     print('id: ${item.id}');
     showModalBottomSheet(
       context: context,
@@ -131,7 +124,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
           children: [
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue[700],
+                  backgroundColor: primaryColor.withOpacity(0.8),
                   shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(
                       Radius.circular(10),
@@ -152,8 +145,9 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             ),
             ElevatedButton.icon(
               style: ElevatedButton.styleFrom(
-                  backgroundColor: redColor,
+                  backgroundColor: Colors.white.withOpacity(0.94),
                   shape: const RoundedRectangleBorder(
+                    side: BorderSide(color: primaryColor, width: 1.5),
                     borderRadius: BorderRadius.all(
                       Radius.circular(10),
                     ),
@@ -165,14 +159,21 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               },
               label: const Text(
                 'Xóa',
-                style: TextStyle(fontSize: 24),
+                style: TextStyle(fontSize: 24, color: primaryColor),
               ),
-              icon: const Icon(Icons.delete),
+              icon: const Icon(
+                Icons.delete,
+                color: primaryColor,
+              ),
             )
           ],
         ),
       ),
-    );
+    ).then((value) {
+      setState(() {
+        _selectedItem = null;
+      });
+    });
   }
 
   Widget getPageView(int _index) {
@@ -208,7 +209,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               itemCount: testList[_index].items.length,
               itemBuilder: (context, index) => PlanScheduleActivity(
                   item: testList[_index].items[index],
-                  showBottomSheet: _showBottomSheet),
+                  showBottomSheet: _showBottomSheet,
+                  isSelected: _selectedItem == testList[_index].items[index]),
             )),
     );
   }

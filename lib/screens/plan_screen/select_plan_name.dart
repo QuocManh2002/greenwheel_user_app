@@ -73,216 +73,88 @@ class _SelectPlanNameState extends State<SelectPlanName> {
         longitude: lng,
         memberLimit: memberLimit,
         name: _nameController.text,
-        schedule: json.decode(schedule).toString()));
+        schedule: json.decode(schedule).toString(),
+        savedContacts: sharedPreferences.getString('plan_saved_emergency')
+        ));
 
     if (rs != 0) {
       setState(() {
         isCreate = true;
       });
-      // bool isEnableToAddService = DateTime.parse(endDate)
-      //     .isAfter(DateTime.now().add(const Duration(days: 2)));
-      // if (isEnableToAddService) {
-      //   // ignore: use_build_context_synchronously
-      //   AwesomeDialog(
-      //       context: context,
-      //       dialogType: DialogType.success,
-      //       body: Column(
-      //         crossAxisAlignment: CrossAxisAlignment.center,
-      //         children: [
-      //           const Text(
-      //             "Tạo kế hoạch thành công",
-      //             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      //           ),
-      //           SizedBox(
-      //             height: 2.h,
-      //           ),
-      //           const Padding(
-      //             padding: EdgeInsets.symmetric(horizontal: 24),
-      //             child: Text(
-      //               'Bạn có muốn đặt dịch vụ cho kế hoạch này không ?',
-      //               style: TextStyle(fontSize: 14, color: Colors.grey),
-      //               textAlign: TextAlign.center,
-      //             ),
-      //           )
-      //         ],
-      //       ),
-      //       btnCancelText: 'Không',
-      //       btnCancelColor: Colors.blue,
-      //       btnCancelOnPress: () {
-      //         Utils().clearPlanSharePref();
-      //         Navigator.of(context).pop();
-      //         Navigator.of(context).push(MaterialPageRoute(
-      //             builder: (ctx) => const TabScreen(
-      //                   pageIndex: 1,
-      //                 )));
-      //       },
-      //       btnOkText: 'Có',
-      //       btnOkColor: primaryColor,
-      //       btnOkOnPress: () {
-      //         sharedPreferences.setInt("planId", rs);
-      //         Navigator.of(context).pop();
-      //         Navigator.of(context).push(MaterialPageRoute(
-      //             builder: (ctx) =>
-      //                 SelectServiceScreen(location: widget.location)));
-      //       }).show();
-      // } else {
-      //   // ignore: use_build_context_synchronously
-      //   AwesomeDialog(
-      //       context: context,
-      //       dialogType: DialogType.success,
-      //       body: Column(
-      //         crossAxisAlignment: CrossAxisAlignment.center,
-      //         children: [
-      //           const Text(
-      //             "Tạo kế hoạch thành công",
-      //             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-      //           ),
-      //           SizedBox(
-      //             height: 2.h,
-      //           ),
-      //           const Padding(
-      //             padding: EdgeInsets.symmetric(horizontal: 24),
-      //             child: Text(
-      //               'Bạn có muốn lưu lại các dịch vụ khẩn cấp cho kế hoạch này không ?',
-      //               style: TextStyle(fontSize: 14, color: Colors.grey),
-      //               textAlign: TextAlign.center,
-      //             ),
-      //           )
-      //         ],
-      //       ),
-      //       btnCancelText: 'Không',
-      //       btnCancelColor: Colors.blue,
-      //       btnCancelOnPress: () async {
-      //         PlanDetail? plan = await _planService.GetPlanById(rs);
-      //         if (plan != null) {
-      //           await _offlineService.savePlanToHive(PlanOfflineViewModel(
-      //               id: rs,
-      //               name: _nameController.text,
-      //               imageBase64:
-      //                   await Utils().getImageBase64Encoded(plan.imageUrls[0]),
-      //               startDate: plan.startDate,
-      //               endDate: plan.endDate,
-      //               memberLimit: memberLimit,
-      //               schedule: plan.schedule,
-      //               memberList: [
-      //                 PlanOfflineMember(
-      //                     id: int.parse(sharedPreferences.getString('userId')!),
-      //                     name: "Quoc Manh",
-      //                     phone: sharedPreferences.getString('userPhone')!,
-      //                     isLeading: true)
-      //               ]));
-      //         }
-      //         Utils().clearPlanSharePref();
-      //         // ignore: use_build_context_synchronously
-      //         Navigator.of(context).pop();
-      //         // ignore: use_build_context_synchronously
-      //         Navigator.of(context).push(MaterialPageRoute(
-      //             builder: (ctx) => const TabScreen(pageIndex: 1)));
-      //       },
-      //       btnOkText: 'Có',
-      //       btnOkColor: primaryColor,
-      //       btnOkOnPress: () async {
-      //         Navigator.of(context).pop();
-      //         Navigator.of(context).push(MaterialPageRoute(
-      //             builder: (ctx) => SelectEmergencyService(
-      //                 location: widget.location, planId: rs)));
-      //       }).show();
-      // }
-
-      // ignore: use_build_context_synchronously
-      AwesomeDialog(
-          context: context,
-          dialogType: DialogType.success,
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const Text(
-                "Tạo kế hoạch thành công",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              SizedBox(
-                height: 2.h,
-              ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  'Bạn có muốn lưu các dịch vụ khẩn cấp cho kế hoạch này không ?',
-                  style: TextStyle(fontSize: 14, color: Colors.grey),
-                  textAlign: TextAlign.center,
+      bool isEnableToAddService = DateTime.parse(endDate)
+          .isAfter(DateTime.now().add(const Duration(days: 2)));
+      if (isEnableToAddService) {
+        // ignore: use_build_context_synchronously
+        AwesomeDialog(
+            context: context,
+            dialogType: DialogType.success,
+            body: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const Text(
+                  "Tạo kế hoạch thành công",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
-              )
-            ],
-          ),
-          btnCancelText: 'Không',
-          btnCancelColor: Colors.blue,
-          btnCancelOnPress: () async {
-            bool isEnableToAddService = DateTime.parse(endDate)
-                .isAfter(DateTime.now().add(const Duration(days: 2)));
-            if (isEnableToAddService) {
-              AwesomeDialog(
-                  context: context,
-                  dialogType: DialogType.success,
-                  body: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // const Text(
-                      //   "Tạo kế hoạch thành công",
-                      //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                      // ),
-                      SizedBox(
-                        height: 2.h,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24),
-                        child: Text(
-                          'Bạn có muốn đặt dịch vụ cho kế hoạch này không ?',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                          textAlign: TextAlign.center,
-                        ),
-                      )
-                    ],
+                SizedBox(
+                  height: 2.h,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: Text(
+                    'Bạn có muốn đặt dịch vụ cho kế hoạch này không ?',
+                    style: TextStyle(fontSize: 14, color: Colors.grey),
+                    textAlign: TextAlign.center,
                   ),
-                  btnCancelText: 'Không',
-                  btnCancelColor: Colors.blue,
-                  btnCancelOnPress: () async {
-                    PlanDetail? plan = await _planService.GetPlanById(rs);
-                    if (plan != null) {
-                      await _offlineService.savePlanToHive(PlanOfflineViewModel(
-                          id: rs,
-                          name: _nameController.text,
-                          imageBase64: await Utils()
-                              .getImageBase64Encoded(plan.imageUrls[0]),
-                          startDate: plan.startDate,
-                          endDate: plan.endDate,
-                          memberLimit: memberLimit,
-                          schedule: plan.schedule,
-                          memberList: [
-                            PlanOfflineMember(
-                                id: int.parse(
-                                    sharedPreferences.getString('userId')!),
-                                name: "Quoc Manh",
-                                phone:
-                                    sharedPreferences.getString('userPhone')!,
-                                isLeading: true)
-                          ]));
-                    }
-                    Utils().clearPlanSharePref();
-                    // ignore: use_build_context_synchronously
-                    Navigator.of(context).pop();
-                    // ignore: use_build_context_synchronously
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (ctx) => const TabScreen(pageIndex: 1)));
-                  },
-                  btnOkText: 'Có',
-                  btnOkColor: primaryColor,
-                  btnOkOnPress: () {
-                    sharedPreferences.setInt("planId", rs);
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (ctx) =>
-                            SelectServiceScreen(location: widget.location)));
-                  }).show();
-            } else {
+                )
+              ],
+            ),
+            btnCancelText: 'Không',
+            btnCancelColor: Colors.blue,
+            btnCancelOnPress: () {
+              Utils().clearPlanSharePref();
+              Navigator.of(context).pop();
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (ctx) => const TabScreen(
+                        pageIndex: 1,
+                      )));
+            },
+            btnOkText: 'Có',
+            btnOkColor: primaryColor,
+            btnOkOnPress: () {
+              sharedPreferences.setInt("planId", rs);
+              Navigator.of(context).pop();
+              Navigator.of(context).push(MaterialPageRoute(
+                  builder: (ctx) =>
+                      SelectServiceScreen(location: widget.location)));
+            }).show();
+      } else {
+        // ignore: use_build_context_synchronously
+        // AwesomeDialog(
+        //     context: context,
+        //     dialogType: DialogType.success,
+        //     body: Column(
+        //       crossAxisAlignment: CrossAxisAlignment.center,
+        //       children: [
+        //         const Text(
+        //           "Tạo kế hoạch thành công",
+        //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        //         ),
+        //         SizedBox(
+        //           height: 2.h,
+        //         ),
+        //         const Padding(
+        //           padding: EdgeInsets.symmetric(horizontal: 24),
+        //           child: Text(
+        //             'Bạn có muốn lưu lại các dịch vụ khẩn cấp cho kế hoạch này không ?',
+        //             style: TextStyle(fontSize: 14, color: Colors.grey),
+        //             textAlign: TextAlign.center,
+        //           ),
+        //         )
+        //       ],
+        //     ),
+        //     btnCancelText: 'Không',
+        //     btnCancelColor: Colors.blue,
+        //     btnCancelOnPress: () async {
               PlanDetail? plan = await _planService.GetPlanById(rs);
               if (plan != null) {
                 await _offlineService.savePlanToHive(PlanOfflineViewModel(
@@ -308,19 +180,149 @@ class _SelectPlanNameState extends State<SelectPlanName> {
               // ignore: use_build_context_synchronously
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (ctx) => const TabScreen(pageIndex: 1)));
-            }
-          },
-          btnOkText: 'Có',
-          btnOkColor: primaryColor,
-          btnOkOnPress: () {
-            sharedPreferences.setInt("planId", rs);
-            Navigator.of(context).pop();
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (ctx) => SelectEmergencyService(
-                      location: widget.location,
-                      planId: rs,
-                    )));
-          }).show();
+            // },
+            // btnOkText: 'Có',
+            // btnOkColor: primaryColor,
+            // btnOkOnPress: () async {
+            //   Navigator.of(context).pop();
+            //   Navigator.of(context).push(MaterialPageRoute(
+            //       builder: (ctx) => SelectEmergencyService(
+            //           location: widget.location, planId: rs)));
+            // }).show();
+      }
+
+      // ignore: use_build_context_synchronously
+      // AwesomeDialog(
+      //     context: context,
+      //     dialogType: DialogType.success,
+      //     body: Column(
+      //       crossAxisAlignment: CrossAxisAlignment.center,
+      //       children: [
+      //         const Text(
+      //           "Tạo kế hoạch thành công",
+      //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      //         ),
+      //         SizedBox(
+      //           height: 2.h,
+      //         ),
+      //         const Padding(
+      //           padding: EdgeInsets.symmetric(horizontal: 24),
+      //           child: Text(
+      //             'Bạn có muốn lưu các dịch vụ khẩn cấp cho kế hoạch này không ?',
+      //             style: TextStyle(fontSize: 14, color: Colors.grey),
+      //             textAlign: TextAlign.center,
+      //           ),
+      //         )
+      //       ],
+      //     ),
+      //     btnCancelText: 'Không',
+      //     btnCancelColor: Colors.blue,
+      //     btnCancelOnPress: () async {
+      //       bool isEnableToAddService = DateTime.parse(endDate)
+      //           .isAfter(DateTime.now().add(const Duration(days: 2)));
+      //       if (isEnableToAddService) {
+      //         AwesomeDialog(
+      //             context: context,
+      //             dialogType: DialogType.success,
+      //             body: Column(
+      //               crossAxisAlignment: CrossAxisAlignment.center,
+      //               children: [
+      //                 // const Text(
+      //                 //   "Tạo kế hoạch thành công",
+      //                 //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+      //                 // ),
+      //                 SizedBox(
+      //                   height: 2.h,
+      //                 ),
+      //                 const Padding(
+      //                   padding: EdgeInsets.symmetric(horizontal: 24),
+      //                   child: Text(
+      //                     'Bạn có muốn đặt dịch vụ cho kế hoạch này không ?',
+      //                     style: TextStyle(fontSize: 14, color: Colors.grey),
+      //                     textAlign: TextAlign.center,
+      //                   ),
+      //                 )
+      //               ],
+      //             ),
+      //             btnCancelText: 'Không',
+      //             btnCancelColor: Colors.blue,
+      //             btnCancelOnPress: () async {
+      //               PlanDetail? plan = await _planService.GetPlanById(rs);
+      //               if (plan != null) {
+      //                 await _offlineService.savePlanToHive(PlanOfflineViewModel(
+      //                     id: rs,
+      //                     name: _nameController.text,
+      //                     imageBase64: await Utils()
+      //                         .getImageBase64Encoded(plan.imageUrls[0]),
+      //                     startDate: plan.startDate,
+      //                     endDate: plan.endDate,
+      //                     memberLimit: memberLimit,
+      //                     schedule: plan.schedule,
+      //                     memberList: [
+      //                       PlanOfflineMember(
+      //                           id: int.parse(
+      //                               sharedPreferences.getString('userId')!),
+      //                           name: "Quoc Manh",
+      //                           phone:
+      //                               sharedPreferences.getString('userPhone')!,
+      //                           isLeading: true)
+      //                     ]));
+      //               }
+      //               Utils().clearPlanSharePref();
+      //               // ignore: use_build_context_synchronously
+      //               Navigator.of(context).pop();
+      //               // ignore: use_build_context_synchronously
+      //               Navigator.of(context).push(MaterialPageRoute(
+      //                   builder: (ctx) => const TabScreen(pageIndex: 1)));
+      //             },
+      //             btnOkText: 'Có',
+      //             btnOkColor: primaryColor,
+      //             btnOkOnPress: () {
+      //               sharedPreferences.setInt("planId", rs);
+      //               Navigator.of(context).pop();
+      //               Navigator.of(context).push(MaterialPageRoute(
+      //                   builder: (ctx) =>
+      //                       SelectServiceScreen(location: widget.location)));
+      //             }).show();
+      //       } else {
+      //         PlanDetail? plan = await _planService.GetPlanById(rs);
+      //         if (plan != null) {
+      //           await _offlineService.savePlanToHive(PlanOfflineViewModel(
+      //               id: rs,
+      //               name: _nameController.text,
+      //               imageBase64:
+      //                   await Utils().getImageBase64Encoded(plan.imageUrls[0]),
+      //               startDate: plan.startDate,
+      //               endDate: plan.endDate,
+      //               memberLimit: memberLimit,
+      //               schedule: plan.schedule,
+      //               memberList: [
+      //                 PlanOfflineMember(
+      //                     id: int.parse(sharedPreferences.getString('userId')!),
+      //                     name: "Quoc Manh",
+      //                     phone: sharedPreferences.getString('userPhone')!,
+      //                     isLeading: true)
+      //               ]));
+      //         }
+      //         Utils().clearPlanSharePref();
+      //         // ignore: use_build_context_synchronously
+      //         Navigator.of(context).pop();
+      //         // ignore: use_build_context_synchronously
+      //         Navigator.of(context).push(MaterialPageRoute(
+      //             builder: (ctx) => const TabScreen(pageIndex: 1)));
+      //       }
+      //     },
+      //     btnOkText: 'Có',
+      //     btnOkColor: primaryColor,
+      //     btnOkOnPress: () {
+      //       sharedPreferences.setInt("planId", rs);
+      //       Navigator.of(context).pop();
+      //       Navigator.of(context).push(MaterialPageRoute(
+      //           builder: (ctx) => SelectEmergencyService(
+      //                 location: widget.location,
+      //                 planId: rs,
+      //               )));
+      //     }).show();
     }
   }
 

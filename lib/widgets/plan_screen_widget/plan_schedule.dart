@@ -82,6 +82,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
               itemBuilder: (context, index) => PlanScheduleActivity(
                 item: _scheduleList[_index].items[index],
                 showBottomSheet: (item) {},
+                isSelected: false,
               ),
             )),
     );

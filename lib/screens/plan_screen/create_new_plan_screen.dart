@@ -8,6 +8,7 @@ import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/base_information_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_date_screen.dart';
@@ -21,15 +22,16 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CreateNewPlanScreen extends StatefulWidget {
-  const CreateNewPlanScreen({super.key, required this.location});
+  const CreateNewPlanScreen(
+      {super.key, required this.location, required this.isCreate});
   final LocationViewModel location;
+  final bool isCreate;
 
   @override
   State<CreateNewPlanScreen> createState() => _CreateNewPlanScreenState();
 }
 
 class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
-
   @override
   void initState() {
     // TODO: implement initState
@@ -108,16 +110,18 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
       case 3:
         activePage = CreatePlanScheduleScreen(
           templatePlan: widget.location.templatePlan,
-          isCreate: true,
+          isCreate: widget.isCreate,
         );
         break;
       case 4:
+        activePage = SelectEmergencyService(
+            location: widget.location,
+            planId: sharedPreferences.getInt('planId')!);
+        break;
+      case 5:
         activePage = SelectPlanName(
           location: widget.location,
         );
-        break;
-      case 5:
-        activePage = SelectServiceScreen(location: widget.location);
         break;
     }
     return SafeArea(
@@ -191,7 +195,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                   SizedBox(
                     width: 2.h,
                   ),
-                if (_currentStep < 4)
+                if (_currentStep < 5)
                   Expanded(
                     child: ElevatedButton(
                         style: elevatedButtonStyle,
@@ -264,7 +268,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                             _selectTime.hour,
                                             _selectTime.minute)))
                                 .show();
-                          } else if (_currentStep == 3 && 
+                          } else if (_currentStep == 3 &&
                               !checkValidStartActivityTime()) {
                             AwesomeDialog(
                                     context: context,

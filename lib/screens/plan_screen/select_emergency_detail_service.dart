@@ -138,9 +138,13 @@ class _SelectEmergencyDetailServiceState
                             ),
                             btnOkColor: primaryColor,
                             btnOkOnPress: () {
+                              
                               setState(() {
                                 isEnableToAdd == true;
                               });
+                              widget.callback();
+                              Navigator.of(context).pop();
+
                             },
                           ).show();
                         },

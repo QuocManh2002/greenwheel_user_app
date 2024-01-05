@@ -72,7 +72,7 @@ class LocationViewModel {
           suggestedTripLength:
               List<dynamic>.from(json['templateSchedule'].map((x) => x)).length,
           provinceId: json["provinceId"],
-          emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJson(e))).toList(),
+          emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
           templateEvents: json['templateEvents']);
 
   Map<String, dynamic> toJson() => {

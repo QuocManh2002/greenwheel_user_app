@@ -28,7 +28,10 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
       setState(() {
         _selectedDate = selectDay;
         _focusedDay = focusDay;
-        _rangeEnd = _selectedDate;
+        _rangeStart = _selectedDate;
+        _rangeEnd = _selectedDate!.add(Duration(days: _selectedComboDate.numberOfDay - 1));
+        sharedPreferences.setString('plan_start_date', _rangeStart.toString());
+        sharedPreferences.setString('plan_end_date', _rangeEnd.toString());
       });
     }
   }
@@ -126,8 +129,8 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
               selectedDayPredicate: (day) => isSameDay(_selectedDate, day),
               calendarFormat: _calendarFormat,
               onDaySelected: _onDaySelected,
-              firstDay: _rangeStart!,
-              lastDay: _rangeEnd!.add(const Duration(days: 1)),
+              firstDay: DateTime.now(),
+              lastDay: DateTime(2025),
               rangeStartDay: _rangeStart,
               rangeEndDay: _rangeEnd,
               calendarStyle: CalendarStyle(

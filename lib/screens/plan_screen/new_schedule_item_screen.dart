@@ -1,12 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
-class NewScheduleItemScreen extends StatelessWidget {
+class NewScheduleItemScreen extends StatefulWidget {
   const NewScheduleItemScreen(
       {super.key,
       required this.callback,
@@ -22,27 +23,37 @@ class NewScheduleItemScreen extends StatelessWidget {
   final int selectedIndex;
 
   @override
-  Widget build(BuildContext context) {
-    GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-    TextEditingController _titleController = TextEditingController();
-    TextEditingController _dateController = TextEditingController();
-    TextEditingController _timeController = TextEditingController();
-    TimeOfDay _selectTime = TimeOfDay.now();
-    DateTime _selectedDate = DateTime.now();
+  State<NewScheduleItemScreen> createState() => _NewScheduleItemScreenState();
+}
 
-    if (item != null) {
-      _selectTime = item!.time;
-      _selectedDate = item!.date;
-      _titleController.text = item!.title;
-      _dateController.text = DateFormat.yMMMMEEEEd('vi_VN').format(item!.date);
-      _timeController.text = item!.time.format(context).toString();
+class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
+  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController _titleController = TextEditingController();
+  TextEditingController _dateController = TextEditingController();
+  TextEditingController _timeController = TextEditingController();
+  TimeOfDay _selectTime = TimeOfDay.now();
+  DateTime _selectedDate = DateTime.now();
+  String? _selectedType;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    if (widget.item != null) {
+      _selectTime = widget.item!.time;
+      _selectedDate = widget.item!.date;
+      _titleController.text = widget.item!.title;
+      _dateController.text =
+          DateFormat.yMMMMEEEEd('vi_VN').format(widget.item!.date);
+      _timeController.text = widget.item!.time.format(context).toString();
     } else {
       _dateController.text = DateFormat.yMMMMEEEEd('vi_VN')
-          .format(startDate.add(Duration(days: selectedIndex)));
-      _selectedDate = startDate.add(Duration(days: selectedIndex));
+          .format(widget.startDate.add(Duration(days: widget.selectedIndex)));
+      _selectedDate =
+          widget.startDate.add(Duration(days: widget.selectedIndex));
     }
-
-    _appBar(BuildContext ctx) {
+  }
+  _appBar(BuildContext ctx) {
       return AppBar(
         backgroundColor: primaryColor,
         leading: IconButton(
@@ -56,8 +67,8 @@ class NewScheduleItemScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  if (item == null) {
-                    callback(
+                  if (widget.item == null) {
+                    widget.callback(
                         PlanScheduleItem(
                             time: _selectTime,
                             title: _titleController.text,
@@ -65,14 +76,14 @@ class NewScheduleItemScreen extends StatelessWidget {
                         true,
                         null);
                   } else {
-                    callback(
+                    widget.callback(
                         PlanScheduleItem(
                             time: _selectTime,
                             title: _titleController.text,
                             date: _selectedDate,
-                            id: item!.id),
+                            id: widget.item!.id),
                         false,
-                        item);
+                        widget.item);
                   }
 
                   Navigator.of(context).pop();
@@ -87,6 +98,12 @@ class NewScheduleItemScreen extends StatelessWidget {
       );
     }
 
+  @override
+  Widget build(BuildContext context) {
+    
+
+    
+
     return SafeArea(
         child: Scaffold(
       resizeToAvoidBottomInset: true,
@@ -96,12 +113,42 @@ class NewScheduleItemScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text(
-              'Thêm hoạt động',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            Text(
+              widget.item != null ? 'Chỉnh sửa hoạt động' : 'Thêm hoạt động',
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             SizedBox(
               height: 2.h,
+            ),
+            Container(
+              padding: const EdgeInsets.only(left: 12, right: 8),
+              decoration: BoxDecoration(
+                  border: Border.all(color: Colors.grey),
+                  borderRadius: const BorderRadius.all(Radius.circular(14))),
+              child: DropdownButton<String>(
+                hint: const Text(
+                  'Dạng hoạt động',
+                  style: TextStyle(fontSize: 18),
+                ),
+                iconSize: 36,
+                underline: const SizedBox(),
+                isExpanded: true,
+                dropdownColor: Colors.white,
+                icon: const Icon(Icons.arrow_drop_down),
+                style: const TextStyle(color: Colors.black, fontSize: 18),
+                value: _selectedType,
+                onChanged: (value) {
+                  setState(() {
+                    _selectedType = value;
+                    print(1);
+                  });
+                },
+                items: schedule_item_types_vn
+                    .map(
+                      (e) => DropdownMenuItem(child: Text(e), value: e),
+                    )
+                    .toList(),
+              ),
             ),
             Container(
               child: Form(
@@ -109,58 +156,21 @@ class NewScheduleItemScreen extends StatelessWidget {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
+                      SizedBox(
+                        height: 2.h,
+                      ),
                       defaultTextFormField(
                           controller: _titleController,
                           inputType: TextInputType.text,
-                          text: 'Hoạt động mới',
+                          text: widget.item != null
+                              ? 'Mô tả hoạt động'
+                              : 'Mô tả hoạt động mới',
                           onValidate: (value) {
                             if (value!.isEmpty) {
                               return "Ngày của hoạt động không được để trống";
                             }
                           },
                           hinttext: 'Câu cá, tắm suối...'),
-                      SizedBox(
-                        height: 2.h,
-                      ),
-                      defaultTextFormField(
-                          readonly: true,
-                          controller: _dateController,
-                          inputType: TextInputType.datetime,
-                          text: 'Ngày',
-                          onTap: () async {
-                            DateTime? newDay = await showDatePicker(
-                                context: context,
-                                initialDate: DateTime.now(),
-                                firstDate: DateTime(1900),
-                                lastDate: DateTime(2024),
-                                builder: (context, child) {
-                                  return Theme(
-                                    data: ThemeData().copyWith(
-                                        colorScheme: const ColorScheme.light(
-                                            primary: primaryColor,
-                                            onPrimary: Colors.white)),
-                                    child: DatePickerDialog(
-                                      initialDate: item != null
-                                          ? item!.date
-                                          : startDate.add(
-                                              Duration(days: selectedIndex)),
-                                      firstDate: startDate,
-                                      lastDate: endDate,
-                                    ),
-                                  );
-                                });
-                            if (newDay != null) {
-                              _selectedDate = newDay;
-                              _dateController.text =
-                                  DateFormat.yMMMMEEEEd('vi_VN').format(newDay);
-                            }
-                          },
-                          prefixIcon: const Icon(Icons.calendar_month),
-                          onValidate: (value) {
-                            if (value!.isEmpty) {
-                              return "Ngày của hoạt động không được để trống";
-                            }
-                          }),
                       SizedBox(
                         height: 2.h,
                       ),
@@ -180,8 +190,8 @@ class NewScheduleItemScreen extends StatelessWidget {
                                           primary: primaryColor,
                                           onPrimary: Colors.white)),
                                   child: TimePickerDialog(
-                                    initialTime: item != null
-                                        ? item!.time
+                                    initialTime: widget.item != null
+                                        ? widget.item!.time
                                         : TimeOfDay.now(),
                                   ),
                                 );
@@ -199,6 +209,27 @@ class NewScheduleItemScreen extends StatelessWidget {
                             }
                           },
                           prefixIcon: const Icon(Icons.watch_later_outlined)),
+                      SizedBox(
+                        height: 2.h,
+                      ),
+                      // defaultTextFormField(
+                      //   readonly: true,
+                      //   controller: _dateController,
+                      //   inputType: TextInputType.datetime,
+                      //   text: 'Ngày',
+                      //   prefixIcon: const Icon(Icons.calendar_month),
+                      // ),
+                      TextFormField(
+                        controller: _dateController,
+                        readOnly: true,
+                        style: const TextStyle(
+                            fontWeight: FontWeight.normal, fontSize: 18),
+                        decoration: const InputDecoration(
+                            prefixIcon: Icon(Icons.calendar_month),
+                            prefixIconColor: primaryColor,
+                            border: OutlineInputBorder(
+                                borderSide: BorderSide.none)),
+                      )
                     ],
                   )),
             )

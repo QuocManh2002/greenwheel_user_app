@@ -1,9 +1,13 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
+import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -34,17 +38,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     with TickerProviderStateMixin {
   bool isLoading = true;
   PlanService _planService = PlanService();
+  LocationService _locationService = LocationService();
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
-  // List<OrderCreatePlan> _orderList = [];
   PlanDetail? _planDetail;
   late TabController tabController;
   late TextEditingController newItemController;
   List<PlanMemberViewModel> _planMembers = [];
-  int total = 0;
-  SupplierService _supplierService = SupplierService();
+  double total = 0;
   List<SupplierViewModel>? _saveSupplier;
-  // List<PlanSchedule> scheduleList = [];
 
   @override
   void initState() {
@@ -84,20 +86,73 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       // _orderList = orderList;
     });
     if (_planDetail != null) {
-      if (_planDetail!.savedContacts != null) {
-        List<int> ids = _planDetail!.savedContacts!
-            .map((e) => int.parse(e.toString()))
-            .toList();
-        final rs = await _supplierService.getSuppliersByIds(ids);
-        setState(() {
-          _saveSupplier = rs;
-        });
-      }
+      // if (_planDetail!.savedContacts != null) {
+      //   List<int> ids = _planDetail!.savedContacts!
+      //       .map((e) => int.parse(e.toString()))
+      //       .toList();
+      //   final rs = await _supplierService.getSuppliersByIds(ids);
+      //   setState(() {
+      //     _saveSupplier = rs;
+      //   });
+      // }
+      print(_planDetail!.startLocationLat);
+      print(_planDetail!.startLocationLng);
+      print(_planDetail!.startDate);
+      print(_planDetail!.schedule);
+      print(_planDetail!.savedContacts!.map((e) => e.toJson(e)).toList());
+      print(TimeOfDay.fromDateTime(_planDetail!.startDate).toString());
 
       setState(() {
         isLoading = false;
       });
       print(_saveSupplier);
+    }
+  }
+
+  updatePlan() async {
+    final location =
+        await _locationService.GetLocationById(_planDetail!.locationId);
+    if (location != null) {
+      // sharedPreferences.remove("plan_distance");
+      // sharedPreferences.remove("plan_duration");
+      // sharedPreferences.remove('plan_is_change');
+      // sharedPreferences.remove('plan_saved_emergency');
+
+      final defaultComboDate = listComboDate
+              .firstWhere((element) =>
+                  element.duration == location.suggestedTripLength * 2)
+              .id -
+          1;
+
+      sharedPreferences.setInt('planId', widget.planId);
+      sharedPreferences.setInt(
+          "plan_number_of_member", _planDetail!.memberLimit);
+      sharedPreferences.setInt('plan_combo_date', defaultComboDate);
+      sharedPreferences.setDouble(
+          'plan_start_lat', _planDetail!.startLocationLat);
+      sharedPreferences.setDouble(
+          'plan_start_lng', _planDetail!.startLocationLng);
+      sharedPreferences.setString(
+          'plan_start_date', _planDetail!.startDate.toString());
+      sharedPreferences.setString('plan_start_time',
+          '${_planDetail!.startDate.hour}:${_planDetail!.startDate.minute}');
+      sharedPreferences.setString(
+          'plan_end_date', _planDetail!.endDate.toString());
+      sharedPreferences.setString(
+          'plan_schedule', _planDetail!.schedule.toString());
+      sharedPreferences.setString(
+          'plan_saved_emergency',
+          _planDetail!.savedContacts!
+              .map((e) => e.toJson(e))
+              .toList()
+              .toString());
+
+      Navigator.of(context).pop();
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (ctx) => CreateNewPlanScreen(
+                location: location,
+                isCreate: false,
+              )));
     }
   }
 
@@ -107,6 +162,18 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         child: Scaffold(
             appBar: AppBar(
               title: Text('Kế hoạch'),
+              actions: [
+                Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: IconButton(
+                    onPressed: updatePlan,
+                    icon: const Icon(
+                      Icons.edit_square,
+                      size: 32,
+                    ),
+                  ),
+                )
+              ],
             ),
             body: isLoading
                 ? const Center(
@@ -228,45 +295,59 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   const SizedBox(
                                     height: 16,
                                   ),
-                                  if (_saveSupplier != null)
-                                    Container(
-                                        alignment: Alignment.centerLeft,
-                                        child: Text(
-                                          'Dịch vụ khẩn cấp đã lưu: ',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold),
-                                        )),
-                                  if (_saveSupplier != null)
-                                    const SizedBox(
-                                      height: 16,
-                                    ),
-                                  if (_saveSupplier != null)
-                                    for (final sup in _saveSupplier!)
-                                      Container(
-                                        alignment: Alignment.centerLeft,
-                                        padding:const EdgeInsets.only(left: 16),
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(sup.name, style: const TextStyle(fontSize: 16),),
-                                            Text(sup.phone, style: const TextStyle(fontSize: 16),),
-                                            Text(sup.address, style: const TextStyle(fontSize: 16),),
-                                            const SizedBox(
-                                              height: 12,
-                                            )
-                                          ],
+                                  if (_planDetail!.savedContacts != null)
+                                    Column(
+                                      children: [
+                                        Container(
+                                            alignment: Alignment.centerLeft,
+                                            child: const Text(
+                                              'Dịch vụ khẩn cấp đã lưu: ',
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold),
+                                            )),
+                                        const SizedBox(
+                                          height: 16,
                                         ),
-                                      ),
-                                  if (_saveSupplier != null)
-                                    Container(
-                                      height: 1.8,
-                                      color: Colors.grey.withOpacity(0.4),
-                                    ),
-                                  if (_saveSupplier != null)
-                                    const SizedBox(
-                                      height: 16,
+                                        for (final sup
+                                            in _planDetail!.savedContacts!)
+                                          Container(
+                                            alignment: Alignment.centerLeft,
+                                            padding:
+                                                const EdgeInsets.only(left: 16),
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                Text(
+                                                  sup.name!,
+                                                  style: const TextStyle(
+                                                      fontSize: 16),
+                                                ),
+                                                Text(
+                                                  '0${sup.phone!.substring(3)}',
+                                                  style: const TextStyle(
+                                                      fontSize: 16),
+                                                ),
+                                                Text(
+                                                  sup.address!,
+                                                  style: const TextStyle(
+                                                      fontSize: 16),
+                                                ),
+                                                const SizedBox(
+                                                  height: 12,
+                                                )
+                                              ],
+                                            ),
+                                          ),
+                                        Container(
+                                          height: 1.8,
+                                          color: Colors.grey.withOpacity(0.4),
+                                        ),
+                                        const SizedBox(
+                                          height: 16,
+                                        ),
+                                      ],
                                     ),
                                   Container(
                                     alignment: Alignment.topLeft,
@@ -366,7 +447,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                       tabs: [
                                         Tab(
                                           text: "(${_listMotel.length})",
-                                          icon: const Icon(Icons.bed),
+                                          icon: const Icon(Icons.hotel),
                                         ),
                                         Tab(
                                           text: "(${_listRestaurant.length})",

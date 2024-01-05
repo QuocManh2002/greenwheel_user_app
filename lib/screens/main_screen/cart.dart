@@ -734,11 +734,13 @@ class _CartScreenState extends State<CartScreen> {
         planId: sharedPreferences.getInt('planId'),
         period: widget.session.enumName,
         details: details,
-        servingDates: dates);
+        servingDates: dates,
+        note: noteController.text
+        );
 
-    if (widget.note.isNotEmpty) {
-      order.note = noteController.text;
-    }
+  
+
+    
 
     return order;
   }

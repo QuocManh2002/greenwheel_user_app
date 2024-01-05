@@ -12,7 +12,7 @@ class OrderDetailViewModel {
     int id;
     String productName;
     int quantity;
-    int price;
+    double price;
 
     OrderDetailViewModel({
         required this.id,
@@ -25,7 +25,7 @@ class OrderDetailViewModel {
         id: json["id"],
         productName: json["product"]["name"],
         quantity: json["quantity"],
-        price: json["price"],
+        price: double.parse(json["price"].toString()),
     );
 
     Map<String, dynamic> toJson() => {

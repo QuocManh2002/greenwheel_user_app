@@ -544,6 +544,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                   Navigator.of(context).push(MaterialPageRoute(
                                       builder: (ctx) => CreateNewPlanScreen(
                                             location: widget.location,
+                                            isCreate: true,
                                           )));
                                 },
                                 style: elevatedButtonStyle,

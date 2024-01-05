@@ -13,21 +13,24 @@ class OrderDetailScreen extends StatefulWidget {
 }
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
-TextEditingController noteController = TextEditingController();
+  TextEditingController noteController = TextEditingController();
+  bool isExpanded = false;
+  List<DateTime> _servingDates = [];
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    if(widget.order.note == null){
+    if (widget.order.note == null || widget.order.note!.isEmpty) {
       noteController.text = 'Không có ghi chú';
-    }else{
+    } else {
       noteController.text = widget.order.note!;
     }
+    _servingDates =
+        widget.order.servingDates.map((e) => DateTime.parse(e)).toList();
   }
+
   @override
   Widget build(BuildContext context) {
-    
-
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
@@ -124,7 +127,7 @@ TextEditingController noteController = TextEditingController();
               child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                     Row(
+                    Row(
                       children: [
                         const Icon(
                           Icons.calendar_month,
@@ -149,26 +152,74 @@ TextEditingController noteController = TextEditingController();
                     const SizedBox(
                       height: 12,
                     ),
-                    const Row(
+                    Row(
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.calendar_month,
                           color: primaryColor,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 8,
                         ),
-                        Text(
+                        const Text(
                           'Ngày phục vụ: ',
                           style: TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
-                        Text(
-                          '10/3/2023',
-                          style: TextStyle(
-                            fontSize: 18,
+                        if (!isExpanded)
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${_servingDates[0].day}/${_servingDates[0].month}/${_servingDates[0].year}',
+                                style: const TextStyle(fontSize: 18),
+                              ),
+                              const SizedBox(width: 8,),
+                              if (_servingDates.length > 1)
+                                Text(
+                                  '+${_servingDates.length - 1} ngày',
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                              IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      isExpanded = !isExpanded;
+                                    });
+                                  },
+                                  icon: const Icon(
+                                    Icons.arrow_drop_down,
+                                    size: 36,
+                                  ))
+                            ],
                           ),
-                        )
+                        if (isExpanded)
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  for (final date in _servingDates)
+                                    Text(
+                                      '${date.day}/${date.month}/${date.year}',
+                                      style: const TextStyle(fontSize: 18),
+                                    ),
+                                ],
+                              ),
+                              IconButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      isExpanded = !isExpanded;
+                                    });
+                                  },
+                                  icon: const Icon(
+                                    Icons.arrow_drop_up,
+                                    size: 36,
+                                  ))
+                            ],
+                          )
                       ],
                     ),
                     const SizedBox(
@@ -237,48 +288,51 @@ TextEditingController noteController = TextEditingController();
                     const SizedBox(
                       height: 12,
                     ),
-                    for(final detail in widget.order.details!)
-
-
-                     Column(
-                       children: [
-                         Padding(
-                          padding: EdgeInsets.symmetric(vertical: 16),
-                          child: Row(
-                            children: [
-                              Text(
-                                '${detail.quantity}x',
-                                style:const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(
-                                width: 18,
-                              ),
-                               Text(
-                                detail.productName,
-                                style:const TextStyle(fontSize: 18),
-                              ),
-                              const Spacer(),
-                              Text(
-                                NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(detail.price),
-                                style:const TextStyle(fontSize: 14),
-                              )
-                            ],
+                    for (final detail in widget.order.details!)
+                      Column(
+                        children: [
+                          Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Row(
+                              children: [
+                                Text(
+                                  '${detail.quantity}x',
+                                  style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                const SizedBox(
+                                  width: 18,
+                                ),
+                                Text(
+                                  detail.productName,
+                                  style: const TextStyle(fontSize: 18),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  NumberFormat.simpleCurrency(
+                                          locale: 'en-US',
+                                          decimalDigits: 0,
+                                          name: "")
+                                      .format(detail.price),
+                                  style: const TextStyle(fontSize: 14),
+                                )
+                              ],
+                            ),
                           ),
-                    ),
-                    Container(
-                      decoration: BoxDecoration(
-                          color: Colors.grey.withOpacity(0.7),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(12))),
-                      height: 0.2.h,
-                    ),
-                       ],
-                     ),
+                          Container(
+                            decoration: BoxDecoration(
+                                color: Colors.grey.withOpacity(0.7),
+                                borderRadius: const BorderRadius.all(
+                                    Radius.circular(12))),
+                            height: 0.2.h,
+                          ),
+                        ],
+                      ),
                     const SizedBox(
                       height: 12,
                     ),
-                     Row(
+                    Row(
                       children: [
                         const Text(
                           'Tổng',

@@ -38,7 +38,7 @@ mutation{
     memberLimit:${model.memberLimit}
     name: ${json.encode(model.name)}
     schedule:${model.schedule}
-    savedContacts:[]
+    savedContacts:${model.savedContacts}
   }){
     id
   }
@@ -238,6 +238,9 @@ query GetPlanById(\$planId: Int){
       savedContacts
       status
       joinMethod
+      departurePosition{
+        coordinates
+      }
       orders{
         id
       planId

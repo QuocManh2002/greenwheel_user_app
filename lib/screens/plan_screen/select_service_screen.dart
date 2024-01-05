@@ -6,7 +6,6 @@ import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -152,7 +151,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                   tabs: [
                     Tab(
                       text: "(${_listMotel.length})",
-                      icon: const Icon(Icons.bed),
+                      icon: const Icon(Icons.hotel),
                     ),
                     Tab(
                       text: "(${_listRestaurant.length})",

@@ -23,6 +23,8 @@ class PlanDetail {
   String status;
   String locationName;
   int locationId;
+  double startLocationLat;
+  double startLocationLng;
   List<dynamic> imageUrls;
   List<OrderViewModel>? orders;
   List<EmergencyContactViewModel>? savedContacts;
@@ -40,6 +42,8 @@ class PlanDetail {
       required this.name,
       required this.joinMethod,
       this.savedContacts,
+      required this.startLocationLat,
+      required this.startLocationLng,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -54,7 +58,9 @@ class PlanDetail {
         locationId: json["location"]["id"],
         imageUrls: json["location"]["imageUrls"],
         joinMethod: json["joinMethod"],
-        savedContacts: List<EmergencyContactViewModel>.from(json['savedContacts'].map((e) => EmergencyContactViewModel.fromJson(e))).toList(),
+        startLocationLat: json["departurePosition"]["coordinates"][1].toDouble(),
+        startLocationLng: json["departurePosition"]["coordinates"][0].toDouble(),
+        savedContacts: List<EmergencyContactViewModel>.from(json['savedContacts'].map((e) => EmergencyContactViewModel.fromJsonByPlan(e))).toList(),
       );
 
   Map<String, dynamic> toJson() => {

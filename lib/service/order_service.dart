@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
@@ -24,7 +26,7 @@ class OrderService extends Iterable {
   createOrder(         
     dto: {
       details: $details
-      note: ${order.note}
+      note: ${json.encode(order.note)}
       period: ${order.period}
       planId: ${order.planId}
       servingDates: ${order.servingDates}
