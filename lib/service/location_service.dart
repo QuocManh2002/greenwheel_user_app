@@ -55,7 +55,7 @@ class LocationService extends Iterable {
 
       List<LocationViewModel> locations =
           res.map((location) => LocationViewModel.fromJson(location)).toList();
-    
+
       return locations;
     } catch (error) {
       throw Exception(error);
@@ -159,7 +159,7 @@ query search(\$search: String!) {
     searchLocations
     (
       first: 100, 
-      searchTerm: \$search,
+      searchTerm: $search,
       where: {
         $seasons
         $activities
@@ -176,16 +176,13 @@ query search(\$search: String!) {
           activities
           seasons
           topographic
-          suggestedTripLength
           templateSchedule
           coordinate{coordinates}
           address
-          lifeguardPhone
-          lifeguardAddress
-          clinicPhone
-          clinicAddress
           hotline
           provinceId
+          emergencyContacts
+          templateEvents
         }
     }
 }
@@ -214,16 +211,13 @@ query search(\$search: String!) {
           activities
           seasons
           topographic
-          suggestedTripLength
           templateSchedule
           coordinate{coordinates}
           address
-          lifeguardPhone
-          lifeguardAddress
-          clinicPhone
-          clinicAddress
           hotline
           provinceId
+          emergencyContacts
+          templateEvents
         }
     }
 }
@@ -240,6 +234,7 @@ query search(\$search: String!) {
 
       List<LocationViewModel> locations =
           res.map((location) => LocationViewModel.fromJson(location)).toList();
+
       return locations;
     } catch (error) {
       throw Exception(error);

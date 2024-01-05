@@ -1,3 +1,4 @@
+import 'package:choose_input_chips/choose_input_chips.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
@@ -30,12 +31,15 @@ class SearchScreen extends StatefulWidget {
 class _SearchScreenState extends State<SearchScreen> {
   final LocationService locationService = LocationService();
 
-  TextEditingController searchController = TextEditingController();
-
   List<Tag> currentTags = [];
   List<LocationViewModel> locations = [];
 
   bool isLoading = true;
+
+  final _chipKey = GlobalKey<ChipsInputState>();
+  String searchTerm = "";
+  List<String> tagNames = [];
+  List<Tag> listTags = [];
 
   @override
   void initState() {
@@ -45,10 +49,10 @@ class _SearchScreenState extends State<SearchScreen> {
   }
 
   _setUpData() async {
-    searchController.text = widget.search;
+    searchTerm = widget.search;
     currentTags = List.from(widget.list);
-    List<LocationViewModel> result = await locationService.searchLocations(
-        searchController.text, currentTags);
+    List<LocationViewModel> result =
+        await locationService.searchLocations(searchTerm, currentTags);
     setState(() {
       locations = result;
     });
@@ -60,115 +64,245 @@ class _SearchScreenState extends State<SearchScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(10.h),
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 2.h),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-            ),
-            child: Row(
-              children: [
-                IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back,
-                    color: Colors.black,
+          preferredSize: Size.fromHeight(12.h),
+          child: AppBar(
+            flexibleSpace: Container(
+              padding: EdgeInsets.symmetric(vertical: 2.h),
+              width: double.infinity,
+              decoration: const BoxDecoration(
+                color: Colors.white,
+              ),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(
+                      Icons.arrow_back,
+                      color: Colors.black,
+                    ),
+                    onPressed: () {
+                      // Handle return icon action here
+                      Navigator.of(context).pop(); // Close the current page
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (ctx) => const TabScreen(
+                            pageIndex: 0,
+                          ),
+                        ),
+                      );
+                    },
                   ),
-                  onPressed: () {
-                    // Handle return icon action here
-                    Navigator.of(context).pop(); // Close the current page
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => const TabScreen(
-                          pageIndex: 0,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-                Expanded(
-                  child: TextField(
-                    controller: searchController,
-                    decoration: InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(width: 1, color: Colors.grey),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide:
-                            const BorderSide(width: 1, color: Colors.black),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      suffixIcon: IconButton(
-                        icon: const Icon(
-                          Icons.search,
-                          color: Colors.black,
-                        ),
-                        onPressed: () async {
-                          // setState(() {
-                          //   var tagsByName =
-                          //       searchTagsByName(searchController.text);
-                          //   if (tagsByName.isEmpty) {
-                          //     // var locationsByName =
-                          //     //     searchTagsByName(searchController.text);
-                          //   } else {
-                          //     setState(() {
-                          //       // Iterate over tagsByName
-                          //       for (Tag tag in tagsByName) {
-                          //         // Check if any tag in currentTags has the same title
-                          //         bool titleExists = currentTags.any(
-                          //             (existingTag) =>
-                          //                 existingTag.title == tag.title);
+                  // Expanded(
+                  //   child: TextField(
+                  //     controller: searchController,
+                  //     decoration: InputDecoration(
+                  //       enabledBorder: OutlineInputBorder(
+                  //         borderSide:
+                  //             const BorderSide(width: 1, color: Colors.grey),
+                  //         borderRadius: BorderRadius.circular(20),
+                  //       ),
+                  //       focusedBorder: OutlineInputBorder(
+                  //         borderSide:
+                  //             const BorderSide(width: 1, color: Colors.black),
+                  //         borderRadius: BorderRadius.circular(20),
+                  //       ),
+                  //       suffixIcon: IconButton(
+                  //         icon: const Icon(
+                  //           Icons.search,
+                  //           color: Colors.black,
+                  //         ),
+                  //         onPressed: () async {
+                  //           // setState(() {
+                  //           //   var tagsByName =
+                  //           //       searchTagsByName(searchController.text);
+                  //           //   if (tagsByName.isEmpty) {
+                  //           //     // var locationsByName =
+                  //           //     //     searchTagsByName(searchController.text);
+                  //           //   } else {
+                  //           //     setState(() {
+                  //           //       // Iterate over tagsByName
+                  //           //       for (Tag tag in tagsByName) {
+                  //           //         // Check if any tag in currentTags has the same title
+                  //           //         bool titleExists = currentTags.any(
+                  //           //             (existingTag) =>
+                  //           //                 existingTag.title == tag.title);
 
-                          //         // If the title doesn't exist, add the tag to currentTags
-                          //         if (!titleExists) {
-                          //           currentTags.add(tag);
-                          //         }
-                          //       }
-                          //     });
-                          //   }
-                          // });
-                          List<LocationViewModel> result =
-                              await locationService.searchLocations(
-                                  searchController.text, currentTags);
-                          setState(() {
-                            locations = result;
-                          });
-                        },
+                  //           //         // If the title doesn't exist, add the tag to currentTags
+                  //           //         if (!titleExists) {
+                  //           //           currentTags.add(tag);
+                  //           //         }
+                  //           //       }
+                  //           //     });
+                  //           //   }
+                  //           // });
+                  //           List<LocationViewModel> result =
+                  //               await locationService.searchLocations(
+                  //                   searchController.text, currentTags);
+                  //           setState(() {
+                  //             locations = result;
+                  //           });
+                  //         },
+                  //       ),
+                  //       hintText: "Bạn có dự định đi đâu?",
+                  //       contentPadding: EdgeInsets.all(4.w),
+                  //     ),
+                  //   ),
+                  // ),
+                  Expanded(
+                    child: ChipsInput(
+                      decoration: InputDecoration(
+                        enabledBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(width: 1, color: Colors.grey),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide:
+                              const BorderSide(width: 1, color: Colors.black),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        suffixIcon: IconButton(
+                          icon: const Icon(
+                            Icons.search,
+                            color: Colors.black,
+                          ),
+                          onPressed: () async {
+                            setState(() {
+                              var tagsByName = searchTagsInList(tagNames);
+                              if (tagsByName.isEmpty) {
+                                // var locationsByName =
+                                //     searchTagsByName(searchController.text);
+                              } else {
+                                setState(() {
+                                  // Iterate over tagsByName
+                                  for (Tag tag in tagsByName) {
+                                    // Check if any tag in currentTags has the same title
+                                    bool titleExists = currentTags.any(
+                                        (existingTag) =>
+                                            existingTag.title == tag.title);
+
+                                    // If the title doesn't exist, add the tag to currentTags
+                                    if (!titleExists) {
+                                      currentTags.add(tag);
+                                    }
+                                  }
+                                });
+                              }
+                            });
+                            List<LocationViewModel> result =
+                                await locationService.searchLocations(
+                                    searchTerm, currentTags);
+                            setState(() {
+                              locations = result;
+                            });
+                            print(result.length);
+                          },
+                        ),
+                        hintText: "Bạn có dự định đi đâu?",
+                        contentPadding: EdgeInsets.all(4.w),
                       ),
-                      hintText: "Bạn có dự định đi đâu?",
-                      contentPadding: EdgeInsets.all(4.w),
+                      key: _chipKey,
+                      // initialValue: [mockResults[3]],
+                      allowChipEditing: true,
+                      textStyle: const TextStyle(
+                        height: 1.5,
+                        fontFamily: 'Roboto',
+                        fontSize: 16,
+                      ),
+                      findSuggestions: (String query) {
+                        if (query.isNotEmpty) {
+                          var lowercaseQuery = query.toLowerCase();
+                          var tmp = tags.where((tag) {
+                            return tag.title
+                                .toLowerCase()
+                                .contains(query.toLowerCase());
+                            //     ||
+                            // tag.enumName
+                            //     .toLowerCase()
+                            //     .contains(query.toLowerCase());
+                          }).toList(growable: false)
+                            ..sort((a, b) => a.title
+                                .toLowerCase()
+                                .indexOf(lowercaseQuery)
+                                .compareTo(b.title
+                                    .toLowerCase()
+                                    .indexOf(lowercaseQuery)));
+                          setState(() {
+                            searchTerm = query;
+                          });
+                          return tmp;
+                        }
+                        // return mockResults;
+                        return listTags;
+                      },
+                      onChanged: (data) {
+                        // this is a good place to update application state
+                        tagNames = [];
+                        for (var element in data) {
+                          setState(() {
+                            tagNames.add(element.title);
+                          });
+                        }
+                      },
+                      chipBuilder: (context, state, dynamic tag) {
+                        return InputChip(
+                          key: ObjectKey(tag),
+                          label: Text(tag.title),
+                          // avatar: CircleAvatar(
+                          //   backgroundImage:
+                          //       AssetImage('assets/avatars/${tag.title}'),
+                          // ),
+                          onDeleted: () => state.deleteChip(tag),
+                          materialTapTargetSize:
+                              MaterialTapTargetSize.shrinkWrap,
+                        );
+                      },
+                      suggestionBuilder: (context, state, dynamic tag) {
+                        return ListTile(
+                          key: ObjectKey(tag),
+                          // leading: CircleAvatar(
+                          //   backgroundImage:
+                          //       AssetImage('assets/avatars/${tag.title}'),
+                          // ),
+                          title: Text(tag.title),
+                          // subtitle: Text(profile.email),
+                          onTap: () => {
+                            state.selectSuggestion(tag),
+                            setState(() {
+                              searchTerm = "";
+                            }),
+                          },
+                        );
+                      },
                     ),
                   ),
-                ),
-                (searchController.text.isEmpty)
-                    ? Container(
-                        margin: const EdgeInsets.only(right: 20),
-                      )
-                    : IconButton(
-                        icon: const Icon(
-                          Icons.more_vert,
-                          color: Colors.black,
-                        ),
-                        onPressed: () {
-                          // Handle threedot icon action here
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (ctx) => SearchCategoryScreen(
-                                list: currentTags,
-                                search: searchController.text,
-                                provinceList: widget.provinces,
+                  (locations.isEmpty)
+                      ? Container(
+                          margin: const EdgeInsets.only(right: 20),
+                        )
+                      : IconButton(
+                          icon: const Icon(
+                            Icons.more_vert,
+                            color: Colors.black,
+                          ),
+                          onPressed: () {
+                            // Handle threedot icon action here
+                            Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (ctx) => SearchCategoryScreen(
+                                  list: currentTags,
+                                  search: searchTerm,
+                                  provinceList: widget.provinces,
+                                ),
                               ),
-                            ),
-                          );
-                        },
-                      ),
-              ],
+                            );
+                          },
+                        ),
+                ],
+              ),
             ),
           ),
         ),
-        body: (searchController.text.isEmpty)
+        body: (locations.isEmpty)
             ? SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -334,7 +468,7 @@ class _SearchScreenState extends State<SearchScreen> {
                         ? Padding(
                             padding: const EdgeInsets.only(left: 16, top: 14),
                             child: Text(
-                              'Kết quả tìm kiếm của "${searchController.text.trim()}"',
+                              'Kết quả tìm kiếm của "${searchTerm.trim()}"',
                               style: const TextStyle(
                                 fontSize: 19,
                                 fontFamily: 'NotoSans',
@@ -361,17 +495,37 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 
-  List<Tag> searchTagsByName(String query) {
+  // List<Tag> searchTagsByName(String query) {
+  //   // Create an empty list to store the search results
+  //   List<Tag> searchResults = [];
+
+  //   // Split the query into multiple search terms
+  //   List<String> searchTerms = query.trim().toLowerCase().split(' ');
+
+  //   // Perform a case-insensitive search for tags by each search term
+  //   for (String term in searchTerms) {
+  //     for (Tag tag in tags) {
+  //       if (tag.title.toLowerCase() == (term)) {
+  //         // Add the tag to the search results if its title contains the search term
+  //         searchResults.add(tag);
+  //       }
+  //     }
+  //   }
+
+  //   // Remove duplicates by creating a Set and converting it back to a List
+  //   searchResults = searchResults.toSet().toList();
+
+  //   return searchResults;
+  // }
+
+  List<Tag> searchTagsInList(List<String> list) {
     // Create an empty list to store the search results
     List<Tag> searchResults = [];
 
-    // Split the query into multiple search terms
-    List<String> searchTerms = query.trim().toLowerCase().split(' ');
-
     // Perform a case-insensitive search for tags by each search term
-    for (String term in searchTerms) {
+    for (String term in list) {
       for (Tag tag in tags) {
-        if (tag.title.toLowerCase() == (term)) {
+        if (tag.title.toLowerCase() == (term.toLowerCase())) {
           // Add the tag to the search results if its title contains the search term
           searchResults.add(tag);
         }
@@ -380,7 +534,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
     // Remove duplicates by creating a Set and converting it back to a List
     searchResults = searchResults.toSet().toList();
-
     return searchResults;
   }
 }
