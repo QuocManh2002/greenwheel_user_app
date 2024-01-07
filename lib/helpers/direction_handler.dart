@@ -1,5 +1,5 @@
 
-import 'package:greenwheel_user_app/helpers/mapbox_reuqest.dart';
+import 'package:greenwheel_user_app/helpers/mapbox_request.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 
 Future <Map> getDirectionsAPIResponse(LatLng currentLatLng, LatLng destination) async{

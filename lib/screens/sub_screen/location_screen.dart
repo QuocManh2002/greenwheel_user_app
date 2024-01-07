@@ -4,17 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/comments.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
-import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/comment_card.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:greenwheel_user_app/widgets/search_screen_widget/tag.dart';
 import 'package:readmore/readmore.dart';
@@ -277,173 +273,6 @@ class _LocationScreenState extends State<LocationScreen> {
                                       foregroundColor:
                                           const MaterialStatePropertyAll(
                                               Colors.black)),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                child: Container(
-                                  height: 1.8,
-                                  color: Colors.grey.withOpacity(0.4),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 12),
-                                child: Text(
-                                  "Khẩn cấp",
-                                  style: TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              Emergency(location: widget.location),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                child: Container(
-                                  height: 1.8,
-                                  color: Colors.grey.withOpacity(0.4),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 12),
-                                child: Text(
-                                  "Các loại dịch vụ",
-                                  style: TextStyle(
-                                      fontSize: 19,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 30),
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (ctx) => ServiceMainScreen(
-                                          startDate: DateTime.now(),
-                                          endDate: DateTime.now(),
-                                          numberOfMember: 0,
-                                          serviceType: services[1],
-                                          location: widget.location,
-                                          callbackFunction: (List<OrderViewModel> orderList){},
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.bed),
-                                  label: const Text("Lưu trú"),
-                                  style: outlinedButtonStyle.copyWith(
-                                      foregroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.black),
-                                      alignment: Alignment.centerLeft),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 30),
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (ctx) => ServiceMainScreen(
-                                          startDate: DateTime.now(),
-                                          endDate: DateTime.now(),
-                                          numberOfMember: 0,
-                                          serviceType: services[0],
-                                          location: widget.location,
-                                          callbackFunction: (List<OrderViewModel> orderList){},
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.restaurant),
-                                  label: const Text("Ăn uống"),
-                                  style: outlinedButtonStyle.copyWith(
-                                      foregroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.black),
-                                      alignment: Alignment.centerLeft),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 30),
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (ctx) => ServiceMainScreen(
-                                          startDate: DateTime.now(),
-                                          endDate: DateTime.now(),
-                                          numberOfMember: 0,
-                                          serviceType: services[2],
-                                          location: widget.location,
-                                          callbackFunction: (List<OrderViewModel> orderList){},
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.car_crash),
-                                  label: const Text("Đi lại"),
-                                  style: outlinedButtonStyle.copyWith(
-                                      foregroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.black),
-                                      alignment: Alignment.centerLeft),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 30),
-                                child: OutlinedButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                      MaterialPageRoute(
-                                        builder: (ctx) => ServiceMainScreen(
-                                          startDate: DateTime.now(),
-                                          endDate: DateTime.now(),
-                                          numberOfMember: 0,
-                                          serviceType: services[3],
-                                          location: widget.location,
-                                          callbackFunction: (List<OrderViewModel> orderList){},
-                                        ),
-                                      ),
-                                    );
-                                  },
-                                  icon: const Icon(Icons.shopping_cart),
-                                  label: const Text("Tiện lợi"),
-                                  style: outlinedButtonStyle.copyWith(
-                                      foregroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.black),
-                                      alignment: Alignment.centerLeft),
                                 ),
                               ),
                               const SizedBox(

@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_config/flutter_config.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
@@ -45,6 +46,8 @@ void main() async {
   await initHiveForFlutter();
   await Hive.initFlutter();
   await Hive.openBox('myPlans');
+  await FlutterConfig.loadEnvVariables();
+
   // final _myPlans = Hive.box('myPlans');
   // _myPlans.clear();
   hasConnection = await InternetConnectionChecker().hasConnection;
@@ -68,14 +71,11 @@ class MainApp extends StatelessWidget {
 
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        home: 
-        hasConnection
-            ?
-             userToken != null
+        home: hasConnection
+            ? userToken != null
                 ? const SplashScreen()
                 : const LoginScreen()
-            : 
-            const OfflineHomeScreen(),
+            : const OfflineHomeScreen(),
         // home: const LoginScreen(),
         // home: const TopupSuccessfulScreen(data: null),
         // home: const RegisterScreen(),

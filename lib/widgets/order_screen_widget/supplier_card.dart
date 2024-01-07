@@ -3,7 +3,6 @@ import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/sessions.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_detail_service.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';

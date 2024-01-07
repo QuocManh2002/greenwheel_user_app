@@ -281,6 +281,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.1"
+  extra_pedantic:
+    dependency: transitive
+    description:
+      name: extra_pedantic
+      sha256: eb9cc0842dc1c980f00fd226364456d2169d54f7118b8ae16443188063edce0b
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.5.0"
   fake_async:
     dependency: transitive
     description:
@@ -398,6 +406,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  flutter_config:
+    dependency: "direct main"
+    description:
+      name: flutter_config
+      sha256: a07e6156bb6e776e29c6357be433155acda87d1dab1a3f787a72091a1b71ffbf
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.2"
   flutter_hooks:
     dependency: transitive
     description:
@@ -480,6 +496,30 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.2.0"
+  geodesy:
+    dependency: transitive
+    description:
+      name: geodesy
+      sha256: d9959000de938adf760f946546ccbf9ebdff8f4f6d0b5c54e8b8b1ed350b1028
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.0-nullsafety.0"
+  geojson:
+    dependency: "direct main"
+    description:
+      name: geojson
+      sha256: "8aab8116d074e92ef2d1ade25ec5ae90ea8bf024a920ab46703c433ffe08878f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  geopoint:
+    dependency: transitive
+    description:
+      name: geopoint
+      sha256: "594afb50a689e6584b80b7de8332c83a78e50725dc4324b2c014d19c56de5e3f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   glob:
     dependency: transitive
     description:
@@ -548,10 +588,10 @@ packages:
     dependency: transitive
     description:
       name: graphql
-      sha256: ad11e6d12de4d73971ae1dd80885b09f3cbc0bf143b1cbc5622a6dc6d85735e7
+      sha256: d066e53446166c12537458386b507f7426f2b8801ebafc184576aab3cbc64d56
       url: "https://pub.dev"
     source: hosted
-    version: "5.2.0-beta.4"
+    version: "5.2.0-beta.7"
   graphql_flutter:
     dependency: "direct main"
     description:
@@ -596,10 +636,10 @@ packages:
     dependency: "direct main"
     description:
       name: http
-      sha256: "5895291c13fa8a3bd82e76d5627f69e0d85ca6a30dcac95c4ea19a5d555879c2"
+      sha256: "759d1a329847dd0f39226c688d3e06a6b8679668e350e2891a6474f8b4bb8525"
       url: "https://pub.dev"
     source: hosted
-    version: "0.13.6"
+    version: "1.1.0"
   http_multi_server:
     dependency: transitive
     description:
@@ -664,6 +704,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  iso:
+    dependency: transitive
+    description:
+      name: iso
+      sha256: "7030a1a096f7924deb6cccde6c7d80473dddd54eeedf20402e3d6e51b1672b27"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   js:
     dependency: transitive
     description:
@@ -688,6 +736,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.1"
+  latlong2:
+    dependency: transitive
+    description:
+      name: latlong2
+      sha256: "08ef7282ba9f76e8495e49e2dc4d653015ac929dce5f92b375a415d30b407ea0"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.8.2"
   lints:
     dependency: transitive
     description:
@@ -880,6 +936,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.1"
+  pedantic:
+    dependency: transitive
+    description:
+      name: pedantic
+      sha256: "67fc27ed9639506c856c840ccce7594d0bdcd91bc8d53d6e52359449a1d50602"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.11.1"
   permission_handler:
     dependency: "direct main"
     description:
@@ -1012,18 +1076,18 @@ packages:
     dependency: transitive
     description:
       name: rive
-      sha256: f3b8af0898c987d68019e91d92257edd902c28c816e49de033a7272e86bd5425
+      sha256: f2117a96a189758bc79bf7933865625c7a44a420ae537d2a8f6c492900136a71
       url: "https://pub.dev"
     source: hosted
-    version: "0.11.4"
+    version: "0.11.17"
   rive_common:
     dependency: transitive
     description:
       name: rive_common
-      sha256: f6687f9d70e6fd3888a9b0e9c0b307966d2ce74cf00cfb01dce906c3bbada52f
+      sha256: e41f12917cb58e0c9376836490ebaa431e12744da0c67e19dad8d4bee9fedd46
       url: "https://pub.dev"
     source: hosted
-    version: "0.1.0"
+    version: "0.2.7"
   rxdart:
     dependency: transitive
     description:
@@ -1149,6 +1213,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.99"
+  slugify:
+    dependency: transitive
+    description:
+      name: slugify
+      sha256: b272501565cb28050cac2d96b7bf28a2d24c8dae359280361d124f3093d337c3
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   smart_auth:
     dependency: transitive
     description:
@@ -1181,6 +1253,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.10.0"
+  sprintf:
+    dependency: transitive
+    description:
+      name: sprintf
+      sha256: "1fc9ffe69d4df602376b52949af107d8f5703b77cda567c4d7d86a0693120f23"
+      url: "https://pub.dev"
+    source: hosted
+    version: "7.0.0"
   stack_trace:
     dependency: transitive
     description:
@@ -1361,10 +1441,10 @@ packages:
     dependency: "direct main"
     description:
       name: uuid
-      sha256: "648e103079f7c64a36dc7d39369cabb358d377078a051d6ae2ad3aa539519313"
+      sha256: "22c94e5ad1e75f9934b766b53c742572ee2677c56bc871d850a57dad0f82127f"
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.7"
+    version: "4.2.2"
   vector_graphics:
     dependency: transitive
     description:

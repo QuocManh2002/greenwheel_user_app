@@ -10,7 +10,6 @@ import 'package:greenwheel_user_app/screens/plan_screen/base_information_screen.
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -203,8 +202,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                           if (_currentStep == 1 &&
                               sharedPreferences.getDouble('plan_duration') ==
                                   null) {
-                            handleValidationSelectLocationScreen();
-                          } else if (_currentStep == 1 &&
+                            // handleValidationSelectLocationScreen();
+                          } else if (_currentStep == 0 &&
                               !checkValidStartDateTime()) {
                             AwesomeDialog(
                                     context: context,

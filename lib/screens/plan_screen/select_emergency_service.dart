@@ -1,20 +1,13 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectEmergencyService extends StatefulWidget {
@@ -35,7 +28,6 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
   bool isLoading = true;
   PlanDetail? planDetail;
   PlanService _planService = PlanService();
-  OfflineService _offlineService = OfflineService();
   List<EmergencyContactViewModel>? emergencyContacts;
   List<EmergencyContactViewModel>? selectedEmergencyContacts = [];
   List<dynamic> rsList = [];

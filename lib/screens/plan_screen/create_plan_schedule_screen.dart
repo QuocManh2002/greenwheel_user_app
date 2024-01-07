@@ -6,7 +6,6 @@ import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
@@ -53,7 +52,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
 
   setUpData() async {
     if (widget.isCreate) {
-      testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
+      // testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
+      testList = [];
       var finalList = _planService.convertPlanScheduleToJson(testList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
     } else {
