@@ -10,6 +10,7 @@ import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -79,7 +80,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       setState(() {
         distance = mapInfo["distance"] / 1000;
         duration = mapInfo["duration"] / 3600;
-
         isLoading = false;
       });
       sharedPreferences.setDouble('plan_start_lat', selectedLocation.latitude);
@@ -108,15 +108,42 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   _onSelectLocation(LatLng _selectedLocation) async {
-    String? symbolId = sharedPreferences.getString('symbolId');
-    if (symbolId != null) {
-      controller.removeSymbol(Symbol(symbolId, SymbolOptions.defaultOptions));
+    if (!await Utils().test(
+        lon: _selectedLocation.longitude, lat: _selectedLocation.latitude)) {
+      // ignore: use_build_context_synchronously
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.warning,
+        body: const Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Xin hãy chọn địa điểm trong lãnh thổ Việt Nam',
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(
+                height: 16,
+              ),
+            ],
+          ),
+        ),
+        btnOkOnPress: () {},
+        btnOkColor: Colors.orange,
+        btnOkText: 'Ok',
+      ).show();
+    } else {
+      String? symbolId = sharedPreferences.getString('symbolId');
+      if (symbolId != null) {
+        controller.removeSymbol(Symbol(symbolId, SymbolOptions.defaultOptions));
+      }
+      SymbolOptions options = SymbolOptions(
+          geometry: _selectedLocation, iconSize: 5, iconImage: from_location);
+      Symbol symbol = await controller.addSymbol(options);
+      getMapInfo(_selectedLocation);
+      sharedPreferences.setString('symbolId', symbol.id);
     }
-    SymbolOptions options = SymbolOptions(
-        geometry: _selectedLocation, iconSize: 5, iconImage: from_location);
-    Symbol symbol = await controller.addSymbol(options);
-    getMapInfo(_selectedLocation);
-    sharedPreferences.setString('symbolId', symbol.id);
   }
 
   @override
@@ -259,13 +286,17 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                                               : const BorderRadius.all(
                                                   Radius.zero)),
                                   child: Padding(
-                                    padding: EdgeInsets.symmetric(horizontal: 2.h),
+                                    padding:
+                                        EdgeInsets.symmetric(horizontal: 2.h),
                                     child: Column(
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        const SizedBox(height: 8,),
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
                                         Text(
                                           rs.name,
                                           style: const TextStyle(fontSize: 16),
@@ -338,43 +369,43 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
           List<SearchStartLocationResult>.from(result["results"]
               .map((e) => SearchStartLocationResult.fromJson(e))).toList();
 
-      List<SearchStartLocationResult> validList = [];
+      // List<SearchStartLocationResult> validList = [];
 
-      for (final rs in resultList) {
-        if (await checkValidLatLngInVietNam(LatLng(rs.lat, rs.lng))) {
-          validList.add(rs);
-        }
-      }
-      if (validList.isEmpty) {
-        // ignore: use_build_context_synchronously
-        AwesomeDialog(
-          context: context,
-          dialogType: DialogType.warning,
-          body: const Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Xin hãy chọn địa điểm trong lãnh thổ Việt Nam',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-              ],
-            ),
-          ),
-          btnOkOnPress: () {},
-          btnOkColor: Colors.orange,
-          btnOkText: 'Ok',
-        ).show();
-      } else {
+      // for (final rs in resultList) {
+      //   if (await checkValidLatLngInVietNam(LatLng(rs.lat, rs.lng))) {
+      //     validList.add(rs);
+      //   }
+      // }
+      // if (validList.isEmpty) {
+      //   // ignore: use_build_context_synchronously
+      //   AwesomeDialog(
+      //     context: context,
+      //     dialogType: DialogType.warning,
+      //     body: const Center(
+      //       child: Column(
+      //         crossAxisAlignment: CrossAxisAlignment.center,
+      //         children: [
+      //           Text(
+      //             'Xin hãy chọn địa điểm trong lãnh thổ Việt Nam',
+      //             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+      //             textAlign: TextAlign.center,
+      //           ),
+      //           SizedBox(
+      //             height: 16,
+      //           ),
+      //         ],
+      //       ),
+      //     ),
+      //     btnOkOnPress: () {},
+      //     btnOkColor: Colors.orange,
+      //     btnOkText: 'Ok',
+      //   ).show();
+      // } else {
         setState(() {
-          _resultList = validList;
+          _resultList = resultList;
           isShowResult = true;
         });
-      }
+      // }
     }
   }
 

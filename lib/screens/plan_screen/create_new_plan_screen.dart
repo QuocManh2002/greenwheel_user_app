@@ -12,8 +12,10 @@ import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service
 import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_base_info_dialog.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
@@ -39,6 +41,22 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
 
   final ScrollController _scrollController = ScrollController();
   int _currentStep = 0;
+  PlanService _planService = PlanService();
+
+  Future<bool> createDraftPlan(int numOfExpPeriod, DateTime startDate, DateTime endDate,
+      int numberOfMember) async {
+    return await _planService.createPlanDraft(PlanCreate(
+        numOfExpPeriod: numOfExpPeriod,
+        locationId: widget.location.id,
+        startDate: startDate,
+        endDate: endDate,
+        latitude: sharedPreferences.getDouble('plan_start_lat')!,
+        longitude: sharedPreferences.getDouble('plan_start_lng')!,
+        memberLimit: numberOfMember,
+        name:
+            'Chuyến đi ngày ${startDate.day}/${startDate.month}/${startDate.year}',
+        schedule: ''));
+  }
 
   List<Step> getSteps() {
     return [
@@ -227,7 +245,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                 .show();
                           } else if (_currentStep == 2) {
                             ComboDate _selectedComboDate = listComboDate[
-                                sharedPreferences.getInt('plan_combo_date')!];
+                                sharedPreferences.getInt('numOfExpPeriod')!];
                             DateTime startDate = DateTime.parse(
                                 sharedPreferences
                                     .getString('plan_start_date')!);
@@ -250,11 +268,25 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                     btnCancelOnPress: () {},
                                     btnOkColor: Colors.blue,
                                     btnOkText: 'Xác nhận',
-                                    btnOkOnPress: () {
-                                      setState(() {
-                                        _currentStep++;
-                                      });
-                                      getScrollLocation();
+                                    btnOkOnPress: () async{
+                                      if (await createDraftPlan(
+                                          _selectedComboDate.numberOfDay +
+                                              _selectedComboDate.numberOfNight,
+                                          DateTime(
+                                              startDate.year,
+                                              startDate.month,
+                                              startDate.day,
+                                              _selectTime.hour,
+                                              _selectTime.minute),
+                                          endDate,
+                                          numberOfMember)) {
+                                        setState(() {
+                                          _currentStep++;
+                                        });
+                                        getScrollLocation();
+                                      } else {
+                                        print('error when create draft plan');
+                                      }
                                     },
                                     body: ConfirmBaseInfoDialog(
                                         selectedComboDate: _selectedComboDate,

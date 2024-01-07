@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,8 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
+import 'package:dart_jts/dart_jts.dart';
+import 'package:flutter/services.dart' show rootBundle;
 
 class Utils {
   static List<Widget> modelBuilder<M>(
@@ -47,6 +50,7 @@ class Utils {
     sharedPreferences.remove('plan_end_date');
     sharedPreferences.remove('plan_schedule');
     sharedPreferences.remove('plan_saved_emergency');
+    sharedPreferences.remove('numOfExpPeriod');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {
@@ -75,4 +79,18 @@ class Utils {
         .add(Duration(minutes: time.minute))
         .isAfter(DateTime.now().add(const Duration(minutes: 59)));
   }
+
+  Future<bool> test({required double lon, required double lat}) async {
+  // var file = File('./geojson/vnmgeojson.wkt');
+  String geoString = await rootBundle
+        .loadString('assets/geojson/vnmgeojson.wkt');
+  // var text = await file.readAsString();
+  var factory = GeometryFactory.withPrecisionModelSrid(PrecisionModel.fromType(PrecisionModel.FLOATING), 4326);
+  var reader = WKTReader.withFactory(factory);
+  var features = reader.read(geoString);
+  var coordinate = Coordinate(lon, lat);
+  var point = factory.createPoint(coordinate);
+  print('Test result: ${features!.contains(point)}');
+  return features.contains(point);
+}
 }

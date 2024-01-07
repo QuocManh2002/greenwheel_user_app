@@ -8,6 +8,7 @@ class PlanCreate {
   final String name;
   final String schedule;
   String? savedContacts;
+  int? numOfExpPeriod;
 
   PlanCreate(
       {required this.locationId,
@@ -18,5 +19,6 @@ class PlanCreate {
       required this.memberLimit,
       required this.name,
       required this.schedule,
+      this.numOfExpPeriod,
       this.savedContacts});
 }

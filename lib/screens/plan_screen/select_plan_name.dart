@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
@@ -41,6 +42,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     String endDate = sharedPreferences.getString('plan_end_date')!;
     String schedule = sharedPreferences.getString('plan_schedule')!;
     String startTime = sharedPreferences.getString('plan_start_time')!;
+    int numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod')!;
 
     final initialDateTime = DateFormat.Hm().parse(startTime);
     DateTime _startDate = DateTime.parse(startDate)
@@ -63,8 +65,10 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     // if (_startDate.difference(DateTime.now()).inDays == 0) {
     //   _startDate = DateTime.now().add(const Duration(hours: 1));
     // }
+    int planId = sharedPreferences.getInt('planId')!;
 
     int? rs = await _planService.createPlan(PlanCreate(
+      numOfExpPeriod: listComboDate[numOfExpPeriod].numberOfDay + listComboDate[numOfExpPeriod].numberOfNight,
         locationId: widget.location.id,
         startDate: _startDate,
         endDate: DateTime.parse(endDate),
@@ -74,7 +78,9 @@ class _SelectPlanNameState extends State<SelectPlanName> {
         name: _nameController.text,
         schedule: json.decode(schedule).toString(),
         savedContacts: sharedPreferences.getString('plan_saved_emergency')
-        ));
+        ),
+        planId
+        );
 
     if (rs != 0) {
       setState(() {
@@ -120,6 +126,8 @@ class _SelectPlanNameState extends State<SelectPlanName> {
             btnOkText: 'Có',
             btnOkColor: primaryColor,
             btnOkOnPress: () {
+              print(sharedPreferences.getString('plan_schedule'));
+              print(sharedPreferences.getString('plan_saved_emergency'));
               sharedPreferences.setInt("planId", rs);
               Navigator.of(context).pop();
               Navigator.of(context).push(MaterialPageRoute(

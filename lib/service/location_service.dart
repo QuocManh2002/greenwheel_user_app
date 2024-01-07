@@ -295,16 +295,15 @@ query getById(\$id: Int) {
       activities
       seasons
       topographic
-      suggestedTripLength
       templateSchedule
-      coordinate{coordinates}
+      coordinate {
+        coordinates
+      }
       address
-      lifeguardPhone
-      lifeguardAddress
-      clinicPhone
-      clinicAddress
       hotline
       provinceId
+      emergencyContacts
+      templateEvents
     }
   }
 }

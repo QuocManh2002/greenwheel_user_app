@@ -7,6 +7,7 @@ import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_by_location.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -264,6 +265,40 @@ class _LocationScreenState extends State<LocationScreen> {
                                   icon: const Icon(Icons.menu_book),
                                   label: const Text(
                                     "Hướng dẫn cộng đồng",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  style: elevatedButtonStyle.copyWith(
+                                      backgroundColor: MaterialStatePropertyAll(
+                                          Colors.grey.withOpacity(0.6)),
+                                      foregroundColor:
+                                          const MaterialStatePropertyAll(
+                                              Colors.black)),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                child: Container(
+                                  height: 1.8,
+                                  color: Colors.grey.withOpacity(0.4),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              Container(
+                                alignment: Alignment.center,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SuggestPlansByLocationScreen(location: widget.location)));
+                                  },
+                                  icon: const Icon(Icons.map),
+                                  label: const Text(
+                                    "Tham khảo kế hoạch",
                                     style:
                                         TextStyle(fontWeight: FontWeight.bold),
                                   ),

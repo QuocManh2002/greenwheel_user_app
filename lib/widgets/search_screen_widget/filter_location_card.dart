@@ -1,4 +1,4 @@
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -14,7 +14,8 @@ class FilterLocationCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => LocationScreen(location: location)));
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => LocationScreen(location: location)));
       },
       child: Container(
         decoration: BoxDecoration(
@@ -34,22 +35,27 @@ class FilterLocationCard extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           clipBehavior: Clip.hardEdge,
           elevation: 2,
-          child: Row(
-            children: [
+          child: Row(children: [
             Container(
-              decoration:
-                  BoxDecoration(borderRadius: BorderRadius.circular(14)),
-              child: Hero(
-                  tag: location.id,
-                  child: FadeInImage(
+                decoration:
+                    BoxDecoration(borderRadius: BorderRadius.circular(14)),
+                child: CachedNetworkImage(
+                  height: 15.h,
+                  width: 15.h,
+                  fit: BoxFit.cover,
+                  imageUrl: location.imageUrls[0],
+                  placeholder: (context, url) =>
+                      Image.memory(kTransparentImage),
+                  errorWidget: (context, url, error) =>
+                      FadeInImage.assetNetwork(
                     height: 15.h,
-                    placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(location.imageUrls[0]),
-                    fit: BoxFit.cover,
                     width: 15.h,
-                    filterQuality: FilterQuality.high,
-                  )),
-            ),
+                    fit: BoxFit.cover,
+                    placeholder: 'No Image',
+                    image:
+                        'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                  ),
+                )),
             const SizedBox(
               width: 8,
             ),
@@ -62,8 +68,8 @@ class FilterLocationCard extends StatelessWidget {
                     height: 8,
                   ),
                   Text(location.name,
-                  overflow: TextOverflow.clip,
-                  maxLines: 2,
+                      overflow: TextOverflow.clip,
+                      maxLines: 2,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(
@@ -73,7 +79,10 @@ class FilterLocationCard extends StatelessWidget {
                   const SizedBox(
                     height: 8,
                   ),
-                  Text(location.description, overflow: TextOverflow.ellipsis,)
+                  Text(
+                    location.description,
+                    overflow: TextOverflow.ellipsis,
+                  )
                 ],
               ),
             )

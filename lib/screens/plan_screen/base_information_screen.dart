@@ -65,6 +65,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
               .id -
           1;
       sharedPreferences.setInt('plan_combo_date', defaultComboDate);
+      sharedPreferences.setInt('numOfExpPeriod', defaultComboDate);
       setState(() {
         _selectedCombo = defaultComboDate;
         _scrollController =
@@ -157,6 +158,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                 }
                 sharedPreferences.setBool("plan_is_change", false);
                 sharedPreferences.setInt('plan_combo_date', value);
+                sharedPreferences.setInt('numOfExpPeriod', value);
               },
               children: Utils.modelBuilder(
                   listComboDate,

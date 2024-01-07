@@ -39,71 +39,83 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    setUpData();
+  }
+
+  setUpData() {
     if (widget.item != null) {
       _selectTime = widget.item!.time;
       _selectedDate = widget.item!.date;
       _titleController.text = widget.item!.title;
-      _dateController.text =
-          DateFormat.yMMMMEEEEd('vi_VN').format(widget.item!.date);
-      _timeController.text = widget.item!.time.format(context).toString();
+      setState(() {
+        _dateController.text =
+            DateFormat.yMMMMEEEEd('vi_VN').format(widget.item!.date);
+        // _timeController.text = '${widget.item!.time.hour}:${widget.item!.time.minute}';
+
+        _timeController.text = DateFormat.Hm().format(DateTime(
+            _selectedDate.year,
+            _selectedDate.month,
+            _selectedDate.day,
+            _selectTime.hour,
+            _selectTime.minute));
+      });
     } else {
-      _dateController.text = DateFormat.yMMMMEEEEd('vi_VN')
-          .format(widget.startDate.add(Duration(days: widget.selectedIndex)));
-      _selectedDate =
-          widget.startDate.add(Duration(days: widget.selectedIndex));
+      setState(() {
+        _dateController.text = DateFormat.yMMMMEEEEd('vi_VN')
+            .format(widget.startDate.add(Duration(days: widget.selectedIndex)));
+        _selectedDate =
+            widget.startDate.add(Duration(days: widget.selectedIndex));
+      });
     }
   }
-  _appBar(BuildContext ctx) {
-      return AppBar(
-        backgroundColor: primaryColor,
-        leading: IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: () {
-            Navigator.of(ctx).pop();
-          },
-        ),
-        actions: [
-          ElevatedButton.icon(
-              style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-              onPressed: () async {
-                if (_formKey.currentState!.validate()) {
-                  if (widget.item == null) {
-                    widget.callback(
-                        PlanScheduleItem(
-                            time: _selectTime,
-                            title: _titleController.text,
-                            date: _selectedDate),
-                        true,
-                        null);
-                  } else {
-                    widget.callback(
-                        PlanScheduleItem(
-                            time: _selectTime,
-                            title: _titleController.text,
-                            date: _selectedDate,
-                            id: widget.item!.id),
-                        false,
-                        widget.item);
-                  }
 
-                  Navigator.of(context).pop();
+  _appBar(BuildContext ctx) {
+    return AppBar(
+      backgroundColor: primaryColor,
+      leading: IconButton(
+        icon: const Icon(Icons.close),
+        onPressed: () {
+          Navigator.of(ctx).pop();
+        },
+      ),
+      actions: [
+        ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+            onPressed: () async {
+              if (_formKey.currentState!.validate()) {
+                if (widget.item == null) {
+                  widget.callback(
+                      PlanScheduleItem(
+                          time: _selectTime,
+                          title: _titleController.text,
+                          date: _selectedDate),
+                      true,
+                      null);
+                } else {
+                  widget.callback(
+                      PlanScheduleItem(
+                          time: _selectTime,
+                          title: _titleController.text,
+                          date: _selectedDate,
+                          id: widget.item!.id),
+                      false,
+                      widget.item);
                 }
-              },
-              icon: const Icon(
-                Icons.done,
-                color: Colors.white,
-              ),
-              label: const Text('Lưu'))
-        ],
-      );
-    }
+
+                Navigator.of(context).pop();
+              }
+            },
+            icon: const Icon(
+              Icons.done,
+              color: Colors.white,
+            ),
+            label: const Text('Lưu'))
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
-    
-
-    
-
     return SafeArea(
         child: Scaffold(
       resizeToAvoidBottomInset: true,

@@ -8,13 +8,12 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/draft.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/finish_plan.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/suggest_plan.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:intl/intl.dart';
 
@@ -22,29 +21,66 @@ class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
 
-  Future<int> createPlan(PlanCreate model) async {
+  Future<int> createPlan(PlanCreate model, int planId) async {
     print(model.schedule);
     try {
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 mutation{
-  createPlan(dto: {
-    locationId: ${model.locationId}
+  updatePlan(dto: {
+    numOfExpPeriod:${model.numOfExpPeriod}
+    schedule:${model.schedule}
+    id:$planId
+    savedContacts:${model.savedContacts}
     latitude: ${model.latitude}
     longitude: ${model.longitude} 
     startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day} ${model.startDate.hour}:${model.startDate.minute}:00.000Z"
     endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day} 22:00:00.000Z"
     memberLimit:${model.memberLimit}
-    name: ${json.encode(model.name)}
-    schedule:${model.schedule}
-    savedContacts:${model.savedContacts}
+    name: "${model.name}"
   }){
     id
   }
 }
 """),
       ));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      } else {
+        var rstext = result.data!;
+        // bool isSuccess = rstext['createPlanDraft']['result']['success'];
+        int planId = rstext['updatePlan']['id'];
+        sharedPreferences.setInt("planId", 0);
+        return planId;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<bool> createPlanDraft(PlanCreate model) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
+mutation{
+  createPlan(dto: {
+    numOfExpPeriod: ${model.numOfExpPeriod}
+    locationId: ${model.locationId}
+    latitude: ${model.latitude}
+    longitude: ${model.longitude} 
+    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day} ${model.startDate.hour}:${model.startDate.minute}:00.000Z"
+    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day} 22:00:00.000Z"
+    memberLimit:${model.memberLimit}
+    name: "${model.name}"
+  }){
+    id
+  }
+}
+"""),
+      ));
+
       if (result.hasException) {
         throw Exception(result.exception);
       } else {
@@ -52,75 +88,7 @@ mutation{
         // bool isSuccess = rstext['createPlanDraft']['result']['success'];
         int planId = rstext['createPlan']['id'];
         sharedPreferences.setInt("planId", planId);
-        return planId;
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<bool> createPlanDraft(PlanDraft draft) async {
-    try {
-      QueryResult result = await client.mutate(MutationOptions(
-        fetchPolicy: FetchPolicy.noCache,
-        document: gql("""
-mutation{
-  createDraftPlan(model: {
-    memberLimit: ${draft.memberLimit}
-    endDate: "${draft.endDate.year.toString().padLeft(4, '0')}-${draft.endDate.month.toString().padLeft(2, '0')}-${draft.endDate.day.toString().padLeft(2, '0')}"
-    startDate: "${draft.startDate.year.toString().padLeft(4, '0')}-${draft.startDate.month.toString().padLeft(2, '0')}-${draft.startDate.day.toString().padLeft(2, '0')}"
-    locationId: ${draft.locationId}
-    schedule : ${draft.schedule}
-  }){
-    id
-    status
-  }
-}
-"""),
-      ));
-
-      if (result.hasException) {
-        throw Exception(result.exception);
-      } else {
-        var rstext = result.data!;
-        // bool isSuccess = rstext['createPlanDraft']['result']['success'];
-        int planId = rstext['createDraftPlan']['id'];
-        sharedPreferences.setInt("planId", planId);
         return true;
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<int> finishPlan(PlanFinish finish) async {
-    try {
-      QueryResult result = await client.mutate(MutationOptions(
-        fetchPolicy: FetchPolicy.noCache,
-        document: gql("""
-
-mutation {
-  updatePlan(model: {
-    memberLimit: ${finish.memberLimit}
-    endDate: "${finish.endDate.year}-${finish.endDate.month}-${finish.endDate.day}"
-    startDate: "${finish.startDate.year}-${finish.startDate.month}-${finish.startDate.day}"
-    planId: ${finish.planId}
-    schedule: ${finish.schedule}
-    status:FUTURE
-  }) {
-    id
-    locationId
-  }
-}
-"""),
-      ));
-
-      if (result.hasException) {
-        throw Exception(result.exception);
-      } else {
-        int planId = result.data!['updatePlan']['id'];
-        // await updateJoinMethod(planId);
-        return planId;
       }
     } catch (error) {
       throw Exception(error);
@@ -434,18 +402,6 @@ query GetPlanById(\$planId: Int){
     return rs;
   }
 
-  // List<List<String>> GetPlanDetailFromListPlanItem(List<PlanItem> planDetail) {
-  //   List<List<String>> schedule = [];
-  //   for (final detail in planDetail) {
-  //     List<String> items = [];
-  //     for (final item in detail.details) {
-  //       items.add(json.encode(item));
-  //     }
-  //     schedule.add(items);
-  //   }
-  //   return schedule;
-  // }
-
   Future<int?> joinPlan(int planId) async {
     try {
       QueryResult result = await client.mutate(
@@ -535,12 +491,11 @@ mutation{
     }
   }
 
-  Future<int> updateEmergencyService(PlanCreate model, String serviceList, int planId) async{
-    try{
+  Future<int> updateEmergencyService(
+      PlanCreate model, String serviceList, int planId) async {
+    try {
       QueryResult result = await client.mutate(
-        MutationOptions(
-          fetchPolicy: FetchPolicy.noCache,
-          document: gql("""
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
   updatePlan(dto: {
     id: $planId
@@ -556,8 +511,7 @@ mutation{
     id
   }
 }
-"""))
-      );
+""")));
       if (result.hasException) {
         throw Exception(result.exception);
       } else {
@@ -565,7 +519,59 @@ mutation{
         int planId = rstext['updatePlan']['id'];
         return planId;
       }
-    }catch (error) {
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  generateEmptySchedule(DateTime startDate, DateTime endDate) {
+    final duration = endDate.difference(startDate).inDays + 1;
+    List<PlanSchedule> result = [];
+    for (int i = 0; i < duration; i++) {
+      result
+          .add(PlanSchedule(date: startDate.add(Duration(days: i)), items: []));
+    }
+    return result;
+  }
+
+  Future<List<SuggestPlanViewModel>> getSuggestPlanByLocation(int locationId) async {
+    try {
+      QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+{
+  plans(where: {
+    locationId:{
+      eq: $locationId
+    }
+  }){
+    nodes{
+      id
+      name
+      leader{
+        account{
+          name
+          id
+        }
+      }
+      startDate
+      endDate
+    }
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      List? res = result.data!['plans']['nodes'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+
+      List<SuggestPlanViewModel> plans =
+          res.map((plan) => SuggestPlanViewModel.fromJson(plan)).toList();
+      return plans;
+    } catch (error) {
       throw Exception(error);
     }
   }

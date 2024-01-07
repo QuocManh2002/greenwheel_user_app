@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/activities.dart';
 import 'package:greenwheel_user_app/constants/provinces.dart';
@@ -67,16 +68,23 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 35.h,
                   child: Stack(
                     children: [
-                      Hero(
-                          tag: 1,
-                          child: FadeInImage(
-                            placeholder: MemoryImage(kTransparentImage),
-                            height: 35.h,
-                            image: const NetworkImage(
-                                'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0'),
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                          )),
+                    CachedNetworkImage(
+                      height: 35.h,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      imageUrl: "https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0",
+                      placeholder: (context, url) =>
+                          Image.memory(kTransparentImage),
+                      errorWidget: (context, url, error) =>
+                          FadeInImage.assetNetwork(
+                        height: 35.h,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        placeholder: 'No Image',
+                        image:
+                            'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                      ),
+                    ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(

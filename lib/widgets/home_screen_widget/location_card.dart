@@ -1,4 +1,4 @@
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -28,19 +28,25 @@ class LocationCard extends StatelessWidget {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
-              decoration:
-                  BoxDecoration(borderRadius: BorderRadius.circular(14)),
-              child: Hero(
-                  tag: location.id,
-                  child: FadeInImage(
-                    height: 20.h,
-                    placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(location.imageUrls[0]),
-                    fit: BoxFit.cover,
+                decoration:
+                    BoxDecoration(borderRadius: BorderRadius.circular(14)),
+                child: CachedNetworkImage(
+                  height: 20.h,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  imageUrl: location.imageUrls[0],
+                  placeholder: (context, url) =>
+                      Image.memory(kTransparentImage),
+                  errorWidget: (context, url, error) =>
+                      FadeInImage.assetNetwork(
+                    height: 15.h,
                     width: double.infinity,
-                    filterQuality: FilterQuality.high,
-                  )),
-            ),
+                    fit: BoxFit.cover,
+                    placeholder: 'No Image',
+                    image:
+                        'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                  ),
+                )),
             const SizedBox(
               height: 4,
             ),

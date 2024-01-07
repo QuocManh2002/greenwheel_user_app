@@ -35,8 +35,10 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   List<PlanSchedule> testList = [];
   final PlanService _planService = PlanService();
   PlanScheduleItem? _selectedItem;
-  // final DateTime _startDate =
-  //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+  final DateTime _startDate =
+      DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+  final DateTime _endDate =
+      DateTime.parse(sharedPreferences.getString('plan_end_date')!);
 
   @override
   void initState() {
@@ -53,7 +55,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   setUpData() async {
     if (widget.isCreate) {
       // testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
-      testList = [];
+      testList = _planService.generateEmptySchedule(_startDate, _endDate);
       var finalList = _planService.convertPlanScheduleToJson(testList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
     } else {
