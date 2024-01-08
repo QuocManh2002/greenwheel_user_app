@@ -14,7 +14,10 @@ class RecentCard extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (ctx) => SearchScreen(search: recent),
+                  builder: (ctx) => SearchScreen(
+                    search: recent,
+                    searchState: false,
+                  ),
                 ),
               );
             },
