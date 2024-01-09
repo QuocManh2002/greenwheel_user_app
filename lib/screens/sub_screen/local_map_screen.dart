@@ -38,7 +38,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
     //   ));
     // }
     await controller.addSymbol(SymbolOptions(
-      geometry: _currentP,
+      geometry: LatLng(10.841877927102306, 106.8098508297925),
       iconSize: 5,
       iconImage: "assets/images/from_icon.png"
     ));
@@ -87,7 +87,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                 //   },
                 // ),
                 MapboxMap(initialCameraPosition: CameraPosition(
-                      target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 8),
+                      target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 4),
                       accessToken: mapboxKey,
                       onMapCreated: _onMapCreated,
                       onStyleLoadedCallback: _onStyleLoadedCallback,
@@ -205,9 +205,9 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
   }
 
   getMapInfo() async {
-    if (_currentP.latitude != 0) {
+    // if (_currentP.latitude != 0) {
       var mapInfo = await getDirectionsAPIResponse(
-          _currentP, LatLng(widget.location.latitude, widget.location.longitude));
+          LatLng(10.841877927102306, 106.8098508297925), LatLng(widget.location.latitude, widget.location.longitude));
 
       if (mapInfo.isNotEmpty) {
         print(mapInfo["duration"]);
@@ -220,6 +220,6 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
           isLoading = false;
         });
       }
-    }
+    // }
   }
 }

@@ -22,7 +22,7 @@ class EmergencyContactCard extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12),
+          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.zero, // Remove default padding

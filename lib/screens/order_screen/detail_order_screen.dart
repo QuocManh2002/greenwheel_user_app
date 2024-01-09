@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/sessions.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -16,6 +17,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   TextEditingController noteController = TextEditingController();
   bool isExpanded = false;
   List<DateTime> _servingDates = [];
+  String _servingTime = '';
   @override
   void initState() {
     // TODO: implement initState
@@ -27,6 +29,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     }
     _servingDates =
         widget.order.servingDates.map((e) => DateTime.parse(e)).toList();
+    _servingTime = sessions
+        .firstWhere((element) => element.enumName == widget.order.period)
+        .range;
   }
 
   @override
@@ -93,7 +98,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           padding: EdgeInsets.symmetric(
                               horizontal: 2.h, vertical: 1.5.h),
                           child: Text(
-                            widget.order.supplierPhone,
+                            '0${widget.order.supplierPhone.substring(3)}',
                             style: const TextStyle(
                                 fontSize: 20, color: Colors.black54),
                           ),
@@ -174,22 +179,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 '${_servingDates[0].day}/${_servingDates[0].month}/${_servingDates[0].year}',
                                 style: const TextStyle(fontSize: 18),
                               ),
-                              const SizedBox(width: 8,),
+                              const SizedBox(
+                                width: 8,
+                              ),
                               if (_servingDates.length > 1)
                                 Text(
                                   '+${_servingDates.length - 1} ngày',
                                   style: const TextStyle(fontSize: 18),
                                 ),
-                              IconButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isExpanded = !isExpanded;
-                                    });
-                                  },
-                                  icon: const Icon(
-                                    Icons.arrow_drop_down,
-                                    size: 36,
-                                  ))
+                              if (widget.order.servingDates.length > 1)
+                                IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        isExpanded = !isExpanded;
+                                      });
+                                    },
+                                    icon: const Icon(
+                                      Icons.arrow_drop_down,
+                                      size: 36,
+                                    ))
                             ],
                           ),
                         if (isExpanded)
@@ -220,6 +228,32 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   ))
                             ],
                           )
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.watch_later,
+                          color: Colors.redAccent,
+                        ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                         Text(
+                        widget.order.supplierType == "MOTEL" ?  'Thời gian check-in:': 'Thời gian phục vụ:',
+                          style:const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                         widget.order.supplierType == "MOTEL" ? '12:00 SA' : _servingTime,
+                          style: const TextStyle(fontSize: 18),
+                        )
                       ],
                     ),
                     const SizedBox(

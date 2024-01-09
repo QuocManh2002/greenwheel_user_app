@@ -84,6 +84,29 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                child: RichText(
+                    text: TextSpan(
+                        text: widget.supplier.name,
+                        style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                        children: const [
+                      TextSpan(text: ' có 4 khung giờ phục vụ khách hàng', style: TextStyle(
+                        fontWeight: FontWeight.normal
+                      ))
+                    ])),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                child: Text(
+                  'Hãy chọn khung giờ mà bạn muốn nhân dịch vụ',
+                  style: TextStyle(fontSize: 18, color: Colors.grey),
+                ),
+              ),
               ListView.builder(
                 physics: const BouncingScrollPhysics(),
                 shrinkWrap: true,

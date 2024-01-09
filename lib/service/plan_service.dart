@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
@@ -14,7 +14,6 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/suggest_plan.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:intl/intl.dart';
 
 class PlanService {
@@ -143,6 +142,7 @@ query getOrderDetailsByPlanId(\$planId: Int) {
       servingDates
       note
       createdAt
+      period
       supplier{
         id
         phone
@@ -206,6 +206,8 @@ query GetPlanById(\$planId: Int){
       savedContacts
       status
       joinMethod
+      numOfExpPeriod
+      
       departurePosition{
         coordinates
       }
@@ -217,6 +219,7 @@ query GetPlanById(\$planId: Int){
       servingDates
       note
       createdAt
+      period
       supplier{
         id
         phone
@@ -322,35 +325,19 @@ query GetPlanById(\$planId: Int){
     return schedule;
   }
 
-  List<PlanSchedule> GetPlanScheduleFromJson(List<dynamic> schedules) {
-    List<PlanSchedule> schedule = [];
-    final startDate =
-        DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-    final _selectCombo =
-        listComboDate[sharedPreferences.getInt('plan_combo_date')!];
-    for (int i = 0; i < _selectCombo.numberOfDay; i++) {
-      List<PlanScheduleItem> item = [];
-      final date = startDate.add(Duration(days: i));
-      if (i < schedules.length) {
-        for (final planItem in schedules[i]) {
-          item.add(PlanScheduleItem(
-              orderId: planItem['orderGuid'],
-              orderType: planItem['type'],
-              time: Utils().convertStringToTime(planItem['time']),
-              title: planItem['description'],
-              date: date));
+  List<PlanSchedule> GetPlanScheduleClone(List<PlanSchedule> schedules) {
+    // var _schedule = schedules;
+    for (final schedule in schedules) {
+      if (schedule.items.isNotEmpty) {
+        for (int i = 0; i < schedule.items.length; i++) {
+          // if (schedule.items[i].orderId != null) {
+          //   schedule.items.remove(schedule.items[i]);
+            schedule.items.removeWhere((element) => element.orderId != null);
+          // }
         }
-        item.sort(
-          (a, b) {
-            var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
-            var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
-            return adate.compareTo(bdate);
-          },
-        );
       }
-      schedule.add(PlanSchedule(date: date, items: item));
     }
-    return schedule;
+    return schedules;
   }
 
   List<PlanSchedule> GetPlanScheduleFromJsonNew(
@@ -361,11 +348,13 @@ query GetPlanById(\$planId: Int){
       final date = startDate.add(Duration(days: i));
       if (i < schedules.length) {
         for (final planItem in schedules[i]) {
+          print(planItem['time']);
           item.add(PlanScheduleItem(
               orderId: planItem['orderGuid'],
-              orderType: planItem['type'].toString(),
-              time: TimeOfDay.fromDateTime(
-                  DateFormat.Hms().parse(planItem['time'])),
+              type: schedule_item_types_vn[
+                  schedule_item_types.indexOf(planItem['type'].toString())],
+              time: TimeOfDay.fromDateTime(DateTime.parse(
+                  "1970-01-01 ${planItem['time'].toString().substring(0, 2)}:${planItem['time'].toString().substring(3, 5)}:00")),
               title: planItem['description'],
               date: date));
         }
@@ -534,7 +523,8 @@ mutation{
     return result;
   }
 
-  Future<List<SuggestPlanViewModel>> getSuggestPlanByLocation(int locationId) async {
+  Future<List<SuggestPlanViewModel>> getSuggestPlanByLocation(
+      int locationId) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""

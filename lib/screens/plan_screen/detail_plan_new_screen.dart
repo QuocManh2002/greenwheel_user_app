@@ -1,4 +1,5 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
@@ -11,6 +12,8 @@ import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:sizer2/sizer2.dart';
@@ -45,6 +48,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   List<PlanMemberViewModel> _planMembers = [];
   double total = 0;
   List<SupplierViewModel>? _saveSupplier;
+  int _currentIndexEmergencyCard = 0;
 
   @override
   void initState() {
@@ -183,116 +187,32 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         child: SingleChildScrollView(
                             child: Column(
                           children: [
-                            Hero(
-                                tag: widget.planId,
-                                child: FadeInImage(
-                                  placeholder: MemoryImage(kTransparentImage),
-                                  height: 35.h,
-                                  image:
-                                      NetworkImage(_planDetail!.imageUrls[0]),
-                                  fit: BoxFit.cover,
-                                  width: double.infinity,
-                                )),
+                            CachedNetworkImage(
+                              height: 35.h,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              imageUrl: _planDetail!.imageUrls[0],
+                              placeholder: (context, url) =>
+                                  Image.memory(kTransparentImage),
+                              errorWidget: (context, url, error) =>
+                                  FadeInImage.assetNetwork(
+                                height: 15.h,
+                                width: 15.h,
+                                fit: BoxFit.cover,
+                                placeholder: 'No Image',
+                                image:
+                                    'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                              ),
+                            ),
                             const SizedBox(
                               height: 32,
                             ),
+                            BaseInformationWidget(plan: _planDetail!),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 24),
                               child: Column(
                                 children: [
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      _planDetail!.name,
-                                      style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Container(
-                                    height: 1.8,
-                                    color: Colors.grey.withOpacity(0.4),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: RichText(
-                                        textAlign: TextAlign.start,
-                                        text: TextSpan(
-                                            text: "Khởi hành:  ",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                            children: [
-                                              TextSpan(
-                                                  text:
-                                                      '${_planDetail!.startDate.day}/${_planDetail!.startDate.month}/${_planDetail!.startDate.year}',
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.normal))
-                                            ])),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: RichText(
-                                        textAlign: TextAlign.start,
-                                        text: TextSpan(
-                                            text: "Kết thúc:     ",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                            children: [
-                                              TextSpan(
-                                                  text:
-                                                      '${_planDetail!.endDate.day}/${_planDetail!.endDate.month}/${_planDetail!.endDate.year}',
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.normal))
-                                            ])),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Container(
-                                    alignment: Alignment.centerLeft,
-                                    child: RichText(
-                                        textAlign: TextAlign.start,
-                                        text: TextSpan(
-                                            text: "Thành viên: ",
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                color: Colors.black),
-                                            children: [
-                                              TextSpan(
-                                                  text:
-                                                      '${_planDetail!.memberLimit} người',
-                                                  style: const TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.normal))
-                                            ])),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Container(
-                                    height: 1.8,
-                                    color: Colors.grey.withOpacity(0.4),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
                                   if (_planDetail!.savedContacts != null)
                                     Column(
                                       children: [
@@ -304,40 +224,52 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.bold),
                                             )),
-                                        const SizedBox(
-                                          height: 16,
-                                        ),
-                                        for (final sup
-                                            in _planDetail!.savedContacts!)
-                                          Container(
-                                            alignment: Alignment.centerLeft,
-                                            padding:
-                                                const EdgeInsets.only(left: 16),
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                  sup.name!,
-                                                  style: const TextStyle(
-                                                      fontSize: 16),
-                                                ),
-                                                Text(
-                                                  '0${sup.phone!.substring(3)}',
-                                                  style: const TextStyle(
-                                                      fontSize: 16),
-                                                ),
-                                                Text(
-                                                  sup.address!,
-                                                  style: const TextStyle(
-                                                      fontSize: 16),
-                                                ),
-                                                const SizedBox(
-                                                  height: 12,
-                                                )
-                                              ],
-                                            ),
+                                        SizedBox(
+                                          height: 18.h,
+                                          width: double.infinity,
+                                          child: PageView.builder(
+                                            scrollDirection: Axis.horizontal,
+                                            itemCount: _planDetail!
+                                                .savedContacts!.length,
+                                            onPageChanged: (value) {
+                                              setState(() {
+                                                _currentIndexEmergencyCard =
+                                                    value;
+                                              });
+                                            },
+                                            itemBuilder: (context, index) {
+                                              return EmergencyContactCard(
+                                                  emergency: _planDetail!
+                                                      .savedContacts![index],
+                                                  index: index,
+                                                  callback: () {},
+                                                  isSelected: true);
+                                            },
                                           ),
+                                        ),
+                                        const SizedBox(
+                                          height: 4,
+                                        ),
+                                        if (_planDetail!.savedContacts!.length >
+                                            1)
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.center,
+                                            children: [
+                                              for (int i = 0;
+                                                  i <
+                                                      _planDetail!
+                                                          .savedContacts!
+                                                          .length;
+                                                  i++)
+                                                Container(
+                                                    height: 1.5.h,
+                                                    child: buildIndicator(i)),
+                                            ],
+                                          ),
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
                                         Container(
                                           height: 1.8,
                                           color: Colors.grey.withOpacity(0.4),
@@ -574,4 +506,22 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                 ),
         ),
       );
+
+  Widget buildIndicator(int index) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.bounceInOut,
+      margin: const EdgeInsets.only(left: 16),
+      width: _currentIndexEmergencyCard == index ? 35 : 12,
+      decoration: BoxDecoration(
+          color: _currentIndexEmergencyCard == index
+              ? primaryColor
+              : primaryColor.withOpacity(0.7),
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          boxShadow: const [
+            BoxShadow(
+                color: Colors.black38, offset: Offset(2, 3), blurRadius: 3)
+          ]),
+    );
+  }
 }

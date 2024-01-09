@@ -23,10 +23,14 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CreateNewPlanScreen extends StatefulWidget {
-  const CreateNewPlanScreen(
-      {super.key, required this.location, required this.isCreate});
+  CreateNewPlanScreen(
+      {super.key,
+      required this.location,
+      required this.isCreate,
+      this.schedule});
   final LocationViewModel location;
   final bool isCreate;
+  List<dynamic>? schedule;
 
   @override
   State<CreateNewPlanScreen> createState() => _CreateNewPlanScreenState();
@@ -43,8 +47,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
   int _currentStep = 0;
   PlanService _planService = PlanService();
 
-  Future<bool> createDraftPlan(int numOfExpPeriod, DateTime startDate, DateTime endDate,
-      int numberOfMember) async {
+  Future<bool> createDraftPlan(int numOfExpPeriod, DateTime startDate,
+      DateTime endDate, int numberOfMember) async {
     return await _planService.createPlanDraft(PlanCreate(
         numOfExpPeriod: numOfExpPeriod,
         locationId: widget.location.id,
@@ -125,10 +129,18 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         activePage = const SelectStartDateScreen();
         break;
       case 3:
-        activePage = CreatePlanScheduleScreen(
-          templatePlan: widget.location.templatePlan,
-          isCreate: widget.isCreate,
-        );
+        widget.schedule == null
+            ? activePage = CreatePlanScheduleScreen(
+                templatePlan: widget.location.templatePlan,
+                isCreate: widget.isCreate,
+                isClone: false,
+              )
+            : activePage = CreatePlanScheduleScreen(
+                templatePlan: widget.location.templatePlan,
+                isCreate: widget.isCreate,
+                schedule: widget.schedule,
+                isClone: true,
+              );
         break;
       case 4:
         activePage = SelectEmergencyService(
@@ -220,8 +232,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                           if (_currentStep == 1 &&
                               sharedPreferences.getDouble('plan_duration') ==
                                   null) {
-                            // handleValidationSelectLocationScreen();
-                          } else if (_currentStep == 0 &&
+                            handleValidationSelectLocationScreen();
+                          } else if (_currentStep == 1 &&
                               !checkValidStartDateTime()) {
                             AwesomeDialog(
                                     context: context,
@@ -245,7 +257,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                 .show();
                           } else if (_currentStep == 2) {
                             ComboDate _selectedComboDate = listComboDate[
-                                sharedPreferences.getInt('numOfExpPeriod')!];
+                                sharedPreferences.getInt('plan_combo_date')!];
                             DateTime startDate = DateTime.parse(
                                 sharedPreferences
                                     .getString('plan_start_date')!);
@@ -268,10 +280,10 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                     btnCancelOnPress: () {},
                                     btnOkColor: Colors.blue,
                                     btnOkText: 'Xác nhận',
-                                    btnOkOnPress: () async{
+                                    btnOkOnPress: () async {
                                       if (await createDraftPlan(
-                                          _selectedComboDate.numberOfDay +
-                                              _selectedComboDate.numberOfNight,
+                                          sharedPreferences
+                                              .getInt('numOfExpPeriod')!,
                                           DateTime(
                                               startDate.year,
                                               startDate.month,
@@ -321,6 +333,37 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                     btnOkText: 'OK',
                                     btnOkOnPress: () {})
                                 .show();
+                          } else if (_currentStep == 4) {
+                            List<String>? selectedEmergencyIndexList =
+                                sharedPreferences
+                                    .getStringList('selectedIndex');
+                            if (selectedEmergencyIndexList == null ||
+                                selectedEmergencyIndexList.isEmpty) {
+                              AwesomeDialog(
+                                context: context,
+                                dialogType: DialogType.warning,
+                                body: const Center(
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(12),
+                                    child: Text(
+                                      'Bạn phải chọn ít nhất một liên lạc khẩn cấp cho chuyến đi',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                          textAlign: TextAlign.center,
+                                    ),
+                                  ),
+                                ),
+                                btnOkColor: Colors.orange,
+                                btnOkText: 'Ok',
+                                btnOkOnPress: () {},
+                              ).show();
+                            } else {
+                              setState(() {
+                                _currentStep++;
+                              });
+                              getScrollLocation();
+                            }
                           } else {
                             setState(() {
                               _currentStep++;
@@ -392,6 +435,10 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         DateTime(0, 0, 0, startDateTime.hour, startDateTime.minute, 0);
     String _scheduleText = sharedPreferences.getString('plan_schedule')!;
     final List<dynamic> _schedule = json.decode(_scheduleText);
+    var firstActivity = _schedule.first.length;
+    if(firstActivity == 0){
+      return true;
+    }
     final first =
         DateFormat.Hms().parse(json.decode(_schedule.first.first['time']));
     final fistTimeActivity = DateTime(0, 0, 0, first.hour, first.minute, 0);

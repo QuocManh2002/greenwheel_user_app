@@ -20,6 +20,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   List<PlanCardViewModel> _futuredPlans = [];
   List<PlanCardViewModel> _historyPlans = [];
   List<List<PlanCardViewModel>> _totalPlans = [];
+  List<PlanCardViewModel> _draftPlans = [];
 
   int _selectedTab = 0;
 
@@ -46,6 +47,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
     List<PlanCardViewModel> canceledPlans = [];
     List<PlanCardViewModel> historyPlans = [];
     List<PlanCardViewModel> futurePlans = [];
+    List<PlanCardViewModel> draftPlans = [];
     List<PlanCardViewModel>? totalPlans = await _planService.getPlanCards();
 
     if (totalPlans != null) {
@@ -73,7 +75,10 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
         //     historyPlans.add(plan);
         //     break;
         // }
-        if (plan.startDate.isAfter(DateTime.now())) {
+
+        if (plan.status == 'DRAFT') {
+          draftPlans.add(plan);
+        } else if (plan.startDate.isAfter(DateTime.now())) {
           futurePlans.add(plan);
         } else if (plan.startDate.isBefore(DateTime.now()) &&
             plan.endDate.isAfter(DateTime.now())) {
@@ -87,10 +92,14 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
         _futuredPlans = futurePlans;
         _onGoingPlans = onGoingPlans;
         _historyPlans = historyPlans;
+        _draftPlans = draftPlans;
+        
         _totalPlans.add(_futuredPlans);
         _totalPlans.add(_onGoingPlans);
-        _totalPlans.add(historyPlans);        
+        _totalPlans.add(historyPlans);
         _totalPlans.add(canceledPlans);
+        _totalPlans.add(draftPlans);
+        
         isLoading = false;
       });
     }
@@ -124,7 +133,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                           width: 16,
                         ),
                         InkWell(
-                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12)),
                           onTap: () {
                             setState(() {
                               _selectedTab = 0;
@@ -140,7 +150,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                           width: 16,
                         ),
                         InkWell(
-                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12)),
                           onTap: () {
                             setState(() {
                               _selectedTab = 1;
@@ -156,7 +167,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                           width: 16,
                         ),
                         InkWell(
-                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12)),
                           onTap: () {
                             setState(() {
                               _selectedTab = 2;
@@ -172,7 +184,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                           width: 16,
                         ),
                         InkWell(
-                          borderRadius: const BorderRadius.all(Radius.circular(12)),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12)),
                           onTap: () {
                             setState(() {
                               _selectedTab = 3;
@@ -187,10 +200,26 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                         const SizedBox(
                           width: 16,
                         ),
+                        InkWell(
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12)),
+                          onTap: () {
+                            setState(() {
+                              _selectedTab = 4;
+                            });
+                          },
+                          child: TabButton(
+                            text: 'Bản nháp',
+                            isSelected: _selectedTab == 4,
+                            index: 4,
+                          ),
+                        ),
+                        const SizedBox(
+                          width: 16,
+                        ),
                       ],
                     ),
                   ),
-
                   Expanded(
                       child: Container(
                     margin: const EdgeInsets.only(top: 8),
@@ -204,7 +233,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                               return Padding(
                                 padding:
                                     const EdgeInsets.symmetric(vertical: 4),
-                                child: PlanCard(plan: _totalPlans[_selectedTab][index]),
+                                child: PlanCard(
+                                    plan: _totalPlans[_selectedTab][index]),
                               );
                             },
                           ),

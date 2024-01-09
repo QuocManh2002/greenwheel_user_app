@@ -322,7 +322,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                       children: [
                         
                         Text(
-                          widget.supplier.phone,
+                          '0${widget.supplier.phone.substring(3)}',
                           style:const TextStyle(fontSize: 20, color: Colors.black54),
                         ),
                       ],

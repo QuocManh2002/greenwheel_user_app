@@ -10,7 +10,9 @@ import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -35,6 +37,10 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   num duration = 0;
   List<SearchStartLocationResult> _resultList = [];
   bool isShowResult = false;
+  TimeOfDay _selectTime = TimeOfDay.now();
+  TextEditingController _timeController = TextEditingController();
+  TextEditingController _dateController = TextEditingController();
+  DateTime? _selectedDate = DateTime.now();
 
   _onMapCreated(MapboxMapController controller) {
     this.controller = controller;
@@ -163,6 +169,34 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         distance = plan_distance;
       });
     }
+
+    String? timeText = sharedPreferences.getString('plan_start_time');
+    if (timeText != null) {
+      final initialDateTime = DateFormat.Hm().parse(timeText);
+      setState(() {
+        _selectTime = TimeOfDay.fromDateTime(initialDateTime);
+        _timeController.text = timeText;
+      });
+    } else {
+      _selectTime =
+          TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 1)));
+      _timeController.text = DateFormat.Hm()
+          .format(DateTime(0, 0, 0, _selectTime.hour, _selectTime.minute));
+      sharedPreferences.setString('plan_start_time', _timeController.text);
+    }
+
+    String? dateText = sharedPreferences.getString('plan_start_date');
+    if (dateText != null) {
+      setState(() {
+        _selectedDate = DateTime.parse(dateText);
+        _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
+      });
+    } else {
+      _selectedDate = DateTime.now();
+      _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
+      sharedPreferences.setString(
+          'plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
+    }
   }
 
   @override
@@ -170,18 +204,140 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-          SizedBox(
-            height: 1.h,
-          ),
+
           const Text(
-            'Chọn địa điểm xuất phát',
+            'Chọn thời gian và địa điểm xuất phát',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
+          SizedBox(height: 1.h,),
+          Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: Row(
+            children: [
+              Expanded(
+                child: defaultTextFormField(
+                    readonly: true,
+                    controller: _dateController,
+                    inputType: TextInputType.datetime,
+                    text: 'Ngày',
+                    onTap: () async {
+                      DateTime? newDay = await showDatePicker(
+                          context: context,
+                          locale: const Locale('vi_VN'),
+                          initialDate: DateTime.now(),
+                          firstDate: DateTime(1900),
+                          lastDate: DateTime(2025),
+                          builder: (context, child) {
+                            return Theme(
+                              data: ThemeData().copyWith(
+                                  colorScheme: const ColorScheme.light(
+                                      primary: primaryColor,
+                                      onPrimary: Colors.white)),
+                              child: DatePickerDialog(
+                                cancelText: 'HỦY',
+                                confirmText: 'LƯU',
+                                initialDate: _selectedDate!,
+                                firstDate: DateTime.now(),
+                                lastDate: DateTime(2025),
+                              ),
+                            );
+                          });
+                      if (newDay != null) {
+                        _selectedDate = newDay;
+                        _dateController.text =
+                            DateFormat('dd/MM/yyyy').format(newDay);
+                        sharedPreferences.setString(
+                            'plan_start_date', newDay.toString());
+                      }
+                    },
+                    prefixIcon: const Icon(Icons.calendar_month),
+                    onValidate: (value) {
+                      if (value!.isEmpty) {
+                        return "Ngày của hoạt động không được để trống";
+                      }
+                    }),
+              ),
+              SizedBox(
+                width: 3.w,
+              ),
+              Expanded(
+                child: defaultTextFormField(
+                    readonly: true,
+                    controller: _timeController,
+                    inputType: TextInputType.datetime,
+                    text: 'Giờ',
+                    onTap: () {
+                      showTimePicker(
+                        context: context,
+                        initialTime: _selectTime,
+                        builder: (context, child) {
+                          return Theme(
+                            data: ThemeData().copyWith(
+                                colorScheme: const ColorScheme.light(
+                                    primary: primaryColor,
+                                    onPrimary: Colors.white)),
+                            child: TimePickerDialog(
+                              initialTime: _selectTime,
+                            ),
+                          );
+                        },
+                      ).then((value) {
+                        if (!Utils().checkTimeAfterNow1Hour(
+                            value!,
+                            DateTime(_selectedDate!.year, _selectedDate!.month,
+                                _selectedDate!.day))) {
+                          AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.warning,
+                              btnOkColor: Colors.orange,
+                              body: const Padding(
+                                padding: EdgeInsets.symmetric(horizontal: 16),
+                                child: Center(
+                                  child: Text(
+                                    'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
+                                    style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ),
+                              btnOkOnPress: () {
+                                _selectTime = TimeOfDay.fromDateTime(
+                                    DateTime.now()
+                                        .add(const Duration(hours: 1)));
+                                _timeController.text = DateFormat.Hm().format(
+                                    DateTime(0, 0, 0, _selectTime.hour,
+                                        _selectTime.minute));
+                                sharedPreferences.setString(
+                                    'plan_start_time', _timeController.text);
+                              }).show();
+                        } else {
+                          _selectTime = value;
+                          _timeController.text = DateFormat.Hm().format(
+                              DateTime(0, 0, 0, _selectTime.hour,
+                                  _selectTime.minute));
+                          sharedPreferences.setString(
+                              'plan_start_time', _timeController.text);
+                          sharedPreferences.setBool('plan_is_change', false);
+                        }
+                      });
+                    },
+                    onValidate: (value) {
+                      if (value!.isEmpty) {
+                        return "Ngày của hoạt động không được để trống";
+                      }
+                    },
+                    prefixIcon: const Icon(Icons.watch_later_outlined)),
+              ),
+            ],
+          ),
+        ),
           SizedBox(
             height: 1.h,
           ),
           SizedBox(
-            height: 65.h,
+            height: 60.h,
             child: Stack(
               children: [
                 MapboxMap(
@@ -368,44 +524,10 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       List<SearchStartLocationResult> resultList =
           List<SearchStartLocationResult>.from(result["results"]
               .map((e) => SearchStartLocationResult.fromJson(e))).toList();
-
-      // List<SearchStartLocationResult> validList = [];
-
-      // for (final rs in resultList) {
-      //   if (await checkValidLatLngInVietNam(LatLng(rs.lat, rs.lng))) {
-      //     validList.add(rs);
-      //   }
-      // }
-      // if (validList.isEmpty) {
-      //   // ignore: use_build_context_synchronously
-      //   AwesomeDialog(
-      //     context: context,
-      //     dialogType: DialogType.warning,
-      //     body: const Center(
-      //       child: Column(
-      //         crossAxisAlignment: CrossAxisAlignment.center,
-      //         children: [
-      //           Text(
-      //             'Xin hãy chọn địa điểm trong lãnh thổ Việt Nam',
-      //             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      //             textAlign: TextAlign.center,
-      //           ),
-      //           SizedBox(
-      //             height: 16,
-      //           ),
-      //         ],
-      //       ),
-      //     ),
-      //     btnOkOnPress: () {},
-      //     btnOkColor: Colors.orange,
-      //     btnOkText: 'Ok',
-      //   ).show();
-      // } else {
         setState(() {
           _resultList = resultList;
           isShowResult = true;
         });
-      // }
     }
   }
 
@@ -492,5 +614,17 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       }
     }
     return intersections % 2 == 1;
+  }
+
+  handleTimeBeforeNow1Hour() {
+    print(_selectedDate!
+        .add(Duration(hours: _selectTime.hour))
+        .add(Duration(minutes: _selectTime.minute))
+        .isBefore(DateTime.now().add(const Duration(hours: 1))));
+    if (_selectedDate!.difference(DateTime.now()).inDays == 0 &&
+        _selectedDate!
+            .add(Duration(hours: _selectTime.hour))
+            .add(Duration(minutes: _selectTime.minute))
+            .isAfter(DateTime.now().add(const Duration(hours: 1)))) {}
   }
 }

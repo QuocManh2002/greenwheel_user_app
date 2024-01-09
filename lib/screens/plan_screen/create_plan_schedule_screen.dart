@@ -17,10 +17,14 @@ class CreatePlanScheduleScreen extends StatefulWidget {
       {super.key,
       required this.templatePlan,
       required this.isCreate,
+      this.schedule,
+      required this.isClone,
       this.planId});
   final List<dynamic> templatePlan;
   final bool isCreate;
   final int? planId;
+  List<dynamic>? schedule;
+  final bool isClone;
 
   @override
   State<CreatePlanScheduleScreen> createState() =>
@@ -61,9 +65,22 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
     } else {
       var scheduleText = sharedPreferences.getString('plan_schedule');
       print(scheduleText);
-      var scheduleDynamic =
-          _planService.GetPlanScheduleFromJson(json.decode(scheduleText!));
-      print(scheduleDynamic.length);
+      print(json.decode(scheduleText!));
+
+      DateTime startDate = 
+          DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+      DateTime endDate =
+          DateTime.parse(sharedPreferences.getString('plan_end_date')!);
+      //  testList = _planService.GetPlanScheduleFromJsonNew(
+      //    widget.schedule!,
+      //     startDate,
+      //     endDate.difference(startDate).inDays + 1);
+      var list = _planService.GetPlanScheduleFromJsonNew(
+         widget.schedule!,
+          startDate,
+          endDate.difference(startDate).inDays + 1);
+          testList = _planService.GetPlanScheduleClone(list);
+          print(testList);
     }
   }
 

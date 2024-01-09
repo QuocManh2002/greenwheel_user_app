@@ -6,14 +6,18 @@ import 'package:sizer2/sizer2.dart';
 
 class PlanScheduleActivity extends StatelessWidget {
   const PlanScheduleActivity(
-      {super.key, required this.item, required this.showBottomSheet, required this.isSelected});
+      {super.key,
+      required this.item,
+      required this.showBottomSheet,
+      required this.isSelected});
   final PlanScheduleItem item;
   final void Function(PlanScheduleItem item) showBottomSheet;
-  final bool isSelected ;
+  final bool isSelected;
 
   @override
   Widget build(BuildContext context) {
     return Column(
+      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         Padding(
           padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
@@ -21,7 +25,8 @@ class PlanScheduleActivity extends StatelessWidget {
             width: 100.w,
             clipBehavior: Clip.hardEdge,
             decoration: BoxDecoration(
-                color:isSelected? primaryColor.withOpacity(0.3): Colors.white,
+                color:
+                    isSelected ? primaryColor.withOpacity(0.3) : Colors.white,
                 boxShadow: const [
                   BoxShadow(
                     blurRadius: 3,
@@ -74,38 +79,60 @@ class PlanScheduleActivity extends StatelessWidget {
                     height: 1.h,
                   ),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(Icons.calendar_month),
+                      Column(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          const Icon(Icons.local_activity, size: 22,),
+                          SizedBox(
+                            height: 1.h,
+                          ),
+                          const Icon(Icons.calendar_month, size: 22,),
+                          SizedBox(
+                            height: 1.h,
+                          ),
+                          const Icon(Icons.watch_later_outlined, size: 22,),
+                        ],
+                      ),
                       const SizedBox(
                         width: 16,
                       ),
-                      Text(
-                        DateFormat.yMMMMEEEEd('vi_VN').format(item.date),
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      )
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: [
+                          Text(
+                            item.type!,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.clip,
+                          ),
+                          SizedBox(
+                            height: 1.h,
+                          ),
+                          Text(
+                            DateFormat.yMMMMEEEEd('vi_VN').format(item.date!),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(
+                            height: 1.h,
+                          ),
+                          Text(
+                            DateFormat.Hm().format(DateTime(
+                                0, 0, 0, item.time.hour, item.time.minute)),
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          )
+                        ],
+                      ),
                     ],
                   ),
                   SizedBox(
                     height: 1.h,
                   ),
-                  Row(
-                    children: [
-                      const Icon(Icons.watch_later_outlined),
-                      const SizedBox(
-                        width: 16,
-                      ),
-                      Text(
-                        DateFormat.Hm().format(DateTime(
-                            0, 0, 0, item.time.hour, item.time.minute)),
-                        style: const TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 1.h,
-                  )
                 ],
               ),
             ),

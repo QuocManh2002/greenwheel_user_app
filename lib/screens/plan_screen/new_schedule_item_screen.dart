@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
@@ -45,11 +46,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   setUpData() {
     if (widget.item != null) {
       _selectTime = widget.item!.time;
-      _selectedDate = widget.item!.date;
+      _selectedDate = widget.item!.date!;
       _titleController.text = widget.item!.title;
+      _selectedType = widget.item!.type;
       setState(() {
         _dateController.text =
-            DateFormat.yMMMMEEEEd('vi_VN').format(widget.item!.date);
+            DateFormat.yMMMMEEEEd('vi_VN').format(widget.item!.date!);
         // _timeController.text = '${widget.item!.time.hour}:${widget.item!.time.minute}';
 
         _timeController.text = DateFormat.Hm().format(DateTime(
@@ -84,25 +86,47 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
             onPressed: () async {
               if (_formKey.currentState!.validate()) {
                 if (widget.item == null) {
-                  widget.callback(
-                      PlanScheduleItem(
-                          time: _selectTime,
-                          title: _titleController.text,
-                          date: _selectedDate),
-                      true,
-                      null);
+                  if (_selectedType == null) {
+                    await AwesomeDialog(
+                      context: context,
+                      dialogType: DialogType.warning,
+                      body: const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(12),
+                          child: Text(
+                            'Hãy chọn dạng hoạt động',
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ),
+                      btnOkColor: Colors.orange,
+                      btnOkText: 'Ok',
+                      btnOkOnPress: () {},
+                    ).show();
+                  } else {
+                    widget.callback(
+                        PlanScheduleItem(
+                            time: _selectTime,
+                            title: _titleController.text,
+                            date: _selectedDate,
+                            type: _selectedType),
+                        true,
+                        null);
+                    Navigator.of(context).pop();
+                  }
                 } else {
                   widget.callback(
                       PlanScheduleItem(
+                          type: _selectedType,
                           time: _selectTime,
                           title: _titleController.text,
                           date: _selectedDate,
                           id: widget.item!.id),
                       false,
                       widget.item);
+                  Navigator.of(context).pop();
                 }
-
-                Navigator.of(context).pop();
               }
             },
             icon: const Icon(
@@ -179,7 +203,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                               : 'Mô tả hoạt động mới',
                           onValidate: (value) {
                             if (value!.isEmpty) {
-                              return "Ngày của hoạt động không được để trống";
+                              return "Mô tả của hoạt động không được để trống";
                             }
                           },
                           hinttext: 'Câu cá, tắm suối...'),

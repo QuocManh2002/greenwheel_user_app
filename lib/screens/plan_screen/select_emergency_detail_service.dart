@@ -107,7 +107,7 @@ class _SelectEmergencyDetailServiceState
                               fontWeight: FontWeight.bold),
                           children: [
                             TextSpan(
-                                text: widget.emergency.address!,
+                                text: widget.emergency.address ?? 'Không có địa chỉ',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.normal))
                           ])),

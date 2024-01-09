@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
@@ -67,20 +66,19 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     // }
     int planId = sharedPreferences.getInt('planId')!;
 
-    int? rs = await _planService.createPlan(PlanCreate(
-      numOfExpPeriod: listComboDate[numOfExpPeriod].numberOfDay + listComboDate[numOfExpPeriod].numberOfNight,
-        locationId: widget.location.id,
-        startDate: _startDate,
-        endDate: DateTime.parse(endDate),
-        latitude: lat,
-        longitude: lng,
-        memberLimit: memberLimit,
-        name: _nameController.text,
-        schedule: json.decode(schedule).toString(),
-        savedContacts: sharedPreferences.getString('plan_saved_emergency')
-        ),
-        planId
-        );
+    int? rs = await _planService.createPlan(
+        PlanCreate(
+            numOfExpPeriod: numOfExpPeriod,
+            locationId: widget.location.id,
+            startDate: _startDate,
+            endDate: DateTime.parse(endDate),
+            latitude: lat,
+            longitude: lng,
+            memberLimit: memberLimit,
+            name: _nameController.text,
+            schedule: json.decode(schedule).toString(),
+            savedContacts: sharedPreferences.getString('plan_saved_emergency')),
+        planId);
 
     if (rs != 0) {
       setState(() {
@@ -116,6 +114,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
             btnCancelText: 'Không',
             btnCancelColor: Colors.blue,
             btnCancelOnPress: () {
+              
               Utils().clearPlanSharePref();
               Navigator.of(context).pop();
               Navigator.of(context).push(MaterialPageRoute(
@@ -162,40 +161,59 @@ class _SelectPlanNameState extends State<SelectPlanName> {
         //     btnCancelText: 'Không',
         //     btnCancelColor: Colors.blue,
         //     btnCancelOnPress: () async {
-              PlanDetail? plan = await _planService.GetPlanById(rs);
-              if (plan != null) {
-                await _offlineService.savePlanToHive(PlanOfflineViewModel(
-                    id: rs,
-                    name: _nameController.text,
-                    imageBase64:
-                        await Utils().getImageBase64Encoded(plan.imageUrls[0]),
-                    startDate: plan.startDate,
-                    endDate: plan.endDate,
-                    memberLimit: memberLimit,
-                    schedule: plan.schedule,
-                    memberList: [
-                      PlanOfflineMember(
-                          id: int.parse(sharedPreferences.getString('userId')!),
-                          name: "Quoc Manh",
-                          phone: sharedPreferences.getString('userPhone')!,
-                          isLeading: true)
-                    ]));
-              }
+        PlanDetail? plan = await _planService.GetPlanById(rs);
+        if (plan != null) {
+          await _offlineService.savePlanToHive(PlanOfflineViewModel(
+              id: rs,
+              name: _nameController.text,
+              imageBase64:
+                  await Utils().getImageBase64Encoded(plan.imageUrls[0]),
+              startDate: plan.startDate,
+              endDate: plan.endDate,
+              memberLimit: memberLimit,
+              schedule: plan.schedule,
+              memberList: [
+                PlanOfflineMember(
+                    id: int.parse(sharedPreferences.getString('userId')!),
+                    name: "Quoc Manh",
+                    phone: sharedPreferences.getString('userPhone')!,
+                    isLeading: true)
+              ]));
+        }
+
+        // ignore: use_build_context_synchronously
+        AwesomeDialog(
+            context: context,
+            dialogType: DialogType.success,
+            body: const Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Text(
+                  "Tạo kế hoạch thành công",
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              ],
+            ),
+            btnOkText: 'Ok',
+            btnOkColor: primaryColor,
+            btnOkOnPress: () {
               Utils().clearPlanSharePref();
               // ignore: use_build_context_synchronously
               Navigator.of(context).pop();
               // ignore: use_build_context_synchronously
               Navigator.of(context).push(MaterialPageRoute(
                   builder: (ctx) => const TabScreen(pageIndex: 1)));
-            // },
-            // btnOkText: 'Có',
-            // btnOkColor: primaryColor,
-            // btnOkOnPress: () async {
-            //   Navigator.of(context).pop();
-            //   Navigator.of(context).push(MaterialPageRoute(
-            //       builder: (ctx) => SelectEmergencyService(
-            //           location: widget.location, planId: rs)));
-            // }).show();
+            }).show();
+
+        // },
+        // btnOkText: 'Có',
+        // btnOkColor: primaryColor,
+        // btnOkOnPress: () async {
+        //   Navigator.of(context).pop();
+        //   Navigator.of(context).push(MaterialPageRoute(
+        //       builder: (ctx) => SelectEmergencyService(
+        //           location: widget.location, planId: rs)));
+        // }).show();
       }
 
       // ignore: use_build_context_synchronously

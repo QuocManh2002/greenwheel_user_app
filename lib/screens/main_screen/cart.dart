@@ -737,11 +737,6 @@ class _CartScreenState extends State<CartScreen> {
         servingDates: dates,
         note: noteController.text
         );
-
-  
-
-    
-
     return order;
   }
 

@@ -147,7 +147,7 @@ class SupplierCard extends StatelessWidget {
                           Padding(
                             padding: EdgeInsets.only(left: 8, top: 0.5.h),
                             child: Text(
-                              supplier.phone,
+                              '0${supplier.phone.substring(3)}',
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.black54,

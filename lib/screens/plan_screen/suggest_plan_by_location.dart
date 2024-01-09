@@ -84,7 +84,9 @@ class _SuggestPlanByLocationScreenState
                         for (final plan in _suggestPlans!)
                           SuggestPlanCard(
                               plan: plan,
-                              imageUrl: widget.location.imageUrls[0])
+                              imageUrl: widget.location.imageUrls[0],
+                              location: widget.location,
+                              )
                       ],
                     ),
                   ),

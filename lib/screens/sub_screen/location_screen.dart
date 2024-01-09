@@ -296,7 +296,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                   onPressed: () {
                                     Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SuggestPlansByLocationScreen(location: widget.location)));
                                   },
-                                  icon: const Icon(Icons.map),
+                                  icon: const Icon(Icons.luggage),
                                   label: const Text(
                                     "Tham khảo kế hoạch",
                                     style:
