@@ -191,7 +191,7 @@ query search(\$search: String!) {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query search(\$search: String!) {
-    searchLocations
+    locations
     (
       first: 100, 
       searchTerm: \$search,
@@ -227,7 +227,7 @@ query search(\$search: String!) {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['searchLocations']['nodes'];
+      List? res = result.data!['locations']['nodes'];
       if (res == null || res.isEmpty) {
         return [];
       }

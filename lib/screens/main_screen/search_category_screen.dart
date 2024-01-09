@@ -112,6 +112,7 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
                           search: widget.search,
                           list: select,
                           provinces: provinces,
+                          searchState: true,
                         ),
                       ),
                     );

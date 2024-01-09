@@ -68,23 +68,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   height: 35.h,
                   child: Stack(
                     children: [
-                    CachedNetworkImage(
-                      height: 35.h,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      imageUrl: "https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0",
-                      placeholder: (context, url) =>
-                          Image.memory(kTransparentImage),
-                      errorWidget: (context, url, error) =>
-                          FadeInImage.assetNetwork(
+                      CachedNetworkImage(
                         height: 35.h,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        placeholder: 'No Image',
-                        image:
-                            'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                        imageUrl:
+                            "https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0",
+                        placeholder: (context, url) =>
+                            Image.memory(kTransparentImage),
+                        errorWidget: (context, url, error) =>
+                            FadeInImage.assetNetwork(
+                          height: 35.h,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          placeholder: 'No Image',
+                          image:
+                              'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                        ),
                       ),
-                    ),
                       Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Column(
@@ -125,7 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onTap: () {
                                   // Navigate to search screen
                                   Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (ctx) => const SearchScreen()));
+                                      builder: (ctx) => const SearchScreen(
+                                            searchState: false,
+                                          )));
                                 },
                                 child: TextField(
                                   enabled: false,

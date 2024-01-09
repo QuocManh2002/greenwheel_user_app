@@ -1,7 +1,8 @@
 import 'package:choose_input_chips/choose_input_chips.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/tags.dart';
+import 'package:greenwheel_user_app/constants/search.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/search_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_category_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
@@ -19,10 +20,12 @@ class SearchScreen extends StatefulWidget {
     this.search = '',
     this.list = const [],
     this.provinces = const [],
+    required this.searchState,
   });
   final String search;
   final List<Tag> list;
   final List<Tag> provinces;
+  final bool searchState;
 
   @override
   State<SearchScreen> createState() => _SearchScreenState();
@@ -34,7 +37,8 @@ class _SearchScreenState extends State<SearchScreen> {
   List<Tag> currentTags = [];
   List<LocationViewModel> locations = [];
 
-  bool isLoading = true;
+  bool isLoading = false;
+  bool isSearch = false;
 
   final _chipKey = GlobalKey<ChipsInputState>();
   String searchTerm = "";
@@ -51,11 +55,16 @@ class _SearchScreenState extends State<SearchScreen> {
   _setUpData() async {
     searchTerm = widget.search;
     currentTags = List.from(widget.list);
-    List<LocationViewModel> result =
-        await locationService.searchLocations(searchTerm, currentTags);
     setState(() {
-      locations = result;
+      isSearch = widget.searchState;
     });
+    if (isSearch) {
+      List<LocationViewModel> result =
+          await locationService.searchLocations(searchTerm, currentTags);
+      setState(() {
+        locations = result;
+      });
+    }
   }
 
   @override
@@ -193,6 +202,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                     searchTerm, currentTags);
                             setState(() {
                               locations = result;
+                              isSearch = true;
                             });
                             print(result.length);
                           },
@@ -202,6 +212,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       ),
                       key: _chipKey,
                       // initialValue: [mockResults[3]],
+                      maxChips: 2,
                       allowChipEditing: true,
                       textStyle: const TextStyle(
                         height: 1.5,
@@ -211,12 +222,12 @@ class _SearchScreenState extends State<SearchScreen> {
                       findSuggestions: (String query) {
                         if (query.isNotEmpty) {
                           var lowercaseQuery = query.toLowerCase();
-                          var tmp = tags.where((tag) {
+                          var tmp = searchTags.where((tag) {
                             return tag.title
                                 .toLowerCase()
                                 .contains(query.toLowerCase());
                             //     ||
-                            // tag.enumName
+                            // tag.subName
                             //     .toLowerCase()
                             //     .contains(query.toLowerCase());
                           }).toList(growable: false)
@@ -286,6 +297,7 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                           onPressed: () {
                             // Handle threedot icon action here
+                            Navigator.of(context).pop();
                             Navigator.of(context).push(
                               MaterialPageRoute(
                                 builder: (ctx) => SearchCategoryScreen(
@@ -302,7 +314,7 @@ class _SearchScreenState extends State<SearchScreen> {
             ),
           ),
         ),
-        body: (locations.isEmpty)
+        body: (isSearch == false)
             ? SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -434,63 +446,71 @@ class _SearchScreenState extends State<SearchScreen> {
                   ],
                 ),
               )
-            : SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    currentTags.isNotEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(left: 8, top: 14),
-                            child: Row(
-                              children: <Widget>[
-                                Expanded(
-                                  child: SizedBox(
-                                    height: 4.h,
-                                    child: ListView.builder(
-                                      physics: const BouncingScrollPhysics(),
-                                      itemCount: currentTags.length,
-                                      shrinkWrap: true,
-                                      scrollDirection: Axis.horizontal,
-                                      itemBuilder: (context, index) => Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 8),
-                                        child:
-                                            TagWidget(tag: currentTags[index]),
+            : (isLoading)
+                ? const SingleChildScrollView(
+                    child: SearchLoadingScreen(),
+                  )
+                : SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        currentTags.isNotEmpty
+                            ? Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 8, top: 14),
+                                child: Row(
+                                  children: <Widget>[
+                                    Expanded(
+                                      child: SizedBox(
+                                        height: 4.h,
+                                        child: ListView.builder(
+                                          physics:
+                                              const BouncingScrollPhysics(),
+                                          itemCount: currentTags.length,
+                                          shrinkWrap: true,
+                                          scrollDirection: Axis.horizontal,
+                                          itemBuilder: (context, index) =>
+                                              Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 8),
+                                            child: TagWidget(
+                                                tag: currentTags[index]),
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                    )
+                                  ],
+                                ),
+                              )
+                            : Container(),
+                        widget.list.isEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.only(
+                                    left: 16, top: 14, bottom: 10),
+                                child: Text(
+                                  'Kết quả tìm kiếm của "${searchTerm.trim()}"',
+                                  style: const TextStyle(
+                                    fontSize: 19,
+                                    fontFamily: 'NotoSans',
+                                    fontWeight: FontWeight.bold,
                                   ),
-                                )
-                              ],
-                            ),
-                          )
-                        : Container(),
-                    widget.list.isEmpty
-                        ? Padding(
-                            padding: const EdgeInsets.only(left: 16, top: 14),
-                            child: Text(
-                              'Kết quả tìm kiếm của "${searchTerm.trim()}"',
-                              style: const TextStyle(
-                                fontSize: 19,
-                                fontFamily: 'NotoSans',
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          )
-                        : Container(),
-                    Container(
-                      height: 80.h,
-                      child: ListView.builder(
-                        physics: const BouncingScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: locations.length,
-                        itemBuilder: (context, index) {
-                          return SearchCard(location: locations[index]);
-                        },
-                      ),
+                                ),
+                              )
+                            : Container(),
+                        Container(
+                          height: 70.h,
+                          child: ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: locations.length,
+                            itemBuilder: (context, index) {
+                              return SearchCard(location: locations[index]);
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
       ),
     );
   }
@@ -524,7 +544,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
     // Perform a case-insensitive search for tags by each search term
     for (String term in list) {
-      for (Tag tag in tags) {
+      for (Tag tag in searchTags) {
         if (tag.title.toLowerCase() == (term.toLowerCase())) {
           // Add the tag to the search results if its title contains the search term
           searchResults.add(tag);
