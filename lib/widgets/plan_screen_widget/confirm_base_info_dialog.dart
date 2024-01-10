@@ -87,7 +87,9 @@ class ConfirmBaseInfoDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(width: 1.w,),
+              SizedBox(
+                width: 1.w,
+              ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -101,7 +103,7 @@ class ConfirmBaseInfoDialog extends StatelessWidget {
                     height: 1.h,
                   ),
                   Text(
-                    "${startDate.hour}:${startDate.minute} ${startDate.day}/${startDate.month}/${startDate.year}",
+                    "${startDate.hour}:${startDate.minute.toString().length == 1 ? '0${startDate.minute}' : startDate.minute} ${startDate.day}/${startDate.month}/${startDate.year}",
                     style: const TextStyle(
                       fontSize: 14,
                     ),
@@ -110,7 +112,7 @@ class ConfirmBaseInfoDialog extends StatelessWidget {
                     height: 1.h,
                   ),
                   Text(
-                    "22:00 ${endDate.day}/${endDate.month}/${endDate.year}",
+                    "${endDate.day}/${endDate.month}/${endDate.year}",
                     style: const TextStyle(fontSize: 14),
                   ),
                   SizedBox(

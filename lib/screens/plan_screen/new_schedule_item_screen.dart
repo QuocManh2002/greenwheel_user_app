@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:intl/intl.dart';
@@ -13,13 +14,11 @@ class NewScheduleItemScreen extends StatefulWidget {
       {super.key,
       required this.callback,
       required this.startDate,
-      required this.endDate,
       required this.selectedIndex,
       this.item});
   final void Function(
       PlanScheduleItem item, bool isCreate, PlanScheduleItem? oldItem) callback;
   final DateTime startDate;
-  final DateTime endDate;
   final PlanScheduleItem? item;
   final int selectedIndex;
 
@@ -215,6 +214,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           controller: _timeController,
                           inputType: TextInputType.datetime,
                           text: 'Giờ',
+                          
                           onTap: () {
                             showTimePicker(
                               context: context,
@@ -222,6 +222,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                               builder: (context, child) {
                                 return Theme(
                                   data: ThemeData().copyWith(
+                                      
                                       colorScheme: const ColorScheme.light(
                                           primary: primaryColor,
                                           onPrimary: Colors.white)),
@@ -233,10 +234,15 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                 );
                               },
                             ).then((value) {
+                              var startTimeText = sharedPreferences.getString('plan_start_time');
+                              print(_selectedDate.difference(widget.startDate).inDays == 0);
+                              if(_selectedDate.difference(widget.startDate).inDays == 0){
+                                
+                              }
                               _selectTime = value!;
                               _timeController.text =
                                   value.format(context).toString();
-                              print(_timeController.text);
+                              // print(_timeController.text);
                             });
                           },
                           onValidate: (value) {

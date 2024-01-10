@@ -12,6 +12,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_act
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
 import 'package:sizer2/sizer2.dart';
 
+// ignore: must_be_immutable
 class CreatePlanScheduleScreen extends StatefulWidget {
   CreatePlanScheduleScreen(
       {super.key,
@@ -240,8 +241,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             callback: callback,
             selectedIndex: _currentPage.toInt(),
             item: item,
-            startDate: testList.first.date,
-            endDate: testList.last.date)));
+            startDate: testList.first.date)));
   }
 
   _deleteItem(PlanScheduleItem item) {
@@ -333,7 +333,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                         builder: (ctx) => NewScheduleItemScreen(
                               callback: callback,
                               startDate: testList[0].date,
-                              endDate: testList.last.date,
                               selectedIndex: _currentPage.toInt(),
                             )));
                   },
