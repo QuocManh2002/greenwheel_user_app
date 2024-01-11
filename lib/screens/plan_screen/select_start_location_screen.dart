@@ -1,7 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:geojson/geojson.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
@@ -16,7 +16,6 @@ import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:flutter/services.dart' show rootBundle;
 
 class SelectStartLocationScreen extends StatefulWidget {
   const SelectStartLocationScreen({super.key, required this.location});
@@ -58,19 +57,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       _permissionGranted = await _locationController.requestPermission();
     }
 
-    // _locationController.onLocationChanged
-    //     .listen((LocationData currentLocation) async {
-    //   if (currentLocation.latitude != null &&
-    //       currentLocation.longitude != null) {
-    //    setState(() {
-    //       _currentP =
-    //         LatLng(currentLocation.latitude!, currentLocation.longitude!);
-    //         getMapInfo();
-    //    });
-    //     // _cameraToPosition(_currentP);
-    //   }
-    // });
-
     LocationData _locationData = await _locationController.getLocation();
     setState(() {
       _currentP = LatLng(_locationData.latitude!, _locationData.longitude!);
@@ -97,24 +83,30 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   _onStyleLoadedCallback() async {
+    // if(sharedPreferences.getString('symbolId') != null){
+    //   controller.addSymbolLayer(
+    //     sharedPreferences.getString('symbolId')!,
+    //     sharedPreferences.getString('symbolId')!,
+    //     SymbolLayerProperties(iconImage: SvgPicture.asset(to_marker)));
+    // }
     await controller.addSymbol(SymbolOptions(
-        geometry: _currentP, iconSize: 5, iconImage: current_location));
+        geometry: _currentP, iconSize: 2, iconImage: current_location));
     await controller.addSymbol(SymbolOptions(
         geometry: LatLng(widget.location.latitude, widget.location.longitude),
-        iconSize: 5,
+        iconSize: 2,
         iconImage: to_location));
 
     final lat = sharedPreferences.getDouble('plan_start_lat');
     final lng = sharedPreferences.getDouble('plan_start_lng');
     if (lat != null) {
       Symbol symbol = await controller.addSymbol(SymbolOptions(
-          geometry: LatLng(lat, lng!), iconSize: 5, iconImage: from_location));
+          geometry: LatLng(lat, lng!), iconSize: 2, iconImage: from_location));
       sharedPreferences.setString('symbolId', symbol.id);
     }
   }
 
   _onSelectLocation(LatLng _selectedLocation) async {
-    if (!await Utils().test(
+    if (!await Utils().CheckLoationInSouthSide(
         lon: _selectedLocation.longitude, lat: _selectedLocation.latitude)) {
       // ignore: use_build_context_synchronously
       AwesomeDialog(
@@ -145,11 +137,12 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         controller.removeSymbol(Symbol(symbolId, SymbolOptions.defaultOptions));
       }
       SymbolOptions options = SymbolOptions(
-          geometry: _selectedLocation, iconSize: 5, iconImage: from_location);
+          geometry: _selectedLocation, iconSize: 2, iconImage: from_location);
       Symbol symbol = await controller.addSymbol(options);
       getMapInfo(_selectedLocation);
       sharedPreferences.setString('symbolId', symbol.id);
     }
+    sharedPreferences.setBool('plan_is_change', false);
   }
 
   @override
@@ -204,135 +197,137 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     return SingleChildScrollView(
       child: Column(
         children: [
-
           const Text(
             'Chọn thời gian và địa điểm xuất phát',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          SizedBox(height: 1.h,),
+          SizedBox(
+            height: 1.h,
+          ),
           Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              Expanded(
-                child: defaultTextFormField(
-                    readonly: true,
-                    controller: _dateController,
-                    inputType: TextInputType.datetime,
-                    text: 'Ngày',
-                    onTap: () async {
-                      DateTime? newDay = await showDatePicker(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              children: [
+                Expanded(
+                  child: defaultTextFormField(
+                      readonly: true,
+                      controller: _dateController,
+                      inputType: TextInputType.datetime,
+                      text: 'Ngày',
+                      onTap: () async {
+                        DateTime? newDay = await showDatePicker(
+                            context: context,
+                            locale: const Locale('vi_VN'),
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(1900),
+                            lastDate: DateTime(2025),
+                            builder: (context, child) {
+                              return Theme(
+                                data: ThemeData().copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                        primary: primaryColor,
+                                        onPrimary: Colors.white)),
+                                child: DatePickerDialog(
+                                  cancelText: 'HỦY',
+                                  confirmText: 'LƯU',
+                                  initialDate: _selectedDate!,
+                                  firstDate: DateTime.now(),
+                                  lastDate: DateTime(2025),
+                                ),
+                              );
+                            });
+                        if (newDay != null) {
+                          _selectedDate = newDay;
+                          _dateController.text =
+                              DateFormat('dd/MM/yyyy').format(newDay);
+                          sharedPreferences.setString(
+                              'plan_start_date', newDay.toString());
+                          sharedPreferences.setBool('plan_is_change', false);
+                        }
+                      },
+                      prefixIcon: const Icon(Icons.calendar_month),
+                      onValidate: (value) {
+                        if (value!.isEmpty) {
+                          return "Ngày của hoạt động không được để trống";
+                        }
+                      }),
+                ),
+                SizedBox(
+                  width: 3.w,
+                ),
+                Expanded(
+                  child: defaultTextFormField(
+                      readonly: true,
+                      controller: _timeController,
+                      inputType: TextInputType.datetime,
+                      text: 'Giờ',
+                      onTap: () {
+                        showTimePicker(
                           context: context,
-                          locale: const Locale('vi_VN'),
-                          initialDate: DateTime.now(),
-                          firstDate: DateTime(1900),
-                          lastDate: DateTime(2025),
+                          initialTime: _selectTime,
                           builder: (context, child) {
                             return Theme(
                               data: ThemeData().copyWith(
                                   colorScheme: const ColorScheme.light(
                                       primary: primaryColor,
                                       onPrimary: Colors.white)),
-                              child: DatePickerDialog(
-                                cancelText: 'HỦY',
-                                confirmText: 'LƯU',
-                                initialDate: _selectedDate!,
-                                firstDate: DateTime.now(),
-                                lastDate: DateTime(2025),
+                              child: TimePickerDialog(
+                                initialTime: _selectTime,
                               ),
                             );
-                          });
-                      if (newDay != null) {
-                        _selectedDate = newDay;
-                        _dateController.text =
-                            DateFormat('dd/MM/yyyy').format(newDay);
-                        sharedPreferences.setString(
-                            'plan_start_date', newDay.toString());
-                      }
-                    },
-                    prefixIcon: const Icon(Icons.calendar_month),
-                    onValidate: (value) {
-                      if (value!.isEmpty) {
-                        return "Ngày của hoạt động không được để trống";
-                      }
-                    }),
-              ),
-              SizedBox(
-                width: 3.w,
-              ),
-              Expanded(
-                child: defaultTextFormField(
-                    readonly: true,
-                    controller: _timeController,
-                    inputType: TextInputType.datetime,
-                    text: 'Giờ',
-                    onTap: () {
-                      showTimePicker(
-                        context: context,
-                        initialTime: _selectTime,
-                        builder: (context, child) {
-                          return Theme(
-                            data: ThemeData().copyWith(
-                                colorScheme: const ColorScheme.light(
-                                    primary: primaryColor,
-                                    onPrimary: Colors.white)),
-                            child: TimePickerDialog(
-                              initialTime: _selectTime,
-                            ),
-                          );
-                        },
-                      ).then((value) {
-                        if (!Utils().checkTimeAfterNow1Hour(
-                            value!,
-                            DateTime(_selectedDate!.year, _selectedDate!.month,
-                                _selectedDate!.day))) {
-                          AwesomeDialog(
-                              context: context,
-                              dialogType: DialogType.warning,
-                              btnOkColor: Colors.orange,
-                              body: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 16),
-                                child: Center(
-                                  child: Text(
-                                    'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
+                          },
+                        ).then((value) {
+                          if (!Utils().checkTimeAfterNow1Hour(
+                              value!,
+                              DateTime(_selectedDate!.year,
+                                  _selectedDate!.month, _selectedDate!.day))) {
+                            AwesomeDialog(
+                                context: context,
+                                dialogType: DialogType.warning,
+                                btnOkColor: Colors.orange,
+                                body: const Padding(
+                                  padding: EdgeInsets.symmetric(horizontal: 16),
+                                  child: Center(
+                                    child: Text(
+                                      'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
+                                      style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                      textAlign: TextAlign.center,
+                                    ),
                                   ),
                                 ),
-                              ),
-                              btnOkOnPress: () {
-                                _selectTime = TimeOfDay.fromDateTime(
-                                    DateTime.now()
-                                        .add(const Duration(hours: 1)));
-                                _timeController.text = DateFormat.Hm().format(
-                                    DateTime(0, 0, 0, _selectTime.hour,
-                                        _selectTime.minute));
-                                sharedPreferences.setString(
-                                    'plan_start_time', _timeController.text);
-                              }).show();
-                        } else {
-                          _selectTime = value;
-                          _timeController.text = DateFormat.Hm().format(
-                              DateTime(0, 0, 0, _selectTime.hour,
-                                  _selectTime.minute));
-                          sharedPreferences.setString(
-                              'plan_start_time', _timeController.text);
-                          sharedPreferences.setBool('plan_is_change', false);
+                                btnOkOnPress: () {
+                                  _selectTime = TimeOfDay.fromDateTime(
+                                      DateTime.now()
+                                          .add(const Duration(hours: 1)));
+                                  _timeController.text = DateFormat.Hm().format(
+                                      DateTime(0, 0, 0, _selectTime.hour,
+                                          _selectTime.minute));
+                                  sharedPreferences.setString(
+                                      'plan_start_time', _timeController.text);
+                                }).show();
+                          } else {
+                            _selectTime = value;
+                            _timeController.text = DateFormat.Hm().format(
+                                DateTime(0, 0, 0, _selectTime.hour,
+                                    _selectTime.minute));
+                            sharedPreferences.setString(
+                                'plan_start_time', _timeController.text);
+                            sharedPreferences.setBool('plan_is_change', false);
+                          }
+                        });
+                      },
+                      onValidate: (value) {
+                        if (value!.isEmpty) {
+                          return "Ngày của hoạt động không được để trống";
                         }
-                      });
-                    },
-                    onValidate: (value) {
-                      if (value!.isEmpty) {
-                        return "Ngày của hoạt động không được để trống";
-                      }
-                    },
-                    prefixIcon: const Icon(Icons.watch_later_outlined)),
-              ),
-            ],
+                      },
+                      prefixIcon: const Icon(Icons.watch_later_outlined)),
+                ),
+              ],
+            ),
           ),
-        ),
           SizedBox(
             height: 1.h,
           ),
@@ -524,10 +519,10 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       List<SearchStartLocationResult> resultList =
           List<SearchStartLocationResult>.from(result["results"]
               .map((e) => SearchStartLocationResult.fromJson(e))).toList();
-        setState(() {
-          _resultList = resultList;
-          isShowResult = true;
-        });
+      setState(() {
+        _resultList = resultList;
+        isShowResult = true;
+      });
     }
   }
 
@@ -559,72 +554,5 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         ),
       ]),
     );
-  }
-
-  checkValidLatLngInVietNam(LatLng location) async {
-    final geo = GeoJson();
-    String geoString = await rootBundle
-        .loadString('assets/geojson/vietnam_boundaries.geojson');
-    await geo.parse(geoString, verbose: true);
-    bool isWithinMultiPolygon = false;
-    await geo.processedMultiPolygons.listen((GeoJsonMultiPolygon multiPolygon) {
-      List<List<LatLng>> polygonCoordinates = [];
-      multiPolygon.polygons.forEach((polygon) {
-        List<LatLng> coordinates = [];
-        polygon.geoSeries.forEach((geoSerie) {
-          geoSerie.geoPoints.forEach((geoPoint) {
-            coordinates.add(LatLng(geoPoint.latitude, geoPoint.longitude));
-          });
-        });
-        polygonCoordinates.add(coordinates);
-      });
-      isWithinMultiPolygon =
-          isPointInMultiPolygon(location, polygonCoordinates);
-    });
-    await geo.parse(geoString);
-    print(isWithinMultiPolygon);
-    return isWithinMultiPolygon;
-  }
-
-  bool isPointInMultiPolygon(
-      LatLng point, List<List<LatLng>> polygonCoordinates) {
-    for (var polygon in polygonCoordinates) {
-      if (isPointInPolygon(point, polygon)) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  bool isPointInPolygon(LatLng point, List<LatLng> polygon) {
-    int intersections = 0;
-    for (int i = 0; i < polygon.length; i++) {
-      LatLng vertex1 = polygon[i];
-      LatLng vertex2 = polygon[(i + 1) % polygon.length];
-      if (((vertex1.latitude >= point.latitude &&
-                  vertex2.latitude < point.latitude) ||
-              (vertex1.latitude < point.latitude &&
-                  vertex2.latitude >= point.latitude)) &&
-          (point.longitude <
-              (vertex2.longitude - vertex1.longitude) *
-                      (point.latitude - vertex1.latitude) /
-                      (vertex2.latitude - vertex1.latitude) +
-                  vertex1.longitude)) {
-        intersections++;
-      }
-    }
-    return intersections % 2 == 1;
-  }
-
-  handleTimeBeforeNow1Hour() {
-    print(_selectedDate!
-        .add(Duration(hours: _selectTime.hour))
-        .add(Duration(minutes: _selectTime.minute))
-        .isBefore(DateTime.now().add(const Duration(hours: 1))));
-    if (_selectedDate!.difference(DateTime.now()).inDays == 0 &&
-        _selectedDate!
-            .add(Duration(hours: _selectTime.hour))
-            .add(Duration(minutes: _selectTime.minute))
-            .isAfter(DateTime.now().add(const Duration(hours: 1)))) {}
   }
 }

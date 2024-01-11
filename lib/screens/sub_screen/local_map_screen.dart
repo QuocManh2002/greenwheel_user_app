@@ -37,7 +37,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
     //     iconImage: "assets/images/delivery.png",
     //   ));
     // }
-    await controller.addSymbol(SymbolOptions(
+    await controller.addSymbol(const SymbolOptions(
       geometry: LatLng(10.841877927102306, 106.8098508297925),
       iconSize: 5,
       iconImage: "assets/images/from_icon.png"
@@ -207,7 +207,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
   getMapInfo() async {
     // if (_currentP.latitude != 0) {
       var mapInfo = await getDirectionsAPIResponse(
-          LatLng(10.841877927102306, 106.8098508297925), LatLng(widget.location.latitude, widget.location.longitude));
+         const LatLng(10.841877927102306, 106.8098508297925), LatLng(widget.location.latitude, widget.location.longitude));
 
       if (mapInfo.isNotEmpty) {
         print(mapInfo["duration"]);

@@ -281,7 +281,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                     btnOkColor: Colors.blue,
                                     btnOkText: 'Xác nhận',
                                     btnOkOnPress: () async {
-                                      if (await createDraftPlan(
+                                      if(widget.isCreate ){
+                                        if (await createDraftPlan(
                                           sharedPreferences
                                               .getInt('numOfExpPeriod')!,
                                           DateTime(
@@ -298,6 +299,12 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                         getScrollLocation();
                                       } else {
                                         print('error when create draft plan');
+                                      }
+                                      }else{
+                                        setState(() {
+                                          _currentStep++;
+                                        });
+                                        getScrollLocation();
                                       }
                                     },
                                     body: ConfirmBaseInfoDialog(

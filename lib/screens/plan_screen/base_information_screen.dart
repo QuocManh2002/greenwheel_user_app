@@ -1,4 +1,3 @@
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
@@ -23,7 +22,6 @@ class _BaseInformationState extends State<BaseInformationScreen> {
   late FixedExtentScrollController _scrollController;
   bool isWarning = false;
   ComboDate? _suggestComboDate;
-  
 
   onChangeQuantity(String type) {
     if (type == "add") {
@@ -47,27 +45,32 @@ class _BaseInformationState extends State<BaseInformationScreen> {
 
   setUpData() {
     int? member = sharedPreferences.getInt('plan_number_of_member');
-    int? combodate = sharedPreferences.getInt('plan_combo_date');
-    if (combodate != null) {
+    int? numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod');
+    ComboDate _selectedComboDate;
+    if (numOfExpPeriod != null) {
+      _selectedComboDate = listComboDate.firstWhere(
+        (element) =>
+            element.numberOfDay + element.numberOfNight == numOfExpPeriod,
+      );
+
       setState(() {
-        _selectedCombo = combodate;
-        _scrollController = FixedExtentScrollController(initialItem: combodate);
+        _selectedCombo = _selectedComboDate.id - 1;
+        _scrollController =
+            FixedExtentScrollController(initialItem: _selectedComboDate.id - 1);
       });
     } else {
-      final defaultComboDate = listComboDate.firstWhere((element) =>
+      _selectedComboDate = listComboDate.firstWhere((element) =>
           element.duration == widget.location.suggestedTripLength * 2);
-      sharedPreferences.setInt('plan_combo_date', defaultComboDate.id - 1);
+      sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id - 1);
       sharedPreferences.setInt('numOfExpPeriod',
-          defaultComboDate.numberOfDay + defaultComboDate.numberOfNight);
+          _selectedComboDate.numberOfDay + _selectedComboDate.numberOfNight);
       setState(() {
-        _selectedCombo = defaultComboDate.id - 1;
+        _selectedCombo = _selectedComboDate.id - 1;
         _scrollController =
-            FixedExtentScrollController(initialItem: defaultComboDate.id - 1);
+            FixedExtentScrollController(initialItem: _selectedComboDate.id - 1);
       });
-
-      // _scrollController.animateToItem(defaultComboDate,
-      //     duration: Duration(seconds: 1), curve: Curves.easeInOut);
     }
+    sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id - 1);
     if (member != null) {
       setState(() {
         _selectedQuantity = member;
@@ -77,8 +80,6 @@ class _BaseInformationState extends State<BaseInformationScreen> {
     }
     _suggestComboDate = listComboDate.firstWhere((element) =>
         element.duration == widget.location.suggestedTripLength * 2);
-
-    
   }
 
   @override
@@ -123,12 +124,12 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                     isWarning = false;
                   });
                 }
-                sharedPreferences.setBool("plan_is_change", false);
                 sharedPreferences.setInt('plan_combo_date', value);
                 sharedPreferences.setInt(
                     'numOfExpPeriod',
                     listComboDate[value].numberOfDay +
                         listComboDate[value].numberOfNight);
+                sharedPreferences.setBool('plan_is_change', false);
               },
               children: Utils.modelBuilder(
                   listComboDate,
@@ -206,6 +207,4 @@ class _BaseInformationState extends State<BaseInformationScreen> {
       ],
     );
   }
-
-  
 }

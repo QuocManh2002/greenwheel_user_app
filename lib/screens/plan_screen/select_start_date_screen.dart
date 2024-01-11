@@ -29,7 +29,8 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
         _selectedDate = selectDay;
         _focusedDay = focusDay;
         _rangeStart = _selectedDate;
-        _rangeEnd = _selectedDate!.add(Duration(days: _selectedComboDate.numberOfDay - 1));
+        _rangeEnd = _selectedDate!
+            .add(Duration(days: _selectedComboDate.numberOfDay - 1));
         sharedPreferences.setString('plan_start_date', _rangeStart.toString());
         sharedPreferences.setString('plan_end_date', _rangeEnd.toString());
       });
@@ -108,7 +109,7 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
           ),
           if (_selectedDate != null)
             Text(
-              '${_startTime} ${_rangeStart!.day}/${_rangeStart!.month}/${_rangeStart!.year} - 22:00 ${_rangeEnd!.day}/${_rangeEnd!.month}/${_rangeEnd!.year}',
+              '${_startTime} ${_rangeStart!.day}/${_rangeStart!.month}/${_rangeStart!.year} - ${_rangeEnd!.day}/${_rangeEnd!.month}/${_rangeEnd!.year}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           SizedBox(
@@ -134,12 +135,13 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
               rangeStartDay: _rangeStart,
               rangeEndDay: _rangeEnd,
               calendarStyle: CalendarStyle(
+                  todayTextStyle: const TextStyle(color: Colors.black),
                   rangeStartDecoration: const BoxDecoration(
                       shape: BoxShape.circle, color: primaryColor),
                   selectedDecoration: const BoxDecoration(
                       color: primaryColor, shape: BoxShape.circle),
                   todayDecoration: const BoxDecoration(
-                      shape: BoxShape.circle, color: Colors.greenAccent),
+                      shape: BoxShape.circle, color: Colors.transparent),
                   rangeEndDecoration: const BoxDecoration(
                       shape: BoxShape.circle, color: primaryColor),
                   rangeHighlightColor: primaryColor.withOpacity(0.3)),

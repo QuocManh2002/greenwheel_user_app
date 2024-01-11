@@ -68,8 +68,8 @@ class Utils {
     print(dateTime
         .add(Duration(hours: time.hour))
         .add(Duration(minutes: time.minute)));
-        print(DateTime.now().add(const Duration(minutes: 59)));
-        print(dateTime
+    print(DateTime.now().add(const Duration(minutes: 59)));
+    print(dateTime
         .add(Duration(hours: time.hour))
         .add(Duration(minutes: time.minute))
         .isAfter(DateTime.now().add(const Duration(minutes: 59))));
@@ -79,17 +79,17 @@ class Utils {
         .isAfter(DateTime.now().add(const Duration(minutes: 59)));
   }
 
-  Future<bool> test({required double lon, required double lat}) async {
-  // var file = File('./geojson/vnmgeojson.wkt');
-  String geoString = await rootBundle
-        .loadString('assets/geojson/vnmgeojson.wkt');
-  // var text = await file.readAsString();
-  var factory = GeometryFactory.withPrecisionModelSrid(PrecisionModel.fromType(PrecisionModel.FLOATING), 4326);
-  var reader = WKTReader.withFactory(factory);
-  var features = reader.read(geoString);
-  var coordinate = Coordinate(lon, lat);
-  var point = factory.createPoint(coordinate);
-  print('Test result: ${features!.contains(point)}');
-  return features.contains(point);
-}
+  Future<bool> CheckLoationInSouthSide(
+      {required double lon, required double lat}) async {
+    String geoString =
+        await rootBundle.loadString('assets/geojson/southside.wkt');
+    var factory = GeometryFactory.withPrecisionModelSrid(
+        PrecisionModel.fromType(PrecisionModel.FLOATING), 4326);
+    var reader = WKTReader.withFactory(factory);
+    var features = reader.read(geoString);
+    var coordinate = Coordinate(lon, lat);
+    var point = factory.createPoint(coordinate);
+    print('Test result: ${features!.contains(point)}');
+    return features.contains(point);
+  }
 }
