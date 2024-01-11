@@ -57,7 +57,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
               children: [
                 Image.asset(
                   empty_plan,
-                  width: 70.w,
+                  width: 60.w,
                 ),
                 const SizedBox(
                   height: 12,
@@ -66,9 +66,10 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                   padding: EdgeInsets.symmetric(horizontal: 18),
                   child: Text(
                     'Bạn không có lịch trình nào trong ngày này',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                         color: Colors.black54,
-                        fontSize: 18,
+                        fontSize: 16,
                         fontWeight: FontWeight.bold),
                   ),
                 )
