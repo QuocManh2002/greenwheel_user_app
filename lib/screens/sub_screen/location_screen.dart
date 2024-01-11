@@ -1,9 +1,10 @@
-
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/comments.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
+import 'package:greenwheel_user_app/constants/menu_items.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
@@ -76,18 +77,35 @@ class _LocationScreenState extends State<LocationScreen> {
                                   CarouselSlider(
                                       items: imageUrls
                                           .map(
-                                            (item) => Hero(
-                                                tag: widget.location.id,
-                                                child: FadeInImage(
-                                                  // height: 20.h,
-                                                  placeholder: MemoryImage(
-                                                      kTransparentImage),
-                                                  image: NetworkImage(
-                                                      item.toString()),
-                                                  fit: BoxFit.cover,
-                                                  width: double.infinity,
-                                                )),
-                                          )
+                                              // (item) => Hero(
+                                              //     tag: widget.location.id,
+                                              //     child: FadeInImage(
+                                              //       // height: 20.h,
+                                              //       placeholder: MemoryImage(
+                                              //           kTransparentImage),
+                                              //       image: NetworkImage(
+                                              //           item.toString()),
+                                              //       fit: BoxFit.cover,
+                                              //       width: double.infinity,
+                                              //     )),
+                                              (item) => CachedNetworkImage(
+                                                    key: UniqueKey(),
+                                                    height: 25.h,
+                                                    width: double.infinity,
+                                                    fit: BoxFit.cover,
+                                                    placeholder: (context,
+                                                            url) =>
+                                                        Image.memory(
+                                                            kTransparentImage),
+                                                    errorWidget:
+                                                        (context, url, error) =>
+                                                            Image.network(
+                                                      'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                                                      height: 25.h,
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                                    imageUrl: item.toString(),
+                                                  ))
                                           .toList(),
                                       carouselController: carouselController,
                                       options: CarouselOptions(
@@ -294,7 +312,12 @@ class _LocationScreenState extends State<LocationScreen> {
                                 alignment: Alignment.center,
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SuggestPlansByLocationScreen(location: widget.location)));
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (ctx) =>
+                                                SuggestPlansByLocationScreen(
+                                                    location:
+                                                        widget.location)));
                                   },
                                   icon: const Icon(Icons.luggage),
                                   label: const Text(

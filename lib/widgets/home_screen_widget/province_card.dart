@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/filter_location_screen.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
@@ -29,16 +30,15 @@ class ProvinceCard extends StatelessWidget {
             Container(
               decoration:
                   BoxDecoration(borderRadius: BorderRadius.circular(14)),
-              child: Hero(
-                  tag: province.id,
-                  child: FadeInImage(
-                    height: 25.h,
-                    placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(province.thumbnailUrl),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    filterQuality: FilterQuality.high,
-                  )),
+              child: 
+              CachedNetworkImage(
+                key: UniqueKey(),
+                height: 25.h,
+                fit: BoxFit.cover,placeholder: (context, url) =>
+                      Image.memory(kTransparentImage),
+                  errorWidget: (context, url, error) =>
+                  Image.network('https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0', height: 25.h, fit: BoxFit.cover,),
+                imageUrl: province.thumbnailUrl,)
             ),
             Positioned(
                 left: 0,

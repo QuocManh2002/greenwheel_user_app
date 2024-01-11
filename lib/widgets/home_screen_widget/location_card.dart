@@ -22,6 +22,7 @@ class LocationCard extends StatelessWidget {
         height: 30.h,
         width: 55.w,
         child: Card(
+          color: Colors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           clipBehavior: Clip.hardEdge,
@@ -34,6 +35,7 @@ class LocationCard extends StatelessWidget {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14)),
                 child: CachedNetworkImage(
+                  key: UniqueKey(),
                   height: 20.h,
                   width: double.infinity,
                   fit: BoxFit.cover,
@@ -45,14 +47,12 @@ class LocationCard extends StatelessWidget {
                     height: 15.h,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    placeholder: 'No Image',
+                    placeholder: '',
                     image:
                         'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
                   ),
                 )),
-            const SizedBox(
-              height: 4,
-            ),
+            const Spacer(),
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: Text(
@@ -76,9 +76,9 @@ class LocationCard extends StatelessWidget {
                   const SizedBox(
                     width: 4,
                   ),
-                  Text(
+                  const Text(
                     '${12} Đánh giá',
-                    style: const TextStyle(fontWeight: FontWeight.w600),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   )
                 ],
               ),

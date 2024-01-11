@@ -50,13 +50,21 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   bool _isSearchingLoading = true;
   CustomerViewModel? _customer;
   CustomerService customerService = CustomerService();
+  bool _isEmptySearch = false;
 
   searchCustomer() async {
-    _customer = null;
-    _customer = await customerService.GetCustomerByPhone(
+    List<CustomerViewModel>? customer ;
+    customer = await customerService.GetCustomerByPhone(
         '+84${phoneSearch.text.substring(1)}');
-    if (_customer != null) {
+    if (customer.isEmpty) {
       setState(() {
+        _isEmptySearch = true;
+        _isSearchingLoading = false;
+      });
+    }else{
+      setState(() {
+        _customer = customer![0];
+        _isEmptySearch = false;
         _isSearchingLoading = false;
       });
     }
@@ -271,16 +279,19 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                           "Kết quả tìm kiếm",
                           style: TextStyle(fontWeight: FontWeight.bold),
                         )),
-                    const SizedBox(
-                      height: 6,
-                    ),
                     _isSearchingLoading
                         ? Container(
                             alignment: Alignment.center,
                             child: const CircularProgressIndicator(
                               color: primaryColor,
                             ))
-                        : Row(
+                        : 
+                        _isEmptySearch ?
+                        const Expanded(
+                          child: Center(child: Text('Không tìm thấy thông tin người dùng', style: 
+                          TextStyle(fontSize: 16),),),
+                        ):
+                        Row(
                             children: [
                               Container(
                                 height: 6.h,

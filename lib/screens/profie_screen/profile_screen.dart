@@ -36,10 +36,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   setUpData() async {
     String phone = sharedPreferences.getString("userPhone")!;
-    _customer = null;
-    _customer = await _customerService.GetCustomerByPhone(phone);
-    if (_customer != null) {
+    List<CustomerViewModel>? customer ;
+    customer = await _customerService.GetCustomerByPhone(phone);
+    if (customer.isNotEmpty) {
       setState(() {
+        _customer = customer![0];
         _isLoading = false;
       });
     }

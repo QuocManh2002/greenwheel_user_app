@@ -6,8 +6,14 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 
 class NotificationService {
+  static GraphQlConfig graphQlConfig = GraphQlConfig();
+  static GraphQLClient client = graphQlConfig.getClient();
+
   FirebaseMessaging messaging = FirebaseMessaging.instance;
   final FlutterLocalNotificationsPlugin _flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -64,7 +70,8 @@ class NotificationService {
         AndroidNotificationChannel(Random.secure().nextInt(100000).toString(),
             "High Important Notification",
             playSound: true,
-            sound: const RawResourceAndroidNotificationSound('jetsons_doorbell'),
+            sound:
+                const RawResourceAndroidNotificationSound('jetsons_doorbell'),
             showBadge: true,
             importance: Importance.max);
 
@@ -119,5 +126,41 @@ class NotificationService {
     FirebaseMessaging.onMessageOpenedApp.listen((event) {
       handleMessage(context, event);
     });
+  }
+
+  Future<List<NotificationViewModel>> getNotificationList() async {
+    try {
+      QueryResult result = await client.query(QueryOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
+{
+  notifications{
+    nodes{
+      id
+      travelerId
+      title
+      body
+      imageUrl
+      type
+      targetId
+    }
+  }
+}
+"""),
+      ));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      List? res = result.data!['notifications']['nodes'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+      List<NotificationViewModel> notifications =
+          res.map((noti) => NotificationViewModel.fromJson(noti)).toList();
+      return notifications;
+    } catch (error) {
+      throw Exception(error);
+    }
   }
 }

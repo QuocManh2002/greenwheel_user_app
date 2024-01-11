@@ -36,7 +36,7 @@ class FilterLocationCard extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           elevation: 2,
           child: Row(children: [
-            Container(
+            Container( 
                 decoration:
                     BoxDecoration(borderRadius: BorderRadius.circular(14)),
                 child: CachedNetworkImage(
@@ -47,14 +47,7 @@ class FilterLocationCard extends StatelessWidget {
                   placeholder: (context, url) =>
                       Image.memory(kTransparentImage),
                   errorWidget: (context, url, error) =>
-                      FadeInImage.assetNetwork(
-                    height: 15.h,
-                    width: 15.h,
-                    fit: BoxFit.cover,
-                    placeholder: 'No Image',
-                    image:
-                        'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
-                  ),
+                  Image.network('https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0', height: 15.h, width: 15.h, fit: BoxFit.cover,)
                 )),
             const SizedBox(
               width: 8,

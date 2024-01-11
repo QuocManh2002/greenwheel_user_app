@@ -32,7 +32,6 @@ mutation{
   Future<void> stopNotification() async{
     try{
       String? deviceToken = sharedPreferences.getString('deviceToken');
-      // String deviceToken = 
     QueryResult result = await client.mutate(
         MutationOptions(
           fetchPolicy: FetchPolicy.noCache,

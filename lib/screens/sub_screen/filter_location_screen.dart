@@ -12,7 +12,7 @@ class FilterLocationScreen extends StatefulWidget {
 }
 
 class _FilterLocationScreenState extends State<FilterLocationScreen> {
-  List<LocationViewModel>? locationModels ;
+  List<LocationViewModel>? locationModels;
   LocationService _locationService = LocationService();
   bool isLoading = true;
 
@@ -23,10 +23,11 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
     _setupData();
   }
 
-  _setupData() async{
+  _setupData() async {
     locationModels = null;
-    locationModels = await _locationService.getLocationsByProvinceId(widget.province.id);
-    if(locationModels != null){
+    locationModels =
+        await _locationService.getLocationsByProvinceId(widget.province.id);
+    if (locationModels != null) {
       print(locationModels);
       setState(() {
         isLoading = false;
@@ -34,31 +35,37 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: Scaffold(
-      appBar: AppBar(title: Text(widget.province.name)),
-      body: 
-      isLoading ?
-      const Center(child: Text("Loading..."),):
-      
-      Padding(
-        padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
-          child: ListView.builder(
-            physics: const BouncingScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: locationModels!.length,
-            itemBuilder: (context, index) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 16),
-                child: FilterLocationCard(location: locationModels![index]),
-              );
-            },
-          ),
-        ),
-      ),
+    return SafeArea(
+        child: Scaffold(
+      appBar: AppBar(
+          title: Text(
+        widget.province.name,
+        style: const TextStyle(
+            fontFamily: 'NotoSans', fontWeight: FontWeight.bold),
+      )),
+      body: isLoading
+          ? const Center(
+              child: Text("Loading..."),
+            )
+          : Padding(
+              padding: const EdgeInsets.all(16),
+              child: SingleChildScrollView(
+                child: ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: locationModels!.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 16),
+                      child:
+                          FilterLocationCard(location: locationModels![index]),
+                    );
+                  },
+                ),
+              ),
+            ),
     ));
   }
 }

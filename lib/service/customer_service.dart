@@ -11,7 +11,7 @@ class CustomerService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
 
-  Future<CustomerViewModel?> GetCustomerByPhone(String phone) async {
+  Future<List<CustomerViewModel>> GetCustomerByPhone(String phone) async {
     try {
       QueryResult result = await client.query(
         QueryOptions(
@@ -43,13 +43,12 @@ class CustomerService {
 
       List? res = result.data!['travelers']['nodes'];
       if (res == null || res.isEmpty) {
-        return null;
+        return [];
       }
       print(res);
       List<CustomerViewModel> users =
           res.map((users) => CustomerViewModel.fromJson(users)).toList();
-      var rs = users[0];
-      return rs;
+      return users;
     } catch (error) {
       throw Exception(error);
     }
@@ -116,7 +115,7 @@ mutation {
         QueryResult result =
             await client.mutate(MutationOptions(document: gql("""
 mutation{
-    startReceiveNotification(deviceToken: ${json.encode(deviceToken)})
+    startReceiveNotification(deviceToken: "$deviceToken")
 }
 """)));
         if (result.hasException) {

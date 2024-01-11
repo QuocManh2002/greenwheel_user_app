@@ -135,8 +135,8 @@ class _OTPScreenState extends State<OTPScreen> {
                     //   },
                     //   child: const Text('Click to Copy'),
                     // ),
-                    Spacer(),
-                    Container(
+                    const Spacer(),
+                    SizedBox(
                       height: 7.h,
                       width: 90.w,
                       child: ElevatedButton(
@@ -192,9 +192,9 @@ class _OTPScreenState extends State<OTPScreen> {
         sharedPreferences.setString('userId', payload['id'].toString());
         print("NEW PAYLOAD: $payload");
 
-        CustomerViewModel? customer =
+        List<CustomerViewModel>? customer =
             await customerService.GetCustomerByPhone(payload['phone_number']);
-        if (customer != null) {
+        if (customer.isNotEmpty) {
           String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
           if(deviceToken != ''){
             sharedPreferences.setString('deviceToken', deviceToken);

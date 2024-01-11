@@ -48,8 +48,8 @@ void main() async {
   await Hive.openBox('myPlans');
   await FlutterConfig.loadEnvVariables();
 
-  final _myPlans = Hive.box('myPlans');
-  _myPlans.clear();
+  // final _myPlans = Hive.box('myPlans');
+  // _myPlans.clear();
   hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
   initializeDateFormatting('vi_VN', null).then((_) {

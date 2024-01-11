@@ -151,12 +151,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               .toList()
               .toString());
       var mapInfo = await getDirectionsAPIResponse(
-        LatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng),
-        LatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng));
-    if (mapInfo.isNotEmpty) {
-      sharedPreferences.setDouble('plan_distance', mapInfo["distance"] / 1000);
-      sharedPreferences.setDouble('plan_duration', mapInfo["duration"] / 3600);
-    }
+          LatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng),
+          LatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng));
+      if (mapInfo.isNotEmpty) {
+        sharedPreferences.setDouble(
+            'plan_distance', mapInfo["distance"] / 1000);
+        sharedPreferences.setDouble(
+            'plan_duration', mapInfo["duration"] / 3600);
+      }
       Navigator.of(context).pop();
       Navigator.of(context).push(MaterialPageRoute(
           builder: (ctx) => CreateNewPlanScreen(
@@ -172,7 +174,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
-              title: Text('Kế hoạch'),
+              title: const Text(
+                'Kế hoạch',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
               actions: [
                 Padding(
                   padding: const EdgeInsets.only(right: 12),
@@ -437,16 +442,57 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onShare() async {
-    if (_planDetail!.joinMethod == "NONE") {
-      bool updateJoinMethod =
-          await _planService.updateJoinMethod(widget.planId);
+    var enableToShare = checkEnableToShare();
+    if (enableToShare['status']) {
+      if (_planDetail!.joinMethod == "NONE") {
+        bool updateJoinMethod =
+            await _planService.updateJoinMethod(widget.planId);
+        print(updateJoinMethod);
+      }
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).push(MaterialPageRoute(
+          builder: (ctx) => SharePlanScreen(
+                isEnableToJoin: widget.isEnableToJoin,
+                locationName: widget.locationName,
+                planId: widget.planId,
+              )));
+    } else {
+      AwesomeDialog(
+              context: context,
+              dialogType: DialogType.warning,
+              body: Center(
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Không thể chia sẻ kế hoạch',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'NotoSans'),
+                      ),
+                      SizedBox(
+                        height: 1.h,
+                      ),
+                      Text(
+                        enableToShare['message'],
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'NotoSans',
+                            color: Colors.grey),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+              btnOkColor: Colors.orange,
+              btnOkText: 'Ok',
+              btnOkOnPress: () {})
+          .show();
     }
-    Navigator.of(context).push(MaterialPageRoute(
-        builder: (ctx) => SharePlanScreen(
-              isEnableToJoin: widget.isEnableToJoin,
-              locationName: widget.locationName,
-              planId: widget.planId,
-            )));
   }
 
   onJoinPlan() async {
@@ -532,5 +578,29 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                 color: Colors.black38, offset: Offset(2, 3), blurRadius: 3)
           ]),
     );
+  }
+
+  checkEnableToShare() {
+    var enableToShare = {
+      'status': true,
+      'message': 'Kế hoạch đủ điều kiện để chia sẻ'
+    };
+
+    if (_planDetail!.memberLimit == _planMembers.length) {
+      return {
+        'status': false,
+        'message': 'Đã đủ số lượng thành viên của chuyến đi'
+      };
+    } else if (_planDetail!.orders != null && _planDetail!.orders!.isNotEmpty) {
+      if (_planDetail!.orders!.any((element) => element.createdAt
+          .add(const Duration(hours: 72))
+          .isAfter(DateTime.now()))) {
+        return {
+          'status': false,
+          'message': 'Kế hoạch có đơn hàng đang trong thời gian xác nhậnß'
+        };
+      }
+    }
+    return enableToShare;
   }
 }

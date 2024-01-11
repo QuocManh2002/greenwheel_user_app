@@ -42,10 +42,11 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
 
   setUpData() async {
     String phone = sharedPreferences.getString("userPhone")!;
-    _customer = null;
-    _customer = await customerService.GetCustomerByPhone(phone);
-    if (_customer != null) {
+    List<CustomerViewModel>?  customer ;
+    customer = await customerService.GetCustomerByPhone(phone);
+    if (customer.isNotEmpty) {
       setState(() {
+        _customer = customer![0];
         refreshedBalance = _customer!.balance;
       });
     }
