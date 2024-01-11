@@ -327,7 +327,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                           Radius.circular(10),
                         ),
                       ),
-                      maximumSize: const Size(100, 50)),
+                      maximumSize: const Size(110, 50)),
                   onPressed: () {
                     Navigator.of(context).push(MaterialPageRoute(
                         builder: (ctx) => NewScheduleItemScreen(

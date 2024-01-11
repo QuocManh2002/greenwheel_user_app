@@ -18,6 +18,7 @@ class LocationCard extends StatelessWidget {
             builder: (ctx) => LocationScreen(location: location)));
       },
       child: Container(
+        color: Colors.white,
         height: 30.h,
         width: 55.w,
         child: Card(
@@ -29,7 +30,9 @@ class LocationCard extends StatelessWidget {
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
                 decoration:
-                    BoxDecoration(borderRadius: BorderRadius.circular(14)),
+                    BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14)),
                 child: CachedNetworkImage(
                   height: 20.h,
                   width: double.infinity,
@@ -80,9 +83,7 @@ class LocationCard extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(
-              height: 4,
-            ),
+            const Spacer(),
             Padding(
               padding: const EdgeInsets.only(left: 8),
               child: Text(
@@ -90,7 +91,8 @@ class LocationCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(color: Colors.grey),
               ),
-            )
+            ),
+            const Spacer()
           ]),
         ),
       ),

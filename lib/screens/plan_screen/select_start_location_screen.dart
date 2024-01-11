@@ -445,17 +445,14 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
                                       children: [
-                                        const SizedBox(
-                                          height: 8,
-                                        ),
+                                        const Spacer(),
+                                        const Spacer(),
                                         Text(
                                           rs.name,
                                           style: const TextStyle(fontSize: 16),
                                           overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(
-                                          height: 4,
-                                        ),
+                                        ),                                                                              const Spacer(),
+                                        const Spacer(),
                                         Text(
                                           rs.address,
                                           style: const TextStyle(
