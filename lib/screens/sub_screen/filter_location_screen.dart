@@ -40,9 +40,15 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
+        leading: BackButton(
+          onPressed: (){
+            Navigator.of(context).pop();
+          },
+          style:const ButtonStyle(foregroundColor: MaterialStatePropertyAll(Colors.white)),
+        ),
           title: Text(
         widget.province.name,
-        style: const TextStyle(
+        style: const TextStyle(color: Colors.white,
             fontFamily: 'NotoSans', fontWeight: FontWeight.bold),
       )),
       body: isLoading

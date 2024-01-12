@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
+import 'package:greenwheel_user_app/screens/notification_screen/notification_detail.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 import 'package:sizer2/sizer2.dart';
@@ -78,7 +79,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                       child: Column(children: [
                         for (final noti in _notiList!)
                           InkWell(
-                            onTap: () {},
+                            onTap: () {
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (ctx) => NotificationDetailScreen(
+                                      notification: noti)));
+                            },
                             child: Padding(
                               padding: const EdgeInsets.only(
                                   top: 12, left: 12, right: 12),
@@ -86,24 +91,36 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 children: [
                                   Row(
                                     children: [
+                                      // Container(
+                                      //   height: 8.h,
+                                      //   width: 8.h,
+                                      //   clipBehavior: Clip.hardEdge,
+                                      //   decoration: const BoxDecoration(
+                                      //       shape: BoxShape.circle),
+                                      //   child: CachedNetworkImage(
+                                      //     imageUrl: noti.imageUrl.toString(),
+                                      //     key: UniqueKey(),
+                                      //     fit: BoxFit.cover,
+                                      //     placeholder: (context, url) =>
+                                      //         Image.memory(kTransparentImage),
+                                      //     errorWidget: (context, url, error) =>
+                                      //         Image.network(
+                                      //       'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                                      //       fit: BoxFit.cover,
+                                      //     ),
+                                      //   ),
+                                      // ),
+
                                       Container(
                                         height: 8.h,
                                         width: 8.h,
                                         clipBehavior: Clip.hardEdge,
                                         decoration: const BoxDecoration(
                                             shape: BoxShape.circle),
-                                        child: CachedNetworkImage(
-                                          imageUrl: noti.imageUrl.toString(),
-                                          key: UniqueKey(),
-                                          fit: BoxFit.cover,
-                                          placeholder: (context, url) =>
-                                              Image.memory(kTransparentImage),
-                                          errorWidget: (context, url, error) =>
-                                              Image.network(
-                                            'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
-                                            fit: BoxFit.cover,
-                                          ),
-                                        ),
+                                        child: Image.network(noti.imageUrl ==
+                                                null
+                                            ? 'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0'
+                                            : noti.imageUrl!),
                                       ),
                                       SizedBox(
                                         width: 2.w,
@@ -112,19 +129,25 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            noti.title,
-                                            style: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                            overflow: TextOverflow.ellipsis,
+                                          SizedBox(
+                                            width: 70.w,
+                                            child: Text(
+                                              noti.title,
+                                              style: const TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold),
+                                              overflow: TextOverflow.clip,
+                                            ),
                                           ),
-                                          Text(
-                                            noti.body,
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                color: Colors.grey),
-                                            overflow: TextOverflow.ellipsis,
+                                          SizedBox(
+                                            width: 70.w,
+                                            child: Text(
+                                              noti.body,
+                                              style: const TextStyle(
+                                                  fontSize: 16,
+                                                  color: Colors.grey),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
                                           )
                                         ],
                                       )

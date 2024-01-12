@@ -39,8 +39,8 @@ class _TabScreenState extends State<TabScreen> {
   sendDeviceToken() async{
     var isDeviceTokenSended = sharedPreferences.getBool('isDeviceTokenSended');
     if (isDeviceTokenSended == null || !isDeviceTokenSended) {
-      await _customerService.sendDeviceToken();
       sharedPreferences.setBool("isDeviceTokenSended", true);
+      await _customerService.sendDeviceToken();
     }
   }
 

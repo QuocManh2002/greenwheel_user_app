@@ -50,7 +50,7 @@ mutation{
         var rstext = result.data!;
         // bool isSuccess = rstext['createPlanDraft']['result']['success'];
         int planId = rstext['updatePlan']['id'];
-        sharedPreferences.setInt("planId", 0);
+        sharedPreferences.setInt("planId", planId);
         return planId;
       }
     } catch (error) {
@@ -332,7 +332,7 @@ query GetPlanById(\$planId: Int){
         for (int i = 0; i < schedule.items.length; i++) {
           // if (schedule.items[i].orderId != null) {
           //   schedule.items.remove(schedule.items[i]);
-            schedule.items.removeWhere((element) => element.orderId != null);
+          schedule.items.removeWhere((element) => element.orderId != null);
           // }
         }
       }
@@ -350,6 +350,7 @@ query GetPlanById(\$planId: Int){
         for (final planItem in schedules[i]) {
           print(planItem['time']);
           item.add(PlanScheduleItem(
+            shortDescription: planItem['shortDescription'],
               orderId: planItem['orderGuid'],
               type: schedule_item_types_vn[
                   schedule_item_types.indexOf(planItem['type'].toString())],
@@ -383,6 +384,7 @@ query GetPlanById(\$planId: Int){
           'orderGuid': item.orderId,
           // 'description':  "${item.title}",
           'description': json.encode(item.title),
+          'shortDescription': json.encode(item.shortDescription),
           'type': "GATHER"
         });
       }
@@ -507,6 +509,31 @@ mutation{
         var rstext = result.data!;
         int planId = rstext['updatePlan']['id'];
         return planId;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int> inviteToPlan(int planId, int travelerId) async {
+    try {
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+mutation{
+  inviteToPlan(dto: {
+    id:$planId
+    travelerId:$travelerId
+  }){
+    id
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      } else {
+        var rstext = result.data!;
+        int rs = rstext['inviteToPlan']['id'];
+        return rs;
       }
     } catch (error) {
       throw Exception(error);

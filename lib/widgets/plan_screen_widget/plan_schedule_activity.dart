@@ -106,25 +106,25 @@ class PlanScheduleActivity extends StatelessWidget {
                           Text(
                             item.type!,
                             style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                                fontSize: 17, fontWeight: FontWeight.bold),
                             overflow: TextOverflow.clip,
                           ),
                           SizedBox(
-                            height: 1.h,
+                            height: 0.8.h,
                           ),
                           Text(
                             DateFormat.yMMMMEEEEd('vi_VN').format(item.date!),
                             style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                                fontSize: 17, fontWeight: FontWeight.bold),
                           ),
                           SizedBox(
-                            height: 1.h,
+                            height: 0.8.h,
                           ),
                           Text(
                             DateFormat.Hm().format(DateTime(
                                 0, 0, 0, item.time.hour, item.time.minute)),
                             style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
+                                fontSize: 17, fontWeight: FontWeight.bold),
                           )
                         ],
                       ),

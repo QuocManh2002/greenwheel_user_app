@@ -13,11 +13,13 @@ class PlanScheduleItem {
   final DateTime? date;
   final String? orderId;
   final String? type;
+  final String? shortDescription;
 
   PlanScheduleItem(
       {String? id,
       required this.time,
       required this.title,
+      this.shortDescription,
       this.date,
       this.orderId,
       this.type})
@@ -27,6 +29,7 @@ class PlanScheduleItem {
       time: json['time'],
       title: json['description'],
       orderId: json['orderGuid'],
+      shortDescription: json['shortDescription'],
       type: json['type']);
 
   Map<String, dynamic> toJson() => {
@@ -42,6 +45,7 @@ class PlanScheduleItem {
             .toString()),
         "orderGuid": orderId == null ? null : json.encode(orderId),
         "description": json.encode(title),
+        "shortDescription": json.encode(shortDescription),
         "type": json.encode(type)
       };
 }

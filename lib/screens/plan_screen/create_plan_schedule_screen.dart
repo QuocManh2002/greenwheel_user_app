@@ -66,7 +66,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
     } else {
       var scheduleText = sharedPreferences.getString('plan_schedule');
       print(scheduleText);
-      print(json.decode(scheduleText!));
+      // print(json.decode(scheduleText!));
 
       DateTime startDate = 
           DateTime.parse(sharedPreferences.getString('plan_start_date')!);
@@ -140,6 +140,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
         padding: EdgeInsets.all(1.h),
         height: 15.h,
         color: Colors.white,
+        width: double.infinity,
         child: Column(
           children: [
             ElevatedButton.icon(
@@ -156,9 +157,9 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               },
               label: const Text(
                 'Chỉnh sửa',
-                style: TextStyle(fontSize: 24),
+                style: TextStyle(fontSize: 24, color: Colors.white),
               ),
-              icon: const Icon(Icons.edit),
+              icon: const Icon(Icons.edit, color: Colors.white,),
             ),
             SizedBox(
               height: 1.h,
@@ -337,7 +338,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                             )));
                   },
                   child: const Row(
-                    children: [Icon(Icons.add), Text('Thêm')],
+                    children: [Icon(Icons.add, color: Colors.white,), Text('Thêm',style: TextStyle(color: Colors.white),)],
                   )),
             ),
           ],

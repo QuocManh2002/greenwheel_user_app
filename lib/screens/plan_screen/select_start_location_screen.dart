@@ -90,17 +90,17 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     //     SymbolLayerProperties(iconImage: SvgPicture.asset(to_marker)));
     // }
     await controller.addSymbol(SymbolOptions(
-        geometry: _currentP, iconSize: 2, iconImage: current_location));
+        geometry: _currentP, iconSize: 5, iconImage: current_location));
     await controller.addSymbol(SymbolOptions(
         geometry: LatLng(widget.location.latitude, widget.location.longitude),
-        iconSize: 2,
+        iconSize: 5,
         iconImage: to_location));
 
     final lat = sharedPreferences.getDouble('plan_start_lat');
     final lng = sharedPreferences.getDouble('plan_start_lng');
     if (lat != null) {
       Symbol symbol = await controller.addSymbol(SymbolOptions(
-          geometry: LatLng(lat, lng!), iconSize: 2, iconImage: from_location));
+          geometry: LatLng(lat, lng!), iconSize: 5, iconImage: from_location));
       sharedPreferences.setString('symbolId', symbol.id);
     }
   }
@@ -137,7 +137,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         controller.removeSymbol(Symbol(symbolId, SymbolOptions.defaultOptions));
       }
       SymbolOptions options = SymbolOptions(
-          geometry: _selectedLocation, iconSize: 2, iconImage: from_location);
+          geometry: _selectedLocation, iconSize: 5, iconImage: from_location);
       Symbol symbol = await controller.addSymbol(options);
       getMapInfo(_selectedLocation);
       sharedPreferences.setString('symbolId', symbol.id);
@@ -332,7 +332,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
             height: 1.h,
           ),
           SizedBox(
-            height: 60.h,
+            height: 58.h,
             child: Stack(
               children: [
                 MapboxMap(

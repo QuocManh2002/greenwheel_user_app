@@ -49,7 +49,13 @@ class _SuggestPlanByLocationScreenState
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
-        title: const Text('Tham khảo kế hoạch'),
+        leading: BackButton(
+          onPressed: (){Navigator.of(context).pop();},
+          style:const ButtonStyle(
+            foregroundColor: MaterialStatePropertyAll(Colors.white)
+          ),
+        ),
+        title: const Text('Tham khảo kế hoạch', style: TextStyle(color: Colors.white),),
       ),
       body: isLoading
           ? const Center(

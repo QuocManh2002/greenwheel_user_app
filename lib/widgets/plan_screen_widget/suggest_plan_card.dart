@@ -70,23 +70,19 @@ class SuggestPlanCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      const SizedBox(
-                        height: 8,
-                      ),
+                      const Spacer(),
                       Row(
                         children: [
                           Expanded(
                             child: Text(plan.planName,
-                                overflow: TextOverflow.clip,
+                                overflow: TextOverflow.ellipsis,
                                 maxLines: 2,
                                 style: const TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
-                      const SizedBox(
-                        height: 8,
-                      ),
+                      const Spacer(),
                       Row(
                         children: [
                           Text(
@@ -99,17 +95,13 @@ class SuggestPlanCard extends StatelessWidget {
                           ),
                         ],
                       ),
-                      const SizedBox(
-                        height: 8,
-                      ),
+                      const Spacer(),
                       Text(
                         'Leader: ${plan.leaderName}',
                         style: const TextStyle(
                             fontSize: 14, fontWeight: FontWeight.w400),
                       ),
-                      const SizedBox(
-                        height: 8,
-                      ),
+                      const Spacer(),
                     ],
                   ),
                 )

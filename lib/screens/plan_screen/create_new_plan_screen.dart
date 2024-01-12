@@ -157,9 +157,10 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         child: Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text("Lập kế hoạch"),
+        title: const Text("Lập kế hoạch", style: TextStyle(color: Colors.white),),
         leading: BackButton(
           onPressed: handleQuitScreen,
+          style:const ButtonStyle(foregroundColor: MaterialStatePropertyAll(Colors.white)),
         ),
       ),
       body: Column(

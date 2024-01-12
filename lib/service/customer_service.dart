@@ -4,6 +4,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
 
@@ -77,6 +78,7 @@ mutation{
   }
 
   Future<int?> registerTraveler(RegisterViewModel model) async {
+    print(sharedPreferences.getString('userToken'));
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''

@@ -2,14 +2,10 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
-import 'package:greenwheel_user_app/helpers/direction_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
-import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
@@ -17,34 +13,24 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-import '../../widgets/style_widget/button_style.dart';
-
-class DetailPlanNewScreen extends StatefulWidget {
-  const DetailPlanNewScreen(
-      {super.key,
-      required this.planId,
-      required this.locationName,
-      required this.isEnableToJoin});
-  final int planId;
-  final String locationName;
-  final bool isEnableToJoin;
+class NotificationDetailScreen extends StatefulWidget {
+  const NotificationDetailScreen({super.key, required this.notification});
+  final NotificationViewModel notification;
 
   @override
-  State<DetailPlanNewScreen> createState() => _DetailPlanScreenState();
+  State<NotificationDetailScreen> createState() =>
+      _NotificationDetailScreenState();
 }
 
-class _DetailPlanScreenState extends State<DetailPlanNewScreen>
-    with TickerProviderStateMixin {
-  bool isLoading = true;
-  PlanService _planService = PlanService();
-  LocationService _locationService = LocationService();
-  List<Widget> _listRestaurant = [];
-  List<Widget> _listMotel = [];
-  PlanDetail? _planDetail;
+class _NotificationDetailScreenState extends State<NotificationDetailScreen>  with TickerProviderStateMixin{
+  final PlanService _planService = PlanService();
+  PlanDetail? _targetViewModel;
+  bool _isLoading = true;
+  String? type;
   late TabController tabController;
   late TextEditingController newItemController;
   List<PlanMemberViewModel> _planMembers = [];
@@ -52,6 +38,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   double total = 0;
   List<SupplierViewModel>? _saveSupplier;
   int _currentIndexEmergencyCard = 0;
+  List<Widget> _listRestaurant = [];
+  List<Widget> _listMotel = [];
+
 
   @override
   void initState() {
@@ -59,23 +48,16 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     super.initState();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     newItemController = TextEditingController();
-    setupData();
+    setUpData();
   }
 
-  void removeItem(String item, List<String> list) {
-    setState(() {
-      list.remove(item);
-    });
-  }
-
-  setupData() async {
-    _planDetail = null;
-    _planDetail = await _planService.GetPlanById(widget.planId);
-
-    List<Widget> listRestaurant = [];
+  setUpData() async{  
+    if(widget.notification.type == "INVITATION"){
+      _targetViewModel = await _planService.GetPlanById(widget.notification.targetId!);
+      List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
 
-    for (var item in _planDetail!.orders!) {
+    for (var item in _targetViewModel!.orders!) {
       if (item.supplierType == "RESTAURANT") {
         listRestaurant.add(SupplierOrderCard(order: item));
       } else {
@@ -83,92 +65,24 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       }
       total += item.total;
     }
-    _planMembers = await _planService.getPlanMember(widget.planId);
+    _planMembers = await _planService.getPlanMember(widget.notification.targetId!);
     _joinedMember =
         _planMembers.where((member) => member.status == 'JOINED').toList();
-
-    setState(() {
+            setState(() {
       _listMotel = listMotel;
       _listRestaurant = listRestaurant;
-      // _orderList = orderList;
     });
-    if (_planDetail != null) {
-      // if (_planDetail!.savedContacts != null) {
-      //   List<int> ids = _planDetail!.savedContacts!
-      //       .map((e) => int.parse(e.toString()))
-      //       .toList();
-      //   final rs = await _supplierService.getSuppliersByIds(ids);
-      //   setState(() {
-      //     _saveSupplier = rs;
-      //   });
-      // }
-      print(_planDetail!.startLocationLat);
-      print(_planDetail!.startLocationLng);
-      print(_planDetail!.startDate);
-      print(_planDetail!.schedule);
-      print(_planDetail!.savedContacts!.map((e) => e.toJson(e)).toList());
-      print(TimeOfDay.fromDateTime(_planDetail!.startDate).toString());
-
-      setState(() {
-        isLoading = false;
-      });
-      print(_saveSupplier);
-    }
-  }
-
-  updatePlan() async {
-    final location =
-        await _locationService.GetLocationById(_planDetail!.locationId);
-    if (location != null) {
-      // sharedPreferences.remove("plan_distance");
-      // sharedPreferences.remove("plan_duration");
-      // sharedPreferences.remove('plan_is_change');
-      // sharedPreferences.remove('plan_saved_emergency');
-
-      final defaultComboDate = listComboDate
-              .firstWhere((element) =>
-                  element.duration == location.suggestedTripLength * 2)
-              .id -
-          1;
-
-      sharedPreferences.setInt('planId', widget.planId);
-      sharedPreferences.setInt(
-          "plan_number_of_member", _planDetail!.memberLimit);
-      sharedPreferences.setInt('plan_combo_date', defaultComboDate);
-      sharedPreferences.setDouble(
-          'plan_start_lat', _planDetail!.startLocationLat);
-      sharedPreferences.setDouble(
-          'plan_start_lng', _planDetail!.startLocationLng);
-      sharedPreferences.setString(
-          'plan_start_date', _planDetail!.startDate.toString());
-      sharedPreferences.setString('plan_start_time',
-          '${_planDetail!.startDate.hour}:${_planDetail!.startDate.minute}');
-      sharedPreferences.setString(
-          'plan_end_date', _planDetail!.endDate.toString());
-      sharedPreferences.setString(
-          'plan_schedule', _planDetail!.schedule.toString());
-      sharedPreferences.setString(
-          'plan_saved_emergency',
-          _planDetail!.savedContacts!
-              .map((e) => e.toJson(e))
-              .toList()
-              .toString());
-      var mapInfo = await getDirectionsAPIResponse(
-          LatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng),
-          LatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng));
-      if (mapInfo.isNotEmpty) {
-        sharedPreferences.setDouble(
-            'plan_distance', mapInfo["distance"] / 1000);
-        sharedPreferences.setDouble(
-            'plan_duration', mapInfo["duration"] / 3600);
+      if(_targetViewModel != null){
+        setState(() {
+          type = 'plan';
+          _isLoading = false;
+        });
       }
-      Navigator.of(context).pop();
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => CreateNewPlanScreen(
-                location: location,
-                isCreate: false,
-                schedule: _planDetail!.schedule,
-              )));
+    }else{
+      setState(() {
+        type = 'order';
+        _isLoading = false;
+      });
     }
   }
 
@@ -176,48 +90,30 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-            appBar: AppBar(
-              title: const Text(
-                'Kế hoạch',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
-              ),
-              leading: BackButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                style: const ButtonStyle(
-                    foregroundColor: MaterialStatePropertyAll(Colors.white)),
-              ),
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: IconButton(
-                    onPressed: updatePlan,
-                    icon: const Icon(
-                      Icons.edit_square,
-                      size: 32,
-                      color: Colors.white,
-                    ),
-                  ),
-                )
-              ],
-            ),
-            body: isLoading
-                ? const Center(
-                    child: Text("Loading..."),
-                  )
-                : Column(
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                            child: Column(
-                          children: [
-                            CachedNetworkImage(
+      appBar: AppBar(
+        leading: const BackButton(color: Colors.white),
+        title: const Text(
+          'Chi tiết thông báo',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+      body:
+       _isLoading ? 
+      const Center(
+        child: Text('Loading...'),
+       ):
+       type == 'plan' ?
+       Column(
+         children: [
+           Expanded(
+             child: SingleChildScrollView(
+              child: Column(
+                children: [
+                  CachedNetworkImage(
                               height: 35.h,
                               width: double.infinity,
                               fit: BoxFit.cover,
-                              imageUrl: _planDetail!.imageUrls[0],
+                              imageUrl: _targetViewModel!.imageUrls[0],
                               placeholder: (context, url) =>
                                   Image.memory(kTransparentImage),
                               errorWidget: (context, url, error) =>
@@ -233,13 +129,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             const SizedBox(
                               height: 32,
                             ),
-                            BaseInformationWidget(plan: _planDetail!),
+                            BaseInformationWidget(plan: _targetViewModel!),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 24),
                               child: Column(
                                 children: [
-                                  if (_planDetail!.savedContacts != null)
+                                  if (_targetViewModel!.savedContacts != null)
                                     Column(
                                       children: [
                                         Container(
@@ -255,7 +151,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                           width: double.infinity,
                                           child: PageView.builder(
                                             scrollDirection: Axis.horizontal,
-                                            itemCount: _planDetail!
+                                            itemCount: _targetViewModel!
                                                 .savedContacts!.length,
                                             onPageChanged: (value) {
                                               setState(() {
@@ -265,7 +161,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                             },
                                             itemBuilder: (context, index) {
                                               return EmergencyContactCard(
-                                                  emergency: _planDetail!
+                                                  emergency: _targetViewModel!
                                                       .savedContacts![index],
                                                   index: index,
                                                   callback: () {},
@@ -276,7 +172,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                         const SizedBox(
                                           height: 4,
                                         ),
-                                        if (_planDetail!.savedContacts!.length >
+                                        if (_targetViewModel!.savedContacts!.length >
                                             1)
                                           Row(
                                             mainAxisAlignment:
@@ -284,7 +180,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                             children: [
                                               for (int i = 0;
                                                   i <
-                                                      _planDetail!
+                                                      _targetViewModel!
                                                           .savedContacts!
                                                           .length;
                                                   i++)
@@ -369,9 +265,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   SizedBox(
                                     height: 60.h,
                                     child: PLanScheduleWidget(
-                                      schedule: _planDetail!.schedule,
-                                      startDate: _planDetail!.startDate,
-                                      endDate: _planDetail!.endDate,
+                                      schedule: _targetViewModel!.schedule,
+                                      startDate: _targetViewModel!.startDate,
+                                      endDate: _targetViewModel!.endDate,
                                     ),
                                   ),
                                   const SizedBox(
@@ -445,80 +341,68 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                 ],
                               ),
                             )
-                          ],
-                        )),
-                      ),
-                      buildNewFooter()
-                    ],
-                  )));
-  }
-
-  onShare() async {
-    var enableToShare = checkEnableToShare();
-    if (enableToShare['status']) {
-      if (_planDetail!.joinMethod == "NONE") {
-        bool updateJoinMethod =
-            await _planService.updateJoinMethod(widget.planId);
-        print(updateJoinMethod);
-      }
-      // ignore: use_build_context_synchronously
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => SharePlanScreen(
-                planMembers: _planMembers,
-                isEnableToJoin: widget.isEnableToJoin,
-                locationName: widget.locationName,
-                planId: widget.planId,
-              )));
-    } else {
-      AwesomeDialog(
-              context: context,
-              dialogType: DialogType.warning,
-              body: Center(
-                child: Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: Column(
-                    children: [
-                      const Text(
-                        'Không thể chia sẻ kế hoạch',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'NotoSans'),
-                      ),
-                      SizedBox(
-                        height: 1.h,
-                      ),
-                      Text(
-                        enableToShare['message'],
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'NotoSans',
-                            color: Colors.grey),
-                        textAlign: TextAlign.center,
-                      ),
-                    ],
-                  ),
-                ),
+                  
+                ],
               ),
-              btnOkColor: Colors.orange,
-              btnOkText: 'Ok',
-              btnOkOnPress: () {})
-          .show();
-    }
+                   ),
+           ),
+           buildNewFooter()
+         ],
+       )
+      :const
+       Center(
+        child: Text('Chưa handle chỗ này', style: TextStyle(fontSize: 18),),
+      )
+      ,
+    ));
   }
 
-  onJoinPlan() async {
+  Widget buildIndicator(int index) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.bounceInOut,
+      margin: const EdgeInsets.only(left: 16),
+      width: _currentIndexEmergencyCard == index ? 35 : 12,
+      decoration: BoxDecoration(
+          color: _currentIndexEmergencyCard == index
+              ? primaryColor
+              : primaryColor.withOpacity(0.7),
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          boxShadow: const [
+            BoxShadow(
+                color: Colors.black38, offset: Offset(2, 3), blurRadius: 3)
+          ]),
+    );
+  }
+
+   Widget buildNewFooter() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+        child: Container(
+          height: 6.h,
+          child:  ElevatedButton(
+                  onPressed: () {
+                    onJoinPlan();
+                  },
+                  style: elevatedButtonStyle,
+                  child: const Text(
+                    "Tham gia kế hoạch",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                )
+             
+        ),
+      );
+      onJoinPlan() async {
     AwesomeDialog(
         context: context,
         dialogType: DialogType.question,
         animType: AnimType.topSlide,
         title: "Xác nhận tham gia",
         desc:
-            "Kinh phí cho chuyến đi này là ${(total / _planDetail!.memberLimit).ceil()} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
+            "Kinh phí cho chuyến đi này là ${(total / _targetViewModel!.memberLimit).ceil()} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
         btnOkText: "Xác nhận",
         btnOkOnPress: () async {
-          int? rs = await _planService.joinPlan(widget.planId);
+          int? rs = await _planService.joinPlan(widget.notification.targetId!);
           if (rs != null) {
             // ignore: use_build_context_synchronously
             AwesomeDialog(
@@ -539,81 +423,5 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             ).show();
           }
         }).show();
-  }
-
-  Widget buildNewFooter() => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        child: Container(
-          height: 6.h,
-          child: widget.isEnableToJoin
-              ? ElevatedButton(
-                  onPressed: () {
-                    onJoinPlan();
-                  },
-                  style: elevatedButtonStyle,
-                  child: const Text(
-                    "Tham gia kế hoạch",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                )
-              : Row(
-                  children: [
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        icon: const Icon(Icons.share),
-                        onPressed: onShare,
-                        style: elevatedButtonStyle,
-                        label: const Text(
-                          "Chia sẻ kế hoạch",
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-        ),
-      );
-
-  Widget buildIndicator(int index) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.bounceInOut,
-      margin: const EdgeInsets.only(left: 16),
-      width: _currentIndexEmergencyCard == index ? 35 : 12,
-      decoration: BoxDecoration(
-          color: _currentIndexEmergencyCard == index
-              ? primaryColor
-              : primaryColor.withOpacity(0.7),
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
-          boxShadow: const [
-            BoxShadow(
-                color: Colors.black38, offset: Offset(2, 3), blurRadius: 3)
-          ]),
-    );
-  }
-
-  checkEnableToShare() {
-    var enableToShare = {
-      'status': true,
-      'message': 'Kế hoạch đủ điều kiện để chia sẻ'
-    };
-
-    if (_planDetail!.memberLimit == _joinedMember.length) {
-      return {
-        'status': false,
-        'message': 'Đã đủ số lượng thành viên của chuyến đi'
-      };
-    } else if (_planDetail!.orders != null && _planDetail!.orders!.isNotEmpty) {
-      if (_planDetail!.orders!.any((element) => element.createdAt
-          .add(const Duration(hours: 72))
-          .isAfter(DateTime.now()))) {
-        return {
-          'status': false,
-          'message': 'Kế hoạch có đơn hàng đang trong thời gian xác nhậnß'
-        };
-      }
-    }
-    return enableToShare;
   }
 }

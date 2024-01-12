@@ -82,7 +82,17 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
-        title: const Text('Chi tiết kế hoạch'),
+        leading: BackButton(
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+          style: const ButtonStyle(
+              foregroundColor: MaterialStatePropertyAll(Colors.white)),
+        ),
+        title: const Text(
+          'Chi tiết kế hoạch',
+          style: TextStyle(color: Colors.white),
+        ),
       ),
       body: _isLoading
           ? const Center(
@@ -397,7 +407,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
     Navigator.of(context).push(MaterialPageRoute(
         builder: (ctx) => CreateNewPlanScreen(
               location: widget.location,
-              isCreate: false,
+              isCreate: true,
               schedule: _planDetail!.schedule,
             )));
   }

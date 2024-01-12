@@ -5,7 +5,7 @@ class NotificationViewModel {
   String body;
   String? imageUrl;
   String type;
-  int targetId;
+  int? targetId;
 
   NotificationViewModel(
       {required this.body,
@@ -13,7 +13,7 @@ class NotificationViewModel {
       required this.travelerId,
       required this.title,
       required this.type,
-      required this.targetId,
+      this.targetId,
       this.imageUrl});
 
   factory NotificationViewModel.fromJson(Map<String, dynamic> json) =>

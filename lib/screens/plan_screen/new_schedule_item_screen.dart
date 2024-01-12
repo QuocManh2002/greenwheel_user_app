@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/menu_items.dart';
 import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
@@ -31,6 +32,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   TextEditingController _titleController = TextEditingController();
   TextEditingController _dateController = TextEditingController();
   TextEditingController _timeController = TextEditingController();
+  TextEditingController _shortDescriptionController = TextEditingController();
   TimeOfDay _selectTime = TimeOfDay.now();
   DateTime _selectedDate = DateTime.now();
   String? _selectedType;
@@ -48,6 +50,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
       _selectedDate = widget.item!.date!;
       _titleController.text = widget.item!.title;
       _selectedType = widget.item!.type;
+      _shortDescriptionController.text = widget.item!.shortDescription!;
       setState(() {
         _dateController.text =
             DateFormat.yMMMMEEEEd('vi_VN').format(widget.item!.date!);
@@ -72,7 +75,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
 
   _appBar(BuildContext ctx) {
     return AppBar(
-      backgroundColor: primaryColor,
+      backgroundColor: Colors.white,
       leading: IconButton(
         icon: const Icon(Icons.close),
         onPressed: () {
@@ -80,59 +83,64 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
         },
       ),
       actions: [
-        ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
-            onPressed: () async {
-              if (_formKey.currentState!.validate()) {
-                if (widget.item == null) {
-                  if (_selectedType == null) {
-                    await AwesomeDialog(
-                      context: context,
-                      dialogType: DialogType.warning,
-                      body: const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(12),
-                          child: Text(
-                            'Hãy chọn dạng hoạt động',
-                            style: TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+        Padding(
+          padding: const EdgeInsets.only(right: 12),
+          child: ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(backgroundColor: primaryColor),
+              onPressed: () async {
+                if (_formKey.currentState!.validate()) {
+                  if (widget.item == null) {
+                    if (_selectedType == null) {
+                      await AwesomeDialog(
+                        context: context,
+                        dialogType: DialogType.warning,
+                        body: const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(12),
+                            child: Text(
+                              'Hãy chọn dạng hoạt động',
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
                           ),
                         ),
-                      ),
-                      btnOkColor: Colors.orange,
-                      btnOkText: 'Ok',
-                      btnOkOnPress: () {},
-                    ).show();
+                        btnOkColor: Colors.orange,
+                        btnOkText: 'Ok',
+                        btnOkOnPress: () {},
+                      ).show();
+                    } else {
+                      widget.callback(
+                          PlanScheduleItem(
+                            shortDescription: _shortDescriptionController.text,
+                              time: _selectTime,
+                              title: _titleController.text,
+                              date: _selectedDate,
+                              type: _selectedType),
+                          true,
+                          null);
+                      Navigator.of(context).pop();
+                    }
                   } else {
                     widget.callback(
                         PlanScheduleItem(
+                          shortDescription: _shortDescriptionController.text,
+                            type: _selectedType,
                             time: _selectTime,
                             title: _titleController.text,
                             date: _selectedDate,
-                            type: _selectedType),
-                        true,
-                        null);
+                            id: widget.item!.id),
+                        false,
+                        widget.item);
                     Navigator.of(context).pop();
                   }
-                } else {
-                  widget.callback(
-                      PlanScheduleItem(
-                          type: _selectedType,
-                          time: _selectTime,
-                          title: _titleController.text,
-                          date: _selectedDate,
-                          id: widget.item!.id),
-                      false,
-                      widget.item);
-                  Navigator.of(context).pop();
                 }
-              }
-            },
-            icon: const Icon(
-              Icons.done,
-              color: Colors.white,
-            ),
-            label: const Text('Lưu'))
+              },
+              icon: const Icon(
+                Icons.done,
+                color: Colors.white,
+              ),
+              label: const Text('Lưu', style: TextStyle(color: Colors.white),)),
+        )
       ],
     );
   }
@@ -141,7 +149,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-      resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: false,
       appBar: _appBar(context),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
@@ -206,6 +214,21 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             }
                           },
                           hinttext: 'Câu cá, tắm suối...'),
+                      SizedBox(
+                        height: 2.h,
+                      ),
+                      defaultTextFormField(
+                          controller: _shortDescriptionController,
+                          inputType: TextInputType.text,
+                          text: widget.item != null
+                              ? 'Mô tả chi tiết hoạt động'
+                              : 'Mô tả chi tiết hoạt động mới',
+                          onValidate: (value) {
+                            if (value!.isEmpty) {
+                              return "Mô tả chi tiết của hoạt động không được để trống";
+                            }
+                          },
+                          hinttext: 'Câu cá ở sông Đà...'),
                       SizedBox(
                         height: 2.h,
                       ),

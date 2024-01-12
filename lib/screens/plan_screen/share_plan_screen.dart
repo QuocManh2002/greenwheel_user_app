@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -14,7 +15,9 @@ import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/temp_plan.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
+import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
@@ -27,10 +30,12 @@ class SharePlanScreen extends StatefulWidget {
       {super.key,
       required this.planId,
       required this.locationName,
+      required this.planMembers,
       required this.isEnableToJoin});
   final int planId;
   final String locationName;
   final bool isEnableToJoin;
+  final List<PlanMemberViewModel> planMembers;
 
   @override
   State<SharePlanScreen> createState() => _SharePlanScreenState();
@@ -50,21 +55,34 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   bool _isSearchingLoading = true;
   CustomerViewModel? _customer;
   CustomerService customerService = CustomerService();
-  bool _isEmptySearch = false;
+  bool _isEmptySearchResult = false;
+  bool _isEnableToInvite = true;
+  final PlanService _planService = PlanService();
+  List<PlanMemberViewModel> _planMembers = [];
 
   searchCustomer() async {
-    List<CustomerViewModel>? customer ;
+    List<CustomerViewModel>? customer;
     customer = await customerService.GetCustomerByPhone(
         '+84${phoneSearch.text.substring(1)}');
     if (customer.isEmpty) {
       setState(() {
-        _isEmptySearch = true;
+        _isEmptySearchResult = true;
         _isSearchingLoading = false;
       });
-    }else{
+    } else {
+      var rs = customer[0];
+      if (_planMembers.any((member) => member.travelerId == rs.id)) {
+        setState(() {
+          _isEnableToInvite = false;
+        });
+      } else {
+        setState(() {
+          _isEnableToInvite = true;
+        });
+      }
       setState(() {
         _customer = customer![0];
-        _isEmptySearch = false;
+        _isEmptySearchResult = false;
         _isSearchingLoading = false;
       });
     }
@@ -140,6 +158,39 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
     }
   }
 
+  onInvite() async {
+    var rs = await _planService.inviteToPlan(widget.planId, _customer!.id);
+    if (rs != 0) {
+      // ignore: use_build_context_synchronously
+      AwesomeDialog(
+              context: context,
+              title: 'Đã gửi lời mời',
+              dialogType: DialogType.success,
+              titleTextStyle:
+                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              btnOkColor: primaryColor,
+              btnOkOnPress: () {
+                setState(() {
+                  _isSearch = false;
+                  _planMembers.add(PlanMemberViewModel(
+                      name: _customer!.name,
+                      travelerId: _customer!.id,
+                      phone: _customer!.phone,
+                      status: "INVITED"));
+                });
+              },
+              btnOkText: 'Ok')
+          .show();
+    }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _planMembers = widget.planMembers;
+  }
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -147,7 +198,14 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
       backgroundColor: Colors.white.withOpacity(0.94),
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text("Chia sẻ kế hoạch"),
+        leading: const BackButton(
+          style: ButtonStyle(
+              foregroundColor: MaterialStatePropertyAll(Colors.white)),
+        ),
+        title: const Text(
+          "Chia sẻ kế hoạch",
+          style: TextStyle(color: Colors.white),
+        ),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -156,6 +214,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                 icon: const Icon(
                   Icons.qr_code_scanner_outlined,
                   size: 35,
+                  color: Colors.white,
                 )),
           )
         ],
@@ -285,61 +344,92 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                             child: const CircularProgressIndicator(
                               color: primaryColor,
                             ))
-                        : 
-                        _isEmptySearch ?
-                        const Expanded(
-                          child: Center(child: Text('Không tìm thấy thông tin người dùng', style: 
-                          TextStyle(fontSize: 16),),),
-                        ):
-                        Row(
-                            children: [
-                              Container(
-                                height: 6.h,
-                                decoration:
-                                    const BoxDecoration(shape: BoxShape.circle),
-                                clipBehavior: Clip.hardEdge,
-                                child: Image.network(defaultUserAvatarLink),
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
+                        : _isEmptySearchResult
+                            ? const Expanded(
+                                child: Center(
+                                  child: Text(
+                                    'Không tìm thấy thông tin người dùng',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                ),
+                              )
+                            : Row(
                                 children: [
-                                  Text(
-                                    _customer!.name,
-                                    style: const TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18),
+                                  Container(
+                                    height: 6.h,
+                                    decoration: const BoxDecoration(
+                                        shape: BoxShape.circle),
+                                    clipBehavior: Clip.hardEdge,
+                                    child: Image.network(defaultUserAvatarLink),
                                   ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        _customer!.name,
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18),
+                                      ),
+                                      const SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text(
+                                        "0${_customer!.phone.substring(3)}",
+                                        style: const TextStyle(fontSize: 16),
+                                      )
+                                    ],
+                                  ),
+                                  const Spacer(),
+                                  _isEnableToInvite
+                                      ? TextButton(
+                                          style: ButtonStyle(
+                                              shape:
+                                                  const MaterialStatePropertyAll(
+                                                      RoundedRectangleBorder(
+                                                          side: BorderSide(
+                                                              color:
+                                                                  primaryColor),
+                                                          borderRadius:
+                                                              BorderRadius.all(
+                                                                  Radius
+                                                                      .circular(
+                                                                          8)))),
+                                              overlayColor:
+                                                  MaterialStatePropertyAll(
+                                                      primaryColor
+                                                          .withOpacity(0.3))),
+                                          onPressed: onInvite,
+                                          child: const Text(
+                                            'Mời',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: primaryColor),
+                                          ))
+                                      : Container(
+                                          padding: const EdgeInsets.all(6),
+                                          decoration: BoxDecoration(
+                                              shape: BoxShape.rectangle,
+                                              border: Border.all(
+                                                color: primaryColor,
+                                              ),
+                                              borderRadius:
+                                                  const BorderRadius.all(
+                                                Radius.circular(8),
+                                              )),
+                                          child: const Text(
+                                            'Đã mời',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                color: primaryColor),
+                                          ),
+                                        ),
                                   const SizedBox(
-                                    height: 5,
-                                  ),
-                                  Text(
-                                    "0${_customer!.phone.substring(3)}",
-                                    style: const TextStyle(fontSize: 16),
+                                    width: 12,
                                   )
                                 ],
                               ),
-                              const Spacer(),
-                              TextButton(
-                                  style: ButtonStyle(
-                                      shape: const MaterialStatePropertyAll(
-                                          RoundedRectangleBorder(
-                                              side: BorderSide(
-                                                  color: primaryColor),
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(8)))),
-                                      overlayColor: MaterialStatePropertyAll(
-                                          primaryColor.withOpacity(0.3))),
-                                  onPressed: () {},
-                                  child: const Text(
-                                    'Mời',
-                                    style: TextStyle(
-                                        fontSize: 16, color: primaryColor),
-                                  )),
-                              const SizedBox(
-                                width: 12,
-                              )
-                            ],
-                          ),
                     // Padding(
                     //   padding: EdgeInsets.only(left: 20.w, right: 12),
                     //   child: Container(

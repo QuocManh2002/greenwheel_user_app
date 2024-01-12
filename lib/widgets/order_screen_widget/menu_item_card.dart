@@ -169,11 +169,12 @@ class _MenuItemCardState extends State<MenuItemCard>
                                   });
                                 },
                                 icon: const Icon(
-                                    Icons.shopping_cart), // Icon for the cart
+                                    Icons.shopping_cart, color: Colors.white,), // Icon for the cart
                                 label: const Text(
                                   'Thêm',
                                   style: TextStyle(
                                     fontFamily: 'NotoSans',
+                                    color: Colors.white
                                   ),
                                 ), // Text for the button
                               ),

@@ -8,6 +8,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 
 class NotificationService {
@@ -130,11 +131,16 @@ class NotificationService {
 
   Future<List<NotificationViewModel>> getNotificationList() async {
     try {
+      String travelerId = sharedPreferences.getString('userId')!;
       QueryResult result = await client.query(QueryOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 {
-  notifications{
+  notifications(where: {
+    travelerId:{
+      eq : $travelerId
+    }
+  }){
     nodes{
       id
       travelerId
