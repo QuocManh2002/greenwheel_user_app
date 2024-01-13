@@ -22,9 +22,9 @@ dependencies:
   http: ^1.1.0
   readmore: ^2.2.0
   collection: ^1.17.2
-  mapbox_gl: ^0.16.0
+  # mapbox_gl: ^0.16.0
   firebase_core: ^2.21.0
-  firebase_auth: ^4.12.1
+  firebase_auth: ^4.16.0
   shared_preferences: ^2.1.2
   pinput: ^3.0.1
   fluttertoast: ^8.2.2
@@ -54,6 +54,8 @@ dependencies:
   geojson: ^1.0.0
   dart_jts: ^0.3.0+1
   cached_network_image: ^3.3.1
+  flutter_polyline_points: ^2.0.0
+  mapbox_maps_flutter: ^0.5.1
 
 dev_dependencies:
   flutter_test:

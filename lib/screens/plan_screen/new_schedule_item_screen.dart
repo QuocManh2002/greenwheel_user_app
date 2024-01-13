@@ -2,7 +2,6 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/menu_items.dart';
 import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
@@ -28,11 +27,11 @@ class NewScheduleItemScreen extends StatefulWidget {
 }
 
 class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
-  GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _titleController = TextEditingController();
-  TextEditingController _dateController = TextEditingController();
-  TextEditingController _timeController = TextEditingController();
-  TextEditingController _shortDescriptionController = TextEditingController();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
+  final TextEditingController _timeController = TextEditingController();
+  final TextEditingController _shortDescriptionController = TextEditingController();
   TimeOfDay _selectTime = TimeOfDay.now();
   DateTime _selectedDate = DateTime.now();
   String? _selectedType;
@@ -48,7 +47,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
     if (widget.item != null) {
       _selectTime = widget.item!.time;
       _selectedDate = widget.item!.date!;
-      _titleController.text = widget.item!.title;
+      _descriptionController.text = widget.item!.description;
       _selectedType = widget.item!.type;
       _shortDescriptionController.text = widget.item!.shortDescription!;
       setState(() {
@@ -113,7 +112,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           PlanScheduleItem(
                             shortDescription: _shortDescriptionController.text,
                               time: _selectTime,
-                              title: _titleController.text,
+                              description: _descriptionController.text,
                               date: _selectedDate,
                               type: _selectedType),
                           true,
@@ -126,7 +125,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           shortDescription: _shortDescriptionController.text,
                             type: _selectedType,
                             time: _selectTime,
-                            title: _titleController.text,
+                            description: _descriptionController.text,
                             date: _selectedDate,
                             id: widget.item!.id),
                         false,
@@ -203,7 +202,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         height: 2.h,
                       ),
                       defaultTextFormField(
-                          controller: _titleController,
+                          controller: _shortDescriptionController,
                           inputType: TextInputType.text,
                           text: widget.item != null
                               ? 'Mô tả hoạt động'
@@ -218,7 +217,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         height: 2.h,
                       ),
                       defaultTextFormField(
-                          controller: _shortDescriptionController,
+                          controller: _descriptionController,
                           inputType: TextInputType.text,
                           text: widget.item != null
                               ? 'Mô tả chi tiết hoạt động'

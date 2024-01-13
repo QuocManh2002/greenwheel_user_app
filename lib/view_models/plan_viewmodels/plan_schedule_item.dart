@@ -8,7 +8,7 @@ const uuid = Uuid();
 
 class PlanScheduleItem {
   final String id;
-  final String title;
+  final String description;
   final TimeOfDay time;
   final DateTime? date;
   final String? orderId;
@@ -18,7 +18,7 @@ class PlanScheduleItem {
   PlanScheduleItem(
       {String? id,
       required this.time,
-      required this.title,
+      required this.description,
       this.shortDescription,
       this.date,
       this.orderId,
@@ -27,7 +27,7 @@ class PlanScheduleItem {
 
   PlanScheduleItem fromJson(Map<String, dynamic> json) => PlanScheduleItem(
       time: json['time'],
-      title: json['description'],
+      description: json['description'],
       orderId: json['orderGuid'],
       shortDescription: json['shortDescription'],
       type: json['type']);
@@ -44,7 +44,7 @@ class PlanScheduleItem {
             .format(DateTime(0, 0, 0, time.hour, time.minute))
             .toString()),
         "orderGuid": orderId == null ? null : json.encode(orderId),
-        "description": json.encode(title),
+        "description": json.encode(description),
         "shortDescription": json.encode(shortDescription),
         "type": json.encode(type)
       };

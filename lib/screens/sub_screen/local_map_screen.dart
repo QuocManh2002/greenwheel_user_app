@@ -2,12 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
-import 'package:greenwheel_user_app/helpers/direction_handler.dart';
+import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:location/location.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
+
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class LocalMapScreen extends StatefulWidget {
   const LocalMapScreen({super.key, required this.location});
@@ -18,35 +19,32 @@ class LocalMapScreen extends StatefulWidget {
 }
 
 class _LocalMapScreenState extends State<LocalMapScreen> {
-  late MapboxMapController controller;
-  Location _locationController = new Location();
-  bool isLoading = true;
-  LatLng _currentP = LatLng(0, 0);
-  num distance = 0;
-  num duration = 0;
+  // late MapboxMapController controller;
+  // Location _locationController = Location();
+  // bool isLoading = true;
+  // LatLng _currentP = LatLng(0, 0);
+  // var distance ;
+  // var duration ;
+  // PolylinePoints polylinePoints = PolylinePoints();
 
-  _onMapCreated(MapboxMapController controller) {
-    this.controller = controller;
-  }
+  // _onMapCreated(MapboxMapController controller) {
+  //   this.controller = controller;
+  // }
 
     _onStyleLoadedCallback() async {
-    // for (var _kParkingItem in _kParkingList) {
-    //   await controller.addSymbol(SymbolOptions(
-    //     geometry: _kParkingItem.target,
-    //     iconSize: 0.2,
-    //     iconImage: "assets/images/delivery.png",
-    //   ));
-    // }
-    await controller.addSymbol(const SymbolOptions(
-      geometry: LatLng(10.841877927102306, 106.8098508297925),
-      iconSize: 5,
-      iconImage: "assets/images/from_icon.png"
-    ));
-    await controller.addSymbol(SymbolOptions(
-      geometry: LatLng(widget.location.latitude, widget.location.longitude),
-      iconSize: 5,
-      iconImage: "assets/images/to_icon.png"
-    ));
+
+    // await controller.addSymbol(const SymbolOptions(
+    //   geometry: LatLng(10.841877927102306, 106.8098508297925),
+    //   iconSize: 5,
+    //   iconImage: "assets/images/from_icon.png"
+    // ));
+    // await controller.addSymbol(SymbolOptions(
+    //   geometry: LatLng(widget.location.latitude, widget.location.longitude),
+    //   iconSize: 5,
+    //   iconImage: "assets/images/to_icon.png"
+    // ));
+
+    
   }
 
   @override
@@ -66,35 +64,24 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
           style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
         ),
       ),
-      body: isLoading
-          ? const Center(
-              child: Text("Loading..."),
-            )
-          : Stack(
+      body: 
+      // isLoading
+      //     ? const Center(
+      //         child: Text("Loading..."),
+      //       )
+          // : 
+          Stack(
               children: [
-                // GoogleMap(
-                //   mapType: MapType.normal,
-                //   initialCameraPosition: CameraPosition(
-                //       target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 15),
-                //   markers: {
-                //     Marker(
-                //         markerId: MarkerId(widget.location.id.toString()),
-                //         icon: BitmapDescriptor.defaultMarker,
-                //         position:LatLng(widget.location.latitude, widget.location.longitude)),
-                //   },
-                //   onMapCreated: (GoogleMapController controller) {
-                //     _controller.complete(controller);
-                //   },
-                // ),
-                MapboxMap(initialCameraPosition: CameraPosition(
-                      target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 4),
-                      accessToken: mapboxKey,
-                      onMapCreated: _onMapCreated,
-                      onStyleLoadedCallback: _onStyleLoadedCallback,
-                      // myLocationEnabled: true,
-                      minMaxZoomPreference: const MinMaxZoomPreference(6, 17),
-                      myLocationRenderMode: MyLocationRenderMode.NORMAL,
-                      ),
+                // MapboxMap(initialCameraPosition: CameraPosition(
+                //       target: LatLng(widget.location.latitude, widget.location.longitude), zoom: 4),
+                //       accessToken: mapboxKey,
+                //       onMapCreated: _onMapCreated,
+                      
+                //       onStyleLoadedCallback: _onStyleLoadedCallback,
+                //       // myLocationEnabled: true,
+                //       minMaxZoomPreference: const MinMaxZoomPreference(6, 17),
+                //       myLocationRenderMode: MyLocationRenderMode.NORMAL,
+                //       ),
                 Positioned(
                     top: 0,
                     left: 0,
@@ -155,11 +142,11 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                   const SizedBox(
                     height: 8,
                   ),
-                  Text("Khoảng cách: ${distance.toStringAsFixed(2)} km"),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  Text("Thời gian di chuyển: ${duration.toStringAsFixed(0)} phút")
+                  // Text("Khoảng cách: ${distance.toStringAsFixed(2)} km"),
+                  // const SizedBox(
+                  //   height: 8,
+                  // ),
+                  // Text("Thời gian di chuyển: ${duration.toStringAsFixed(0)} phút")
                 ],
               ),
             )
@@ -174,52 +161,92 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
 
   Future<void> getLocationUpdates() async {
     bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-    _serviceEnabled = await _locationController.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await _locationController.requestService();
-    }
-    _permissionGranted = await _locationController.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await _locationController.requestPermission();
-    }
+    // PermissionStatus _permissionGranted;
+    // _serviceEnabled = await _locationController.serviceEnabled();
+    // if (!_serviceEnabled) {
+    //   _serviceEnabled = await _locationController.requestService();
+    // }
+    // _permissionGranted = await _locationController.hasPermission();
+    // if (_permissionGranted == PermissionStatus.denied) {
+    //   _permissionGranted = await _locationController.requestPermission();
+    // }
 
-    // _locationController.onLocationChanged
-    //     .listen((LocationData currentLocation) async {
-    //   if (currentLocation.latitude != null &&
-    //       currentLocation.longitude != null) {
-    //    setState(() {
-    //       _currentP =
-    //         LatLng(currentLocation.latitude!, currentLocation.longitude!);
-    //         getMapInfo();
-    //    });
-    //     // _cameraToPosition(_currentP);
-    //   }
+    // // _locationController.onLocationChanged
+    // //     .listen((LocationData currentLocation) async {
+    // //   if (currentLocation.latitude != null &&
+    // //       currentLocation.longitude != null) {
+    // //    setState(() {
+    // //       _currentP =
+    // //         LatLng(currentLocation.latitude!, currentLocation.longitude!);
+    // //         getMapInfo();
+    // //    });
+    // //     // _cameraToPosition(_currentP);
+    // //   }
+    // // });
+
+    // LocationData _locationData = await _locationController.getLocation();
+    // setState(() {
+    //   _currentP = LatLng(_locationData.latitude!, _locationData.longitude!);
+    //   getMapInfo();
     // });
-
-    LocationData _locationData = await _locationController.getLocation();
-    setState(() {
-      _currentP = LatLng(_locationData.latitude!, _locationData.longitude!);
-      getMapInfo();
-    });
   }
 
   getMapInfo() async {
     // if (_currentP.latitude != 0) {
-      var mapInfo = await getDirectionsAPIResponse(
-         const LatLng(10.841877927102306, 106.8098508297925), LatLng(widget.location.latitude, widget.location.longitude));
+      // var mapInfo = await getDirectionsAPIResponse(
+      //    const LatLng(10.841877927102306, 106.8098508297925), LatLng(widget.location.latitude, widget.location.longitude));
 
-      if (mapInfo.isNotEmpty) {
-        print(mapInfo["duration"]);
-        print(mapInfo["distance"]);
+      // if (mapInfo.isNotEmpty) {
+      //   print(mapInfo["duration"]);
+      //   print(mapInfo["distance"]);
 
-        setState(() {
-          distance = mapInfo["distance"] / 1000;
-          duration = mapInfo["distance"] / 60;
+      //   setState(() {
+      //     distance = mapInfo["distance"] / 1000;
+      //     duration = mapInfo["distance"] / 60;
 
-          isLoading = false;
-        });
-      }
+      //     isLoading = false;
+      //   });
+      // }
+
+
+    //   var jsonResponse = await getRouteInfo(const LatLng(10.841877927102306, 106.8098508297925), LatLng(widget.location.latitude, widget.location.longitude));
+
+    //   var route  = jsonResponse['routes'][0]['overview_polyline']['points'];
+    //   duration = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
+    //   distance = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
+
+    //   List<PointLatLng> result = polylinePoints.decodePolyline(route);
+    //   List<List<double>> coordinates = result.map((point) => [point.longitude, point.latitude]).toList();
+    //   var geojson =
+    //   {
+    //   "type": "FeatureCollection",
+    //   "features": [
+    //     {
+    //       "type": "Feature",
+    //       "properties": {
+    //         "name": "Crema to Council Crest"
+    //       },
+    //       "geometry": {
+    //         "type": "LineString",
+    //         "coordinates": coordinates
+    //       }
+    //     }
+    //   ]
+    // };
+
+    // await controller.addGeoJsonSource('line', geojson);
+    // var lineLayerJson = """{
+    //   "type":"line",
+    //       "id":"line_layer",
+    //       "source":"line",
+    //       "paint":{
+    //       "line-join":"round",
+    //       "line-cap":"round",
+    //       "line-color":"rgb(51, 51, 255)",
+    //       "line-width":9.0
+    //       }
+    // }""";
+
     // }
   }
 }

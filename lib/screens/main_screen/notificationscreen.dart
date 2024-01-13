@@ -1,4 +1,4 @@
-import 'package:cached_network_image/cached_network_image.dart';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -7,7 +7,6 @@ import 'package:greenwheel_user_app/screens/notification_screen/notification_det
 import 'package:greenwheel_user_app/service/notification_service.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 class NotificationScreen extends StatefulWidget {
   const NotificationScreen({super.key});
@@ -91,26 +90,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                 children: [
                                   Row(
                                     children: [
-                                      // Container(
-                                      //   height: 8.h,
-                                      //   width: 8.h,
-                                      //   clipBehavior: Clip.hardEdge,
-                                      //   decoration: const BoxDecoration(
-                                      //       shape: BoxShape.circle),
-                                      //   child: CachedNetworkImage(
-                                      //     imageUrl: noti.imageUrl.toString(),
-                                      //     key: UniqueKey(),
-                                      //     fit: BoxFit.cover,
-                                      //     placeholder: (context, url) =>
-                                      //         Image.memory(kTransparentImage),
-                                      //     errorWidget: (context, url, error) =>
-                                      //         Image.network(
-                                      //       'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
-                                      //       fit: BoxFit.cover,
-                                      //     ),
-                                      //   ),
-                                      // ),
-
                                       Container(
                                         height: 8.h,
                                         width: 8.h,
@@ -120,7 +99,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                         child: Image.network(noti.imageUrl ==
                                                 null
                                             ? 'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0'
-                                            : noti.imageUrl!),
+                                            : noti.imageUrl!, fit: BoxFit.cover,),
                                       ),
                                       SizedBox(
                                         width: 2.w,

@@ -1,4 +1,6 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -6,6 +8,7 @@ import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart'
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:sizer2/sizer2.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -18,10 +21,13 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController nameController = TextEditingController();
   TextEditingController emailController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
+
+  PointLatLng? _selectedAddress;
   bool isMale = true;
   DateTime selectedDate = DateTime.now();
   bool isPolicyAccept = false;
-  CustomerService _customerService = CustomerService();
+  final CustomerService _customerService = CustomerService();
 
   @override
   void initState() {
@@ -35,8 +41,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
     super.dispose();
     nameController.dispose();
     emailController.dispose();
+    addressController.dispose();
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -71,55 +77,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(
                 height: 16,
               ),
-              // const Text("Tên", style: TextStyle(
-              //   fontSize: 16
-              // ),),
               const SizedBox(
                 height: 8,
               ),
-              TextFormField(
-                controller: nameController,
-                cursorColor: primaryColor,
-                keyboardType: TextInputType.name,
-                style: const TextStyle(
-                    fontSize: 20,
-                    color: Colors.black87,
-                    fontWeight: FontWeight.bold),
-                decoration: const InputDecoration(
-                    hintText: "Nguyen Van A",
-                    hintStyle: TextStyle(color: Colors.grey),
-                    labelText: "Họ và tên",
-                    floatingLabelBehavior: FloatingLabelBehavior.always,
-                    labelStyle: TextStyle(color: primaryColor, fontSize: 20),
-                    floatingLabelStyle:
-                        TextStyle(color: Colors.grey, fontSize: 20),
-                    focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: primaryColor,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(14))),
-                    border: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: Colors.grey,
-                        ),
-                        borderRadius: BorderRadius.all(Radius.circular(14)))),
-              ),
-
-              const SizedBox(
-                height: 16,
-              ),
               // TextFormField(
-              //   controller: emailController,
+              //   controller: nameController,
               //   cursorColor: primaryColor,
-              //   keyboardType: TextInputType.emailAddress,
+              //   keyboardType: TextInputType.name,
               //   style: const TextStyle(
               //       fontSize: 20,
               //       color: Colors.black87,
               //       fontWeight: FontWeight.bold),
               //   decoration: const InputDecoration(
-              //       hintText: "vana@gmail.com",
+              //       hintText: "Nguyen Van A",
               //       hintStyle: TextStyle(color: Colors.grey),
-              //       labelText: "Email",
+              //       labelText: "Họ và tên",
               //       floatingLabelBehavior: FloatingLabelBehavior.always,
               //       labelStyle: TextStyle(color: primaryColor, fontSize: 20),
               //       floatingLabelStyle:
@@ -135,11 +107,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
               //           ),
               //           borderRadius: BorderRadius.all(Radius.circular(14)))),
               // ),
-              // //male
+              defaultTextFormField(
+                controller: nameController,
+                inputType: TextInputType.name,
+                onValidate: (value) {
+                  if (value!.isEmpty) {
+                    return "Tên của người dùng không được để trống";
+                  }
+                },
+              ),
 
-              // const SizedBox(
-              //   height: 16,
-              // ),
+              const SizedBox(
+                height: 16,
+              ),
               const Padding(
                 padding: EdgeInsets.only(left: 8.0),
                 child: Text(
@@ -214,58 +194,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const SizedBox(
                 height: 16,
               ),
-              // const Padding(
-              //   padding: EdgeInsets.only(left: 8.0),
-              //   child: Text(
-              //     "Ngày sinh",
-              //     style: TextStyle(
-              //         fontSize: 16,
-              //         color: Colors.grey,
-              //         fontWeight: FontWeight.bold),
-              //   ),
-              // ),
-              // const SizedBox(
-              //   height: 8,
-              // ),
-
-              // //birthday
-              // Row(
-              //   children: [
-              //     Expanded(
-              //       child: Container(
-              //         height: 6.h,
-              //         alignment: Alignment.centerLeft,
-              //         padding: const EdgeInsets.only(left: 16),
-              //         decoration: BoxDecoration(
-              //             border: Border.all(color: primaryColor, width: 1),
-              //             borderRadius:
-              //                 const BorderRadius.all(Radius.circular(8))),
-              //         child: Text(
-              //           '${selectedDate.day}/${selectedDate.month}/${selectedDate.year}',
-              //           style: const TextStyle(
-              //               fontSize: 18, fontWeight: FontWeight.bold),
-              //         ),
-              //       ),
-              //     ),
-              //     const SizedBox(
-              //       width: 16,
-              //     ),
-              //     ElevatedButton(
-              //         style: elevatedButtonStyle.copyWith(
-              //           minimumSize: MaterialStatePropertyAll(Size(20.w, 6.h)),
-              //         ),
-              //         onPressed: () {
-              //           _showDatePicker(context);
-              //         },
-              //         child: const Text(
-              //           "Chọn ngày",
-              //           style: TextStyle(fontWeight: FontWeight.bold),
-              //         ))
-              //   ],
-              // ),
-              // const SizedBox(
-              //   height: 16,
-              // ),
+              defaultTextFormField(
+                readonly: true,
+                controller: addressController,
+                inputType: TextInputType.streetAddress,
+                onTap: (){},
+                onValidate: (value) {
+                  if (value!.isEmpty) {
+                    return "Địa chỉ mặc định không được để trống";
+                  }
+                },
+              ),
               Row(
                 children: [
                   Checkbox(
@@ -313,20 +252,38 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   _register() async {
+    if (!isPolicyAccept) {
+      AwesomeDialog(
+              context: context,
+              dialogType: DialogType.warning,
+              body: const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Text(
+                    'Bạn phải đồng ý với các chính sách của ứng dụng trước khi bắt đầu cùng GREENWHEELS',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+              btnOkColor: Colors.orange,
+              btnOkOnPress: () {},
+              btnOkText: 'Ok')
+          .show();
+    } else {
+      var id = await _customerService.registerTraveler(RegisterViewModel(
+          deviceToken: sharedPreferences.getString('deviceToken')!,
+          isMale: isMale,
+          email: emailController.text,
+          name: nameController.text));
+      if (id != null || id != 0) {
+        TokenRefresher.refreshToken();
+        print("2: ${sharedPreferences.getString('userToken')}");
 
-    var id = await _customerService.registerTraveler(RegisterViewModel(
-        deviceToken: sharedPreferences.getString('deviceToken')!,
-        isMale: isMale,
-        email: emailController.text,
-        name: nameController.text));
-    if (id != null || id != 0) {
-      TokenRefresher.refreshToken();
-      print("2: ${sharedPreferences.getString('userToken')}");
-
-      // ignore: use_build_context_synchronously
-      Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (ctx) => const SplashScreen()),
-          (route) => false);
+        // ignore: use_build_context_synchronously
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (ctx) => const SplashScreen()),
+            (route) => false);
+      }
     }
   }
 }

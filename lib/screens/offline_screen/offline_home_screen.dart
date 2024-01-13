@@ -44,19 +44,19 @@ class _OfflineHomeScreenState extends State<OfflineHomeScreen> {
       PlanSchedule(date: DateTime(2023, 10, 10), items: [
         PlanScheduleItem(
             time: TimeOfDay.now(),
-            title: 'title',
+            description: 'description',
             date: DateTime(2023, 10, 10)),
       ]),
       PlanSchedule(date: DateTime(2023, 10, 11), items: [
         PlanScheduleItem(
             time: TimeOfDay.now(),
-            title: 'title',
+            description: 'description',
             date: DateTime(2023, 10, 11)),
       ]),
       PlanSchedule(date: DateTime(2023, 10, 12), items: [
         PlanScheduleItem(
             time: TimeOfDay.now(),
-            title: 'title',
+            description: 'description',
             date: DateTime(2023, 10, 12)),
       ])
     ];

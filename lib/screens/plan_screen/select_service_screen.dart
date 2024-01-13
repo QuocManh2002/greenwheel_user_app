@@ -29,10 +29,9 @@ class SelectServiceScreen extends StatefulWidget {
 class _SelectServiceScreenState extends State<SelectServiceScreen>
     with TickerProviderStateMixin {
   late TabController tabController;
-  PlanService _planService = PlanService();
+  final PlanService _planService = PlanService();
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
-  List<OrderViewModel> _orderList = [];
   DateTime? startDate;
   DateTime? endDate;
   int? numberOfMember;
@@ -66,7 +65,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       setState(() {
         _listMotel = listMotel;
         _listRestaurant = listRestaurant;
-        _orderList = orderList;
       });
     }
   }

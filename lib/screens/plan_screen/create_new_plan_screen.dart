@@ -22,6 +22,7 @@ import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
+// ignore: must_be_immutable
 class CreateNewPlanScreen extends StatefulWidget {
   CreateNewPlanScreen(
       {super.key,

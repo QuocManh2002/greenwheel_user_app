@@ -330,10 +330,7 @@ query GetPlanById(\$planId: Int){
     for (final schedule in schedules) {
       if (schedule.items.isNotEmpty) {
         for (int i = 0; i < schedule.items.length; i++) {
-          // if (schedule.items[i].orderId != null) {
-          //   schedule.items.remove(schedule.items[i]);
           schedule.items.removeWhere((element) => element.orderId != null);
-          // }
         }
       }
     }
@@ -356,7 +353,7 @@ query GetPlanById(\$planId: Int){
                   schedule_item_types.indexOf(planItem['type'].toString())],
               time: TimeOfDay.fromDateTime(DateTime.parse(
                   "1970-01-01 ${planItem['time'].toString().substring(0, 2)}:${planItem['time'].toString().substring(3, 5)}:00")),
-              title: planItem['description'],
+              description: planItem['description'],
               date: date));
         }
         item.sort(
@@ -382,8 +379,7 @@ query GetPlanById(\$planId: Int){
               .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
               .toString()),
           'orderGuid': item.orderId,
-          // 'description':  "${item.title}",
-          'description': json.encode(item.title),
+          'description': json.encode(item.description),
           'shortDescription': json.encode(item.shortDescription),
           'type': "GATHER"
         });

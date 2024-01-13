@@ -8,6 +8,7 @@
     <application
         android:label="greenwheel_user_app"
         android:name="${applicationName}"
+        android:enableOnBackInvokedCallback="true"
         android:icon="@mipmap/ic_launcher">
         <meta-data android:name="com.mapbox.token" android:value="pk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xuNGdremoxMDA5czJ1cW11bDlnbnVuNyJ9.tVbjQ8dn3-ShbqqKjEsFWQ"/>
         <activity

@@ -1,6 +1,7 @@
-// import 'package:google_maps_flutter/google_maps_flutter.dart';
+
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
+
 
 class LocationModel {
   LocationModel(
@@ -30,5 +31,5 @@ class LocationModel {
   final String lifeGuardAddress;
   final String clinicNumber;
   final String clinicAddress;
-  final LatLng locationLatLng;
+  final PointLatLng locationLatLng;
 }

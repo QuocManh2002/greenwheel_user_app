@@ -1,7 +1,8 @@
 
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/location.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
+
 
 List<LocationModel> locations = [
   LocationModel(
@@ -18,7 +19,7 @@ List<LocationModel> locations = [
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
       clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
-      locationLatLng:const LatLng(10.554411364780098, 107.2505359801003),
+      locationLatLng:const PointLatLng(10.554411364780098, 107.2505359801003),
       ),
   LocationModel(
       id: "2",
@@ -34,7 +35,7 @@ List<LocationModel> locations = [
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
       clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
-      locationLatLng: const LatLng(10.500131412056358, 107.47757431718013)
+      locationLatLng: const PointLatLng(10.500131412056358, 107.47757431718013)
       ),
   LocationModel(
       id: "3",
@@ -50,7 +51,7 @@ List<LocationModel> locations = [
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
       clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
-      locationLatLng:const LatLng(11.25744127768411, 107.88268447823675)
+      locationLatLng:const PointLatLng(11.25744127768411, 107.88268447823675)
       ),
       
   LocationModel(
@@ -67,7 +68,7 @@ List<LocationModel> locations = [
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
       clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
-      locationLatLng:const LatLng(11.994721228758529, 108.42856959567486)),
+      locationLatLng:const PointLatLng(11.994721228758529, 108.42856959567486)),
   LocationModel(
       id: "5",
       description: "Địa điểm du lịch Vũng Tàu ...",
@@ -82,6 +83,6 @@ List<LocationModel> locations = [
       lifeGuardAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
       clinicNumber: "0912312345",
       clinicAddress: "113 Hồng Lĩnh, Đá Bạc, Long Tân, Bà Rịa - Vũng Tàu",
-      locationLatLng: const LatLng(11.111790144544416, 107.10330964196373)
+      locationLatLng: const PointLatLng(11.111790144544416, 107.10330964196373)
       ),
 ];

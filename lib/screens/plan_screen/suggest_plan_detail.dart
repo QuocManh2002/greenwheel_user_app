@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/helpers/direction_handler.dart';
@@ -17,7 +18,6 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:mapbox_gl/mapbox_gl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -379,8 +379,8 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
     sharedPreferences.setDouble(
         'plan_start_lng', _planDetail!.startLocationLng);
     var mapInfo = await getDirectionsAPIResponse(
-        LatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng),
-        LatLng(widget.location.latitude, widget.location.longitude));
+        PointLatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng),
+        PointLatLng(widget.location.latitude, widget.location.longitude));
     if (mapInfo.isNotEmpty) {
       sharedPreferences.setDouble('plan_distance', mapInfo["distance"] / 1000);
       sharedPreferences.setDouble('plan_duration', mapInfo["duration"] / 3600);
