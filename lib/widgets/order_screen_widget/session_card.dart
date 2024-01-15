@@ -16,6 +16,7 @@ class SessionCard extends StatelessWidget {
     required this.location,
     required this.numberOfMember,
     required this.startDate,
+    required this.callbackFunction,
     required this.endDate,
   });
   final Session session;
@@ -25,6 +26,7 @@ class SessionCard extends StatelessWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
+  final void Function() callbackFunction;
 
   @override
   Widget build(BuildContext context) {
@@ -53,6 +55,7 @@ class SessionCard extends StatelessWidget {
                     serviceType: service,
                     location: location,
                     session: session,
+                    callbackFunction: callbackFunction,
                   ),
                 ),
               );

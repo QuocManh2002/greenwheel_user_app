@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:intl/intl.dart';
@@ -42,8 +43,10 @@ class Utils {
     sharedPreferences.remove("plan_start_lat");
     sharedPreferences.remove("plan_start_lng");
     sharedPreferences.remove("plan_start_time");
-    sharedPreferences.remove("plan_distance");
-    sharedPreferences.remove("plan_duration");
+    sharedPreferences.remove("plan_distance_text");
+    sharedPreferences.remove("plan_duration_text");
+    sharedPreferences.remove("plan_distance_value");
+    sharedPreferences.remove("plan_duration_value");
     sharedPreferences.remove('plan_start_date');
     sharedPreferences.remove('plan_is_change');
     sharedPreferences.remove('plan_end_date');
@@ -91,5 +94,10 @@ class Utils {
     var point = factory.createPoint(coordinate);
     print('Test result: ${features!.contains(point)}');
     return features.contains(point);
+  }
+
+  SaveDefaultAddressToSharedPref(String addressText, PointLatLng addressLatLng){
+    sharedPreferences.setString('defaultAddress', addressText);
+    sharedPreferences.setStringList('defaultCoordinate', [addressLatLng.latitude.toString(), addressLatLng.longitude.toString()]);
   }
 }

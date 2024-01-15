@@ -44,7 +44,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     int numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod')!;
 
     final initialDateTime = DateFormat.Hm().parse(startTime);
-    DateTime _startDate = DateTime.parse(startDate)
+    DateTime departureDate = DateTime.parse(startDate)
         .add(Duration(hours: initialDateTime.hour))
         .add(Duration(minutes: initialDateTime.minute));
 
@@ -65,12 +65,15 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     //   _startDate = DateTime.now().add(const Duration(hours: 1));
     // }
     int planId = sharedPreferences.getInt('planId')!;
+    var duration = sharedPreferences.getDouble('plan_duration_value');
+    var _startDate = departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
 
     int? rs = await _planService.createPlan(
         PlanCreate(
             numOfExpPeriod: numOfExpPeriod,
             locationId: widget.location.id,
             startDate: _startDate,
+            departureDate: departureDate,
             endDate: DateTime.parse(endDate),
             latitude: lat,
             longitude: lng,

@@ -31,7 +31,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
-  final TextEditingController _shortDescriptionController = TextEditingController();
+  final TextEditingController _shortDescriptionController =
+      TextEditingController();
   TimeOfDay _selectTime = TimeOfDay.now();
   DateTime _selectedDate = DateTime.now();
   String? _selectedType;
@@ -110,7 +111,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                     } else {
                       widget.callback(
                           PlanScheduleItem(
-                            shortDescription: _shortDescriptionController.text,
+                              shortDescription:
+                                  _shortDescriptionController.text,
                               time: _selectTime,
                               description: _descriptionController.text,
                               date: _selectedDate,
@@ -122,7 +124,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                   } else {
                     widget.callback(
                         PlanScheduleItem(
-                          shortDescription: _shortDescriptionController.text,
+                            shortDescription: _shortDescriptionController.text,
                             type: _selectedType,
                             time: _selectTime,
                             description: _descriptionController.text,
@@ -138,10 +140,22 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                 Icons.done,
                 color: Colors.white,
               ),
-              label: const Text('Lưu', style: TextStyle(color: Colors.white),)),
+              label: const Text(
+                'Lưu',
+                style: TextStyle(color: Colors.white),
+              )),
         )
       ],
     );
+  }
+
+  bool checkValidStartItem(TimeOfDay time) {
+    var startTime = sharedPreferences.getString('plan_start_time');
+    final startDateTime = DateFormat.Hm().parse(startTime!);
+    final _startDateTime =
+        DateTime(0, 0, 0, startDateTime.hour, startDateTime.minute, 0);
+    final _startActivityDateTime = DateTime(0, 0, 0, time.hour, time.minute);
+    return _startActivityDateTime.isAfter(_startDateTime);
   }
 
   @override
@@ -161,6 +175,16 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
             ),
             SizedBox(
               height: 2.h,
+            ),
+            TextFormField(
+              controller: _dateController,
+              readOnly: true,
+              style:
+                  const TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
+              decoration: const InputDecoration(
+                  prefixIcon: Icon(Icons.calendar_month),
+                  prefixIconColor: primaryColor,
+                  border: OutlineInputBorder(borderSide: BorderSide.none)),
             ),
             Container(
               padding: const EdgeInsets.only(left: 12, right: 8),
@@ -236,7 +260,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           controller: _timeController,
                           inputType: TextInputType.datetime,
                           text: 'Giờ',
-                          
                           onTap: () {
                             showTimePicker(
                               context: context,
@@ -244,7 +267,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                               builder: (context, child) {
                                 return Theme(
                                   data: ThemeData().copyWith(
-                                      
                                       colorScheme: const ColorScheme.light(
                                           primary: primaryColor,
                                           onPrimary: Colors.white)),
@@ -256,44 +278,47 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                 );
                               },
                             ).then((value) {
-                              var startTimeText = sharedPreferences.getString('plan_start_time');
-                              print(_selectedDate.difference(widget.startDate).inDays == 0);
-                              if(_selectedDate.difference(widget.startDate).inDays == 0){
-                                
+                              if (widget.selectedIndex == 0) {
+                                if (!checkValidStartItem(value!)) {
+                                  AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.warning,
+                                      btnOkColor: Colors.orange,
+                                      btnOkText: 'Ok',
+                                      btnOkOnPress: () {},
+                                      body: const Center(
+                                        child: Padding(
+                                          padding: EdgeInsets.all(12),
+                                          child: Text(
+                                            'Giờ của hoạt động trong ngày đầu tiên phải sau thời điểm xuất phát',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      )).show();
+                                } else {
+                                  _selectTime = value;
+                                  _timeController.text =
+                                      value.format(context).toString();
+                                }
+                              } else {
+                                _selectTime = value!;
+                                _timeController.text =
+                                    value.format(context).toString();
                               }
-                              _selectTime = value!;
-                              _timeController.text =
-                                  value.format(context).toString();
-                              // print(_timeController.text);
                             });
                           },
                           onValidate: (value) {
                             if (value!.isEmpty) {
-                              return "Ngày của hoạt động không được để trống";
+                              return "Giờ của hoạt động không được để trống";
                             }
                           },
                           prefixIcon: const Icon(Icons.watch_later_outlined)),
                       SizedBox(
                         height: 2.h,
                       ),
-                      // defaultTextFormField(
-                      //   readonly: true,
-                      //   controller: _dateController,
-                      //   inputType: TextInputType.datetime,
-                      //   text: 'Ngày',
-                      //   prefixIcon: const Icon(Icons.calendar_month),
-                      // ),
-                      TextFormField(
-                        controller: _dateController,
-                        readOnly: true,
-                        style: const TextStyle(
-                            fontWeight: FontWeight.normal, fontSize: 18),
-                        decoration: const InputDecoration(
-                            prefixIcon: Icon(Icons.calendar_month),
-                            prefixIconColor: primaryColor,
-                            border: OutlineInputBorder(
-                                borderSide: BorderSide.none)),
-                      )
                     ],
                   )),
             )

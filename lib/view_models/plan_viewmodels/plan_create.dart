@@ -9,6 +9,7 @@ class PlanCreate {
   final String schedule;
   String? savedContacts;
   int? numOfExpPeriod;
+  final DateTime departureDate;
 
   PlanCreate(
       {required this.locationId,
@@ -20,5 +21,6 @@ class PlanCreate {
       required this.name,
       required this.schedule,
       this.numOfExpPeriod,
+      required this.departureDate,
       this.savedContacts});
 }

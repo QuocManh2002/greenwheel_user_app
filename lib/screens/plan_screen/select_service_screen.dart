@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
@@ -51,7 +53,8 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
   }
 
-  callback(List<OrderViewModel> orderList) async {
+  callback() async {
+    List<OrderViewModel>? orderList = await _planService.getOrderCreatePlan(sharedPreferences.getInt('planId')!);
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
     for (var item in orderList) {
@@ -74,8 +77,11 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Thêm dịch vụ'),
+          title: const Text('Thêm dịch vụ', style: TextStyle(color: Colors.white),),
           leading: BackButton(
+            style:const ButtonStyle(
+              foregroundColor: MaterialStatePropertyAll(Colors.white)
+            ),
             onPressed: () async {
               await saveToOffline();
               Utils().clearPlanSharePref();
@@ -279,7 +285,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                       },
                     ).show();
                   },
-                  child: Text('Hoàn tất')),
+                  child:const Text('Hoàn tất')),
               SizedBox(
                 height: 3.h,
               )

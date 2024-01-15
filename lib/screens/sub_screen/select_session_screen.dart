@@ -15,6 +15,7 @@ class SelectSessionScreen extends StatefulWidget {
     required this.numberOfMember,
     required this.startDate,
     required this.endDate,
+    required this.callbackFunction
   });
   final DateTime startDate;
   final DateTime endDate;
@@ -22,6 +23,7 @@ class SelectSessionScreen extends StatefulWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
+  final void Function() callbackFunction;
 
   @override
   State<SelectSessionScreen> createState() => _SelectSessionScreenState();
@@ -120,6 +122,7 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
                     numberOfMember: widget.numberOfMember,
                     serviceType: widget.serviceType,
                     supplier: widget.supplier,
+                    callbackFunction: widget.callbackFunction,
                   );
                 },
               ),

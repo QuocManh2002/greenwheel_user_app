@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +20,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_button.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -52,6 +55,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   double total = 0;
   List<SupplierViewModel>? _saveSupplier;
   int _currentIndexEmergencyCard = 0;
+  int _selectedTab = 0;
 
   @override
   void initState() {
@@ -154,8 +158,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               .toList()
               .toString());
       var mapInfo = await getDirectionsAPIResponse(
-          PointLatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng),
-          PointLatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng));
+          PointLatLng(
+              _planDetail!.startLocationLat, _planDetail!.startLocationLng),
+          PointLatLng(
+              _planDetail!.startLocationLat, _planDetail!.startLocationLng));
       if (mapInfo.isNotEmpty) {
         sharedPreferences.setDouble(
             'plan_distance', mapInfo["distance"] / 1000);
@@ -208,6 +214,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     child: Text("Loading..."),
                   )
                 : Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(
                         child: SingleChildScrollView(
@@ -231,219 +238,337 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               ),
                             ),
                             const SizedBox(
-                              height: 32,
+                              height: 16,
                             ),
-                            BaseInformationWidget(plan: _planDetail!),
-                            Padding(
+                            Container(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 24),
-                              child: Column(
-                                children: [
-                                  if (_planDetail!.savedContacts != null)
-                                    Column(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                _planDetail!.name,
+                                overflow: TextOverflow.clip,
+                                style: const TextStyle(
+                                    fontSize: 22, fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 16,
+                            ),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              child: Container(
+                                height: 1.8,
+                                color: Colors.grey.withOpacity(0.4),
+                              ),
+                            ),
+                            const SizedBox(
+                              height: 16,
+                            ),
+                            Container(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
+                              alignment: Alignment.centerLeft,
+                              child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    InkWell(
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(12)),
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedTab = 0;
+                                        });
+                                      },
+                                      child: TabButton(
+                                        text: 'Thông tin cơ bản',
+                                        isSelected: _selectedTab == 0,
+                                        index: 0,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 16,
+                                    ),
+                                    InkWell(
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(12)),
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedTab = 1;
+                                        });
+                                      },
+                                      child: TabButton(
+                                        text: 'Lịch trình',
+                                        isSelected: _selectedTab == 1,
+                                        index: 1,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 16,
+                                    ),
+                                    InkWell(
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(12)),
+                                      onTap: () {
+                                        setState(() {
+                                          _selectedTab = 2;
+                                        });
+                                      },
+                                      child: TabButton(
+                                        text: 'Dịch vụ',
+                                        isSelected: _selectedTab == 2,
+                                        index: 2,
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 16,
+                                    ),
+                                  ]),
+                            ),
+                            const SizedBox(
+                              height: 16,
+                            ),
+                            Container(
+                              child: _selectedTab == 0
+                                  ? Column(
                                       children: [
-                                        Container(
-                                            alignment: Alignment.centerLeft,
-                                            child: const Text(
-                                              'Dịch vụ khẩn cấp đã lưu: ',
-                                              style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold),
-                                            )),
-                                        SizedBox(
-                                          height: 18.h,
-                                          width: double.infinity,
-                                          child: PageView.builder(
-                                            scrollDirection: Axis.horizontal,
-                                            itemCount: _planDetail!
-                                                .savedContacts!.length,
-                                            onPageChanged: (value) {
-                                              setState(() {
-                                                _currentIndexEmergencyCard =
-                                                    value;
-                                              });
-                                            },
-                                            itemBuilder: (context, index) {
-                                              return EmergencyContactCard(
-                                                  emergency: _planDetail!
-                                                      .savedContacts![index],
-                                                  index: index,
-                                                  callback: () {},
-                                                  isSelected: true);
-                                            },
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: 4,
-                                        ),
-                                        if (_planDetail!.savedContacts!.length >
-                                            1)
-                                          Row(
-                                            mainAxisAlignment:
-                                                MainAxisAlignment.center,
+                                        BaseInformationWidget(
+                                            plan: _planDetail!),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 24),
+                                          child: Column(
                                             children: [
-                                              for (int i = 0;
-                                                  i <
-                                                      _planDetail!
-                                                          .savedContacts!
-                                                          .length;
-                                                  i++)
-                                                Container(
-                                                    height: 1.5.h,
-                                                    child: buildIndicator(i)),
+                                              Container(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: const Text(
+                                                    'Dịch vụ khẩn cấp đã lưu: ',
+                                                    style: TextStyle(
+                                                        fontSize: 18,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  )),
+                                              SizedBox(
+                                                height: 18.h,
+                                                width: double.infinity,
+                                                child: PageView.builder(
+                                                  scrollDirection:
+                                                      Axis.horizontal,
+                                                  itemCount: _planDetail!
+                                                      .savedContacts!.length,
+                                                  onPageChanged: (value) {
+                                                    setState(() {
+                                                      _currentIndexEmergencyCard =
+                                                          value;
+                                                    });
+                                                  },
+                                                  itemBuilder:
+                                                      (context, index) {
+                                                    return EmergencyContactCard(
+                                                        emergency: _planDetail!
+                                                                .savedContacts![
+                                                            index],
+                                                        index: index,
+                                                        callback: () {},
+                                                        isSelected: true);
+                                                  },
+                                                ),
+                                              ),
+                                              const SizedBox(
+                                                height: 4,
+                                              ),
+                                              if (_planDetail!
+                                                      .savedContacts!.length >
+                                                  1)
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment.center,
+                                                  children: [
+                                                    for (int i = 0;
+                                                        i <
+                                                            _planDetail!
+                                                                .savedContacts!
+                                                                .length;
+                                                        i++)
+                                                      Container(
+                                                          height: 1.5.h,
+                                                          child: buildIndicator(
+                                                              i)),
+                                                  ],
+                                                ),
+                                              const SizedBox(
+                                                height: 8,
+                                              ),
+                                              Container(
+                                                height: 1.8,
+                                                color: Colors.grey
+                                                    .withOpacity(0.4),
+                                              ),
+                                              const SizedBox(
+                                                height: 16,
+                                              ),
                                             ],
                                           ),
-                                        const SizedBox(
-                                          height: 8,
                                         ),
-                                        Container(
-                                          height: 1.8,
-                                          color: Colors.grey.withOpacity(0.4),
-                                        ),
-                                        const SizedBox(
-                                          height: 16,
-                                        ),
-                                      ],
-                                    ),
-                                  Container(
-                                    alignment: Alignment.topLeft,
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          "Thành viên đã tham gia: ",
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.black),
-                                        ),
-                                        for (final member in _joinedMember)
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                                vertical: 6, horizontal: 12),
-                                            child: Text(
-                                              member.status == "LEADING"
-                                                  ? member.travelerId ==
-                                                          int.parse(
-                                                              sharedPreferences
-                                                                  .getString(
-                                                                      'userId')!)
-                                                      ? "- ${member.name} (Bạn)"
-                                                      : "- ${member.name} - LEADING - 0${member.phone.substring(3)}"
-                                                  : member.travelerId ==
-                                                          int.parse(
-                                                              sharedPreferences
-                                                                  .getString(
-                                                                      'userId')!)
-                                                      ? "- ${member.name} (Bạn)"
-                                                      : "- ${member.name} - 0${member.phone.substring(3)}",
-                                              style:
-                                                  const TextStyle(fontSize: 18),
+                                        Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 24),
+                                          child: Container(
+                                            alignment: Alignment.topLeft,
+                                            child: Column(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Text(
+                                                  "Thành viên đã tham gia: ",
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      color: Colors.black),
+                                                ),
+                                                for (final member
+                                                    in _joinedMember)
+                                                  Padding(
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        vertical: 6,
+                                                        horizontal: 12),
+                                                    child: Text(
+                                                      member.status == "LEADING"
+                                                          ? member.travelerId ==
+                                                                  int.parse(sharedPreferences
+                                                                      .getString(
+                                                                          'userId')!)
+                                                              ? "- ${member.name} (Bạn)"
+                                                              : "- ${member.name} - LEADING - 0${member.phone.substring(3)}"
+                                                          : member.travelerId ==
+                                                                  int.parse(sharedPreferences
+                                                                      .getString(
+                                                                          'userId')!)
+                                                              ? "- ${member.name} (Bạn)"
+                                                              : "- ${member.name} - 0${member.phone.substring(3)}",
+                                                      style: const TextStyle(
+                                                          fontSize: 18),
+                                                    ),
+                                                  )
+                                              ],
                                             ),
-                                          )
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Container(
-                                    height: 1.8,
-                                    color: Colors.grey.withOpacity(0.4),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: const Text(
-                                        "Lịch trình",
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  SizedBox(
-                                    height: 60.h,
-                                    child: PLanScheduleWidget(
-                                      schedule: _planDetail!.schedule,
-                                      startDate: _planDetail!.startDate,
-                                      endDate: _planDetail!.endDate,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Container(
-                                    height: 1.8,
-                                    color: Colors.grey.withOpacity(0.4),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: const Text(
-                                        "Các loại dịch vụ",
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                  TabBar(
-                                      controller: tabController,
-                                      indicatorColor: primaryColor,
-                                      labelColor: primaryColor,
-                                      unselectedLabelColor: Colors.grey,
-                                      tabs: [
-                                        Tab(
-                                          text: "(${_listMotel.length})",
-                                          icon: const Icon(Icons.hotel),
+                                          ),
                                         ),
-                                        Tab(
-                                          text: "(${_listRestaurant.length})",
-                                          icon: const Icon(Icons.restaurant),
+                                      ],
+                                    )
+                                  : _selectedTab == 1
+                                      ? Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 24),
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: const Text(
+                                                    "Lịch trình",
+                                                    style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  )),
+                                              const SizedBox(
+                                                height: 16,
+                                              ),
+                                              SizedBox(
+                                                height: 60.h,
+                                                child: PLanScheduleWidget(
+                                                  schedule:
+                                                      _planDetail!.schedule,
+                                                  startDate:
+                                                      _planDetail!.startDate,
+                                                  endDate: _planDetail!.endDate,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
                                         )
-                                      ]),
-                                  Container(
-                                    margin: const EdgeInsets.only(top: 8),
-                                    height: _listRestaurant.length == 0 &&
-                                            _listMotel.length == 0
-                                        ? 0.h
-                                        : 35.h,
-                                    child: TabBarView(
-                                        controller: tabController,
-                                        children: [
-                                          ListView.builder(
-                                            physics:
-                                                const BouncingScrollPhysics(),
-                                            shrinkWrap: true,
-                                            itemCount: _listMotel.length,
-                                            itemBuilder: (context, index) {
-                                              return _listMotel[index];
-                                            },
+                                      : Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 24),
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: const Text(
+                                                    "Các loại dịch vụ",
+                                                    style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  )),
+                                              const SizedBox(
+                                                height: 16,
+                                              ),
+                                              TabBar(
+                                                  controller: tabController,
+                                                  indicatorColor: primaryColor,
+                                                  labelColor: primaryColor,
+                                                  unselectedLabelColor:
+                                                      Colors.grey,
+                                                  tabs: [
+                                                    Tab(
+                                                      text:
+                                                          "(${_listMotel.length})",
+                                                      icon: const Icon(
+                                                          Icons.hotel),
+                                                    ),
+                                                    Tab(
+                                                      text:
+                                                          "(${_listRestaurant.length})",
+                                                      icon: const Icon(
+                                                          Icons.restaurant),
+                                                    )
+                                                  ]),
+                                              Container(
+                                                margin: const EdgeInsets.only(
+                                                    top: 8),
+                                                height:
+                                                    _listRestaurant.isEmpty &&
+                                                            _listMotel.isEmpty
+                                                        ? 0.h
+                                                        : 35.h,
+                                                child: TabBarView(
+                                                    controller: tabController,
+                                                    children: [
+                                                      ListView.builder(
+                                                        physics:
+                                                            const BouncingScrollPhysics(),
+                                                        shrinkWrap: true,
+                                                        itemCount:
+                                                            _listMotel.length,
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          return _listMotel[
+                                                              index];
+                                                        },
+                                                      ),
+                                                      ListView.builder(
+                                                        physics:
+                                                            const BouncingScrollPhysics(),
+                                                        shrinkWrap: true,
+                                                        itemCount:
+                                                            _listRestaurant
+                                                                .length,
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          return _listRestaurant[
+                                                              index];
+                                                        },
+                                                      ),
+                                                    ]),
+                                              ),
+                                            ],
                                           ),
-                                          ListView.builder(
-                                            physics:
-                                                const BouncingScrollPhysics(),
-                                            shrinkWrap: true,
-                                            itemCount: _listRestaurant.length,
-                                            itemBuilder: (context, index) {
-                                              return _listRestaurant[index];
-                                            },
-                                          ),
-                                        ]),
-                                  ),
-                                  const SizedBox(
-                                    height: 16,
-                                  ),
-                                ],
-                              ),
+                                        ),
                             )
                           ],
                         )),
@@ -543,7 +668,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
 
   Widget buildNewFooter() => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        child: Container(
+        child: SizedBox(
           height: 6.h,
           child: widget.isEnableToJoin
               ? ElevatedButton(

@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/comments.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
-import 'package:greenwheel_user_app/constants/menu_items.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
@@ -238,6 +237,45 @@ class _LocationScreenState extends State<LocationScreen> {
                               const SizedBox(
                                 height: 16,
                               ),
+                              Container(
+                                alignment: Alignment.center,
+                                child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (ctx) =>
+                                                SuggestPlansByLocationScreen(
+                                                    location:
+                                                        widget.location)));
+                                  },
+                                  icon: const Icon(Icons.luggage),
+                                  label: const Text(
+                                    "Tham khảo kế hoạch",
+                                    style:
+                                        TextStyle(fontWeight: FontWeight.bold),
+                                  ),
+                                  style: elevatedButtonStyle.copyWith(
+                                      backgroundColor: MaterialStatePropertyAll(
+                                          Colors.grey.withOpacity(0.6)),
+                                      foregroundColor:
+                                          const MaterialStatePropertyAll(
+                                              Colors.black)),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 12),
+                                child: Container(
+                                  height: 1.8,
+                                  color: Colors.grey.withOpacity(0.4),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
                               const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 12),
                                 child: Text(
@@ -308,45 +346,7 @@ class _LocationScreenState extends State<LocationScreen> {
                               const SizedBox(
                                 height: 16,
                               ),
-                              Container(
-                                alignment: Alignment.center,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (ctx) =>
-                                                SuggestPlansByLocationScreen(
-                                                    location:
-                                                        widget.location)));
-                                  },
-                                  icon: const Icon(Icons.luggage),
-                                  label: const Text(
-                                    "Tham khảo kế hoạch",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  style: elevatedButtonStyle.copyWith(
-                                      backgroundColor: MaterialStatePropertyAll(
-                                          Colors.grey.withOpacity(0.6)),
-                                      foregroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.black)),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                child: Container(
-                                  height: 1.8,
-                                  color: Colors.grey.withOpacity(0.4),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
+
                               const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 12),
                                 child: Text(

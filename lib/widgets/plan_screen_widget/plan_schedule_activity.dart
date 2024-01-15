@@ -47,7 +47,7 @@ class PlanScheduleActivity extends StatelessWidget {
                     children: [
                       Expanded(
                         child: Text(
-                          item.shortDescription!,
+                          item.shortDescription ?? 'Không có mô tả',
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                           overflow: TextOverflow.clip,

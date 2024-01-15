@@ -35,8 +35,13 @@ class _SelectEmergencyDetailServiceState
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
-              title: const Text('Chi tiết dịch vụ'),
+              title: const Text('Chi tiết dịch vụ', style: TextStyle(
+                color: Colors.white
+              ),),
               leading: BackButton(
+                style:const ButtonStyle(
+                  foregroundColor: MaterialStatePropertyAll(Colors.white)
+                ),
                 onPressed: () {
                   
                   Navigator.of(context).pop();

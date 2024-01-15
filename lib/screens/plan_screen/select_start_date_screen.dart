@@ -22,6 +22,7 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
   DateTime? _rangeEnd;
   late ComboDate _selectedComboDate;
   String? _startTime;
+  late ComboDate _initComboDate;
 
   _onDaySelected(DateTime selectDay, DateTime focusDay) {
     if (!isSameDay(_selectedDate, selectDay)) {
@@ -41,8 +42,10 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    var _numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod');
     _selectedComboDate =
-        listComboDate[sharedPreferences.getInt('plan_combo_date')!];
+        listComboDate.firstWhere((element) => element.numberOfDay + element.numberOfNight == _numOfExpPeriod);
+    _initComboDate = _selectedComboDate;
     final startDate = sharedPreferences.getString('plan_start_date');
     _startTime = sharedPreferences.getString('plan_start_time');
 
@@ -60,25 +63,20 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
   }
 
   handleChangeComboDate() {
-    final isChanged = sharedPreferences.getBool('plan_is_change');
-    if (isChanged == null || !isChanged) {
-      setState(() {
         final initialDateTime = DateFormat.Hm()
             .parse(sharedPreferences.getString('plan_start_time')!);
         final startTime =
             DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
         final arrivedTime = startTime.add(Duration(
             seconds:
-                (sharedPreferences.getDouble('plan_duration')! * 3600).ceil()));
+                (sharedPreferences.getDouble('plan_duration_value')! * 3600).ceil()));
         if (arrivedTime.isAfter(DateTime(0, 0, 0, 6, 0))) {
-          _selectedComboDate = listComboDate.firstWhere(
+         setState(() {
+            _selectedComboDate = listComboDate.firstWhere(
               (element) => element.duration == _selectedComboDate.duration + 2);
-          sharedPreferences.setInt(
-              'plan_combo_date', _selectedComboDate.id - 1);
-          sharedPreferences.setBool("plan_is_change", true);
+         });
         }
-      });
-    }
+        sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id);
   }
 
   @override
@@ -119,8 +117,12 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
             'Thời gian trải nghiệm',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
+          Text('${_initComboDate.numberOfDay} ngày, ${_initComboDate.numberOfNight} đêm',style:const TextStyle(
+            color: Colors.grey,
+            fontSize: 16
+          ),),
           SizedBox(
-            height: 2.h,
+            height: 1.h,
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),

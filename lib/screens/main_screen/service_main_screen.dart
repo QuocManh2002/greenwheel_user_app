@@ -24,7 +24,7 @@ class ServiceMainScreen extends StatefulWidget {
   final LocationViewModel location;
   final DateTime startDate;
   final DateTime endDate;
-  final void Function(List<OrderViewModel> list) callbackFunction;
+  final void Function() callbackFunction;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();
@@ -35,7 +35,6 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
   List<SupplierViewModel> list = [];
   String title = "";
   bool isLoading = true;
-  PlanService _planService = PlanService();
   List<OrderViewModel>? orderList;
 
   @override
@@ -98,15 +97,8 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                         if (sharedPreferences.getInt("planId") == null) {
                           Navigator.of(context).pop();
                         }
-                        orderList = null;
-                        orderList = await _planService.getOrderCreatePlan(
-                            sharedPreferences.getInt("planId")!);
-                        if (orderList != null) {
-                          widget.callbackFunction(orderList!);
+                          widget.callbackFunction();
                           Navigator.of(context).pop();
-                        } else {
-                          Navigator.of(context).pop();
-                        }
                         // Close the current page
                       },
                     ),
@@ -148,20 +140,6 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                                 color: Colors.black,
                               ),
                               onPressed: () {
-                                setState(() {
-                                  // var tagsByName =
-                                  //     searchTagsByName(searchController.text);
-                                  // if (tagsByName.isEmpty) {
-                                  //   // var locationsByName =
-                                  //   //     searchTagsByName(searchController.text);
-                                  //   print("empty");
-                                  // } else {
-                                  //   print("not empty");
-                                  //   setState(() {
-                                  //     currentTags = tagsByName;
-                                  //   });
-                                  // }
-                                });
                               },
                             ),
                             hintText: "Bạn cần tìm dịch vụ nào?",
@@ -215,6 +193,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                           supplier: list[index],
                           serviceType: widget.serviceType,
                           location: widget.location,
+                          callbackFunction: widget.callbackFunction,
                         );
                       },
                     ),

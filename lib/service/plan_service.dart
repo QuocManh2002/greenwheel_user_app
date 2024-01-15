@@ -32,9 +32,11 @@ mutation{
     schedule:${model.schedule}
     id:$planId
     savedContacts:${model.savedContacts}
-    latitude: ${model.latitude}
-    longitude: ${model.longitude} 
-    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day} ${model.startDate.hour}:${model.startDate.minute}:00.000Z"
+    departureCoordinate:[
+      ${model.longitude},${model.latitude}
+    ]
+    departureDate: "${model.departureDate.year}-${model.departureDate.month}-${model.departureDate.day} ${model.departureDate.hour}:${model.departureDate.minute}:00.000Z"
+    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
     endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day} 22:00:00.000Z"
     memberLimit:${model.memberLimit}
     name: "${model.name}"
@@ -67,10 +69,12 @@ mutation{
   createPlan(dto: {
     numOfExpPeriod: ${model.numOfExpPeriod}
     locationId: ${model.locationId}
-    latitude: ${model.latitude}
-    longitude: ${model.longitude} 
-    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day} ${model.startDate.hour}:${model.startDate.minute}:00.000Z"
-    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day} 22:00:00.000Z"
+    departureCoordinate:[
+      ${model.longitude},${model.latitude}
+    ]
+    departureDate: "${model.departureDate.year}-${model.departureDate.month}-${model.departureDate.day} ${model.departureDate.hour}:${model.departureDate.minute}:00.000Z"
+    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
+    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day}"
     memberLimit:${model.memberLimit}
     name: "${model.name}"
   }){
@@ -100,7 +104,7 @@ mutation{
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
   plans
-    (where: {status:{eq:${status}}} order: {id:DESC})
+    (where: {status:{eq:$status}} order: {id:DESC})
   {
     nodes{
       id
@@ -537,7 +541,7 @@ mutation{
   }
 
   generateEmptySchedule(DateTime startDate, DateTime endDate) {
-    final duration = endDate.difference(startDate).inDays + 1;
+    final duration = endDate.difference(startDate).inDays + 2;
     List<PlanSchedule> result = [];
     for (int i = 0; i < duration; i++) {
       result

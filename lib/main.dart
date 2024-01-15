@@ -25,7 +25,7 @@ late bool hasConnection;
 ThemeData theme = ThemeData(
     brightness: Brightness.light,
     primaryColor: primaryColor,
-    appBarTheme: const AppBarTheme(color: primaryColor),
+    appBarTheme: const AppBarTheme(color: primaryColor, foregroundColor: Colors.white, ),
     timePickerTheme: TimePickerThemeData(dayPeriodColor: primaryColor),
     datePickerTheme: DatePickerThemeData(
       headerBackgroundColor: primaryColor,

@@ -29,6 +29,7 @@ class ServiceMenuScreen extends StatefulWidget {
     required this.endDate,
     required this.startDate,
     this.session,
+    required this.callbackFunction
   });
   final Session? session;
   final DateTime startDate;
@@ -41,6 +42,7 @@ class ServiceMenuScreen extends StatefulWidget {
   final String iniNote;
   final LocationViewModel location;
   final int numberOfMember;
+  final void Function() callbackFunction;
 
   @override
   State<ServiceMenuScreen> createState() => _ServiceMenuScreenState();
@@ -445,6 +447,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                             serviceType: widget.serviceType,
                             note: note,
                             session: widget.session!,
+                            callbackFunction: widget.callbackFunction,
                           ),
                         ),
                       );

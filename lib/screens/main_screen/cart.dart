@@ -34,6 +34,7 @@ class CartScreen extends StatefulWidget {
     this.note = "",
     required this.numberOfMember,
     required this.session,
+    required this.callbackFunction
   });
   final LocationViewModel location;
   final SupplierViewModel supplier;
@@ -45,6 +46,7 @@ class CartScreen extends StatefulWidget {
   final String note;
   final int numberOfMember;
   final Session session;
+  final void Function() callbackFunction; 
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -89,6 +91,20 @@ class _CartScreenState extends State<CartScreen> {
     if (planId == null) {
       isIndividual = true;
     }
+    // widget.startDate
+    //                                                   .difference(
+    //                                                       DateTime.now())
+    //                                                   .inDays +
+    //                                               1 <=
+    //                                           3
+    //                                       ? '${DateTime.now().add(const Duration(days: 3)).day}/${DateTime.now().add(const Duration(days: 3)).month}/${DateTime.now().add(const Duration(days: 3)).year}'
+    //                                       : '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}',
+ 
+    if(widget.startDate.difference(DateTime.now()).inDays + 1 <3){
+      _servingDates = [DateTime.now().add(const Duration(days: 3))];
+    }else{
+      _servingDates = [widget.startDate];
+    }
   }
 
   setUpdata() async {
@@ -132,6 +148,7 @@ class _CartScreenState extends State<CartScreen> {
                           location: widget.location,
                           numberOfMember: widget.numberOfMember,
                           session: widget.session,
+                          callbackFunction: widget.callbackFunction,
                         ),
                       ),
                     );
@@ -753,24 +770,9 @@ class _CartScreenState extends State<CartScreen> {
         desc: "Ấn tiếp tục để trở về",
         btnOkText: "Tiếp tục",
         btnOkOnPress: () {
+          widget.callbackFunction();
           Navigator.of(context).pop();
-          // Navigator.of(context).pop();
-
-          // Navigator.of(context).push(
-          //   MaterialPageRoute(
-          //     builder: (ctx) =>
-          //         //     OrderHistoryScreen(
-          //         //   serviceType:
-          //         //       widget.serviceType,
-          //         // ),
-          //         ServiceMainScreen(
-          //       serviceType:
-          //           widget.serviceType,
-          //       location: widget.location,
-          //       callbackFunction: (List<OrderCreatePlan> orderList){},
-          //     ),
-          //   ),
-          // );
+          Navigator.of(context).pop();
         },
       ).show();
     } else {

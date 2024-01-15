@@ -1,3 +1,5 @@
+// ignore_for_file: unnecessary_brace_in_string_interps
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -23,6 +25,18 @@ Future getSearchResult(String searchText) async {
 
 Future getRouteInfo(PointLatLng source, PointLatLng destination) async{
   String url = '${baseGoongUrl}Direction?origin=${source.latitude},${source.longitude}&destination=${destination.latitude},${destination.longitude}&vehicle=car&api_key=$_key';
+  try{
+    _dio.options.contentType = Headers.jsonContentType;
+    final responseData = await _dio.get(url);
+    return responseData.data;
+  }catch(e){
+    final errorMessage = DioExceptions.fromDioError(e as DioException).toString();
+    debugPrint(errorMessage);
+  }
+}
+
+Future getPlaceDetail(PointLatLng place) async {
+  String url = '${baseGoongUrl}Geocode?latlng=${place.latitude},${place.longitude}&api_key=${_key}';
   try{
     _dio.options.contentType = Headers.jsonContentType;
     final responseData = await _dio.get(url);

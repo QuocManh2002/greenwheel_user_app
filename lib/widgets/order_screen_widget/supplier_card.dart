@@ -18,6 +18,7 @@ class SupplierCard extends StatelessWidget {
       required this.location,
       required this.numberOfMember,
       required this.startDate,
+      required this.callbackFunction,
       required this.endDate});
   final DateTime startDate;
   final DateTime endDate;
@@ -25,6 +26,7 @@ class SupplierCard extends StatelessWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
+  final void Function() callbackFunction;
 
   @override
   Widget build(BuildContext context) {
@@ -59,6 +61,7 @@ class SupplierCard extends StatelessWidget {
                       serviceType:
                           services.firstWhere((s) => s.name == supplier.type),
                       location: location,
+                      callbackFunction: callbackFunction,
                     ),
                   ),
                 );
@@ -74,6 +77,7 @@ class SupplierCard extends StatelessWidget {
                           services.firstWhere((s) => s.name == supplier.type),
                       location: location,
                       session: sessions[1],
+                      callbackFunction: callbackFunction,
                     ),
                   ),
                 );

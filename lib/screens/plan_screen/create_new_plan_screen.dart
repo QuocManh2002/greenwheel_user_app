@@ -48,18 +48,21 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
   int _currentStep = 0;
   PlanService _planService = PlanService();
 
-  Future<bool> createDraftPlan(int numOfExpPeriod, DateTime startDate,
+  Future<bool> createDraftPlan(int numOfExpPeriod, DateTime departureDate,
       DateTime endDate, int numberOfMember) async {
+        var duration = sharedPreferences.getDouble('plan_duration_value');
+        var startDate = departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
     return await _planService.createPlanDraft(PlanCreate(
         numOfExpPeriod: numOfExpPeriod,
         locationId: widget.location.id,
         startDate: startDate,
         endDate: endDate,
+        departureDate: departureDate,
         latitude: sharedPreferences.getDouble('plan_start_lat')!,
         longitude: sharedPreferences.getDouble('plan_start_lng')!,
         memberLimit: numberOfMember,
         name:
-            'Chuyến đi ngày ${startDate.day}/${startDate.month}/${startDate.year}',
+            'Chuyến đi ngày ${departureDate.day}/${departureDate.month}/${departureDate.year}',
         schedule: ''));
   }
 
@@ -232,7 +235,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                         style: elevatedButtonStyle,
                         onPressed: () {
                           if (_currentStep == 1 &&
-                              sharedPreferences.getDouble('plan_duration') ==
+                              sharedPreferences.getDouble('plan_duration_value') ==
                                   null) {
                             handleValidationSelectLocationScreen();
                           } else if (_currentStep == 1 &&
@@ -259,7 +262,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                 .show();
                           } else if (_currentStep == 2) {
                             ComboDate _selectedComboDate = listComboDate[
-                                sharedPreferences.getInt('plan_combo_date')!];
+                                sharedPreferences.getInt('plan_combo_date')! - 1];
                             DateTime startDate = DateTime.parse(
                                 sharedPreferences
                                     .getString('plan_start_date')!);
@@ -321,7 +324,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                             _selectTime.minute)))
                                 .show();
                           } else if (_currentStep == 3 &&
-                              !checkValidStartActivityTime()) {
+                              checkValidNumberOfActivity()) {
                             AwesomeDialog(
                                     context: context,
                                     dialogType: DialogType.warning,
@@ -330,7 +333,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                           EdgeInsets.symmetric(horizontal: 32),
                                       child: Center(
                                         child: Text(
-                                          'Thời gian của các hoạt động phải sau thời điểm khởi hành của chuyến đi',
+                                          'Tất cả các ngày trong chuyến đi phải có ít nhất một hoạt động',
                                           style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.bold),
@@ -452,5 +455,11 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         DateFormat.Hms().parse(json.decode(_schedule.first.first['time']));
     final fistTimeActivity = DateTime(0, 0, 0, first.hour, first.minute, 0);
     return _startDateTime.isBefore(fistTimeActivity);
+  }
+
+  bool checkValidNumberOfActivity(){
+    String _scheduleText = sharedPreferences.getString('plan_schedule')!;
+    final List<dynamic> _schedule = json.decode(_scheduleText);
+    return _schedule.any((element) => element.length == 0);
   }
 }

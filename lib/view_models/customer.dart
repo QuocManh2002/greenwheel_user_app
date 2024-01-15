@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+
 class CustomerViewModel {
   int id;
   String name;
@@ -7,6 +9,8 @@ class CustomerViewModel {
   String? avatarUrl;
   String phone;
   double balance;
+  String defaultAddress;
+  PointLatLng defaultCoordinate;
 
   CustomerViewModel customerFromJson(String str) =>
       CustomerViewModel.fromJson(json.decode(str));
@@ -20,6 +24,8 @@ class CustomerViewModel {
     required this.avatarUrl,
     required this.phone,
     required this.balance,
+    required this.defaultAddress,
+    required this.defaultCoordinate
   });
 
   factory CustomerViewModel.fromJson(Map<String, dynamic> json) =>
@@ -29,6 +35,10 @@ class CustomerViewModel {
         isMale: json["account"]["isMale"],
         avatarUrl: json['account']["avatarUrl"],
         phone: json["phone"],
+        defaultAddress: json['defaultAddress'],
+        defaultCoordinate: PointLatLng(
+          json['defaultCoordinate']['coordinates'][1]
+          , json['defaultCoordinate']['coordinates'][0]),
         balance: double.parse(json["account"]["gcoinBalance"].toString()),
       );
 

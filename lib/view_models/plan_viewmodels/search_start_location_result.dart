@@ -18,6 +18,6 @@ class SearchStartLocationResult {
           lat: json['geometry']['location']['lat'],
           lng: json['geometry']['location']['lng'],
           name: json['name'],
-          address: json['address']
+          address: json['formatted_address']
           );
 }

@@ -41,6 +41,10 @@ class _BaseInformationState extends State<BaseInformationScreen> {
     // TODO: implement initState
     super.initState();
     setUpData();
+    var dis = 276227 / 1000;
+    print(dis.toStringAsFixed(2));
+    var dur = 22038 / 3600;
+    print(dur.toStringAsFixed(2));
   }
 
   setUpData() {

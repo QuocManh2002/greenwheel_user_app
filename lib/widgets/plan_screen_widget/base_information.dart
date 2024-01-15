@@ -13,23 +13,17 @@ class BaseInformationWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              plan.name,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
-          const SizedBox(
-            height: 16,
-          ),
-          Container(
-            height: 1.8,
-            color: Colors.grey.withOpacity(0.4),
-          ),
-          const SizedBox(
-            height: 16,
-          ),
+          
+          // const SizedBox(
+          //   height: 16,
+          // ),
+          // Container(
+          //   height: 1.8,
+          //   color: Colors.grey.withOpacity(0.4),
+          // ),
+          // const SizedBox(
+          //   height: 16,
+          // ),
           Row(
             children: [
               const Column(

@@ -7,6 +7,7 @@ import 'package:greenwheel_user_app/screens/authentication_screen/register_scree
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:pinput/pinput.dart';
 import 'package:sizer2/sizer2.dart';
@@ -199,6 +200,7 @@ class _OTPScreenState extends State<OTPScreen> {
           if(deviceToken != ''){
             sharedPreferences.setString('deviceToken', deviceToken);
           }
+          Utils().SaveDefaultAddressToSharedPref(customer[0].defaultAddress, customer[0].defaultCoordinate);
           sharedPreferences.setString("userPhone", payload['phone_number']);
           // ignore: use_build_context_synchronously
           Navigator.push(context,
@@ -210,6 +212,8 @@ class _OTPScreenState extends State<OTPScreen> {
             sharedPreferences.setString('deviceToken', deviceToken);
           }
         sharedPreferences.setString("userPhone", payload['phone_number']);
+        // ignore: use_build_context_synchronously
+        Navigator.of(context).pop();
         // ignore: use_build_context_synchronously
         Navigator.push(context,
               MaterialPageRoute(builder: (_) => const RegisterScreen()));

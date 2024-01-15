@@ -10,6 +10,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.da
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 // ignore: must_be_immutable
@@ -40,10 +41,15 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   List<PlanSchedule> testList = [];
   final PlanService _planService = PlanService();
   PlanScheduleItem? _selectedItem;
-  final DateTime _startDate =
-      DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+  DateTime? _startDate; 
+  DateTime? departureDate;
+  String startDate = sharedPreferences.getString('plan_start_date')!;
+  String startTime = sharedPreferences.getString('plan_start_time')!;
   final DateTime _endDate =
       DateTime.parse(sharedPreferences.getString('plan_end_date')!);
+      final duration = sharedPreferences.getDouble('plan_duration_value');
+
+  // bool _isNotOverDay = false;    
 
   @override
   void initState() {
@@ -58,9 +64,18 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   }
 
   setUpData() async {
+    final initialDateTime = DateFormat.Hm().parse(startTime);
+     departureDate = DateTime.parse(startDate)
+        .add(Duration(hours: initialDateTime.hour))
+        .add(Duration(minutes: initialDateTime.minute));
+        _startDate = departureDate!.add(Duration(seconds: (duration! * 3600).ceil()));
+
+    //  var checkDate = DateTime(_startDate!.year, _startDate!.month, _startDate!.day, 6,0);
+    //  _isNotOverDay = checkDate.isAfter(_startDate!);
+
     if (widget.isCreate) {
       // testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
-      testList = _planService.generateEmptySchedule(_startDate, _endDate);
+      testList = _planService.generateEmptySchedule(departureDate!, _endDate);
       var finalList = _planService.convertPlanScheduleToJson(testList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
     } else {
@@ -214,7 +229,10 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 18),
                   child: Text(
-                    'Bạn không có lịch trình nào trong ngày này',
+                    // _isNotOverDay || _currentPage != 0 ? 
+                    'Bạn không có lịch trình nào trong ngày này' ,
+                    // : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
+                    textAlign: TextAlign.center,
                     style: TextStyle(
                         color: Colors.black54,
                         fontSize: 18,
@@ -318,6 +336,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               ),
             ),
             const Spacer(),
+            if(departureDate!.add(Duration(days: _currentPage.toInt())).isAfter(DateTime.parse(startDate)))
+            // if(_isNotOverDay || _currentPage != 0)
             Padding(
               padding: const EdgeInsets.only(right: 12),
               child: ElevatedButton(
