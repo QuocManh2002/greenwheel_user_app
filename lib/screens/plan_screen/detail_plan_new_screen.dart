@@ -21,6 +21,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_button.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -566,6 +567,25 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                       ),
                                                     ]),
                                               ),
+                const SizedBox(height: 16,),
+                                              if (total != 0)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Tổng cộng: ',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
                                             ],
                                           ),
                                         ),
@@ -704,12 +724,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.bounceInOut,
+      height: 0.5,
       margin: const EdgeInsets.only(left: 16),
       width: _currentIndexEmergencyCard == index ? 35 : 12,
       decoration: BoxDecoration(
           color: _currentIndexEmergencyCard == index
-              ? primaryColor
-              : primaryColor.withOpacity(0.7),
+              ? Colors.grey
+              : Colors.grey.withOpacity(0.7),
           borderRadius: const BorderRadius.all(Radius.circular(12)),
           boxShadow: const [
             BoxShadow(

@@ -148,7 +148,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
           "paint":{
           "line-join":"round",
           "line-cap":"round",
-          "line-color":"rgb(51, 51, 255)",
+          "line-color":"rgb(146, 174, 255)",
           "line-width":9.0
           }
         }""";
@@ -251,7 +251,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       });
     } else {
       _selectTime =
-          TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 1)));
+          TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 3)));
       _timeController.text = DateFormat.Hm()
           .format(DateTime(0, 0, 0, _selectTime.hour, _selectTime.minute));
       sharedPreferences.setString('plan_start_time', _timeController.text);
@@ -331,6 +331,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                               DateFormat('dd/MM/yyyy').format(newDay);
                           sharedPreferences.setString(
                               'plan_start_date', newDay.toString());
+                              sharedPreferences.setString('plan_departureDate', newDay.toString());
                         }
                       },
                       prefixIcon: const Icon(Icons.calendar_month),
