@@ -28,7 +28,7 @@ class PlanService {
         document: gql("""
 mutation{
   updatePlan(dto: {
-    numOfExpPeriod:${model.numOfExpPeriod}
+    numOfExpPeriod:3
     schedule:${model.schedule}
     id:$planId
     savedContacts:${model.savedContacts}
@@ -37,7 +37,7 @@ mutation{
     ]
     departureDate: "${model.departureDate.year}-${model.departureDate.month}-${model.departureDate.day} ${model.departureDate.hour}:${model.departureDate.minute}:00.000Z"
     startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
-    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day} 22:00:00.000Z"
+    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day}"
     memberLimit:${model.memberLimit}
     name: "${model.name}"
   }){
@@ -559,6 +559,9 @@ mutation{
   plans(where: {
     locationId:{
       eq: $locationId
+    }
+    status:{
+      in:[CANCELED READY SHARED VERIFIED]
     }
   }){
     nodes{

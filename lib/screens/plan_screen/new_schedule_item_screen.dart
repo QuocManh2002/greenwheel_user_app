@@ -48,7 +48,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
     if (widget.item != null) {
       _selectTime = widget.item!.time;
       _selectedDate = widget.item!.date!;
-      _descriptionController.text = widget.item!.description;
+      _descriptionController.text = widget.item!.description!;
       _selectedType = widget.item!.type;
       _shortDescriptionController.text = widget.item!.shortDescription!;
       setState(() {
@@ -77,7 +77,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
     return AppBar(
       backgroundColor: Colors.white,
       leading: IconButton(
-        icon: const Icon(Icons.close),
+        icon: const Icon(Icons.close, color: Colors.black,),
         onPressed: () {
           Navigator.of(ctx).pop();
         },

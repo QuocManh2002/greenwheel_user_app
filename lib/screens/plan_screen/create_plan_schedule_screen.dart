@@ -41,15 +41,15 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   List<PlanSchedule> testList = [];
   final PlanService _planService = PlanService();
   PlanScheduleItem? _selectedItem;
-  DateTime? _startDate; 
+  DateTime? _startDate;
   DateTime? departureDate;
   String startDate = sharedPreferences.getString('plan_start_date')!;
   String startTime = sharedPreferences.getString('plan_start_time')!;
   final DateTime _endDate =
       DateTime.parse(sharedPreferences.getString('plan_end_date')!);
-      final duration = sharedPreferences.getDouble('plan_duration_value');
+  final duration = sharedPreferences.getDouble('plan_duration_value');
 
-  // bool _isNotOverDay = false;    
+  bool _isNotOverDay = true;
 
   @override
   void initState() {
@@ -65,17 +65,30 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
 
   setUpData() async {
     final initialDateTime = DateFormat.Hm().parse(startTime);
-     departureDate = DateTime.parse(startDate)
+
+    departureDate = DateTime.parse(sharedPreferences.getString('plan_departureDate')!)
         .add(Duration(hours: initialDateTime.hour))
         .add(Duration(minutes: initialDateTime.minute));
-        _startDate = departureDate!.add(Duration(seconds: (duration! * 3600).ceil()));
+    _startDate =
+        departureDate!.add(Duration(seconds: (duration! * 3600).ceil()));
 
-    //  var checkDate = DateTime(_startDate!.year, _startDate!.month, _startDate!.day, 6,0);
-    //  _isNotOverDay = checkDate.isAfter(_startDate!);
+    var checkDate =
+        DateTime(_startDate!.year, _startDate!.month, _startDate!.day, 6, 0);
+    _isNotOverDay = checkDate.isAfter(_startDate!);
+    if (!_isNotOverDay) {
+      final _newStartDate =
+          DateTime.parse(startDate).add(const Duration(days: 1));
+      sharedPreferences.setString('plan_start_date', _newStartDate.toString());
+    }
 
     if (widget.isCreate) {
       // testList = _planService.GetPlanScheduleFromJson(widget.templatePlan);
-      testList = _planService.generateEmptySchedule(departureDate!, _endDate);
+      testList = _planService.generateEmptySchedule(
+          // _isNotOverDay?
+               departureDate!
+              // : departureDate!.add(const Duration(days: 1))
+              ,
+          _endDate);
       var finalList = _planService.convertPlanScheduleToJson(testList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
     } else {
@@ -83,7 +96,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
       print(scheduleText);
       // print(json.decode(scheduleText!));
 
-      DateTime startDate = 
+      DateTime startDate =
           DateTime.parse(sharedPreferences.getString('plan_start_date')!);
       DateTime endDate =
           DateTime.parse(sharedPreferences.getString('plan_end_date')!);
@@ -91,12 +104,10 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
       //    widget.schedule!,
       //     startDate,
       //     endDate.difference(startDate).inDays + 1);
-      var list = _planService.GetPlanScheduleFromJsonNew(
-         widget.schedule!,
-          startDate,
-          endDate.difference(startDate).inDays + 1);
-          testList = _planService.GetPlanScheduleClone(list);
-          print(testList);
+      var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
+          startDate, endDate.difference(startDate).inDays + 1);
+      testList = _planService.GetPlanScheduleClone(list);
+      print(testList);
     }
   }
 
@@ -174,7 +185,10 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                 'Chỉnh sửa',
                 style: TextStyle(fontSize: 24, color: Colors.white),
               ),
-              icon: const Icon(Icons.edit, color: Colors.white,),
+              icon: const Icon(
+                Icons.edit,
+                color: Colors.white,
+              ),
             ),
             SizedBox(
               height: 1.h,
@@ -215,7 +229,11 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   Widget getPageView(int _index) {
     return SizedBox(
       width: 100.w,
-      child: testList[_index].items.isEmpty
+      child: 
+    // !_isNotOverDay ? 
+
+      
+      testList[_index].items.isEmpty
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -226,14 +244,14 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                 const SizedBox(
                   height: 12,
                 ),
-                const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 18),
+                Padding(
+                  padding:const EdgeInsets.symmetric(horizontal: 18),
                   child: Text(
-                    // _isNotOverDay || _currentPage != 0 ? 
-                    'Bạn không có lịch trình nào trong ngày này' ,
-                    // : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
+                    _isNotOverDay || _currentPage != 0
+                        ? 'Bạn không có lịch trình nào trong ngày này'
+                        : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
                     textAlign: TextAlign.center,
-                    style: TextStyle(
+                    style:const TextStyle(
                         color: Colors.black54,
                         fontSize: 18,
                         fontWeight: FontWeight.bold),
@@ -336,31 +354,50 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               ),
             ),
             const Spacer(),
-            if(departureDate!.add(Duration(days: _currentPage.toInt())).isAfter(DateTime.parse(startDate)))
-            // if(_isNotOverDay || _currentPage != 0)
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: primaryColor,
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(10),
+            if (departureDate!
+                .add(Duration(days: _currentPage.toInt()))
+                .isAfter(DateTime.parse(startDate)))
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: _isNotOverDay || _currentPage != 0
+                            ? primaryColor
+                            : Colors.white.withOpacity(0.8),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(10),
+                          ),
                         ),
-                      ),
-                      maximumSize: const Size(110, 50)),
-                  onPressed: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (ctx) => NewScheduleItemScreen(
-                              callback: callback,
-                              startDate: testList[0].date,
-                              selectedIndex: _currentPage.toInt(),
-                            )));
-                  },
-                  child: const Row(
-                    children: [Icon(Icons.add, color: Colors.white,), Text('Thêm',style: TextStyle(color: Colors.white),)],
-                  )),
-            ),
+                        maximumSize: const Size(110, 50)),
+                    onPressed: () {
+                      if (_isNotOverDay || _currentPage != 0) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => NewScheduleItemScreen(
+                                  callback: callback,
+                                  startDate: testList[0].date,
+                                  selectedIndex: _currentPage.toInt(),
+                                )));
+                      } else {}
+                    },
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.add,
+                          color: _isNotOverDay || _currentPage != 0
+                              ? Colors.white
+                              : Colors.grey,
+                        ),
+                        Text(
+                          'Thêm',
+                          style: TextStyle(
+                              color: _isNotOverDay || _currentPage != 0
+                                  ? Colors.white
+                                  : Colors.grey),
+                        )
+                      ],
+                    )),
+              ),
           ],
         ),
         SizedBox(

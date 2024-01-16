@@ -50,8 +50,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
 
   Future<bool> createDraftPlan(int numOfExpPeriod, DateTime departureDate,
       DateTime endDate, int numberOfMember) async {
-        var duration = sharedPreferences.getDouble('plan_duration_value');
-        var startDate = departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
+    var duration = sharedPreferences.getDouble('plan_duration_value');
+    var startDate =
+        departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
     return await _planService.createPlanDraft(PlanCreate(
         numOfExpPeriod: numOfExpPeriod,
         locationId: widget.location.id,
@@ -83,11 +84,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         title: const Text("Hoàn tất kế hoạch"),
         content: Container(),
       ),
-      // Step(
-      //   state: _currentStep > 7 ? StepState.complete : StepState.indexed,
-      //   title: const Text("Hoàn tất kế hoạch"),
-      //   content: Container(),
-      // ),
     ];
   }
 
@@ -161,10 +157,14 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         child: Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text("Lập kế hoạch", style: TextStyle(color: Colors.white),),
+        title: const Text(
+          "Lập kế hoạch",
+          style: TextStyle(color: Colors.white),
+        ),
         leading: BackButton(
           onPressed: handleQuitScreen,
-          style:const ButtonStyle(foregroundColor: MaterialStatePropertyAll(Colors.white)),
+          style: const ButtonStyle(
+              foregroundColor: MaterialStatePropertyAll(Colors.white)),
         ),
       ),
       body: Column(
@@ -235,7 +235,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                         style: elevatedButtonStyle,
                         onPressed: () {
                           if (_currentStep == 1 &&
-                              sharedPreferences.getDouble('plan_duration_value') ==
+                              sharedPreferences
+                                      .getDouble('plan_duration_value') ==
                                   null) {
                             handleValidationSelectLocationScreen();
                           } else if (_currentStep == 1 &&
@@ -262,7 +263,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                 .show();
                           } else if (_currentStep == 2) {
                             ComboDate _selectedComboDate = listComboDate[
-                                sharedPreferences.getInt('plan_combo_date')! - 1];
+                                sharedPreferences.getInt('plan_combo_date')! -
+                                    1];
                             DateTime startDate = DateTime.parse(
                                 sharedPreferences
                                     .getString('plan_start_date')!);
@@ -286,26 +288,26 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                     btnOkColor: Colors.blue,
                                     btnOkText: 'Xác nhận',
                                     btnOkOnPress: () async {
-                                      if(widget.isCreate ){
+                                      if (widget.isCreate) {
                                         if (await createDraftPlan(
-                                          sharedPreferences
-                                              .getInt('numOfExpPeriod')!,
-                                          DateTime(
-                                              startDate.year,
-                                              startDate.month,
-                                              startDate.day,
-                                              _selectTime.hour,
-                                              _selectTime.minute),
-                                          endDate,
-                                          numberOfMember)) {
-                                        setState(() {
-                                          _currentStep++;
-                                        });
-                                        getScrollLocation();
+                                            sharedPreferences
+                                                .getInt('numOfExpPeriod')!,
+                                            DateTime(
+                                                startDate.year,
+                                                startDate.month,
+                                                startDate.day,
+                                                _selectTime.hour,
+                                                _selectTime.minute),
+                                            endDate,
+                                            numberOfMember)) {
+                                          setState(() {
+                                            _currentStep++;
+                                          });
+                                          getScrollLocation();
+                                        } else {
+                                          print('error when create draft plan');
+                                        }
                                       } else {
-                                        print('error when create draft plan');
-                                      }
-                                      }else{
                                         setState(() {
                                           _currentStep++;
                                         });
@@ -323,28 +325,79 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                             _selectTime.hour,
                                             _selectTime.minute)))
                                 .show();
-                          } else if (_currentStep == 3 &&
-                              checkValidNumberOfActivity()) {
-                            AwesomeDialog(
-                                    context: context,
-                                    dialogType: DialogType.warning,
-                                    body: const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 32),
-                                      child: Center(
-                                        child: Text(
-                                          'Tất cả các ngày trong chuyến đi phải có ít nhất một hoạt động',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold),
-                                          textAlign: TextAlign.center,
+                          } else if (_currentStep == 3) {
+                            if (checkValidNumberOfActivity()) {
+                              AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.warning,
+                                      body: const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 32),
+                                        child: Center(
+                                          child: Text(
+                                            'Tất cả các ngày trong chuyến đi phải có ít nhất một hoạt động',
+                                            style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.center,
+                                          ),
                                         ),
                                       ),
+                                      btnOkColor: Colors.orange,
+                                      btnOkText: 'OK',
+                                      btnOkOnPress: () {})
+                                  .show();
+                            } else {
+                              String? startDateText = sharedPreferences
+                                  .getString('plan_start_date');
+                              final _startDate = DateTime.parse(startDateText!);
+                              String? endDateText =
+                                  sharedPreferences.getString('plan_end_date');
+                              final _endDate = DateTime.parse(endDateText!);
+                              final _duration =
+                                  _endDate.difference(_startDate).inDays + 1;
+                              AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.info,
+                                  title: 'Xác nhận lịch trình chuyến đi',
+                                  btnOkText: 'Xác nhận',
+                                  btnOkColor: Colors.blue,
+                                  btnOkOnPress: () {
+                                    setState(() {
+                                      _currentStep++;
+                                    });
+                                    getScrollLocation();
+                                  },
+                                  btnCancelColor: Colors.orange,
+                                  btnCancelText: 'Chỉnh sửa',
+                                  btnCancelOnPress: () {},
+                                  body: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        vertical: 12, horizontal: 24),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Container(
+                                          alignment: Alignment.center,
+                                          child: const Text(
+                                            'Xác nhận lịch trình chuyến đi',
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
+                                        for (int i = 0; i < _duration; i++)
+                                          buildConfirmScheduleItem(
+                                              _startDate.add(Duration(days: i)),
+                                              i),
+                                      ],
                                     ),
-                                    btnOkColor: Colors.orange,
-                                    btnOkText: 'OK',
-                                    btnOkOnPress: () {})
-                                .show();
+                                  )).show();
+                            }
                           } else if (_currentStep == 4) {
                             List<String>? selectedEmergencyIndexList =
                                 sharedPreferences
@@ -362,7 +415,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                       style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
-                                          textAlign: TextAlign.center,
+                                      textAlign: TextAlign.center,
                                     ),
                                   ),
                                 ),
@@ -448,7 +501,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     String _scheduleText = sharedPreferences.getString('plan_schedule')!;
     final List<dynamic> _schedule = json.decode(_scheduleText);
     var firstActivity = _schedule.first.length;
-    if(firstActivity == 0){
+    if (firstActivity == 0) {
       return true;
     }
     final first =
@@ -457,9 +510,55 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     return _startDateTime.isBefore(fistTimeActivity);
   }
 
-  bool checkValidNumberOfActivity(){
+  bool checkValidNumberOfActivity() {
+    final startDateText = sharedPreferences.getString('plan_start_date');
+    final _startDate = DateTime.parse(startDateText!);
+    final endDateText = sharedPreferences.getString('plan_end_date');
+    final _endDate = DateTime.parse(endDateText!);
     String _scheduleText = sharedPreferences.getString('plan_schedule')!;
     final List<dynamic> _schedule = json.decode(_scheduleText);
+    if(_schedule.length > _endDate.difference(_startDate).inDays +1){
+      _schedule.remove(_schedule[0]);
+      sharedPreferences.setString('plan_schedule', json.encode(_schedule));
+    }
     return _schedule.any((element) => element.length == 0);
+  }
+
+  Widget buildConfirmScheduleItem(DateTime date, int index) {
+    String _scheduleText = sharedPreferences.getString('plan_schedule')!;
+    final List<dynamic> _schedule = json.decode(_scheduleText);
+    String rsText = '';
+    for (final detail in _schedule[index]) {
+      if (detail != _schedule[index].last) {
+        rsText +=
+            '${json.decode(detail['shortDescription']) ?? 'Không có mô tả'}, ';
+      } else {
+        rsText +=
+            '${json.decode(detail['shortDescription']) ?? 'Không có mô tả'}';
+      }
+    }
+
+    return Container(
+        alignment: Alignment.centerLeft,
+        child: Column(
+          children: [
+            RichText(
+              text: TextSpan(
+                  text: 'Ngày ${date.day}/${date.month}/${date.year}: ',
+                  style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                  children: [
+                    TextSpan(
+                        text: rsText,
+                        style: const TextStyle(fontWeight: FontWeight.normal))
+                  ]),
+            ),
+            const SizedBox(
+              height: 4,
+            )
+          ],
+        ));
   }
 }

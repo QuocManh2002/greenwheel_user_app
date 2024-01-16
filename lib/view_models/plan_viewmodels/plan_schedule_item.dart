@@ -8,7 +8,7 @@ const uuid = Uuid();
 
 class PlanScheduleItem {
   final String id;
-  final String description;
+  final String? description;
   final TimeOfDay time;
   final DateTime? date;
   final String? orderId;
@@ -18,7 +18,7 @@ class PlanScheduleItem {
   PlanScheduleItem(
       {String? id,
       required this.time,
-      required this.description,
+      this.description,
       this.shortDescription,
       this.date,
       this.orderId,
