@@ -42,6 +42,7 @@ class _SearchScreenState extends State<SearchScreen> {
 
   final _chipKey = GlobalKey<ChipsInputState>();
   String searchTerm = "";
+  String searchedTxt = "";
   List<String> tagNames = [];
   List<Tag> listTags = [];
 
@@ -201,6 +202,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 await locationService.searchLocations(
                                     searchTerm, currentTags);
                             setState(() {
+                              searchedTxt = searchTerm;
                               locations = result;
                               isSearch = true;
                             });
@@ -483,7 +485,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 ),
                               )
                             : Container(),
-                        widget.list.isEmpty
+                        (searchedTxt != '')
                             ? Padding(
                                 padding: const EdgeInsets.only(
                                     left: 16, top: 14, bottom: 10),
