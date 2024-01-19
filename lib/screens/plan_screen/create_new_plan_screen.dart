@@ -18,7 +18,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart'
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_base_info_dialog.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -51,8 +51,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
   Future<bool> createDraftPlan(int numOfExpPeriod, DateTime departureDate,
       DateTime endDate, int numberOfMember) async {
     var duration = sharedPreferences.getDouble('plan_duration_value');
-    var startDate =
-        departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
+    var startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+        // departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
     return await _planService.createPlanDraft(PlanCreate(
         numOfExpPeriod: numOfExpPeriod,
         locationId: widget.location.id,
@@ -131,12 +131,10 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
       case 3:
         widget.schedule == null
             ? activePage = CreatePlanScheduleScreen(
-                templatePlan: widget.location.templatePlan,
                 isCreate: widget.isCreate,
                 isClone: false,
               )
             : activePage = CreatePlanScheduleScreen(
-                templatePlan: widget.location.templatePlan,
                 isCreate: widget.isCreate,
                 schedule: widget.schedule,
                 isClone: true,
@@ -150,6 +148,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
       case 5:
         activePage = SelectPlanName(
           location: widget.location,
+          isCreate: widget.isCreate,
         );
         break;
     }
@@ -265,9 +264,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                             ComboDate _selectedComboDate = listComboDate[
                                 sharedPreferences.getInt('plan_combo_date')! -
                                     1];
-                            DateTime startDate = DateTime.parse(
+                            DateTime departureDate = DateTime.parse(
                                 sharedPreferences
-                                    .getString('plan_start_date')!);
+                                    .getString('plan_departureDate')!);
                             DateTime endDate = DateTime.parse(
                                 sharedPreferences.getString('plan_end_date')!);
                             int numberOfMember = sharedPreferences
@@ -293,9 +292,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                             sharedPreferences
                                                 .getInt('numOfExpPeriod')!,
                                             DateTime(
-                                                startDate.year,
-                                                startDate.month,
-                                                startDate.day,
+                                                departureDate.year,
+                                                departureDate.month,
+                                                departureDate.day,
                                                 _selectTime.hour,
                                                 _selectTime.minute),
                                             endDate,
@@ -319,9 +318,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                         endDate: endDate,
                                         numberOfMember: numberOfMember,
                                         startDate: DateTime(
-                                            startDate.year,
-                                            startDate.month,
-                                            startDate.day,
+                                            departureDate.year,
+                                            departureDate.month,
+                                            departureDate.day,
                                             _selectTime.hour,
                                             _selectTime.minute)))
                                 .show();
@@ -355,7 +354,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                   sharedPreferences.getString('plan_end_date');
                               final _endDate = DateTime.parse(endDateText!);
                               final _duration =
-                                  _endDate.difference(_startDate).inDays + 1;
+                                  _endDate.difference(DateTime(_startDate.year, _startDate.month, _startDate.day)).inDays + 1;
                               AwesomeDialog(
                                   context: context,
                                   dialogType: DialogType.info,
@@ -517,7 +516,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     final _endDate = DateTime.parse(endDateText!);
     String _scheduleText = sharedPreferences.getString('plan_schedule')!;
     final List<dynamic> _schedule = json.decode(_scheduleText);
-    if(_schedule.length > _endDate.difference(_startDate).inDays +1){
+    // print(_endDate.difference(DateTime(_startDate.year, _startDate.month, _startDate.day)).inDays +1);
+    if(_schedule.length > _endDate.difference(DateTime(_startDate.year, _startDate.month, _startDate.day)).inDays +1){
       _schedule.remove(_schedule[0]);
       sharedPreferences.setString('plan_schedule', json.encode(_schedule));
     }

@@ -8,7 +8,7 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:intl/intl.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:sizer2/sizer2.dart';
@@ -50,7 +50,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
 
   Future<void> getMapInfo() async {
     if (_mapboxMap != null) {
-      if(_selectedLocation != null){
+      if (_selectedLocation != null) {
         _onSelectLocation(_selectedLocation!);
       }
       _mapboxMap!.setCamera(CameraOptions(
@@ -95,11 +95,11 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     setState(() {
       durationText = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
       distanceText = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
-      durationValue = jsonResponse['routes'][0]['legs'][0]['duration']['value'] / 3600;
-      distanceValue = jsonResponse['routes'][0]['legs'][0]['distance']['value'] / 1000;
+      durationValue =
+          jsonResponse['routes'][0]['legs'][0]['duration']['value'] / 3600;
+      distanceValue =
+          jsonResponse['routes'][0]['legs'][0]['distance']['value'] / 1000;
     });
-
-
 
     sharedPreferences.setString('plan_duration_text', durationText);
     sharedPreferences.setString('plan_distance_text', distanceText);
@@ -235,7 +235,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   setUpData() async {
     double? plan_distance = sharedPreferences.getDouble('plan_distance_value');
     if (plan_distance != null) {
-      double? plan_duration = sharedPreferences.getDouble('plan_duration_value');
+      double? plan_duration =
+          sharedPreferences.getDouble('plan_duration_value');
       setState(() {
         durationValue = plan_duration!;
         distanceValue = plan_distance;
@@ -257,17 +258,21 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       sharedPreferences.setString('plan_start_time', _timeController.text);
     }
 
-    String? dateText = sharedPreferences.getString('plan_start_date');
+    String? dateText = sharedPreferences.getString('plan_departureDate');
     if (dateText != null) {
-      setState(() {
+      setState(() {  
         _selectedDate = DateTime.parse(dateText);
+        // sharedPreferences.setString('plan_departureDate', dateText);
         _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
       });
     } else {
-      _selectedDate = DateTime.now();
+      _selectedDate = DateTime.now().add(const Duration(hours: 3));
       _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
       sharedPreferences.setString(
           'plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
+      final defaultDepartureDate = DateTime(_selectedDate!.year, _selectedDate!.month, _selectedDate!.day).add(Duration(hours: _selectTime.hour)).add(Duration(minutes: _selectTime.minute));
+      sharedPreferences.setString('plan_departureDate',
+          defaultDepartureDate.toString());
     }
 
     double? startLat = sharedPreferences.getDouble('plan_start_lat');
@@ -331,7 +336,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                               DateFormat('dd/MM/yyyy').format(newDay);
                           sharedPreferences.setString(
                               'plan_start_date', newDay.toString());
-                              sharedPreferences.setString('plan_departureDate', newDay.toString());
+                          sharedPreferences.setString(
+                              'plan_departureDate', newDay.toString());
                         }
                       },
                       prefixIcon: const Icon(Icons.calendar_month),
@@ -403,7 +409,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                                     _selectTime.minute));
                             sharedPreferences.setString(
                                 'plan_start_time', _timeController.text);
-                            sharedPreferences.setBool('plan_is_change', false);
                           }
                         });
                       },

@@ -65,7 +65,7 @@ class BaseInformationWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year}',
+                    '${plan.departureDate.day}/${plan.departureDate.month}/${plan.departureDate.year}',
                     style: const TextStyle(fontSize: 18),
                   ),
                   const SizedBox(

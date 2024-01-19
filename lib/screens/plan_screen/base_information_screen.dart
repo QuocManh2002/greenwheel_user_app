@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:sizer2/sizer2.dart';
 
 class BaseInformationScreen extends StatefulWidget {

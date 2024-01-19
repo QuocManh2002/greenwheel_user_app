@@ -28,7 +28,7 @@ class PlanService {
         document: gql("""
 mutation{
   updatePlan(dto: {
-    numOfExpPeriod:3
+    numOfExpPeriod:${model.numOfExpPeriod}
     schedule:${model.schedule}
     id:$planId
     savedContacts:${model.savedContacts}
@@ -211,7 +211,7 @@ query GetPlanById(\$planId: Int){
       status
       joinMethod
       numOfExpPeriod
-      
+      departureDate
       departurePosition{
         coordinates
       }
@@ -378,15 +378,17 @@ query GetPlanById(\$planId: Int){
     for (final schedule in list) {
       var items = [];
       for (final item in schedule.items) {
+        final type = schedule_item_types_vn.firstWhere((element) => element == item.type);
         items.add({
           'time': json.encode(DateFormat.Hms()
               .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
               .toString()),
-          'orderGuid': item.orderId,
+          'orderGuid': item.orderId == null ? null: json.encode(item.orderId),
           'description': json.encode(item.description),
           'shortDescription': json.encode(item.shortDescription),
-          'type': "GATHER"
+          'type': schedule_item_types[schedule_item_types_vn.indexOf(type)]
         });
+        print(schedule_item_types[schedule_item_types_vn.indexOf(type)]);
       }
       rs.add(items);
     }

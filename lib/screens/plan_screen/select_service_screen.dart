@@ -17,7 +17,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dar
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -40,6 +40,8 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   int? numberOfMember;
   final OfflineService _offlineService = OfflineService();
   List<OrderViewModel>? orderList = [];
+  List<OrderViewModel>? listRestaurantOrder = [];
+  List<OrderViewModel>? listMotelOrder = [];
   num total = 0;
 
   @override
@@ -51,7 +53,8 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   }
 
   setUpData() async {
-    startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    startDate =
+        DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
   }
@@ -61,11 +64,16 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         .getOrderCreatePlan(sharedPreferences.getInt('planId')!);
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
+    listMotelOrder = [];
+    listRestaurantOrder = [];
+    total = 0;
     for (var item in orderList!) {
       if (item.supplierType == "RESTAURANT") {
         listRestaurant.add(SupplierOrderCard(order: item));
+        listRestaurantOrder!.add(item);
       } else {
         listMotel.add(SupplierOrderCard(order: item));
+        listMotelOrder!.add(item);
       }
     }
     if (orderList!.isNotEmpty) {
@@ -232,50 +240,76 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                     final dateNotFullyService = checkFullyTimeService();
                     if (dateNotFullyService == null) {
                       AwesomeDialog(
-                        context: context,
-                        dialogType: DialogType.success,
-                        body: const Column(
-                          children: [
-                            Text(
-                              'Thêm dịch vụ thành công',
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        btnOkColor: primaryColor,
-                        btnOkOnPress: () async {
-                          // PlanDetail? plan = await _planService.GetPlanById(
-                          //     sharedPreferences.getInt('planId')!);
-                          // if (plan != null) {
-                          //   await _offlineService.savePlanToHive(
-                          //       PlanOfflineViewModel(
-                          //           id: plan.id,
-                          //           name: plan.name,
-                          //           imageBase64: await Utils()
-                          //               .getImageBase64Encoded(plan.imageUrls[0]),
-                          //           startDate: plan.startDate,
-                          //           endDate: plan.endDate,
-                          //           memberLimit: plan.memberLimit,
-                          //           schedule: plan.schedule,
-                          //           memberList: [
-                          //         PlanOfflineMember(
-                          //             id: int.parse(
-                          //                 sharedPreferences.getString('userId')!),
-                          //             name: "Quoc Manh",
-                          //             phone: sharedPreferences
-                          //                 .getString('userPhone')!,
-                          //             isLeading: true)
-                          //       ]));
-                          // }
-                          Utils().clearPlanSharePref();
-                          Navigator.of(context).pop();
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (ctx) => const TabScreen(
-                                    pageIndex: 1,
-                                  )));
-                        },
-                      ).show();
+                              context: context,
+                              dialogType: DialogType.info,
+                              body: Padding(
+                                padding: const EdgeInsets.all(12),
+                                child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Container(
+                                        alignment: Alignment.center,
+                                        child: const Text(
+                                          'Xác nhận thông tin dịch vụ',
+                                          style: TextStyle(
+                                              fontSize: 18,
+                                              fontWeight: FontWeight.bold),
+                                              textAlign: TextAlign.center,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 16,),
+                                      if (_listRestaurant.isNotEmpty)
+                                        for (final order
+                                            in listRestaurantOrder!)
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 16, right: 16),
+                                            child: Text(
+                                              '${order.supplierName} đã đặt ${order.details!.length} đơn dịch vụ - ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.total)} VND',
+                                              style:
+                                                  const TextStyle(fontSize: 16),
+                                            ),
+                                          ),
+                                      const SizedBox(
+                                        height: 8,
+                                      ),
+                                      if (_listMotel.isNotEmpty)
+                                        for (final order in listMotelOrder!)
+                                          Padding(
+                                            padding: const EdgeInsets.only(left: 16, right: 16),
+                                            child: Text(
+                                              '${order.supplierName} đã đặt ${order.details!.length} đơn dịch vụ - ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.total)} VND',
+                                              style:
+                                                  const TextStyle(fontSize: 16),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 16,),
+                                          Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                                            child: Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                 const
+                                                 Text('Tổng cộng: ', style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold
+                                                ),),
+                                                Text('${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND')
+                                              ],
+                                            ),
+                                          )
+                                    ]),
+                              ),
+                              btnOkColor: Colors.blue,
+                              btnOkText: 'Xác nhận',
+                              btnOkOnPress: () {
+                                completeService();
+                              },
+                              btnCancelColor: Colors.orange,
+                              btnCancelText: 'Chỉnh sửa',
+                              btnCancelOnPress: () {})
+                          .show();
                     } else {
                       AwesomeDialog(
                               context: context,
@@ -292,12 +326,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                               ),
                               btnOkText: 'Xác nhận',
                               btnOkOnPress: () {
-                                Utils().clearPlanSharePref();
-                                Navigator.of(context).pop();
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => const TabScreen(
-                                          pageIndex: 1,
-                                        )));
+                                completeService();
                               },
                               btnOkColor: Colors.blue,
                               btnCancelColor: Colors.orange,
@@ -360,5 +389,55 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       }
     }
     return null;
+  }
+
+  saveToLocal() {
+    // PlanDetail? plan = await _planService.GetPlanById(
+    //     sharedPreferences.getInt('planId')!);
+    // if (plan != null) {
+    //   await _offlineService.savePlanToHive(
+    //       PlanOfflineViewModel(
+    //           id: plan.id,
+    //           name: plan.name,
+    //           imageBase64: await Utils()
+    //               .getImageBase64Encoded(plan.imageUrls[0]),
+    //           startDate: plan.startDate,
+    //           endDate: plan.endDate,
+    //           memberLimit: plan.memberLimit,
+    //           schedule: plan.schedule,
+    //           memberList: [
+    //         PlanOfflineMember(
+    //             id: int.parse(
+    //                 sharedPreferences.getString('userId')!),
+    //             name: "Quoc Manh",
+    //             phone: sharedPreferences
+    //                 .getString('userPhone')!,
+    //             isLeading: true)
+    //       ]));
+    // }
+  }
+
+  completeService() {
+    AwesomeDialog(
+      context: context,
+      dialogType: DialogType.success,
+      body: const Column(
+        children: [
+          Text(
+            'Thêm dịch vụ thành công',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+        ],
+      ),
+      btnOkColor: primaryColor,
+      btnOkOnPress: () async {
+        Utils().clearPlanSharePref();
+        Navigator.of(context).pop();
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => const TabScreen(
+                  pageIndex: 1,
+                )));
+      },
+    ).show();
   }
 }

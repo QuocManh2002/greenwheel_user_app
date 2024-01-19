@@ -3,10 +3,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
-import 'package:greenwheel_user_app/helpers/direction_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
@@ -107,12 +105,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       //     _saveSupplier = rs;
       //   });
       // }
-      print(_planDetail!.startLocationLat);
-      print(_planDetail!.startLocationLng);
-      print(_planDetail!.startDate);
-      print(_planDetail!.schedule);
-      print(_planDetail!.savedContacts!.map((e) => e.toJson(e)).toList());
-      print(TimeOfDay.fromDateTime(_planDetail!.startDate).toString());
 
       setState(() {
         isLoading = false;
@@ -125,17 +117,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     final location =
         await _locationService.GetLocationById(_planDetail!.locationId);
     if (location != null) {
-      // sharedPreferences.remove("plan_distance");
-      // sharedPreferences.remove("plan_duration");
-      // sharedPreferences.remove('plan_is_change');
-      // sharedPreferences.remove('plan_saved_emergency');
-
       final defaultComboDate = listComboDate
               .firstWhere((element) =>
                   element.duration == location.suggestedTripLength * 2)
               .id -
           1;
-
       sharedPreferences.setInt('planId', widget.planId);
       sharedPreferences.setInt(
           "plan_number_of_member", _planDetail!.memberLimit);
@@ -158,17 +144,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               .map((e) => e.toJson(e))
               .toList()
               .toString());
-      var mapInfo = await getDirectionsAPIResponse(
-          PointLatLng(
-              _planDetail!.startLocationLat, _planDetail!.startLocationLng),
-          PointLatLng(
-              _planDetail!.startLocationLat, _planDetail!.startLocationLng));
-      if (mapInfo.isNotEmpty) {
-        sharedPreferences.setDouble(
-            'plan_distance', mapInfo["distance"] / 1000);
-        sharedPreferences.setDouble(
-            'plan_duration', mapInfo["duration"] / 3600);
-      }
       Navigator.of(context).pop();
       Navigator.of(context).push(MaterialPageRoute(
           builder: (ctx) => CreateNewPlanScreen(
@@ -256,7 +231,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               height: 16,
                             ),
                             Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 24),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 24),
                               child: Container(
                                 height: 1.8,
                                 color: Colors.grey.withOpacity(0.4),
@@ -567,25 +543,35 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                       ),
                                                     ]),
                                               ),
-                const SizedBox(height: 16,),
+                                              const SizedBox(
+                                                height: 16,
+                                              ),
                                               if (total != 0)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Tổng cộng: ',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                    ],
-                  ),
-                ),
+                                                Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 12),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      const Text(
+                                                        'Tổng cộng: ',
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      Text(
+                                                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
+                                                        style: const TextStyle(
+                                                            fontSize: 18),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
                                             ],
                                           ),
                                         ),
@@ -606,7 +592,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             await _planService.updateJoinMethod(widget.planId);
         print(updateJoinMethod);
       }
-      // ignore: use_build_context_synchronously
       Navigator.of(context).push(MaterialPageRoute(
           builder: (ctx) => SharePlanScreen(
                 planMembers: _planMembers,
@@ -665,7 +650,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         btnOkOnPress: () async {
           int? rs = await _planService.joinPlan(widget.planId);
           if (rs != null) {
-            // ignore: use_build_context_synchronously
             AwesomeDialog(
               context: context,
               dialogType: DialogType.success,

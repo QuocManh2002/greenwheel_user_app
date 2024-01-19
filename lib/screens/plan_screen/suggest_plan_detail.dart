@@ -17,7 +17,9 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_button.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -45,6 +47,8 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
   int _currentIndexEmergencyCard = 0;
+  int _selectedTab = 0;
+  num total = 0;
   @override
   void initState() {
     // TODO: implement initState
@@ -64,6 +68,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
       } else {
         listMotel.add(SupplierOrderCard(order: item));
       }
+       total += item.total;
     }
     setState(() {
       _listMotel = listMotel;
@@ -81,268 +86,403 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-      appBar: AppBar(
-        leading: BackButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          style: const ButtonStyle(
-              foregroundColor: MaterialStatePropertyAll(Colors.white)),
-        ),
-        title: const Text(
-          'Chi tiết kế hoạch',
-          style: TextStyle(color: Colors.white),
-        ),
-      ),
-      body: _isLoading
-          ? const Center(
-              child: Text('Loading...'),
-            )
-          : Column(
-              children: [
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      children: [
-                        CachedNetworkImage(
-                          height: 35.h,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
-                          imageUrl: _planDetail!.imageUrls[0],
-                          placeholder: (context, url) =>
-                              Image.memory(kTransparentImage),
-                          errorWidget: (context, url, error) =>
-                              FadeInImage.assetNetwork(
-                            height: 15.h,
-                            width: 15.h,
+            appBar: AppBar(
+              leading: BackButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                style: const ButtonStyle(
+                    foregroundColor: MaterialStatePropertyAll(Colors.white)),
+              ),
+              title: const Text(
+                'Chi tiết kế hoạch',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+            body: _isLoading
+                ? const Center(
+                    child: Text('Loading...'),
+                  )
+                : Column(children: [
+                    Expanded(
+                        child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          CachedNetworkImage(
+                            height: 35.h,
+                            width: double.infinity,
                             fit: BoxFit.cover,
-                            placeholder: 'No Image',
-                            image:
-                                'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                            imageUrl: _planDetail!.imageUrls[0],
+                            placeholder: (context, url) =>
+                                Image.memory(kTransparentImage),
+                            errorWidget: (context, url, error) =>
+                                FadeInImage.assetNetwork(
+                              height: 15.h,
+                              width: 15.h,
+                              fit: BoxFit.cover,
+                              placeholder: 'No Image',
+                              image:
+                                  'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                            ),
                           ),
-                        ),
-                        SizedBox(
-                          height: 2.h,
-                        ),
-                        BaseInformationWidget(plan: _planDetail!),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                          SizedBox(
+                            height: 2.h,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              _planDetail!.name,
+                              overflow: TextOverflow.clip,
+                              style: const TextStyle(
+                                  fontSize: 22, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 16,
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: Container(
+                              height: 1.8,
+                              color: Colors.grey.withOpacity(0.4),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 16,
+                          ),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            alignment: Alignment.centerLeft,
+                            child: Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'Leader:',
-                                    style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
+                                  InkWell(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(12)),
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedTab = 0;
+                                      });
+                                    },
+                                    child: TabButton(
+                                      text: 'Thông tin cơ bản',
+                                      isSelected: _selectedTab == 0,
+                                      index: 0,
+                                    ),
                                   ),
-                                  SizedBox(
-                                    width: 3.w,
+                                  const SizedBox(
+                                    width: 16,
                                   ),
-                                  Text(
-                                    widget.leaderName,
-                                    style: const TextStyle(fontSize: 18),
-                                  )
-                                ],
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Container(
-                                height: 1.8,
-                                color: Colors.grey.withOpacity(0.4),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              if (_planDetail!.savedContacts != null)
-                                Column(
-                                  children: [
-                                    Container(
-                                        alignment: Alignment.centerLeft,
-                                        child: const Text(
-                                          'Dịch vụ khẩn cấp đã lưu: ',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold),
-                                        )),
-                                    const SizedBox(
-                                      height: 16,
+                                  InkWell(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(12)),
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedTab = 1;
+                                      });
+                                    },
+                                    child: TabButton(
+                                      text: 'Lịch trình',
+                                      isSelected: _selectedTab == 1,
+                                      index: 1,
                                     ),
-                                    SizedBox(
-                                      height: 18.h,
-                                      width: double.infinity,
-                                      child: PageView.builder(
-                                        scrollDirection: Axis.horizontal,
-                                        itemCount:
-                                            _planDetail!.savedContacts!.length,
-                                        onPageChanged: (value) {
-                                          setState(() {
-                                            _currentIndexEmergencyCard = value;
-                                          });
-                                        },
-                                        itemBuilder: (context, index) {
-                                          return EmergencyContactCard(
-                                              emergency: _planDetail!
-                                                  .savedContacts![index],
-                                              index: index,
-                                              callback: () {},
-                                              isSelected: true);
-                                        },
-                                      ),
+                                  ),
+                                  const SizedBox(
+                                    width: 16,
+                                  ),
+                                  InkWell(
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(12)),
+                                    onTap: () {
+                                      setState(() {
+                                        _selectedTab = 2;
+                                      });
+                                    },
+                                    child: TabButton(
+                                      text: 'Dịch vụ',
+                                      isSelected: _selectedTab == 2,
+                                      index: 2,
                                     ),
-                                    const SizedBox(
-                                      height: 4,
-                                    ),
-                                    if (_planDetail!.savedContacts!.length > 1)
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          for (int i = 0;
-                                              i <
-                                                  _planDetail!
-                                                      .savedContacts!.length;
-                                              i++)
-                                            Container(
-                                                height: 1.5.h,
-                                                child: buildIndicator(i)),
-                                        ],
-                                      ),
-                                    const SizedBox(
-                                      height: 8,
-                                    ),
-                                    Container(
-                                      height: 1.8,
-                                      color: Colors.grey.withOpacity(0.4),
-                                    ),
-                                    const SizedBox(
-                                      height: 16,
-                                    ),
-                                  ],
-                                ),
-                              const Text(
-                                'Lịch trình:',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              SizedBox(
-                                height: 60.h,
-                                child: PLanScheduleWidget(
-                                  schedule: _planDetail!.schedule,
-                                  startDate: _planDetail!.startDate,
-                                  endDate: _planDetail!.endDate,
-                                ),
-                              ),
-                              Container(
-                                height: 1.8,
-                                color: Colors.grey.withOpacity(0.4),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              const Text(
-                                'Dịch vụ:',
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              TabBar(
-                                  controller: _tabController,
-                                  indicatorColor: primaryColor,
-                                  labelColor: primaryColor,
-                                  unselectedLabelColor: Colors.grey,
-                                  tabs: [
-                                    Tab(
-                                      text: "(${_listMotel.length})",
-                                      icon: const Icon(Icons.hotel),
-                                    ),
-                                    Tab(
-                                      text: "(${_listRestaurant.length})",
-                                      icon: const Icon(Icons.restaurant),
-                                    )
-                                  ]),
-                              SizedBox(
-                                height: getHeightServiceWidget(),
-                                child: TabBarView(
-                                    controller: _tabController,
+                                  ),
+                                  const SizedBox(
+                                    width: 16,
+                                  ),
+                                ]),
+                          ),
+                          const SizedBox(
+                            height: 16,
+                          ),
+                          Container(
+                            child: _selectedTab == 0
+                                ? Column(
                                     children: [
-                                      // ListView.builder(
-                                      //   physics: const BouncingScrollPhysics(),
-                                      //   shrinkWrap: true,
-                                      //   itemCount: _listMotel.length,
-                                      //   itemBuilder: (context, index) {
-                                      //     return _listMotel[index];
-                                      //   },
-                                      // ),
-                                      // ListView.builder(
-                                      //   physics: const BouncingScrollPhysics(),
-                                      //   shrinkWrap: true,
-                                      //   itemCount: _listRestaurant.length,
-                                      //   itemBuilder: (context, index) {
-                                      //     return _listRestaurant[index];
-                                      //   },
-                                      // ),
-                                      SizedBox(
-                                        height: _listMotel.length <= 2
-                                            ? _listMotel.length * 16.h
-                                            : 32.h,
-                                        child: SingleChildScrollView(
-                                          child: Column(
+                                      BaseInformationWidget(plan: _planDetail!),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 24),
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                                alignment: Alignment.centerLeft,
+                                                child: const Text(
+                                                  'Dịch vụ khẩn cấp đã lưu: ',
+                                                  style: TextStyle(
+                                                      fontSize: 18,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )),
+                                            SizedBox(
+                                              height: 18.h,
+                                              width: double.infinity,
+                                              child: PageView.builder(
+                                                scrollDirection:
+                                                    Axis.horizontal,
+                                                itemCount: _planDetail!
+                                                    .savedContacts!.length,
+                                                onPageChanged: (value) {
+                                                  setState(() {
+                                                    _currentIndexEmergencyCard =
+                                                        value;
+                                                  });
+                                                },
+                                                itemBuilder: (context, index) {
+                                                  return EmergencyContactCard(
+                                                      emergency: _planDetail!
+                                                              .savedContacts![
+                                                          index],
+                                                      index: index,
+                                                      callback: () {},
+                                                      isSelected: true);
+                                                },
+                                              ),
+                                            ),
+                                            const SizedBox(
+                                              height: 4,
+                                            ),
+                                            if (_planDetail!
+                                                    .savedContacts!.length >
+                                                1)
+                                              Row(
+                                                mainAxisAlignment:
+                                                    MainAxisAlignment.center,
+                                                children: [
+                                                  for (int i = 0;
+                                                      i <
+                                                          _planDetail!
+                                                              .savedContacts!
+                                                              .length;
+                                                      i++)
+                                                    Container(
+                                                        height: 1.5.h,
+                                                        child:
+                                                            buildIndicator(i)),
+                                                ],
+                                              ),
+                                            const SizedBox(
+                                              height: 8,
+                                            ),
+                                            Container(
+                                              height: 1.8,
+                                              color:
+                                                  Colors.grey.withOpacity(0.4),
+                                            ),
+                                            const SizedBox(
+                                              height: 16,
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 24),
+                                        child: Container(
+                                          alignment: Alignment.topLeft,
+                                          child: Row(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              for (final item in _listMotel)
-                                                item
+                                              const Text(
+                                                'Leader:',
+                                                style: TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              SizedBox(
+                                                width: 3.w,
+                                              ),
+                                              Text(
+                                                widget.leaderName,
+                                                style: const TextStyle(
+                                                    fontSize: 18),
+                                              )
                                             ],
                                           ),
                                         ),
                                       ),
-                                      SizedBox(
-                                        height: _listRestaurant.length <= 2
-                                            ? _listRestaurant.length * 16.h
-                                            : 32.h,
-                                        child: SingleChildScrollView(
-                                          child: Column(
-                                            children: [
-                                              for (final item
-                                                  in _listRestaurant)
-                                                item
-                                            ],
-                                          ),
+                                    ],
+                                  )
+                                : _selectedTab == 1
+                                    ? Padding(
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 24),
+                                        child: Column(
+                                          children: [
+                                            Container(
+                                                alignment: Alignment.centerLeft,
+                                                child: const Text(
+                                                  "Lịch trình",
+                                                  style: TextStyle(
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold),
+                                                )),
+                                            const SizedBox(
+                                              height: 16,
+                                            ),
+                                            SizedBox(
+                                              height: 60.h,
+                                              child: PLanScheduleWidget(
+                                                schedule: _planDetail!.schedule,
+                                                startDate:
+                                                    _planDetail!.startDate,
+                                                endDate: _planDetail!.endDate,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       )
-                                    ]),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                            ],
+                                    : 
+                                    
+                                    Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 24),
+                                          child: Column(
+                                            children: [
+                                              Container(
+                                                  alignment:
+                                                      Alignment.centerLeft,
+                                                  child: const Text(
+                                                    "Các loại dịch vụ",
+                                                    style: TextStyle(
+                                                        fontSize: 20,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  )),
+                                              const SizedBox(
+                                                height: 16,
+                                              ),
+                                              TabBar(
+                                                  controller: _tabController,
+                                                  indicatorColor: primaryColor,
+                                                  labelColor: primaryColor,
+                                                  unselectedLabelColor:
+                                                      Colors.grey,
+                                                  tabs: [
+                                                    Tab(
+                                                      text:
+                                                          "(${_listMotel.length})",
+                                                      icon: const Icon(
+                                                          Icons.hotel),
+                                                    ),
+                                                    Tab(
+                                                      text:
+                                                          "(${_listRestaurant.length})",
+                                                      icon: const Icon(
+                                                          Icons.restaurant),
+                                                    )
+                                                  ]),
+                                              Container(
+                                                margin: const EdgeInsets.only(
+                                                    top: 8),
+                                                height:
+                                                    _listRestaurant.isEmpty &&
+                                                            _listMotel.isEmpty
+                                                        ? 0.h
+                                                        : 35.h,
+                                                child: TabBarView(
+                                                    controller: _tabController,
+                                                    children: [
+                                                      ListView.builder(
+                                                        physics:
+                                                            const BouncingScrollPhysics(),
+                                                        shrinkWrap: true,
+                                                        itemCount:
+                                                            _listMotel.length,
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          return _listMotel[
+                                                              index];
+                                                        },
+                                                      ),
+                                                      ListView.builder(
+                                                        physics:
+                                                            const BouncingScrollPhysics(),
+                                                        shrinkWrap: true,
+                                                        itemCount:
+                                                            _listRestaurant
+                                                                .length,
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          return _listRestaurant[
+                                                              index];
+                                                        },
+                                                      ),
+                                                    ]),
+                                              ),
+                                              const SizedBox(
+                                                height: 16,
+                                              ),
+                                              if (total != 0)
+                                                Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 12),
+                                                  child: Row(
+                                                    mainAxisAlignment:
+                                                        MainAxisAlignment
+                                                            .spaceBetween,
+                                                    children: [
+                                                      const Text(
+                                                        'Tổng cộng: ',
+                                                        style: TextStyle(
+                                                            fontSize: 18,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      ),
+                                                      Text(
+                                                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
+                                                        style: const TextStyle(
+                                                            fontSize: 18),
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                       ) ],
+                                        ),
+                                      ),
                           ),
-                        )
-                      ],
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: onClonePlan,
-                  style: elevatedButtonStyle,
-                  child: const Text(
-                    "Sao chép kế hoạch",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(
-                  height: 16,
-                )
-              ],
-            ),
-    ));
+                          ElevatedButton(
+                            onPressed: onClonePlan,
+                            style: elevatedButtonStyle,
+                            child: const Text(
+                              "Sao chép kế hoạch",
+                              style: TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          const SizedBox(
+                            height: 16,
+                          )
+                        ],
+                      ),
+                    ))
+                  ;
   }
 
   getHeightServiceWidget() {
@@ -379,7 +519,8 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
     sharedPreferences.setDouble(
         'plan_start_lng', _planDetail!.startLocationLng);
     var mapInfo = await getDirectionsAPIResponse(
-        PointLatLng(_planDetail!.startLocationLat, _planDetail!.startLocationLng),
+        PointLatLng(
+            _planDetail!.startLocationLat, _planDetail!.startLocationLng),
         PointLatLng(widget.location.latitude, widget.location.longitude));
     if (mapInfo.isNotEmpty) {
       sharedPreferences.setDouble('plan_distance', mapInfo["distance"] / 1000);
