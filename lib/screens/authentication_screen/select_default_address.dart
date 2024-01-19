@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:location/location.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:sizer2/sizer2.dart';

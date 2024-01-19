@@ -75,6 +75,9 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
             _selectedComboDate = listComboDate.firstWhere(
               (element) => element.duration == _selectedComboDate.duration + 2);
          });
+         final departureDate = DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+         final newStartDate = departureDate.add(const Duration(days: 1));
+         sharedPreferences.setString('plan_start_date', newStartDate.toString());
         }
         sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id);
   }

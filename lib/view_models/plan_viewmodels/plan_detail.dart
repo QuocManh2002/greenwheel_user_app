@@ -15,6 +15,7 @@ String planDetailToJson(PlanDetail data) => json.encode(data.toJson());
 class PlanDetail {
   int id;
   String name;
+  DateTime departureDate;
   DateTime startDate;
   DateTime endDate;
   String joinMethod;
@@ -46,11 +47,13 @@ class PlanDetail {
       required this.startLocationLat,
       required this.startLocationLng,
       required this.numOfExpPeriod,
+      required this.departureDate,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
         id: json["id"],
         name: json["name"],
+        departureDate: DateTime.parse(json['departureDate']),
         startDate: DateTime.parse(json["startDate"]),
         endDate: DateTime.parse(json["endDate"]),
         schedule: json["schedule"],

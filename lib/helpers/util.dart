@@ -48,11 +48,11 @@ class Utils {
     sharedPreferences.remove("plan_distance_value");
     sharedPreferences.remove("plan_duration_value");
     sharedPreferences.remove('plan_start_date');
-    sharedPreferences.remove('plan_is_change');
     sharedPreferences.remove('plan_end_date');
     sharedPreferences.remove('plan_schedule');
     sharedPreferences.remove('plan_saved_emergency');
     sharedPreferences.remove('numOfExpPeriod');
+    sharedPreferences.remove('plan_departureDate');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {

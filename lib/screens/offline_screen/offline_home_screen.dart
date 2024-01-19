@@ -6,7 +6,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_mem
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/offline_screen_widget/offline_plan_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 
 class OfflineHomeScreen extends StatefulWidget {
   const OfflineHomeScreen({super.key});

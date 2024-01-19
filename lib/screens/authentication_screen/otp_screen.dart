@@ -7,7 +7,7 @@ import 'package:greenwheel_user_app/screens/authentication_screen/register_scree
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/util.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:jwt_decode/jwt_decode.dart';
 import 'package:pinput/pinput.dart';
 import 'package:sizer2/sizer2.dart';
