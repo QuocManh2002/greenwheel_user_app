@@ -51,7 +51,6 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
   ];
 
   final List<Tag> region = [
-    tags[19],
     tags[20],
     tags[21],
   ];

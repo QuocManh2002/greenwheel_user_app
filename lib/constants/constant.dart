@@ -3,8 +3,10 @@ const String upIcon = "assets/images/up.png";
 const String downIcon = "assets/images/down.png";
 const String cartEmptyIcon = "assets/images/cart-empty.png";
 const String baseGoongUrl = "https://rsapi.goong.io/";
-const String baseMaxboxDirectionUrl = "https://api.mapbox.com/directions/v5/mapbox/driving/";
-const String mapboxKey = "sk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xvbmIyMnVwMzdpejJqbXY1ejBmN3F2cyJ9.tnfEb9QoFPoMbOLqGuprlQ";
+const String baseMaxboxDirectionUrl =
+    "https://api.mapbox.com/directions/v5/mapbox/driving/";
+const String mapboxKey =
+    "sk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xvbmIyMnVwMzdpejJqbXY1ejBmN3F2cyJ9.tnfEb9QoFPoMbOLqGuprlQ";
 const List<String> northSide = [
   "Hà Nội",
   "Quảng Ninh",
@@ -34,15 +36,6 @@ const List<String> northSide = [
 ];
 
 const List<String> midSide = [
-  "Thanh Hóa",
-  "Nghệ An",
-  "Hà Tĩnh",
-  "Quảng Bình",
-  "Quảng Trị",
-  "Huế",
-  "Đà Nẵng",
-  "Quảng Nam",
-  "Quảng Ngãi",
   "Bình Định",
   "Phú Yên",
   "Khánh Hòa",
@@ -60,8 +53,8 @@ const List<String> southSide = [
   "Bình Dương",
   "Đồng Nai",
   "Tây Ninh",
-  "Vũng Tàu",
-  "Hồ Chí Minh",
+  "Bà Rịa - Vũng Tàu",
+  "TP Hồ Chí Minh",
   "Long An",
   "Đồng Tháp",
   "Tiền Giang",
@@ -74,4 +67,5 @@ const List<String> southSide = [
   "Sóc Trăng",
   "Bạc Liêu",
   "Cà Mau",
+  "Cần Thơ",
 ];
