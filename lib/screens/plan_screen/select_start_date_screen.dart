@@ -23,6 +23,7 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
   late ComboDate _selectedComboDate;
   String? _startTime;
   late ComboDate _initComboDate;
+  bool _isChangeComboDate = false;
 
   _onDaySelected(DateTime selectDay, DateTime focusDay) {
     if (!isSameDay(_selectedDate, selectDay)) {
@@ -32,7 +33,15 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
         _rangeStart = _selectedDate;
         _rangeEnd = _selectedDate!
             .add(Duration(days: _selectedComboDate.numberOfDay - 1));
-        sharedPreferences.setString('plan_start_date', _rangeStart.toString());
+        sharedPreferences.setString(
+            'plan_departureDate', _rangeStart.toString());
+        if (_isChangeComboDate) {
+          sharedPreferences.setString('plan_start_date',
+              _rangeStart!.add(const Duration(days: 1)).toString());
+        } else {
+          sharedPreferences.setString(
+              'plan_start_date', _rangeStart.toString());
+        }
         sharedPreferences.setString('plan_end_date', _rangeEnd.toString());
       });
     }
@@ -43,8 +52,8 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
     // TODO: implement initState
     super.initState();
     var _numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod');
-    _selectedComboDate =
-        listComboDate.firstWhere((element) => element.numberOfDay + element.numberOfNight == _numOfExpPeriod);
+    _selectedComboDate = listComboDate.firstWhere((element) =>
+        element.numberOfDay + element.numberOfNight == _numOfExpPeriod);
     _initComboDate = _selectedComboDate;
     final startDate = sharedPreferences.getString('plan_start_date');
     _startTime = sharedPreferences.getString('plan_start_time');
@@ -63,23 +72,25 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
   }
 
   handleChangeComboDate() {
-        final initialDateTime = DateFormat.Hm()
-            .parse(sharedPreferences.getString('plan_start_time')!);
-        final startTime =
-            DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
-        final arrivedTime = startTime.add(Duration(
-            seconds:
-                (sharedPreferences.getDouble('plan_duration_value')! * 3600).ceil()));
-        if (arrivedTime.isAfter(DateTime(0, 0, 0, 6, 0))) {
-         setState(() {
-            _selectedComboDate = listComboDate.firstWhere(
-              (element) => element.duration == _selectedComboDate.duration + 2);
-         });
-         final departureDate = DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-         final newStartDate = departureDate.add(const Duration(days: 1));
-         sharedPreferences.setString('plan_start_date', newStartDate.toString());
-        }
-        sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id);
+    final initialDateTime =
+        DateFormat.Hm().parse(sharedPreferences.getString('plan_start_time')!);
+    final startTime =
+        DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
+    final arrivedTime = startTime.add(Duration(
+        seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+            .ceil()));
+    if (arrivedTime.isAfter(DateTime(0, 0, 0, 6, 0))) {
+      setState(() {
+        _selectedComboDate = listComboDate.firstWhere(
+            (element) => element.duration == _selectedComboDate.duration + 2);
+      });
+      _isChangeComboDate = true;
+      final departureDate =
+          DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+      final newStartDate = departureDate.add(const Duration(days: 1));
+      sharedPreferences.setString('plan_start_date', newStartDate.toString());
+    }
+    sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id);
   }
 
   @override
@@ -120,10 +131,10 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
             'Thời gian trải nghiệm',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
-          Text('${_initComboDate.numberOfDay} ngày, ${_initComboDate.numberOfNight} đêm',style:const TextStyle(
-            color: Colors.grey,
-            fontSize: 16
-          ),),
+          Text(
+            '${_initComboDate.numberOfDay} ngày, ${_initComboDate.numberOfNight} đêm',
+            style: const TextStyle(color: Colors.grey, fontSize: 16),
+          ),
           SizedBox(
             height: 1.h,
           ),

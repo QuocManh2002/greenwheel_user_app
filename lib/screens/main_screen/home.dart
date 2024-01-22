@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/activities.dart';
-import 'package:greenwheel_user_app/constants/provinces.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/home_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
@@ -255,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 30.h,
                         child: ListView.builder(
                           physics: const BouncingScrollPhysics(),
-                          itemCount: provinces.length,
+                          itemCount: activities.length,
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
                           itemBuilder: (context, index) => Padding(

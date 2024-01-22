@@ -36,7 +36,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   setUpData() async {
     String phone = sharedPreferences.getString("userPhone")!;
-    List<CustomerViewModel>? customer ;
+    List<CustomerViewModel>? customer;
     customer = await _customerService.GetCustomerByPhone(phone);
     if (customer.isNotEmpty) {
       setState(() {
@@ -98,9 +98,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     BorderRadius.all(Radius.circular(14)),
                                 color: Colors.white),
                             child: Padding(
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 8),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Column(
@@ -123,10 +125,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                     ],
                                   ),
                                   Padding(
-                                    padding: const EdgeInsets.only(bottom: 5, right: 0),
+                                    padding: const EdgeInsets.only(
+                                        bottom: 5, right: 0),
                                     child: IconButton(
                                         onPressed: () {
-                                          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => QRScreen()));
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (ctx) =>
+                                                      QRScreen()));
                                         },
                                         icon: const Icon(
                                           Icons.qr_code_2,
@@ -331,13 +337,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       desc:
                                           "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
                                       btnOkOnPress: () {
-                                         _deviceService.stopNotification();
+                                        _deviceService.stopNotification();
                                         // sharedPreferences.clear();
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (_) =>
-                                                    const LoginScreen()));
+                                        Navigator.pushAndRemoveUntil(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) =>
+                                                  const LoginScreen()),
+                                          (route) => false,
+                                        );
                                       },
                                       btnCancelOnPress: () {})
                                   .show();
@@ -363,7 +371,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     clipBehavior: Clip.hardEdge,
                     decoration: const BoxDecoration(shape: BoxShape.circle),
                     child: Image.network(
-                      _customer!.avatarUrl == null || _customer!.avatarUrl == ""  ? defaultUserAvatarLink : _customer!.avatarUrl! ,
+                      _customer!.avatarUrl == null || _customer!.avatarUrl == ""
+                          ? defaultUserAvatarLink
+                          : _customer!.avatarUrl!,
                       fit: BoxFit.cover,
                     ),
                   ),

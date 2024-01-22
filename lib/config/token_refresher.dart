@@ -7,7 +7,6 @@ class TokenRefresher {
       if (auth.currentUser != null) {
       await auth.currentUser!.getIdToken(true).then(
             (value) => {
-              // tokenController.text = value.token ?? "";
               sharedPreferences.setString('userToken', value!),
               print(auth.currentUser),
               print(value),

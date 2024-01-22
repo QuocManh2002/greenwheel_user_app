@@ -5,8 +5,10 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/locate_start_location.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/search_location_result_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:intl/intl.dart';
@@ -23,11 +25,9 @@ class SelectStartLocationScreen extends StatefulWidget {
 }
 
 class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
-  MapboxMap? _mapboxMap;
   TextEditingController _searchController = TextEditingController();
   var distanceText;
   var durationText;
-
   var distanceValue;
   var durationValue;
 
@@ -41,49 +41,14 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   CircleAnnotationManager? _circleAnnotationManagerEnd;
   PolylinePoints polylinePoints = PolylinePoints();
   PointLatLng? _selectedLocation;
-  bool _isHasLine = false;
-
-  _onMapCreated(MapboxMap controller) {
-    _mapboxMap = controller;
-    getMapInfo();
-  }
+  bool _isSearching = false;
+  String? defaultAddress = '';
+  PointLatLng? defaultLatLng ;
+  PointLatLng? _selectedLatLng;
 
   Future<void> getMapInfo() async {
-    if (_mapboxMap != null) {
-      if (_selectedLocation != null) {
-        _onSelectLocation(_selectedLocation!);
-      }
-      _mapboxMap!.setCamera(CameraOptions(
-          center: Point(
-                  coordinates: Position(
-                      widget.location.longitude, widget.location.latitude))
-              .toJson(),
-          zoom: 10));
-      _mapboxMap?.flyTo(
-          CameraOptions(
-              anchor: ScreenCoordinate(x: 0, y: 0),
-              zoom: 8,
-              bearing: 0,
-              pitch: 0),
-          MapAnimationOptions(duration: 2000, startDelay: 0));
-      _mapboxMap?.annotations
-          .createCircleAnnotationManager()
-          .then((value) async {
-        setState(() {
-          _circleAnnotationManagerEnd =
-              value; // Store the reference to the circle annotation manager
-        });
-        value.create(
-          CircleAnnotationOptions(
-            geometry: Point(
-                    coordinates: Position(
-                        widget.location.longitude, widget.location.latitude))
-                .toJson(),
-            circleColor: redColor.value,
-            circleRadius: 12.0,
-          ),
-        );
-      });
+    if (_selectedLocation != null) {
+      _onSelectLocation(_selectedLocation!);
     }
   }
 
@@ -91,7 +56,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     var jsonResponse = await getRouteInfo(_selectedLocation!,
         PointLatLng(widget.location.latitude, widget.location.longitude));
 
-    var route = jsonResponse['routes'][0]['overview_polyline']['points'];
+    // var route = jsonResponse['routes'][0]['overview_polyline']['points'];
     setState(() {
       durationText = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
       distanceText = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
@@ -105,56 +70,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     sharedPreferences.setString('plan_distance_text', distanceText);
     sharedPreferences.setDouble('plan_duration_value', durationValue);
     sharedPreferences.setDouble('plan_distance_value', distanceValue);
-
-    List<PointLatLng> result = polylinePoints.decodePolyline(route);
-    List<List<double>> coordinates =
-        result.map((point) => [point.longitude, point.latitude]).toList();
-    var geojson = '''{
-      "type": "FeatureCollection",
-      "features": [
-        {
-          "type": "Feature",
-          "properties": {
-            "name": "Crema to Council Crest"
-          },
-          "geometry": {
-            "type": "LineString",
-            "coordinates": $coordinates
-          }
-        }
-      ]
-    }''';
-    _mapboxMap!.setBounds(CameraBoundsOptions(
-        bounds: CoordinateBounds(
-            southwest: Point(
-                    coordinates: Position(
-                        widget.location.longitude, widget.location.latitude))
-                .toJson(),
-            northeast: Point(
-                    coordinates: Position(_selectedLocation!.longitude,
-                        _selectedLocation!.latitude))
-                .toJson(),
-            infiniteBounds: true),
-        maxZoom: 17,
-        minZoom: 0,
-        maxPitch: 10,
-        minPitch: 0));
-
-    await _mapboxMap?.style.addSource(GeoJsonSource(id: 'line', data: geojson));
-    var lineLayerJson = """{
-          "type":"line",
-          "id":"line_layer",
-          "source":"line",
-          "paint":{
-          "line-join":"round",
-          "line-cap":"round",
-          "line-color":"rgb(146, 174, 255)",
-          "line-width":9.0
-          }
-        }""";
-
-    await _mapboxMap?.style.addPersistentStyleLayer(lineLayerJson, null);
-    _isHasLine = true;
   }
 
   _onSelectLocation(PointLatLng selectedLocation) async {
@@ -185,42 +100,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       ).show();
     } else {
       _selectedLocation = selectedLocation;
-      if (_isHasLine) {
-        await _mapboxMap!.style.removeStyleLayer('line_layer');
-        await _mapboxMap!.style.removeStyleSource('line');
-      }
-
       _getRouteInfo();
-      _mapboxMap!.setCamera(CameraOptions(
-          center: Point(
-                  coordinates: Position(
-                      selectedLocation.longitude, selectedLocation.latitude))
-              .toJson(),
-          zoom: 10));
-      _mapboxMap?.flyTo(
-          CameraOptions(
-              anchor: ScreenCoordinate(x: 0, y: 0),
-              zoom: 10,
-              bearing: 0,
-              pitch: 0),
-          MapAnimationOptions(duration: 2000, startDelay: 0));
     }
-    _mapboxMap?.annotations.createCircleAnnotationManager().then((value) async {
-      setState(() {
-        _circleAnnotationManagerStart =
-            value; // Store the reference to the circle annotation manager
-      });
-      value.create(
-        CircleAnnotationOptions(
-          geometry: Point(
-                  coordinates: Position(
-                      selectedLocation.longitude, selectedLocation.latitude))
-              .toJson(),
-          circleColor: primaryColor.value,
-          circleRadius: 12.0,
-        ),
-      );
-    });
     sharedPreferences.setDouble('plan_start_lat', _selectedLocation!.latitude);
     sharedPreferences.setDouble('plan_start_lng', _selectedLocation!.longitude);
   }
@@ -233,6 +114,9 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   setUpData() async {
+    defaultAddress = sharedPreferences.getString('defaultAddress');
+    final defaultCoordinate = sharedPreferences.getStringList('defaultCoordinate');
+    defaultLatLng = PointLatLng(double.parse(defaultCoordinate![0]), double.parse(defaultCoordinate[1]));
     double? plan_distance = sharedPreferences.getDouble('plan_distance_value');
     if (plan_distance != null) {
       double? plan_duration =
@@ -260,7 +144,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
 
     String? dateText = sharedPreferences.getString('plan_departureDate');
     if (dateText != null) {
-      setState(() {  
+      setState(() {
         _selectedDate = DateTime.parse(dateText);
         // sharedPreferences.setString('plan_departureDate', dateText);
         _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
@@ -270,9 +154,12 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
       sharedPreferences.setString(
           'plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
-      final defaultDepartureDate = DateTime(_selectedDate!.year, _selectedDate!.month, _selectedDate!.day).add(Duration(hours: _selectTime.hour)).add(Duration(minutes: _selectTime.minute));
-      sharedPreferences.setString('plan_departureDate',
-          defaultDepartureDate.toString());
+      final defaultDepartureDate = DateTime(
+              _selectedDate!.year, _selectedDate!.month, _selectedDate!.day)
+          .add(Duration(hours: _selectTime.hour))
+          .add(Duration(minutes: _selectTime.minute));
+      sharedPreferences.setString(
+          'plan_departureDate', defaultDepartureDate.toString());
     }
 
     double? startLat = sharedPreferences.getDouble('plan_start_lat');
@@ -288,300 +175,368 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          const Text(
-            'Chọn thời gian và địa điểm xuất phát',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(
-            height: 1.h,
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
+    return Column(
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            child: Column(
               children: [
-                Expanded(
-                  child: defaultTextFormField(
-                      readonly: true,
-                      controller: _dateController,
-                      inputType: TextInputType.datetime,
-                      text: 'Ngày',
-                      onTap: () async {
-                        DateTime? newDay = await showDatePicker(
-                            context: context,
-                            locale: const Locale('vi_VN'),
-                            initialDate: DateTime.now(),
-                            firstDate: DateTime(1900),
-                            lastDate: DateTime(2025),
-                            builder: (context, child) {
-                              return Theme(
-                                data: ThemeData().copyWith(
-                                    colorScheme: const ColorScheme.light(
-                                        primary: primaryColor,
-                                        onPrimary: Colors.white)),
-                                child: DatePickerDialog(
-                                  cancelText: 'HỦY',
-                                  confirmText: 'LƯU',
-                                  initialDate: _selectedDate!,
-                                  firstDate: DateTime.now(),
-                                  lastDate: DateTime(2025),
-                                ),
-                              );
-                            });
-                        if (newDay != null) {
-                          _selectedDate = newDay;
-                          _dateController.text =
-                              DateFormat('dd/MM/yyyy').format(newDay);
-                          sharedPreferences.setString(
-                              'plan_start_date', newDay.toString());
-                          sharedPreferences.setString(
-                              'plan_departureDate', newDay.toString());
-                        }
-                      },
-                      prefixIcon: const Icon(Icons.calendar_month),
-                      onValidate: (value) {
-                        if (value!.isEmpty) {
-                          return "Ngày của hoạt động không được để trống";
-                        }
-                      }),
+                SizedBox(
+                  height: 2.h,
+                ),
+                const Text(
+                  'Thời gian xuất phát',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
-                  width: 3.w,
+                  height: 1.h,
                 ),
-                Expanded(
-                  child: defaultTextFormField(
-                      readonly: true,
-                      controller: _timeController,
-                      inputType: TextInputType.datetime,
-                      text: 'Giờ',
-                      onTap: () {
-                        showTimePicker(
-                          context: context,
-                          initialTime: _selectTime,
-                          builder: (context, child) {
-                            return Theme(
-                              data: ThemeData().copyWith(
-                                  colorScheme: const ColorScheme.light(
-                                      primary: primaryColor,
-                                      onPrimary: Colors.white)),
-                              child: TimePickerDialog(
-                                initialTime: _selectTime,
-                              ),
-                            );
-                          },
-                        ).then((value) {
-                          if (!Utils().checkTimeAfterNow1Hour(
-                              value!,
-                              DateTime(_selectedDate!.year,
-                                  _selectedDate!.month, _selectedDate!.day))) {
-                            AwesomeDialog(
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: defaultTextFormField(
+                            readonly: true,
+                            controller: _dateController,
+                            inputType: TextInputType.datetime,
+                            text: 'Ngày',
+                            onTap: () async {
+                              DateTime? newDay = await showDatePicker(
+                                  context: context,
+                                  locale: const Locale('vi_VN'),
+                                  initialDate: DateTime.now(),
+                                  firstDate: DateTime(1900),
+                                  lastDate: DateTime(2025),
+                                  builder: (context, child) {
+                                    return Theme(
+                                      data: ThemeData().copyWith(
+                                          colorScheme: const ColorScheme.light(
+                                              primary: primaryColor,
+                                              onPrimary: Colors.white)),
+                                      child: DatePickerDialog(
+                                        cancelText: 'HỦY',
+                                        confirmText: 'LƯU',
+                                        initialDate: _selectedDate!,
+                                        firstDate: DateTime.now(),
+                                        lastDate: DateTime(2025),
+                                      ),
+                                    );
+                                  });
+                              if (newDay != null) {
+                                _selectedDate = newDay;
+                                _dateController.text =
+                                    DateFormat('dd/MM/yyyy').format(newDay);
+                                sharedPreferences.setString(
+                                    'plan_start_date', newDay.toString());
+                                sharedPreferences.setString(
+                                    'plan_departureDate', newDay.toString());
+                              }
+                            },
+                            prefixIcon: const Icon(Icons.calendar_month),
+                            onValidate: (value) {
+                              if (value!.isEmpty) {
+                                return "Ngày của hoạt động không được để trống";
+                              }
+                            }),
+                      ),
+                      SizedBox(
+                        width: 3.w,
+                      ),
+                      Expanded(
+                        child: defaultTextFormField(
+                            readonly: true,
+                            controller: _timeController,
+                            inputType: TextInputType.datetime,
+                            text: 'Giờ',
+                            onTap: () {
+                              showTimePicker(
                                 context: context,
-                                dialogType: DialogType.warning,
-                                btnOkColor: Colors.orange,
-                                body: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 16),
-                                  child: Center(
-                                    child: Text(
-                                      'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                      textAlign: TextAlign.center,
+                                initialTime: _selectTime,
+                                builder: (context, child) {
+                                  return Theme(
+                                    data: ThemeData().copyWith(
+                                        colorScheme: const ColorScheme.light(
+                                            primary: primaryColor,
+                                            onPrimary: Colors.white)),
+                                    child: TimePickerDialog(
+                                      initialTime: _selectTime,
                                     ),
-                                  ),
-                                ),
-                                btnOkOnPress: () {
-                                  _selectTime = TimeOfDay.fromDateTime(
-                                      DateTime.now()
-                                          .add(const Duration(hours: 1)));
+                                  );
+                                },
+                              ).then((value) {
+                                if (!Utils().checkTimeAfterNow1Hour(
+                                    value!,
+                                    DateTime(
+                                        _selectedDate!.year,
+                                        _selectedDate!.month,
+                                        _selectedDate!.day))) {
+                                  AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.warning,
+                                      btnOkColor: Colors.orange,
+                                      body: const Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16),
+                                        child: Center(
+                                          child: Text(
+                                            'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.center,
+                                          ),
+                                        ),
+                                      ),
+                                      btnOkOnPress: () {
+                                        _selectTime = TimeOfDay.fromDateTime(
+                                            DateTime.now()
+                                                .add(const Duration(hours: 1)));
+                                        _timeController.text = DateFormat.Hm()
+                                            .format(DateTime(
+                                                0,
+                                                0,
+                                                0,
+                                                _selectTime.hour,
+                                                _selectTime.minute));
+                                        sharedPreferences.setString(
+                                            'plan_start_time',
+                                            _timeController.text);
+                                      }).show();
+                                } else {
+                                  _selectTime = value;
                                   _timeController.text = DateFormat.Hm().format(
                                       DateTime(0, 0, 0, _selectTime.hour,
                                           _selectTime.minute));
                                   sharedPreferences.setString(
                                       'plan_start_time', _timeController.text);
-                                }).show();
-                          } else {
-                            _selectTime = value;
-                            _timeController.text = DateFormat.Hm().format(
-                                DateTime(0, 0, 0, _selectTime.hour,
-                                    _selectTime.minute));
-                            sharedPreferences.setString(
-                                'plan_start_time', _timeController.text);
-                          }
+                                }
+                              });
+                            },
+                            onValidate: (value) {
+                              if (value!.isEmpty) {
+                                return "Ngày của hoạt động không được để trống";
+                              }
+                            },
+                            prefixIcon: const Icon(Icons.watch_later_outlined)),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 2.h,
+                ),
+                const Text(
+                  'Địa điểm xuất phát',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(2.h),
+                  child: Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.92),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(14))),
+                    child: TextField(
+                      controller: _searchController,
+                      keyboardType: TextInputType.streetAddress,
+                      cursorColor: primaryColor,
+                      maxLines: 1,
+                      onTap: () {
+                        setState(() {
+                          _isSearching = true;
                         });
                       },
-                      onValidate: (value) {
-                        if (value!.isEmpty) {
-                          return "Ngày của hoạt động không được để trống";
-                        }
-                      },
-                      prefixIcon: const Icon(Icons.watch_later_outlined)),
-                ),
-              ],
-            ),
-          ),
-          SizedBox(
-            height: 1.h,
-          ),
-          SizedBox(
-            height: 58.h,
-            child: Stack(
-              children: [
-                SizedBox(
-                  child: MapWidget(
-                    key: const ValueKey('mapWidget'),
-                    resourceOptions: ResourceOptions(
-                        accessToken:
-                            "pk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xuM3AwM2hpMGlzZDJqcGFla2VlejFsOCJ9.gEsXIx57uMGskLDDQYBm4g"),
-                    cameraOptions: CameraOptions(
-                        center: Point(
-                                coordinates: Position(widget.location.longitude,
-                                    widget.location.latitude))
-                            .toJson(),
-                        zoom: 10),
-                    styleUri: MapboxStyles.MAPBOX_STREETS,
-                    onLongTapListener: (coordinate) async {
-                      if (_circleAnnotationManagerStart != null) {
-                        await _circleAnnotationManagerStart!.deleteAll();
-                      }
-                      await _onSelectLocation(
-                          PointLatLng(coordinate.x, coordinate.y));
-                    },
-                    textureView: false,
-                    onMapCreated: _onMapCreated,
-                  ),
-                ),
-                if (distanceText != null)
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: Padding(
-                      padding: EdgeInsets.all(2.h),
-                      child: buildMapInfoWidget(),
+                      decoration: InputDecoration(
+                          suffixIcon: IconButton(
+                              onPressed: onSearchLocation,
+                              icon: const Icon(
+                                Icons.search,
+                                color: primaryColor,
+                                size: 32,
+                              )),
+                          focusedBorder: const OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: primaryColor, width: 2),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(14))),
+                          border: const OutlineInputBorder(
+                              borderSide:
+                                  BorderSide(color: Colors.grey, width: 2),
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(14)))),
                     ),
                   ),
-                Positioned(
-                    left: 0,
-                    right: 0,
-                    top: 0,
-                    child: Padding(
-                      padding: EdgeInsets.all(2.h),
+                ),
+                if (_isSearching)
+                  Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 2.h),
+                    child: InkWell(
+                      borderRadius: const BorderRadius.all(Radius.circular(14)),
+                      onTap: () {
+                        setState(() {
+                          _isSearching = false;
+                          _searchController.text =
+                              defaultAddress == null || defaultAddress!.isEmpty
+                                  ? 'Không có dữ liệu'
+                                  : defaultAddress!;
+                          _onSelectLocation(defaultLatLng!);
+                        });
+                      },
                       child: Container(
-                        width: double.infinity,
                         decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.92),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(14))),
-                        child: TextField(
-                          controller: _searchController,
-                          keyboardType: TextInputType.streetAddress,
-                          cursorColor: primaryColor,
-                          maxLines: 1,
-                          decoration: InputDecoration(
-                              suffixIcon: IconButton(
-                                  onPressed: onSearchLocation,
-                                  icon: const Icon(
-                                    Icons.search,
-                                    color: primaryColor,
-                                    size: 32,
-                                  )),
-                              focusedBorder: const OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: primaryColor, width: 2),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(14))),
-                              border: const OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.grey, width: 2),
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(14)))),
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(14),
+                          ),
+                          border: Border.all(
+                              color: Colors.grey.withOpacity(0.5), width: 1),
+                          boxShadow: const [
+                            BoxShadow(
+                              blurRadius: 3,
+                              color: Colors.black12,
+                              offset: Offset(1, 3),
+                            )
+                          ],
                         ),
-                      ),
-                    )),
-                if (isShowResult)
-                  Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 2.h),
-                        child: Container(
-                          margin: const EdgeInsets.only(top: 100),
-                          child: Column(children: [
-                            for (final rs in _resultList)
-                              InkWell(
-                                onTap: () async {
-                                  if (_circleAnnotationManagerStart != null) {
-                                    await _circleAnnotationManagerStart!
-                                        .deleteAll();
-                                  }
-                                  await _onSelectLocation(
-                                      PointLatLng(rs.lat, rs.lng));
-
-                                  setState(() {
-                                    isShowResult = false;
-                                  });
-                                },
-                                child: Container(
-                                  height: 6.h,
-                                  decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.92),
-                                      borderRadius: rs == _resultList.first
-                                          ? const BorderRadius.only(
-                                              topLeft: Radius.circular(14),
-                                              topRight: Radius.circular(14))
-                                          : rs == _resultList.last
-                                              ? const BorderRadius.only(
-                                                  bottomLeft:
-                                                      Radius.circular(14),
-                                                  bottomRight:
-                                                      Radius.circular(14))
-                                              : const BorderRadius.all(
-                                                  Radius.zero)),
-                                  child: Padding(
-                                    padding:
-                                        EdgeInsets.symmetric(horizontal: 2.h),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        const Spacer(),
-                                        const Spacer(),
-                                        Text(
-                                          rs.name,
-                                          style: const TextStyle(fontSize: 16),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const Spacer(),
-                                        const Spacer(),
-                                        Text(
-                                          rs.address,
-                                          style: const TextStyle(
-                                              fontSize: 14, color: Colors.grey),
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        Container(
-                                          color: Colors.grey,
-                                          height: 1,
-                                        )
-                                      ],
-                                    ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 8),
+                          child: Row(children: [
+                            Icon(Icons.my_location,
+                                color: redColor.withOpacity(0.8), size: 32),
+                            SizedBox(
+                              width: 2.w,
+                            ),
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const SizedBox(
+                                  height: 4,
+                                ),
+                                const Text(
+                                  'Vị trí mặc định',
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                                SizedBox(
+                                  width: 75.w,
+                                  child: Text(
+                                    defaultAddress == null ||
+                                            defaultAddress!.isEmpty
+                                        ? 'Không có dữ liệu'
+                                        : defaultAddress!,
+                                    style: const TextStyle(fontSize: 15),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                              )
+                                const SizedBox(
+                                  height: 4,
+                                )
+                              ],
+                            )
                           ]),
                         ),
-                      ))
+                      ),
+                    ),
+                  ),
+                if (isShowResult)
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 2.h, vertical: 1.h),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(14)),
+                        border: Border.all(
+                            color: Colors.grey.withOpacity(0.5), width: 1),
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 3,
+                            color: Colors.black12,
+                            offset: Offset(1, 3),
+                          )
+                        ],
+                      ),
+                      child: Column(children: [
+                        for (final rs in _resultList)
+                          InkWell(
+                              onTap: () async {
+                                if (_circleAnnotationManagerStart != null) {
+                                  await _circleAnnotationManagerStart!
+                                      .deleteAll();
+                                }
+                                await _onSelectLocation(
+                                    PointLatLng(rs.lat, rs.lng));
+
+                                setState(() {
+                                  isShowResult = false;
+                                  _searchController.text = rs.address;
+                                });
+                              },
+                              child: SearchLocationResultCard(
+                                item: rs,
+                                list: _resultList,
+                              ))
+                      ]),
+                    ),
+                  ),
+                if (_isSearching || isShowResult)
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 2.h, vertical: 1.h),
+                    child: InkWell(
+                      onTap: () {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => LocateStartLocation(
+                                  location: widget.location,
+                                  callback: callback,
+                                )));
+                      },
+                      borderRadius: const BorderRadius.all(Radius.circular(14)),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: const BorderRadius.all(
+                            Radius.circular(14),
+                          ),
+                          border: Border.all(
+                              color: Colors.grey.withOpacity(0.5), width: 1),
+                          boxShadow: const [
+                            BoxShadow(
+                              blurRadius: 3,
+                              color: Colors.black12,
+                              offset: Offset(1, 3),
+                            )
+                          ],
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 4),
+                          child: Row(children: [
+                            const Icon(
+                              Icons.map,
+                              size: 32,
+                            ),
+                            SizedBox(
+                              width: 2.w,
+                            ),
+                            const Text(
+                              'Chọn từ bản đồ',
+                              style: TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            )
+                          ]),
+                        ),
+                      ),
+                    ),
+                  )
               ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -651,10 +606,11 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
 
   Widget buildMapInfoWidget() {
     return Container(
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.all(Radius.circular(12)),
-          boxShadow: [
+          border: Border.all(color: primaryColor, width: 1.5),
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          boxShadow: const [
             BoxShadow(blurRadius: 1, offset: Offset(2, 4), color: Colors.black)
           ]),
       child: Column(children: [
@@ -677,5 +633,15 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         ),
       ]),
     );
+  }
+
+  callback(PointLatLng? point) async {
+    var result = await getPlaceDetail(point!);
+    if (result != null) {
+      setState(() {
+        _selectedLatLng = point;
+        _searchController.text = result['results'][0]['formatted_address'];
+      });
+    }
   }
 }

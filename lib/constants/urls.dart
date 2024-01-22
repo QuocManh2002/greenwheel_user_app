@@ -17,5 +17,12 @@ const String current_location = "${baseImage}current_location.png";
 const String from_location = "${baseImage}from_icon.png";
 const String to_location = "${baseImage}to_icon.png";
 const String to_marker = "${baseImage}to_marker.svg";
+const String schedule_white = '${baseImage}schedule_white.svg';
+const String schedule_green = '${baseImage}schedule_green.svg';
+const String basic_information_white = '${baseImage}basic_information_white.svg';
+const String basic_information_green = '${baseImage}basic_information_green.svg';
+const String service_white = '${baseImage}service_white.svg';
+const String service_green = '${baseImage}service_green.svg';
+
 const String defaultUserAvatarLink =
     "https://media.altchar.com/prod/images/gm_article_promo_image/23364b481aa9-edg-viper.jpg";

@@ -436,7 +436,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                 },
                                 style: elevatedButtonStyle,
                                 child: const Text(
-                                  "Lập kế hoạch",
+                                  "Lên kế hoạch",
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 )),
                           ),

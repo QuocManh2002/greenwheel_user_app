@@ -83,7 +83,6 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
         _circleAnnotationCurrent =
             value; // Store the reference to the circle annotation manager
       });
-      var pointAnnotationStart = value;
       value.create(
         CircleAnnotationOptions(
           geometry: Point(
@@ -146,7 +145,6 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
           _circleAnnotationSelected =
               value; // Store the reference to the circle annotation manager
         });
-        var pointAnnotationStart = value;
         value.create(
           CircleAnnotationOptions(
             geometry: Point(

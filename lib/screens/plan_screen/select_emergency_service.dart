@@ -87,6 +87,7 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          SizedBox(height: 2.h,),
         SizedBox(height: 5.h,
         child:const Text('Danh sách liên lạc', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
         ),

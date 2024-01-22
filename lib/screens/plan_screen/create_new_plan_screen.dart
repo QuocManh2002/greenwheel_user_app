@@ -44,15 +44,16 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     super.initState();
   }
 
-  final ScrollController _scrollController = ScrollController();
   int _currentStep = 0;
   PlanService _planService = PlanService();
+  String _stepperText = '';
 
   Future<bool> createDraftPlan(int numOfExpPeriod, DateTime departureDate,
       DateTime endDate, int numberOfMember) async {
     var duration = sharedPreferences.getDouble('plan_duration_value');
-    var startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-        // departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
+    var startDate =
+        DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    // departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
     return await _planService.createPlanDraft(PlanCreate(
         numOfExpPeriod: numOfExpPeriod,
         locationId: widget.location.id,
@@ -65,26 +66,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         name:
             'Chuyến đi ngày ${departureDate.day}/${departureDate.month}/${departureDate.year}',
         schedule: ''));
-  }
-
-  List<Step> getSteps() {
-    return [
-      Step(
-        state: _currentStep > 2 ? StepState.complete : StepState.indexed,
-        title: const Text("Thông tin cơ bản"),
-        content: Container(),
-      ),
-      Step(
-        state: _currentStep > 3 ? StepState.complete : StepState.indexed,
-        title: const Text("Lên lịch trình"),
-        content: Container(),
-      ),
-      Step(
-        state: _currentStep > 5 ? StepState.complete : StepState.indexed,
-        title: const Text("Hoàn tất kế hoạch"),
-        content: Container(),
-      ),
-    ];
   }
 
   handleQuitScreen() {
@@ -116,19 +97,23 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     late Widget activePage;
     switch (_currentStep) {
       case 0:
+        _stepperText = 'Thông tin cơ bản';
         activePage = BaseInformationScreen(
           location: widget.location,
         );
         break;
       case 1:
+        _stepperText = 'Thông tin cơ bản';
         activePage = SelectStartLocationScreen(
           location: widget.location,
         );
         break;
       case 2:
+        _stepperText = 'Thông tin cơ bản';
         activePage = const SelectStartDateScreen();
         break;
       case 3:
+        _stepperText = 'Lên lịch trình';
         widget.schedule == null
             ? activePage = CreatePlanScheduleScreen(
                 isCreate: widget.isCreate,
@@ -141,11 +126,13 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
               );
         break;
       case 4:
+        _stepperText = 'Liên lạc khẩn cấp';
         activePage = SelectEmergencyService(
             location: widget.location,
             planId: sharedPreferences.getInt('planId')!);
         break;
       case 5:
+        _stepperText = 'Hoàn tất kế hoạch';
         activePage = SelectPlanName(
           location: widget.location,
           isCreate: widget.isCreate,
@@ -171,19 +158,21 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
           Expanded(
             child: Column(
               children: [
-                SingleChildScrollView(
-                  controller: _scrollController,
-                  scrollDirection: Axis.horizontal,
-                  child: SizedBox(
-                      height: 10.h,
-                      width: 600,
-                      child: Stepper(
-                        type: StepperType.horizontal,
-                        steps: getSteps(),
-                        connectorColor:
-                            const MaterialStatePropertyAll(primaryColor),
-                        currentStep: 2,
-                      )),
+                Container(
+                  alignment: Alignment.center,
+                  height: 7.h,
+                child: Text(_stepperText,
+                style:const TextStyle(
+                  fontSize: 22, 
+                  fontWeight: FontWeight.bold
+                ),),),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    color: Colors.grey.withOpacity(0.5),
+                    height: 1.5,
+                  ),
                 ),
                 Expanded(child: activePage)
               ],
@@ -217,7 +206,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                               _currentStep--;
                             });
                           }
-                          getScrollLocation();
                         },
                         child: const Text(
                           "Quay lại",
@@ -302,7 +290,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                           setState(() {
                                             _currentStep++;
                                           });
-                                          getScrollLocation();
                                         } else {
                                           print('error when create draft plan');
                                         }
@@ -310,7 +297,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                         setState(() {
                                           _currentStep++;
                                         });
-                                        getScrollLocation();
                                       }
                                     },
                                     body: ConfirmBaseInfoDialog(
@@ -353,8 +339,11 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                               String? endDateText =
                                   sharedPreferences.getString('plan_end_date');
                               final _endDate = DateTime.parse(endDateText!);
-                              final _duration =
-                                  _endDate.difference(DateTime(_startDate.year, _startDate.month, _startDate.day)).inDays + 1;
+                              final _duration = _endDate
+                                      .difference(DateTime(_startDate.year,
+                                          _startDate.month, _startDate.day))
+                                      .inDays +
+                                  1;
                               AwesomeDialog(
                                   context: context,
                                   dialogType: DialogType.info,
@@ -365,7 +354,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                     setState(() {
                                       _currentStep++;
                                     });
-                                    getScrollLocation();
                                   },
                                   btnCancelColor: Colors.orange,
                                   btnCancelText: 'Chỉnh sửa',
@@ -426,13 +414,11 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                               setState(() {
                                 _currentStep++;
                               });
-                              getScrollLocation();
                             }
                           } else {
                             setState(() {
                               _currentStep++;
                             });
-                            getScrollLocation();
                           }
                         },
                         child: const Text(
@@ -449,19 +435,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         ],
       ),
     ));
-  }
-
-  getScrollLocation() {
-    double targetOffset = 0;
-    if (_currentStep < 3) {
-      targetOffset = _scrollController.position.minScrollExtent;
-    } else if (_currentStep < 4) {
-      targetOffset = _scrollController.position.minScrollExtent + 200;
-    } else {
-      targetOffset = _scrollController.position.maxScrollExtent;
-    }
-    _scrollController.animateTo(targetOffset,
-        duration: const Duration(milliseconds: 300), curve: Curves.bounceInOut);
   }
 
   handleValidationSelectLocationScreen() {
@@ -517,10 +490,15 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     String _scheduleText = sharedPreferences.getString('plan_schedule')!;
     final List<dynamic> _schedule = json.decode(_scheduleText);
     // print(_endDate.difference(DateTime(_startDate.year, _startDate.month, _startDate.day)).inDays +1);
-    if(_schedule.length > _endDate.difference(DateTime(_startDate.year, _startDate.month, _startDate.day)).inDays +1){
-      _schedule.remove(_schedule[0]);
-      sharedPreferences.setString('plan_schedule', json.encode(_schedule));
-    }
+    // if (_schedule.length >
+    //     _endDate
+    //             .difference(
+    //                 DateTime(_startDate.year, _startDate.month, _startDate.day))
+    //             .inDays +
+    //         1) {
+    //   _schedule.remove(_schedule[0]);
+    //   sharedPreferences.setString('plan_schedule', json.encode(_schedule));
+    // }
     return _schedule.any((element) => element.length == 0);
   }
 

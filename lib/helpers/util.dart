@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -96,8 +97,29 @@ class Utils {
     return features.contains(point);
   }
 
-  SaveDefaultAddressToSharedPref(String addressText, PointLatLng addressLatLng){
+  SaveDefaultAddressToSharedPref(
+      String addressText, PointLatLng addressLatLng) {
     sharedPreferences.setString('defaultAddress', addressText);
-    sharedPreferences.setStringList('defaultCoordinate', [addressLatLng.latitude.toString(), addressLatLng.longitude.toString()]);
+    sharedPreferences.setStringList('defaultCoordinate', [
+      addressLatLng.latitude.toString(),
+      addressLatLng.longitude.toString()
+    ]);
+  }
+
+  ShowFullyActivityTimeDialog(BuildContext context) {
+    AwesomeDialog(
+        context: context,
+        dialogType: DialogType.warning,
+        btnOkColor: Colors.orange,
+        btnOkText: 'Ok',
+        btnOkOnPress: () {},
+        body: const Padding(
+          padding: EdgeInsets.all(12),
+          child: Text(
+            'Đã đủ thời gian quy định cho hoạt động của ngày này',
+            style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+          ),
+        )).show();
   }
 }

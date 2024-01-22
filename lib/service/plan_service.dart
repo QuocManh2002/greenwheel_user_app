@@ -543,7 +543,7 @@ mutation{
   }
 
   generateEmptySchedule(DateTime startDate, DateTime endDate) {
-    final duration = endDate.difference(startDate).inDays + 2;
+    final duration = endDate.difference(startDate).inDays + 1;
     List<PlanSchedule> result = [];
     for (int i = 0; i < duration; i++) {
       result

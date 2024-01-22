@@ -5,6 +5,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
@@ -19,6 +20,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_button.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_icon_button.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -241,6 +243,66 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             const SizedBox(
                               height: 16,
                             ),
+                            // Container(
+                            //   padding:
+                            //       const EdgeInsets.symmetric(horizontal: 24),
+                            //   alignment: Alignment.centerLeft,
+                            //   child: Row(
+                            //       mainAxisAlignment: MainAxisAlignment.start,
+                            //       children: [
+                            //         InkWell(
+                            //           borderRadius: const BorderRadius.all(
+                            //               Radius.circular(12)),
+                            //           onTap: () {
+                            //             setState(() {
+                            //               _selectedTab = 0;
+                            //             });
+                            //           },
+                            //           child: TabButton(
+                            //             text: 'Thông tin cơ bản',
+                            //             isSelected: _selectedTab == 0,
+                            //             index: 0,
+                            //           ),
+                            //         ),
+                            //         const SizedBox(
+                            //           width: 16,
+                            //         ),
+                            //         InkWell(
+                            //           borderRadius: const BorderRadius.all(
+                            //               Radius.circular(12)),
+                            //           onTap: () {
+                            //             setState(() {
+                            //               _selectedTab = 1;
+                            //             });
+                            //           },
+                            //           child: TabButton(
+                            //             text: 'Lịch trình',
+                            //             isSelected: _selectedTab == 1,
+                            //             index: 1,
+                            //           ),
+                            //         ),
+                            //         const SizedBox(
+                            //           width: 16,
+                            //         ),
+                            //         InkWell(
+                            //           borderRadius: const BorderRadius.all(
+                            //               Radius.circular(12)),
+                            //           onTap: () {
+                            //             setState(() {
+                            //               _selectedTab = 2;
+                            //             });
+                            //           },
+                            //           child: TabButton(
+                            //             text: 'Dịch vụ',
+                            //             isSelected: _selectedTab == 2,
+                            //             index: 2,
+                            //           ),
+                            //         ),
+                            //         const SizedBox(
+                            //           width: 16,
+                            //         ),
+                            //       ]),
+                            // ),
                             Container(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 24),
@@ -248,56 +310,65 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               child: Row(
                                   mainAxisAlignment: MainAxisAlignment.start,
                                   children: [
-                                    InkWell(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(12)),
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedTab = 0;
-                                        });
-                                      },
-                                      child: TabButton(
-                                        text: 'Thông tin cơ bản',
-                                        isSelected: _selectedTab == 0,
-                                        index: 0,
+                                    Expanded(
+                                      child: InkWell(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(12)),
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedTab = 0;
+                                          });
+                                        },
+                                        child: TabIconButton(
+                                          iconDefaultUrl: basic_information_green,
+                                          iconSelectedUrl: basic_information_white,
+                                          text: 'Thông tin cơ bản',
+                                          isSelected: _selectedTab == 0,
+                                          index: 0,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(
                                       width: 16,
                                     ),
-                                    InkWell(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(12)),
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedTab = 1;
-                                        });
-                                      },
-                                      child: TabButton(
-                                        text: 'Lịch trình',
-                                        isSelected: _selectedTab == 1,
-                                        index: 1,
+                                    Expanded(
+                                      child: InkWell(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(12)),
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedTab = 1;
+                                          });
+                                        },
+                                        child: TabIconButton(
+                                          iconDefaultUrl: schedule_green,
+                                          iconSelectedUrl: schedule_white,
+                                          text: 'Lịch trình',
+                                          isSelected: _selectedTab == 1,
+                                          index: 1,
+                                        ),
                                       ),
                                     ),
                                     const SizedBox(
                                       width: 16,
                                     ),
-                                    InkWell(
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(12)),
-                                      onTap: () {
-                                        setState(() {
-                                          _selectedTab = 2;
-                                        });
-                                      },
-                                      child: TabButton(
-                                        text: 'Dịch vụ',
-                                        isSelected: _selectedTab == 2,
-                                        index: 2,
+                                    Expanded(
+                                      child: InkWell(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(12)),
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedTab = 2;
+                                          });
+                                        },
+                                        child: TabIconButton(
+                                          iconDefaultUrl: service_green,
+                                          iconSelectedUrl: service_white,
+                                          text: 'Dịch vụ',
+                                          isSelected: _selectedTab == 2,
+                                          index: 2,
+                                        ),
                                       ),
-                                    ),
-                                    const SizedBox(
-                                      width: 16,
                                     ),
                                   ]),
                             ),

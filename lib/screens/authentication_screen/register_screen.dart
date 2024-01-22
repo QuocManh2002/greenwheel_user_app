@@ -4,6 +4,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/goong_request.dart';
+import 'package:greenwheel_user_app/helpers/restart_widget.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/select_default_address.dart';
 import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
@@ -12,6 +13,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_loc
 import 'package:greenwheel_user_app/view_models/register.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
+import 'package:restart_app/restart_app.dart';
 import 'package:sizer2/sizer2.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -258,7 +260,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
           .show();
     } else {
       if (_formKey.currentState!.validate()) {
-        var id = await _customerService.registerTraveler(RegisterViewModel(
+        final CustomerService _newService = CustomerService();
+        var id = await _newService.registerTraveler(RegisterViewModel(
             deviceToken: sharedPreferences.getString('deviceToken')!,
             isMale: isMale,
             email: emailController.text,
@@ -266,27 +269,29 @@ class _RegisterScreenState extends State<RegisterScreen> {
             defaultCoordinate: _selectedAddressLatLng!,
             name: nameController.text));
         if (id != null || id != 0) {
-          TokenRefresher.refreshToken();
+          await TokenRefresher.refreshToken();
           print("2: ${sharedPreferences.getString('userToken')}");
-
           // ignore: use_build_context_synchronously
-          Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(builder: (ctx) => const SplashScreen()),
-              (route) => false);
+          Restart.restartApp(); // ignore: use_build_context_synchronously
+          // Navigator.of(context).pushAndRemoveUntil(
+          //     MaterialPageRoute(builder: (ctx) => const SplashScreen()),
+          //     (route) => false);
         }
       }
     }
   }
 
-  callback(SearchStartLocationResult? selectedAddress, PointLatLng? selectedLatLng) async{
-    if(selectedAddress != null){
+  callback(SearchStartLocationResult? selectedAddress,
+      PointLatLng? selectedLatLng) async {
+    if (selectedAddress != null) {
       setState(() {
         addressController.text = selectedAddress.address;
-        _selectedAddressLatLng = PointLatLng(selectedAddress.lat, selectedAddress.lng);
+        _selectedAddressLatLng =
+            PointLatLng(selectedAddress.lat, selectedAddress.lng);
       });
-    }else{
+    } else {
       var result = await getPlaceDetail(selectedLatLng!);
-      if(result != null){
+      if (result != null) {
         setState(() {
           _selectedAddressLatLng = selectedLatLng;
           addressController.text = result['results'][0]['formatted_address'];
@@ -295,4 +300,3 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 }
-

@@ -27,7 +27,8 @@ class PlanScheduleActivity extends StatelessWidget {
                     dialogType: DialogType.info,
                     btnOkColor: Colors.blue,
                     body: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -40,16 +41,81 @@ class PlanScheduleActivity extends StatelessWidget {
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             ),
                           ),
-                          const SizedBox(height: 12,),
-                          Text('Mô tả: ${item.shortDescription}', style:const TextStyle(fontSize: 16),),
-                          const SizedBox(height: 6,),
-                          Text('Mô tả chi tiết: ${item.description}', style:const TextStyle(fontSize: 16),),
-                          const SizedBox(height: 6,),
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            children: [
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Mô tả:',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(
+                                    height: 6,
+                                  ),
+                                  Text(
+                                    'Mô tả chi tiết:',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                  SizedBox(
+                                    height: 6,
+                                  ),
+                                  Text(
+                                    'Thời gian hoạt động:',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(
+                                width: 2,
+                              ),
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    item.shortDescription!,
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  const SizedBox(
+                                    height: 6,
+                                  ),
+                                  Text(
+                                    item.description!,
+                                    style: const TextStyle(fontSize: 16),
+                                  ),
+                                  const SizedBox(
+                                    height: 6,
+                                  ),
+                                  Text(
+                                    '${item.activityTime ?? 1} giờ', style:const TextStyle(
+                                      fontSize: 16
+                                    ),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 6,
+                          ),
                           Row(
                             children: [
-                              const Icon(Icons.calendar_month),
-                              const SizedBox(width: 16,),
-                              Text(DateFormat.yMMMMEEEEd('vi_VN').format(item.date!), style:const TextStyle(fontSize: 16),)
+                              Text(
+                                DateFormat.yMMMMEEEEd('vi_VN')
+                                    .format(item.date!),
+                                style: const TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold),
+                              )
                             ],
                           )
                         ],
@@ -170,8 +236,8 @@ class PlanScheduleActivity extends StatelessWidget {
                               height: 0.8.h,
                             ),
                             Text(
-                              DateFormat.Hm().format(DateTime(
-                                  0, 0, 0, item.time.hour, item.time.minute)),
+                              '${DateFormat.Hm().format(DateTime(
+                                  0, 0, 0, item.time.hour, item.time.minute))} | ${item.activityTime ?? 1} giờ',
                               style: const TextStyle(
                                   fontSize: 17, fontWeight: FontWeight.bold),
                             )

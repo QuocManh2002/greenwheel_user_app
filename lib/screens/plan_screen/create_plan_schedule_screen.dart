@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -63,66 +64,55 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   }
 
   setUpData() async {
-    final initialDateTime = DateFormat.Hm().parse(startTime);
-    final initialDate =
-        DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-    departureDate =
-        DateTime(initialDate.year, initialDate.month, initialDate.day)
-            .add(Duration(hours: initialDateTime.hour))
-            .add(Duration(minutes: initialDateTime.minute));
-    _startDate =
-        departureDate!.add(Duration(seconds: (duration! * 3600).ceil()));
+    // final initialDateTime = DateFormat.Hm().parse(startTime);
+    // final initialDate =
+    //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    // departureDate =
+    //     DateTime(initialDate.year, initialDate.month, initialDate.day)
+    //         .add(Duration(hours: initialDateTime.hour))
+    //         .add(Duration(minutes: initialDateTime.minute));
+    // _startDate =
+    //     departureDate!.add(Duration(seconds: (duration! * 3600).ceil()));
 
-    var checkDate =
-        DateTime(_startDate!.year, _startDate!.month, _startDate!.day, 6, 0);
-    _isNotOverDay = checkDate.isAfter(_startDate!);
+    // var checkDate =
+    //     DateTime(_startDate!.year, _startDate!.month, _startDate!.day, 6, 0);
+    // _isNotOverDay = checkDate.isAfter(_startDate!);
     // if (!_isNotOverDay) {
     //   final _newStartDate =
     //       DateTime.parse(startDate).add(const Duration(days: 1));
     // sharedPreferences.setString('plan_start_date', _newStartDate.toString());
     // }
 
+
+
     if (widget.isCreate) {
       if (!widget.isClone) {
-        testList = _planService.generateEmptySchedule(
-            // _isNotOverDay?
-            departureDate!
-            // : departureDate!.add(const Duration(days: 1))
-            ,
-            _endDate);
+        testList = _planService.generateEmptySchedule(startDate, _endDate);
         var finalList = _planService.convertPlanScheduleToJson(testList);
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       } else {
-        DateTime startDate =
-            DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-        DateTime endDate =
-            DateTime.parse(sharedPreferences.getString('plan_end_date')!);
         var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
-            startDate, endDate.difference(startDate).inDays + 1);
-        if (!_isNotOverDay) {
-          final departureDate = DateTime.parse(
-              sharedPreferences.getString('plan_departureDate')!);
-          list = [PlanSchedule(date: departureDate, items: []), ...list];
-          print(list.length);
-        }
+            startDate, _endDate.difference(startDate).inDays);
+        // if (!_isNotOverDay) {
+        //   final departureDate = DateTime.parse(
+        //       sharedPreferences.getString('plan_departureDate')!);
+        //   list = [PlanSchedule(date: departureDate, items: []), ...list];
+        //   print(list.length);
+        // }
         testList = _planService.GetPlanScheduleClone(list);
         var finalList = _planService.convertPlanScheduleToJson(testList);
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       }
     } else {
-      var scheduleText = sharedPreferences.getString('plan_schedule');
-      DateTime startDate =
-          DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-      DateTime endDate =
-          DateTime.parse(sharedPreferences.getString('plan_end_date')!);
+      // var scheduleText = sharedPreferences.getString('plan_schedule');
       var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
-          startDate, endDate.difference(startDate).inDays + 1);
+          startDate, _endDate.difference(startDate).inDays );
 
-      if (!_isNotOverDay) {
-        final departureDate =
-            DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-        list = [PlanSchedule(date: departureDate, items: []), ...list];
-      }
+      // if (!_isNotOverDay) {
+      //   final departureDate =
+      //       DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+      //   list = [PlanSchedule(date: departureDate, items: []), ...list];
+      // }
       testList = list;
       var finalList = _planService.convertPlanScheduleToJson(testList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
@@ -143,13 +133,13 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             .firstWhere((element) => element.date == item.date)
             .items
             .add(item);
-        testList.firstWhere((element) => element.date == item.date).items.sort(
-          (a, b) {
-            var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
-            var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
-            return adate.compareTo(bdate);
-          },
-        );
+        // testList.firstWhere((element) => element.date == item.date).items.sort(
+        //   (a, b) {
+        //     var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
+        //     var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
+        //     return adate.compareTo(bdate);
+        //   },
+        // );
       });
 
       var finalList = _planService.convertPlanScheduleToJson(testList);
@@ -166,7 +156,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             .items
             .add(item);
       });
-      
+
       var finalList = _planService.convertPlanScheduleToJson(testList);
 
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
@@ -247,37 +237,42 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   }
 
   Widget getPageView(int _index) {
-    return SizedBox(
+    return Container(
+      color: Colors.white.withOpacity(0.1),
       width: 100.w,
       child:
           // !_isNotOverDay ?
 
           testList[_index].items.isEmpty
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      empty_plan,
-                      width: 70.w,
-                    ),
-                    const SizedBox(
-                      height: 12,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 18),
-                      child: Text(
-                        _isNotOverDay || _currentPage != 0
-                            ? 'Bạn không có lịch trình nào trong ngày này'
-                            : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                            color: Colors.black54,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
+              ? Container(
+                color: Colors.white.withOpacity(0.92),
+                child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        empty_plan,
+                        width: 70.w,
                       ),
-                    )
-                  ],
-                )
+                      const SizedBox(
+                        height: 12,
+                      ),
+                      const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 18),
+                        child: Text(
+                          // _isNotOverDay || _currentPage != 0
+                          //     ? 
+                              'Bạn không có lịch trình nào trong ngày này',
+                              // : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Colors.black54,
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      )
+                    ],
+                  ),
+              )
               : SingleChildScrollView(
                   child: ListView.builder(
                   physics: const BouncingScrollPhysics(),
@@ -298,6 +293,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             callback: callback,
             selectedIndex: _currentPage.toInt(),
             item: item,
+            availableTime: 1,
             startDate: testList.first.date)));
   }
 
@@ -314,149 +310,171 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Row(
-          children: [
-            InkWell(
-              onTap: () {
-                showDatePicker(
-                    context: context,
-                    initialDate: testList.first.date,
-                    firstDate: testList.first.date,
-                    lastDate: testList.last.date,
-                    builder: (context, child) {
-                      return Theme(
-                        data: ThemeData().copyWith(
-                            colorScheme: const ColorScheme.light(
-                                primary: primaryColor,
-                                onPrimary: Colors.white)),
-                        child: DatePickerDialog(
-                          initialDate: testList[_currentPage.toInt()].date,
-                          firstDate: testList.first.date,
-                          lastDate: testList.last.date,
-                        ),
-                      );
-                    }).then((value) {
-                  if (value != null) {
-                    setState(() {
-                      _currentPage = testList
-                          .indexOf(testList
-                              .firstWhere((element) => element.date == value))
-                          .toDouble();
-                      _pageController.animateToPage(_currentPage.toInt(),
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.linear);
-                    });
-                  }
-                });
-              },
-              child: Padding(
-                padding: const EdgeInsets.only(left: 12),
-                child: Container(
-                  height: 40,
-                  width: 40,
-                  padding: const EdgeInsets.all(8),
-                  decoration: const BoxDecoration(
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(
-                          blurRadius: 3,
-                          color: Colors.black12,
-                          offset: Offset(2, 4),
-                        )
-                      ],
-                      shape: BoxShape.circle),
-                  child: Image.asset(calendar_search, fit: BoxFit.contain),
+    return Container(
+      color: Colors.white.withOpacity(0.9),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          SizedBox(
+            height: 2.h,
+          ),
+          Row(
+            children: [
+              InkWell(
+                onTap: () {
+                  showDatePicker(
+                      context: context,
+                      initialDate: testList.first.date,
+                      firstDate: testList.first.date,
+                      lastDate: testList.last.date,
+                      builder: (context, child) {
+                        return Theme(
+                          data: ThemeData().copyWith(
+                              colorScheme: const ColorScheme.light(
+                                  primary: primaryColor,
+                                  onPrimary: Colors.white)),
+                          child: DatePickerDialog(
+                            initialDate: testList[_currentPage.toInt()].date,
+                            firstDate: testList.first.date,
+                            lastDate: testList.last.date,
+                          ),
+                        );
+                      }).then((value) {
+                    if (value != null) {
+                      setState(() {
+                        _currentPage = testList
+                            .indexOf(testList
+                                .firstWhere((element) => element.date == value))
+                            .toDouble();
+                        _pageController.animateToPage(_currentPage.toInt(),
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.linear);
+                      });
+                    }
+                  });
+                },
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 12),
+                  child: Container(
+                    height: 40,
+                    width: 40,
+                    padding: const EdgeInsets.all(8),
+                    decoration: const BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            blurRadius: 3,
+                            color: Colors.black12,
+                            offset: Offset(2, 4),
+                          )
+                        ],
+                        shape: BoxShape.circle),
+                    child: Image.asset(calendar_search, fit: BoxFit.contain),
+                  ),
                 ),
               ),
-            ),
-            const Spacer(),
-            // if (departureDate!
-            //     .add(Duration(days: _currentPage.toInt()))
-            //     .isAfter(DateTime(startDate.year, startDate.month, startDate.day)))
-            Padding(
-              padding: const EdgeInsets.only(right: 12),
-              child: ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      backgroundColor: _isNotOverDay || _currentPage != 0
-                          ? primaryColor
-                          : Colors.white.withOpacity(0.8),
-                      shape: const RoundedRectangleBorder(
-                        borderRadius: BorderRadius.all(
-                          Radius.circular(10),
+              const Spacer(),
+              // if (departureDate!
+              //     .add(Duration(days: _currentPage.toInt()))
+              //     .isAfter(DateTime(startDate.year, startDate.month, startDate.day)))
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                        backgroundColor: _isNotOverDay || _currentPage != 0
+                            ? primaryColor
+                            : Colors.white.withOpacity(0.8),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.all(
+                            Radius.circular(10),
+                          ),
                         ),
-                      ),
-                      maximumSize: const Size(110, 50)),
-                  onPressed: () {
-                    if (_isNotOverDay || _currentPage != 0) {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (ctx) => NewScheduleItemScreen(
-                                callback: callback,
-                                startDate: testList[0].date,
-                                selectedIndex: _currentPage.toInt(),
-                              )));
-                    } else {}
-                  },
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.add,
-                        color: _isNotOverDay || _currentPage != 0
-                            ? Colors.white
-                            : Colors.grey,
-                      ),
-                      Text(
-                        'Thêm',
-                        style: TextStyle(
-                            color: _isNotOverDay || _currentPage != 0
-                                ? Colors.white
-                                : Colors.grey),
-                      )
-                    ],
-                  )),
-            ),
-          ],
-        ),
-        SizedBox(
-          height: 14.h,
-          child: ListView.builder(
-            itemCount: testList.length,
-            physics: const BouncingScrollPhysics(),
-            shrinkWrap: false,
-            scrollDirection: Axis.horizontal,
-            itemBuilder: (context, index) => Padding(
-              padding: EdgeInsets.all(2.w),
-              child: InkWell(
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
-                  onTap: () {
-                    setState(() {
-                      _currentPage = index.toDouble();
-                      _pageController.animateToPage(index,
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.bounceIn);
-                      // _pageController.jumpToPage(index);
-                    });
-                  },
-                  child: PlanScheduleTitle(
-                    date: testList[index].date,
-                    isSelected: _currentPage == index.toDouble(),
-                  )),
-            ),
-          ),
-        ),
-        Expanded(
-          child: PageView(
-            controller: _pageController,
-            children: [
-              for (int index = 0; index < testList.length; index++)
-                getPageView(index)
+                        maximumSize: const Size(110, 50)),
+                    onPressed: () {
+                      if (_isNotOverDay || _currentPage != 0) {
+                        var _currentSchedule = testList.firstWhere((element) =>
+                            element.date ==
+                            testList[0]
+                                .date
+                                .add(Duration(days: _currentPage.toInt())));
+                        int _availableTime = 0;
+                        // _currentSchedule.items
+                        //     .map((e) => _availableTime += e.activityTime!);
+                        for(final item in _currentSchedule.items){
+                          _availableTime += item.activityTime!;
+                        }
+                        if (_availableTime >= 12) {
+                          Utils().ShowFullyActivityTimeDialog(context);
+                        } else {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (ctx) => NewScheduleItemScreen(
+                                    callback: callback,
+                                    startDate: testList[0].date,
+                                    selectedIndex: _currentPage.toInt(),
+                                    availableTime: 12 - _availableTime,
+                                  )));
+                        }
+                      } else {}
+                    },
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.add,
+                          color: _isNotOverDay || _currentPage != 0
+                              ? Colors.white
+                              : Colors.grey,
+                        ),
+                        Text(
+                          'Thêm',
+                          style: TextStyle(
+                              color: _isNotOverDay || _currentPage != 0
+                                  ? Colors.white
+                                  : Colors.grey),
+                        )
+                      ],
+                    )),
+              ),
             ],
           ),
-        )
-      ],
+          SizedBox(
+            height: 14.h,
+            child: ListView.builder(
+              itemCount: testList.length,
+              physics: const BouncingScrollPhysics(),
+              shrinkWrap: false,
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) => Padding(
+                padding: EdgeInsets.all(2.w),
+                child: InkWell(
+                    borderRadius: const BorderRadius.all(Radius.circular(12)),
+                    onTap: () {
+                      setState(() {
+                        _currentPage = index.toDouble();
+                        _pageController.animateToPage(index,
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.bounceIn);
+                        // _pageController.jumpToPage(index);
+                      });
+                    },
+                    child: PlanScheduleTitle(
+                      date: testList[index].date,
+                      isSelected: _currentPage == index.toDouble(),
+                    )),
+              ),
+            ),
+          ),
+          Expanded(
+            child: PageView(
+              controller: _pageController,
+              children: [
+                for (int index = 0; index < testList.length; index++)
+                  getPageView(index)
+              ],
+            ),
+          )
+        ],
+      ),
     );
   }
 }

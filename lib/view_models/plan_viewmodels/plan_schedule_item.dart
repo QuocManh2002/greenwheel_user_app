@@ -14,6 +14,7 @@ class PlanScheduleItem {
   final String? orderId;
   final String? type;
   final String? shortDescription;
+  final int? activityTime;
 
   PlanScheduleItem(
       {String? id,
@@ -22,6 +23,7 @@ class PlanScheduleItem {
       this.shortDescription,
       this.date,
       this.orderId,
+      this.activityTime,
       this.type})
       : id = id ?? uuid.v4();
 
