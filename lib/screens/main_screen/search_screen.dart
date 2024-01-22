@@ -490,7 +490,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 padding: const EdgeInsets.only(
                                     left: 16, top: 14, bottom: 10),
                                 child: Text(
-                                  'Kết quả tìm kiếm của "${searchTerm.trim()}"',
+                                  'Kết quả tìm kiếm của "${searchedTxt.trim()}"',
                                   style: const TextStyle(
                                     fontSize: 19,
                                     fontFamily: 'NotoSans',
