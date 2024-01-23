@@ -56,12 +56,12 @@ class _QRScreenState extends State<QRScreen> {
         if (jwt.payload['planId'] != null) {
           print("Payload: ${jwt.payload}");
           // ignore: use_build_context_synchronously
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (ctx) => DetailPlanNewScreen(
-                    isEnableToJoin: true,
-                    locationName: jwt.payload["locationName"],
-                    planId: jwt.payload["planId"],
-                  )));
+          // Navigator.of(context).push(MaterialPageRoute(
+          //     builder: (ctx) => DetailPlanNewScreen(
+          //           isEnableToJoin: true,
+          //           locationName: jwt.payload["locationName"],
+          //           planId: jwt.payload["planId"],
+          //         )));
         } else {
           print('Payload for travelerId!');
         }

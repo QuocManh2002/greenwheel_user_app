@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/shimmer_widget.dart';
 import 'package:sizer2/sizer2.dart';
 
-class TestScreen extends StatelessWidget {
-  const TestScreen({super.key});
+class CreateScheduleLoadingScreen extends StatelessWidget {
+  const CreateScheduleLoadingScreen({super.key});
 
   @override
   Widget build(BuildContext context) {

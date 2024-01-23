@@ -41,7 +41,7 @@ class PlanCard extends StatelessWidget {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (ctx) => DetailPlanNewScreen(
                   planId: plan.id,
-                  locationName: plan.locationName,
+                  location: plan.location,
                   isEnableToJoin: false,
                 )));
       },
@@ -74,7 +74,7 @@ class PlanCard extends StatelessWidget {
                     child: FadeInImage(
                       height: 15.h,
                       placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage(plan.imageUrls[0]),
+                      image: NetworkImage(plan.location.imageUrls[0]),
                       fit: BoxFit.cover,
                       width: 15.h,
                       filterQuality: FilterQuality.high,
@@ -105,7 +105,7 @@ class PlanCard extends StatelessWidget {
                     const SizedBox(
                       height: 8,
                     ),
-                    Text(plan.provinceName),
+                    Text(plan.province.name),
                     const SizedBox(
                       height: 8,
                     ),

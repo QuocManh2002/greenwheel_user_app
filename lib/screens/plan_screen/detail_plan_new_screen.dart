@@ -12,6 +12,7 @@ import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.d
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
@@ -19,7 +20,6 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_button.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_icon_button.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -31,11 +31,11 @@ class DetailPlanNewScreen extends StatefulWidget {
   const DetailPlanNewScreen(
       {super.key,
       required this.planId,
-      required this.locationName,
+      required this.location,
       required this.isEnableToJoin});
   final int planId;
-  final String locationName;
   final bool isEnableToJoin;
+  final LocationViewModel location;
 
   @override
   State<DetailPlanNewScreen> createState() => _DetailPlanScreenState();
@@ -88,10 +88,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       }
       total += item.total;
     }
-    _planMembers = await _planService.getPlanMember(widget.planId);
-    _joinedMember =
-        _planMembers.where((member) => member.status == 'JOINED').toList();
-
+    _planMembers = _planDetail!.members!;
     setState(() {
       _listMotel = listMotel;
       _listRestaurant = listRestaurant;
@@ -243,66 +240,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             const SizedBox(
                               height: 16,
                             ),
-                            // Container(
-                            //   padding:
-                            //       const EdgeInsets.symmetric(horizontal: 24),
-                            //   alignment: Alignment.centerLeft,
-                            //   child: Row(
-                            //       mainAxisAlignment: MainAxisAlignment.start,
-                            //       children: [
-                            //         InkWell(
-                            //           borderRadius: const BorderRadius.all(
-                            //               Radius.circular(12)),
-                            //           onTap: () {
-                            //             setState(() {
-                            //               _selectedTab = 0;
-                            //             });
-                            //           },
-                            //           child: TabButton(
-                            //             text: 'Thông tin cơ bản',
-                            //             isSelected: _selectedTab == 0,
-                            //             index: 0,
-                            //           ),
-                            //         ),
-                            //         const SizedBox(
-                            //           width: 16,
-                            //         ),
-                            //         InkWell(
-                            //           borderRadius: const BorderRadius.all(
-                            //               Radius.circular(12)),
-                            //           onTap: () {
-                            //             setState(() {
-                            //               _selectedTab = 1;
-                            //             });
-                            //           },
-                            //           child: TabButton(
-                            //             text: 'Lịch trình',
-                            //             isSelected: _selectedTab == 1,
-                            //             index: 1,
-                            //           ),
-                            //         ),
-                            //         const SizedBox(
-                            //           width: 16,
-                            //         ),
-                            //         InkWell(
-                            //           borderRadius: const BorderRadius.all(
-                            //               Radius.circular(12)),
-                            //           onTap: () {
-                            //             setState(() {
-                            //               _selectedTab = 2;
-                            //             });
-                            //           },
-                            //           child: TabButton(
-                            //             text: 'Dịch vụ',
-                            //             isSelected: _selectedTab == 2,
-                            //             index: 2,
-                            //           ),
-                            //         ),
-                            //         const SizedBox(
-                            //           width: 16,
-                            //         ),
-                            //       ]),
-                            // ),
                             Container(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 24),
@@ -378,7 +315,17 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             Container(
                               child: _selectedTab == 0
                                   ? Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
                                       children: [
+                                        const Padding(padding: EdgeInsets.symmetric(horizontal: 24),
+                                          child: Text(
+                                            'Thông tin cơ bản', style: TextStyle(
+                                              fontSize: 20, 
+                                              fontWeight: FontWeight.bold
+                                            ),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16,),
                                         BaseInformationWidget(
                                             plan: _planDetail!),
                                         Padding(
@@ -667,7 +614,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           builder: (ctx) => SharePlanScreen(
                 planMembers: _planMembers,
                 isEnableToJoin: widget.isEnableToJoin,
-                locationName: widget.locationName,
+                locationName: widget.location.name,
                 planId: widget.planId,
               )));
     } else {

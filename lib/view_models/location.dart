@@ -1,11 +1,6 @@
-import 'dart:convert';
 
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
-
-LocationViewModel provinceFromJson(String str) =>
-    LocationViewModel.fromJson(json.decode(str));
-
-String provinceToJson(LocationViewModel data) => json.encode(data.toJson());
+import 'package:greenwheel_user_app/view_models/province.dart';
 
 class LocationViewModel {
   int id;
@@ -24,7 +19,7 @@ class LocationViewModel {
   String? clinicPhone;
   String? clinicAddress;
   String hotline;
-  int provinceId;
+  ProvinceViewModel province;
   int suggestedTripLength;
   List<EmergencyContactViewModel>? emergencyContacts;
   List<dynamic>? templateEvents;
@@ -46,7 +41,7 @@ class LocationViewModel {
       this.clinicPhone,
       this.clinicAddress,
       required this.hotline,
-      required this.provinceId,
+      required this.province,
       required this.suggestedTripLength,
       this.emergencyContacts,
       this.templateEvents});
@@ -71,27 +66,8 @@ class LocationViewModel {
           hotline: json["hotline"],
           suggestedTripLength:
               List<dynamic>.from(json['templateSchedule'].map((x) => x)).length,
-          provinceId: json["provinceId"],
+          province: ProvinceViewModel.fromJson(json["province"]),
           emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
           templateEvents: json['templateEvents']);
 
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "description": description,
-        "imageUrls": imageUrls,
-        "name": name,
-        "activities": List<dynamic>.from(activities.map((x) => x)),
-        "seasons": List<dynamic>.from(seasons.map((x) => x)),
-        "topographic": topographic,
-        "templateSchedule": templatePlan,
-        "latitude": latitude,
-        "longitude": longitude,
-        "address": address,
-        "lifeguardPhone": lifeguardPhone,
-        "lifeguardAddress": lifeguardAddress,
-        "clinicPhone": clinicPhone,
-        "clinicAddress": clinicAddress,
-        "hotline": hotline,
-        "provinceId": provinceId,
-      };
 }

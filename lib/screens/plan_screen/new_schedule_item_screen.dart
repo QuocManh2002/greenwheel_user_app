@@ -17,6 +17,7 @@ class NewScheduleItemScreen extends StatefulWidget {
       required this.startDate,
       required this.selectedIndex,
       required this.availableTime,
+      required this.isNotOverDay,
       this.item});
   final void Function(
       PlanScheduleItem item, bool isCreate, PlanScheduleItem? oldItem) callback;
@@ -24,6 +25,7 @@ class NewScheduleItemScreen extends StatefulWidget {
   final PlanScheduleItem? item;
   final int selectedIndex;
   final int availableTime;
+  final bool isNotOverDay;
 
   @override
   State<NewScheduleItemScreen> createState() => _NewScheduleItemScreenState();
@@ -290,7 +292,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             },
                           ).then((value) {
                             if (widget.selectedIndex == 0) {
-                              if (!checkValidStartItem(value!)) {
+                              if (!checkValidStartItem(value!) && widget.isNotOverDay) {
                                 AwesomeDialog(
                                     context: context,
                                     dialogType: DialogType.warning,

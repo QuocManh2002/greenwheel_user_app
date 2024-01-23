@@ -350,7 +350,7 @@ class _LocationScreenState extends State<LocationScreen> {
                               const Padding(
                                 padding: EdgeInsets.symmetric(horizontal: 12),
                                 child: Text(
-                                  "Đánh giá",
+                                  "Bình luận",
                                   style: TextStyle(
                                       fontSize: 19,
                                       fontWeight: FontWeight.bold),

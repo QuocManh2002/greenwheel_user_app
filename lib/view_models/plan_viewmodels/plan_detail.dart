@@ -6,6 +6,7 @@ import 'dart:convert';
 
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/plan_member.dart';
 
 PlanDetail planDetailFromJson(String str) =>
     PlanDetail.fromJson(json.decode(str));
@@ -30,6 +31,7 @@ class PlanDetail {
   List<OrderViewModel>? orders;
   List<EmergencyContactViewModel>? savedContacts;
   int numOfExpPeriod;
+  List<PlanMemberViewModel>? members;
 
   PlanDetail(
       {required this.id,
@@ -44,6 +46,7 @@ class PlanDetail {
       required this.name,
       required this.joinMethod,
       this.savedContacts,
+      this.members,
       required this.startLocationLat,
       required this.startLocationLng,
       required this.numOfExpPeriod,
@@ -66,6 +69,7 @@ class PlanDetail {
         numOfExpPeriod: json['numOfExpPeriod'],
         startLocationLat: json["departurePosition"]["coordinates"][1].toDouble(),
         startLocationLng: json["departurePosition"]["coordinates"][0].toDouble(),
+        members: List<PlanMemberViewModel>.from(json['members'].map((e) => PlanMemberViewModel.fromJson(e))).toList(),
         savedContacts: List<EmergencyContactViewModel>.from(json['savedContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
       );
 

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/create_schedule_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/base_information_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
@@ -275,6 +276,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                     btnOkColor: Colors.blue,
                                     btnOkText: 'Xác nhận',
                                     btnOkOnPress: () async {
+                                      setState(() {
+                                          activePage = const CreateScheduleLoadingScreen();
+                                        });
                                       if (widget.isCreate) {
                                         if (await createDraftPlan(
                                             sharedPreferences

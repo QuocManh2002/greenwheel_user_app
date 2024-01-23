@@ -241,6 +241,16 @@ query GetPlanById(\$planId: Int){
         }
       }}
       location{id name imageUrls}
+      members {
+        status
+        traveler {
+          account {
+            name
+          }
+          phone
+        }
+        travelerId
+      }
     }
   }
 }
@@ -289,11 +299,24 @@ query GetPlanById(\$planId: Int){
       endDate
       status
       location{
-        name
-        imageUrls
-        province{
+        id
+          description
+          imageUrls
           name
-        }
+          activities
+          seasons
+          topographic
+          templateSchedule
+          coordinate{coordinates}
+          address
+          hotline
+          province{
+            id
+            name
+            thumbnailUrl
+          }
+          emergencyContacts
+          templateEvents
       }
 
     }

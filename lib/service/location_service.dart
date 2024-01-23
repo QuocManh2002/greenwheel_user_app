@@ -34,7 +34,11 @@ class LocationService extends Iterable {
           coordinate{coordinates}
           address
           hotline
-          provinceId
+          province{
+            id
+            name
+            thumbnailUrl
+          }
           emergencyContacts
           templateEvents
         }
@@ -180,7 +184,11 @@ query search(\$search: String!) {
           coordinate{coordinates}
           address
           hotline
-          provinceId
+          province{
+            id
+            name
+            thumbnailUrl
+          }
           emergencyContacts
           templateEvents
         }
@@ -215,7 +223,11 @@ query search(\$search: String!) {
           coordinate{coordinates}
           address
           hotline
-          provinceId
+          province{
+            id
+            name
+            thumbnailUrl
+          }
           emergencyContacts
           templateEvents
         }
@@ -301,7 +313,11 @@ query getById(\$id: Int) {
       }
       address
       hotline
-      provinceId
+      province{
+            id
+            name
+            thumbnailUrl
+          }
       emergencyContacts
       templateEvents
     }
@@ -345,7 +361,11 @@ query getByLocationId(\$id: Int) {
       }
       address
       hotline
-      provinceId
+      province{
+            id
+            name
+            thumbnailUrl
+          }
       emergencyContacts
       templateEvents
     }

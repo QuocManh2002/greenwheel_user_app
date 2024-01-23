@@ -48,6 +48,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   final DateTime _endDate =
       DateTime.parse(sharedPreferences.getString('plan_end_date')!);
   final duration = sharedPreferences.getDouble('plan_duration_value');
+  final DateTime _departureDate =
+      DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
 
   bool _isNotOverDay = true;
 
@@ -76,14 +78,12 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
 
     // var checkDate =
     //     DateTime(_startDate!.year, _startDate!.month, _startDate!.day, 6, 0);
-    // _isNotOverDay = checkDate.isAfter(_startDate!);
+    _isNotOverDay = startDate.day == _departureDate.day;
     // if (!_isNotOverDay) {
     //   final _newStartDate =
     //       DateTime.parse(startDate).add(const Duration(days: 1));
     // sharedPreferences.setString('plan_start_date', _newStartDate.toString());
     // }
-
-
 
     if (widget.isCreate) {
       if (!widget.isClone) {
@@ -91,8 +91,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
         var finalList = _planService.convertPlanScheduleToJson(testList);
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       } else {
-        var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
-            startDate, _endDate.difference(startDate).inDays);
+        var list = _planService.GetPlanScheduleFromJsonNew(
+            widget.schedule!, startDate, _endDate.difference(startDate).inDays);
         // if (!_isNotOverDay) {
         //   final departureDate = DateTime.parse(
         //       sharedPreferences.getString('plan_departureDate')!);
@@ -105,8 +105,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
       }
     } else {
       // var scheduleText = sharedPreferences.getString('plan_schedule');
-      var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
-          startDate, _endDate.difference(startDate).inDays );
+      var list = _planService.GetPlanScheduleFromJsonNew(
+          widget.schedule!, startDate, _endDate.difference(startDate).inDays);
 
       // if (!_isNotOverDay) {
       //   final departureDate =
@@ -133,13 +133,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             .firstWhere((element) => element.date == item.date)
             .items
             .add(item);
-        // testList.firstWhere((element) => element.date == item.date).items.sort(
-        //   (a, b) {
-        //     var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
-        //     var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
-        //     return adate.compareTo(bdate);
-        //   },
-        // );
       });
 
       var finalList = _planService.convertPlanScheduleToJson(testList);
@@ -245,8 +238,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
 
           testList[_index].items.isEmpty
               ? Container(
-                color: Colors.white.withOpacity(0.92),
-                child: Column(
+                  color: Colors.white.withOpacity(0.92),
+                  child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Image.asset(
@@ -260,9 +253,9 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                         padding: EdgeInsets.symmetric(horizontal: 18),
                         child: Text(
                           // _isNotOverDay || _currentPage != 0
-                          //     ? 
-                              'Bạn không có lịch trình nào trong ngày này',
-                              // : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
+                          //     ?
+                          'Bạn không có lịch trình nào trong ngày này',
+                          // : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                               color: Colors.black54,
@@ -272,7 +265,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                       )
                     ],
                   ),
-              )
+                )
               : SingleChildScrollView(
                   child: ListView.builder(
                   physics: const BouncingScrollPhysics(),
@@ -294,6 +287,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             selectedIndex: _currentPage.toInt(),
             item: item,
             availableTime: 1,
+            isNotOverDay: _isNotOverDay,
             startDate: testList.first.date)));
   }
 
@@ -382,9 +376,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                 padding: const EdgeInsets.only(right: 12),
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor: _isNotOverDay || _currentPage != 0
-                            ? primaryColor
-                            : Colors.white.withOpacity(0.8),
+                        backgroundColor:primaryColor,
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(
                             Radius.circular(10),
@@ -392,46 +384,40 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                         ),
                         maximumSize: const Size(110, 50)),
                     onPressed: () {
-                      if (_isNotOverDay || _currentPage != 0) {
-                        var _currentSchedule = testList.firstWhere((element) =>
-                            element.date ==
-                            testList[0]
-                                .date
-                                .add(Duration(days: _currentPage.toInt())));
-                        int _availableTime = 0;
-                        // _currentSchedule.items
-                        //     .map((e) => _availableTime += e.activityTime!);
-                        for(final item in _currentSchedule.items){
-                          _availableTime += item.activityTime!;
-                        }
-                        if (_availableTime >= 12) {
-                          Utils().ShowFullyActivityTimeDialog(context);
-                        } else {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (ctx) => NewScheduleItemScreen(
-                                    callback: callback,
-                                    startDate: testList[0].date,
-                                    selectedIndex: _currentPage.toInt(),
-                                    availableTime: 12 - _availableTime,
-                                  )));
-                        }
-                      } else {}
+                      var _currentSchedule = testList.firstWhere((element) =>
+                          element.date ==
+                          testList[0]
+                              .date
+                              .add(Duration(days: _currentPage.toInt())));
+                      int _availableTime = 0;
+                      // _currentSchedule.items
+                      //     .map((e) => _availableTime += e.activityTime!);
+                      for (final item in _currentSchedule.items) {
+                        _availableTime += item.activityTime!;
+                      }
+                      if (_availableTime >= 12) {
+                        Utils().ShowFullyActivityTimeDialog(context);
+                      } else {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => NewScheduleItemScreen(
+                                  callback: callback,
+                                  startDate: testList[0].date,
+                                  selectedIndex: _currentPage.toInt(),
+                                  availableTime: 12 - _availableTime,
+                                  isNotOverDay: _isNotOverDay,
+                                )));
+                      }
                     },
-                    child: Row(
+                    child: const Row(
                       children: [
                         Icon(
                           Icons.add,
-                          color: _isNotOverDay || _currentPage != 0
-                              ? Colors.white
-                              : Colors.grey,
+                          color: Colors.white,
                         ),
-                        Text(
-                          'Thêm',
-                          style: TextStyle(
-                              color: _isNotOverDay || _currentPage != 0
-                                  ? Colors.white
-                                  : Colors.grey),
-                        )
+                        Text('Thêm',
+                            style: TextStyle(
+                              color: Colors.white,
+                            ))
                       ],
                     )),
               ),
