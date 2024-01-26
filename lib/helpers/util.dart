@@ -122,4 +122,16 @@ class Utils {
           ),
         )).show();
   }
+
+  bool IsValidSentence(String sentence) {
+    List<String> words = sentence.split(' ');
+    Map<String, int> wordFrequency = {};
+    for (String word in words) {
+      wordFrequency[word] = (wordFrequency[word] ?? 0) + 1;
+      if (wordFrequency[word]! >= 3) {
+        return false;
+      }
+    }
+    return true;
+  }
 }

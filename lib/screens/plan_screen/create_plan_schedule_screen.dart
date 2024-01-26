@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -11,7 +10,6 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.da
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
-import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 // ignore: must_be_immutable
@@ -92,7 +90,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       } else {
         var list = _planService.GetPlanScheduleFromJsonNew(
-            widget.schedule!, startDate, _endDate.difference(startDate).inDays);
+            widget.schedule!, startDate, _endDate.difference(startDate).inDays+1);
         // if (!_isNotOverDay) {
         //   final departureDate = DateTime.parse(
         //       sharedPreferences.getString('plan_departureDate')!);
@@ -106,7 +104,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
     } else {
       // var scheduleText = sharedPreferences.getString('plan_schedule');
       var list = _planService.GetPlanScheduleFromJsonNew(
-          widget.schedule!, startDate, _endDate.difference(startDate).inDays);
+          widget.schedule!, startDate, _endDate.difference(startDate).inDays+1);
 
       // if (!_isNotOverDay) {
       //   final departureDate =
@@ -133,6 +131,14 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             .firstWhere((element) => element.date == item.date)
             .items
             .add(item);
+        testList
+            .firstWhere((element) => element.date == item.date)
+            .items
+            .sort((a, b) {
+          var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
+          var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
+          return adate.compareTo(bdate);
+        });
       });
 
       var finalList = _planService.convertPlanScheduleToJson(testList);
@@ -149,9 +155,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             .items
             .add(item);
       });
-
       var finalList = _planService.convertPlanScheduleToJson(testList);
-
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
       print(finalList);
       Navigator.of(context).pop();
@@ -231,52 +235,66 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
 
   Widget getPageView(int _index) {
     return Container(
-      color: Colors.white.withOpacity(0.1),
+      color: Colors.white,
       width: 100.w,
       child:
           // !_isNotOverDay ?
 
           testList[_index].items.isEmpty
-              ? Container(
-                  color: Colors.white.withOpacity(0.92),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset(
-                        empty_plan,
-                        width: 70.w,
+              ? Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Image.asset(
+                      'assets/images/anhnen2.png',
+                      width: 70.w,
+                    ),
+                    const SizedBox(
+                      height: 12,
+                    ),
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 18),
+                      child: Text(
+                        // _isNotOverDay || _currentPage != 0
+                        //     ?
+                        'Bạn không có lịch trình nào trong ngày này',
+                        // : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: Colors.black54,
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 18),
-                        child: Text(
-                          // _isNotOverDay || _currentPage != 0
-                          //     ?
-                          'Bạn không có lịch trình nào trong ngày này',
-                          // : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                              color: Colors.black54,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
-                        ),
-                      )
-                    ],
-                  ),
+                    )
+                  ],
                 )
-              : SingleChildScrollView(
-                  child: ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: testList[_index].items.length,
-                  itemBuilder: (context, index) => PlanScheduleActivity(
-                      item: testList[_index].items[index],
-                      showBottomSheet: _showBottomSheet,
-                      isSelected:
-                          _selectedItem == testList[_index].items[index]),
-                )),
+              : SizedBox(
+                  height: 50.h,
+                  child: ReorderableListView(
+                    children: List.generate(
+                      testList[_index].items.length,
+                      (index) => PlanScheduleActivity(
+                          key: UniqueKey(),
+                          item: testList[_index].items[index],
+                          showBottomSheet: _showBottomSheet,
+                          isSelected:
+                              _selectedItem == testList[_index].items[index]),
+                    ),
+                    onReorder: (oldIndex, newIndex) {
+                      List<TimeOfDay> _timeList = testList[_index].items.map((e) => e.time,).toList();
+                      setState(() {
+                        if (oldIndex < newIndex) {
+                          newIndex -= 1;
+                        }
+                        final PlanScheduleItem item =
+                            testList[_index].items.removeAt(oldIndex);
+                        testList[_index].items.insert(newIndex, item);
+                        for(int i = 0 ;i < testList[_index].items.length; i++){
+                          testList[_index].items[i].time = _timeList[i];
+                        }
+                      });
+                    },
+                  ),
+                ),
     );
   }
 
@@ -286,7 +304,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             callback: callback,
             selectedIndex: _currentPage.toInt(),
             item: item,
-            availableTime: 1,
+            initialTime: const TimeOfDay(hour: 0, minute: 0),
             isNotOverDay: _isNotOverDay,
             startDate: testList.first.date)));
   }
@@ -305,7 +323,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white.withOpacity(0.9),
+      color: Colors.white,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -376,7 +394,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                 padding: const EdgeInsets.only(right: 12),
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                        backgroundColor:primaryColor,
+                        backgroundColor: primaryColor,
                         shape: const RoundedRectangleBorder(
                           borderRadius: BorderRadius.all(
                             Radius.circular(10),
@@ -389,24 +407,21 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                           testList[0]
                               .date
                               .add(Duration(days: _currentPage.toInt())));
-                      int _availableTime = 0;
-                      // _currentSchedule.items
-                      //     .map((e) => _availableTime += e.activityTime!);
-                      for (final item in _currentSchedule.items) {
-                        _availableTime += item.activityTime!;
-                      }
-                      if (_availableTime >= 12) {
-                        Utils().ShowFullyActivityTimeDialog(context);
-                      } else {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (ctx) => NewScheduleItemScreen(
-                                  callback: callback,
-                                  startDate: testList[0].date,
-                                  selectedIndex: _currentPage.toInt(),
-                                  availableTime: 12 - _availableTime,
-                                  isNotOverDay: _isNotOverDay,
-                                )));
-                      }
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (ctx) => NewScheduleItemScreen(
+                                callback: callback,
+                                startDate: testList[0].date,
+                                selectedIndex: _currentPage.toInt(),
+                                initialTime: _currentSchedule.items.isEmpty
+                                    ? TimeOfDay.now()
+                                    : TimeOfDay(
+                                        hour: _currentSchedule
+                                                .items.last.time.hour +
+                                            1,
+                                        minute: _currentSchedule
+                                            .items.last.time.minute),
+                                isNotOverDay: _isNotOverDay,
+                              )));
                     },
                     child: const Row(
                       children: [

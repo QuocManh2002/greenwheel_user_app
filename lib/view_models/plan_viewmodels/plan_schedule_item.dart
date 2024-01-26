@@ -9,7 +9,7 @@ const uuid = Uuid();
 class PlanScheduleItem {
   final String id;
   final String? description;
-  final TimeOfDay time;
+  TimeOfDay time;
   final DateTime? date;
   final String? orderId;
   final String? type;

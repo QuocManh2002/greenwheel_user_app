@@ -65,15 +65,15 @@ class PlanScheduleActivity extends StatelessWidget {
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold),
                                   ),
-                                  SizedBox(
-                                    height: 6,
-                                  ),
-                                  Text(
-                                    'Thời gian hoạt động:',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                  ),
+                                  // SizedBox(
+                                  //   height: 6,
+                                  // ),
+                                  // Text(
+                                  //   'Thời gian hoạt động:',
+                                  //   style: TextStyle(
+                                  //       fontSize: 16,
+                                  //       fontWeight: FontWeight.bold),
+                                  // ),
                                 ],
                               ),
                               const SizedBox(
@@ -93,14 +93,14 @@ class PlanScheduleActivity extends StatelessWidget {
                                     item.description!,
                                     style: const TextStyle(fontSize: 16),
                                   ),
-                                  const SizedBox(
-                                    height: 6,
-                                  ),
-                                  Text(
-                                    '${item.activityTime ?? 1} giờ', style:const TextStyle(
-                                      fontSize: 16
-                                    ),
-                                  )
+                                  // const SizedBox(
+                                  //   height: 6,
+                                  // ),
+                                  // Text(
+                                  //   '${item.activityTime ?? 1} giờ', style:const TextStyle(
+                                  //     fontSize: 16
+                                  //   ),
+                                  // )
                                 ],
                               )
                             ],
@@ -132,7 +132,7 @@ class PlanScheduleActivity extends StatelessWidget {
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
                   color:
-                      isSelected ? primaryColor.withOpacity(0.3) : Colors.white,
+                      isSelected ? primaryColor.withOpacity(0.3) : const Color(0xFFf2f2f2),
                   boxShadow: const [
                     BoxShadow(
                       blurRadius: 3,
@@ -236,8 +236,8 @@ class PlanScheduleActivity extends StatelessWidget {
                               height: 0.8.h,
                             ),
                             Text(
-                              '${DateFormat.Hm().format(DateTime(
-                                  0, 0, 0, item.time.hour, item.time.minute))} | ${item.activityTime ?? 1} giờ',
+                              DateFormat.Hm().format(DateTime(
+                                  0, 0, 0, item.time.hour, item.time.minute)),
                               style: const TextStyle(
                                   fontSize: 17, fontWeight: FontWeight.bold),
                             )

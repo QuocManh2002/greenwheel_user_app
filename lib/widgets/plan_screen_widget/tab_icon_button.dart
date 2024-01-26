@@ -10,17 +10,20 @@ class TabIconButton extends StatelessWidget {
       required this.isSelected,
       required this.iconDefaultUrl,
       required this.iconSelectedUrl,
+      this.hasHeight,
       required this.text});
   final String text;
   final bool isSelected;
   final int index;
   final String iconDefaultUrl;
   final String iconSelectedUrl;
+  final bool? hasHeight;
+
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 11.5.h,
+      // height: hasHeight != null ? 13.h : 10.h,
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       decoration: BoxDecoration(
         color: isSelected ? primaryColor : Colors.white,
@@ -47,11 +50,11 @@ class TabIconButton extends StatelessWidget {
             overflow: TextOverflow.clip,
             textAlign: TextAlign.center,
             style: TextStyle(
-                fontSize: 14,
+                fontSize: 10.9,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected ? Colors.white : primaryColor),
           ),
-          const Spacer()
+          const SizedBox(height: 12,)
         ],
       ),
     );

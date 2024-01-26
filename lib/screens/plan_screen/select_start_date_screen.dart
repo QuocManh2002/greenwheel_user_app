@@ -55,7 +55,7 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
     _selectedComboDate = listComboDate.firstWhere((element) =>
         element.numberOfDay + element.numberOfNight == _numOfExpPeriod);
     _initComboDate = _selectedComboDate;
-    final startDate = sharedPreferences.getString('plan_start_date');
+    final startDate = sharedPreferences.getString('plan_departureDate');
     _startTime = sharedPreferences.getString('plan_start_time');
 
     if (startDate != null) {
@@ -109,7 +109,7 @@ class _SelectStartDateScreenState extends State<SelectStartDateScreen> {
             height: 2.h,
           ),
           const Text(
-            '(Bao gồm thời gian di chuyển từ địa điểm xuất phát)',
+            'Bao gồm thời gian di chuyển từ địa điểm xuất phát',
             style: TextStyle(fontSize: 16, color: Colors.grey),
           ),
           SizedBox(

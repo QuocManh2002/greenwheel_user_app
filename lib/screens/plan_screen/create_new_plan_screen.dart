@@ -154,177 +154,92 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
               foregroundColor: MaterialStatePropertyAll(Colors.white)),
         ),
       ),
-      body: Column(
-        children: [
-          Expanded(
-            child: Column(
-              children: [
-                Container(
-                  alignment: Alignment.center,
-                  height: 7.h,
-                child: Text(_stepperText,
-                style:const TextStyle(
-                  fontSize: 22, 
-                  fontWeight: FontWeight.bold
-                ),),),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Container(
+      body: Container(
+        color:Colors.white,
+        child: Column(
+          children: [
+            Expanded(
+              child: Column(
+                children: [
+                  Container(
+                    alignment: Alignment.center,
+                    height: 7.h,
+                  child: Text(_stepperText,
+                  style:const TextStyle(
+                    fontSize: 22, 
+                    fontWeight: FontWeight.bold
+                  ),),),
+                  Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
-                    color: Colors.grey.withOpacity(0.5),
-                    height: 1.5,
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      color: Colors.grey.withOpacity(0.5),
+                      height: 1.5,
+                    ),
                   ),
-                ),
-                Expanded(child: activePage)
-              ],
+                  Expanded(child: activePage)
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            height: 1.h,
-          ),
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 2.h),
-            child: Row(
-              children: [
-                if (_currentStep > 0 && _currentStep < 3)
-                  Expanded(
-                    child: ElevatedButton(
-                        style: elevatedButtonStyle.copyWith(
-                            foregroundColor:
-                                const MaterialStatePropertyAll(primaryColor),
-                            backgroundColor:
-                                const MaterialStatePropertyAll(Colors.white),
-                            shape: const MaterialStatePropertyAll(
-                                RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.all(
-                                      Radius.circular(12),
-                                    ),
-                                    side: BorderSide(
-                                        color: primaryColor, width: 2)))),
-                        onPressed: () {
-                          if (_currentStep > 0) {
-                            setState(() {
-                              _currentStep--;
-                            });
-                          }
-                        },
-                        child: const Text(
-                          "Quay lại",
-                          style: TextStyle(fontSize: 22),
-                        )),
-                  ),
-                if (_currentStep > 0 && _currentStep < 3)
-                  SizedBox(
-                    width: 2.h,
-                  ),
-                if (_currentStep < 5)
-                  Expanded(
-                    child: ElevatedButton(
-                        style: elevatedButtonStyle,
-                        onPressed: () {
-                          if (_currentStep == 1 &&
-                              sharedPreferences
-                                      .getDouble('plan_duration_value') ==
-                                  null) {
-                            handleValidationSelectLocationScreen();
-                          } else if (_currentStep == 1 &&
-                              !checkValidStartDateTime()) {
-                            AwesomeDialog(
-                                    context: context,
-                                    dialogType: DialogType.warning,
-                                    body: const Padding(
-                                      padding:
-                                          EdgeInsets.symmetric(horizontal: 32),
-                                      child: Center(
-                                        child: Text(
-                                          'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
-                                          style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.bold),
-                                          textAlign: TextAlign.center,
-                                        ),
+            SizedBox(
+              height: 1.h,
+            ),
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 2.h),
+              child: Row(
+                children: [
+                  if (_currentStep > 0 && _currentStep < 3)
+                    Expanded(
+                      child: ElevatedButton(
+                          style: elevatedButtonStyle.copyWith(
+                              foregroundColor:
+                                  const MaterialStatePropertyAll(primaryColor),
+                              backgroundColor:
+                                  const MaterialStatePropertyAll(Colors.white),
+                              shape: const MaterialStatePropertyAll(
+                                  RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.all(
+                                        Radius.circular(12),
                                       ),
-                                    ),
-                                    btnOkColor: Colors.orange,
-                                    btnOkText: 'OK',
-                                    btnOkOnPress: () {})
-                                .show();
-                          } else if (_currentStep == 2) {
-                            ComboDate _selectedComboDate = listComboDate[
-                                sharedPreferences.getInt('plan_combo_date')! -
-                                    1];
-                            DateTime departureDate = DateTime.parse(
+                                      side: BorderSide(
+                                          color: primaryColor, width: 2)))),
+                          onPressed: () {
+                            if (_currentStep > 0) {
+                              setState(() {
+                                _currentStep--;
+                              });
+                            }
+                          },
+                          child: const Text(
+                            "Quay lại",
+                            style: TextStyle(fontSize: 22),
+                          )),
+                    ),
+                  if (_currentStep > 0 && _currentStep < 3)
+                    SizedBox(
+                      width: 2.h,
+                    ),
+                  if (_currentStep < 5)
+                    Expanded(
+                      child: ElevatedButton(
+                          style: elevatedButtonStyle,
+                          onPressed: () {
+                            if (_currentStep == 1 &&
                                 sharedPreferences
-                                    .getString('plan_departureDate')!);
-                            DateTime endDate = DateTime.parse(
-                                sharedPreferences.getString('plan_end_date')!);
-                            int numberOfMember = sharedPreferences
-                                .getInt('plan_number_of_member')!;
-                            String? timeText =
-                                sharedPreferences.getString('plan_start_time');
-                            final initialDateTime =
-                                DateFormat.Hm().parse(timeText!);
-                            final _selectTime =
-                                TimeOfDay.fromDateTime(initialDateTime);
-                            AwesomeDialog(
-                                    context: context,
-                                    dialogType: DialogType.info,
-                                    title: "Xác nhận thông tin",
-                                    btnCancelText: 'Chỉnh sửa',
-                                    btnCancelColor: Colors.orange,
-                                    btnCancelOnPress: () {},
-                                    btnOkColor: Colors.blue,
-                                    btnOkText: 'Xác nhận',
-                                    btnOkOnPress: () async {
-                                      setState(() {
-                                          activePage = const CreateScheduleLoadingScreen();
-                                        });
-                                      if (widget.isCreate) {
-                                        if (await createDraftPlan(
-                                            sharedPreferences
-                                                .getInt('numOfExpPeriod')!,
-                                            DateTime(
-                                                departureDate.year,
-                                                departureDate.month,
-                                                departureDate.day,
-                                                _selectTime.hour,
-                                                _selectTime.minute),
-                                            endDate,
-                                            numberOfMember)) {
-                                          setState(() {
-                                            _currentStep++;
-                                          });
-                                        } else {
-                                          print('error when create draft plan');
-                                        }
-                                      } else {
-                                        setState(() {
-                                          _currentStep++;
-                                        });
-                                      }
-                                    },
-                                    body: ConfirmBaseInfoDialog(
-                                        selectedComboDate: _selectedComboDate,
-                                        endDate: endDate,
-                                        numberOfMember: numberOfMember,
-                                        startDate: DateTime(
-                                            departureDate.year,
-                                            departureDate.month,
-                                            departureDate.day,
-                                            _selectTime.hour,
-                                            _selectTime.minute)))
-                                .show();
-                          } else if (_currentStep == 3) {
-                            if (checkValidNumberOfActivity()) {
+                                        .getDouble('plan_duration_value') ==
+                                    null) {
+                              handleValidationSelectLocationScreen();
+                            } else if (_currentStep == 1 &&
+                                !checkValidStartDateTime()) {
                               AwesomeDialog(
                                       context: context,
                                       dialogType: DialogType.warning,
                                       body: const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 32),
+                                        padding:
+                                            EdgeInsets.symmetric(horizontal: 32),
                                         child: Center(
                                           child: Text(
-                                            'Tất cả các ngày trong chuyến đi phải có ít nhất một hoạt động',
+                                            'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
                                             style: TextStyle(
                                                 fontSize: 16,
                                                 fontWeight: FontWeight.bold),
@@ -336,107 +251,195 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                       btnOkText: 'OK',
                                       btnOkOnPress: () {})
                                   .show();
-                            } else {
-                              String? startDateText = sharedPreferences
-                                  .getString('plan_start_date');
-                              final _startDate = DateTime.parse(startDateText!);
-                              String? endDateText =
-                                  sharedPreferences.getString('plan_end_date');
-                              final _endDate = DateTime.parse(endDateText!);
-                              final _duration = _endDate
-                                      .difference(DateTime(_startDate.year,
-                                          _startDate.month, _startDate.day))
-                                      .inDays +
-                                  1;
+                            } else if (_currentStep == 2) {
+                              ComboDate _selectedComboDate = listComboDate[
+                                  sharedPreferences.getInt('plan_combo_date')! -
+                                      1];
+                              DateTime departureDate = DateTime.parse(
+                                  sharedPreferences
+                                      .getString('plan_departureDate')!);
+                              DateTime endDate = DateTime.parse(
+                                  sharedPreferences.getString('plan_end_date')!);
+                              int numberOfMember = sharedPreferences
+                                  .getInt('plan_number_of_member')!;
+                              String? timeText =
+                                  sharedPreferences.getString('plan_start_time');
+                              final initialDateTime =
+                                  DateFormat.Hm().parse(timeText!);
+                              final _selectTime =
+                                  TimeOfDay.fromDateTime(initialDateTime);
                               AwesomeDialog(
-                                  context: context,
-                                  dialogType: DialogType.info,
-                                  title: 'Xác nhận lịch trình chuyến đi',
-                                  btnOkText: 'Xác nhận',
-                                  btnOkColor: Colors.blue,
-                                  btnOkOnPress: () {
-                                    setState(() {
-                                      _currentStep++;
-                                    });
-                                  },
-                                  btnCancelColor: Colors.orange,
-                                  btnCancelText: 'Chỉnh sửa',
-                                  btnCancelOnPress: () {},
-                                  body: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 12, horizontal: 24),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Container(
-                                          alignment: Alignment.center,
-                                          child: const Text(
-                                            'Xác nhận lịch trình chuyến đi',
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
+                                      context: context,
+                                      dialogType: DialogType.info,
+                                      title: "Xác nhận thông tin",
+                                      btnCancelText: 'Chỉnh sửa',
+                                      btnCancelColor: Colors.orange,
+                                      btnCancelOnPress: () {},
+                                      btnOkColor: Colors.blue,
+                                      btnOkText: 'Xác nhận',
+                                      btnOkOnPress: () async {
+                                        setState(() {
+                                            activePage = const CreateScheduleLoadingScreen();
+                                          });
+                                        if (widget.isCreate) {
+                                          if (await createDraftPlan(
+                                              sharedPreferences
+                                                  .getInt('numOfExpPeriod')!,
+                                              DateTime(
+                                                  departureDate.year,
+                                                  departureDate.month,
+                                                  departureDate.day,
+                                                  _selectTime.hour,
+                                                  _selectTime.minute),
+                                              endDate,
+                                              numberOfMember)) {
+                                            setState(() {
+                                              _currentStep++;
+                                            });
+                                          } else {
+                                            print('error when create draft plan');
+                                          }
+                                        } else {
+                                          setState(() {
+                                            _currentStep++;
+                                          });
+                                        }
+                                      },
+                                      body: ConfirmBaseInfoDialog(
+                                          selectedComboDate: _selectedComboDate,
+                                          endDate: endDate,
+                                          numberOfMember: numberOfMember,
+                                          startDate: DateTime(
+                                              departureDate.year,
+                                              departureDate.month,
+                                              departureDate.day,
+                                              _selectTime.hour,
+                                              _selectTime.minute)))
+                                  .show();
+                            } else if (_currentStep == 3) {
+                              if (checkValidNumberOfActivity()) {
+                                AwesomeDialog(
+                                        context: context,
+                                        dialogType: DialogType.warning,
+                                        body: const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 32),
+                                          child: Center(
+                                            child: Text(
+                                              'Tất cả các ngày trong chuyến đi phải có ít nhất một hoạt động',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                              textAlign: TextAlign.center,
+                                            ),
                                           ),
                                         ),
-                                        const SizedBox(
-                                          height: 8,
-                                        ),
-                                        for (int i = 0; i < _duration; i++)
-                                          buildConfirmScheduleItem(
-                                              _startDate.add(Duration(days: i)),
-                                              i),
-                                      ],
-                                    ),
-                                  )).show();
-                            }
-                          } else if (_currentStep == 4) {
-                            List<String>? selectedEmergencyIndexList =
-                                sharedPreferences
-                                    .getStringList('selectedIndex');
-                            if (selectedEmergencyIndexList == null ||
-                                selectedEmergencyIndexList.isEmpty) {
-                              AwesomeDialog(
-                                context: context,
-                                dialogType: DialogType.warning,
-                                body: const Center(
-                                  child: Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Text(
-                                      'Bạn phải chọn ít nhất một liên lạc khẩn cấp cho chuyến đi',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                      textAlign: TextAlign.center,
+                                        btnOkColor: Colors.orange,
+                                        btnOkText: 'OK',
+                                        btnOkOnPress: () {})
+                                    .show();
+                              } else {
+                                String? startDateText = sharedPreferences
+                                    .getString('plan_start_date');
+                                final _startDate = DateTime.parse(startDateText!);
+                                String? endDateText =
+                                    sharedPreferences.getString('plan_end_date');
+                                final _endDate = DateTime.parse(endDateText!);
+                                final _duration = _endDate
+                                        .difference(DateTime(_startDate.year,
+                                            _startDate.month, _startDate.day))
+                                        .inDays +
+                                    1;
+                                AwesomeDialog(
+                                    context: context,
+                                    dialogType: DialogType.info,
+                                    title: 'Xác nhận lịch trình chuyến đi',
+                                    btnOkText: 'Xác nhận',
+                                    btnOkColor: Colors.blue,
+                                    btnOkOnPress: () {
+                                      setState(() {
+                                        _currentStep++;
+                                      });
+                                    },
+                                    btnCancelColor: Colors.orange,
+                                    btnCancelText: 'Chỉnh sửa',
+                                    btnCancelOnPress: () {},
+                                    body: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          vertical: 12, horizontal: 24),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Container(
+                                            alignment: Alignment.center,
+                                            child: const Text(
+                                              'Xác nhận lịch trình chuyến đi',
+                                              style: TextStyle(
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold),
+                                            ),
+                                          ),
+                                          const SizedBox(
+                                            height: 8,
+                                          ),
+                                          for (int i = 0; i < _duration; i++)
+                                            buildConfirmScheduleItem(
+                                                _startDate.add(Duration(days: i)),
+                                                i),
+                                        ],
+                                      ),
+                                    )).show();
+                              }
+                            } else if (_currentStep == 4) {
+                              List<String>? selectedEmergencyIndexList =
+                                  sharedPreferences
+                                      .getStringList('selectedIndex');
+                              if (selectedEmergencyIndexList == null ||
+                                  selectedEmergencyIndexList.isEmpty) {
+                                AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.warning,
+                                  body: const Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        'Bạn phải chọn ít nhất một liên lạc khẩn cấp cho chuyến đi',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.center,
+                                      ),
                                     ),
                                   ),
-                                ),
-                                btnOkColor: Colors.orange,
-                                btnOkText: 'Ok',
-                                btnOkOnPress: () {},
-                              ).show();
+                                  btnOkColor: Colors.orange,
+                                  btnOkText: 'Ok',
+                                  btnOkOnPress: () {},
+                                ).show();
+                              } else {
+                                setState(() {
+                                  _currentStep++;
+                                });
+                              }
                             } else {
                               setState(() {
                                 _currentStep++;
                               });
                             }
-                          } else {
-                            setState(() {
-                              _currentStep++;
-                            });
-                          }
-                        },
-                        child: const Text(
-                          "Tiếp tục",
-                          style: TextStyle(fontSize: 22),
-                        )),
-                  ),
-              ],
+                          },
+                          child: const Text(
+                            "Tiếp tục",
+                            style: TextStyle(fontSize: 22),
+                          )),
+                    ),
+                ],
+              ),
             ),
-          ),
-          SizedBox(
-            height: 1.h,
-          )
-        ],
+            SizedBox(
+              height: 1.h,
+            )
+          ],
+        ),
       ),
     ));
   }

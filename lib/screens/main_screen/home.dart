@@ -44,7 +44,6 @@ class _HomeScreenState extends State<HomeScreen> {
     provinceModels = null;
     locationModels = await _locationService.getLocations();
     provinceModels = await _locationService.getProvinces();
-
     if (locationModels != null && provinceModels != null) {
       setState(() {
         isLoading = false;

@@ -23,6 +23,18 @@ const String basic_information_white = '${baseImage}basic_information_white.svg'
 const String basic_information_green = '${baseImage}basic_information_green.svg';
 const String service_white = '${baseImage}service_white.svg';
 const String service_green = '${baseImage}service_green.svg';
+const String cancel_white = '${baseImage}cancel_white.svg';
+const String cancel_green = '${baseImage}cancel_green.svg';
+const String draft_white = '${baseImage}draft_white.svg';
+const String draft_green = '${baseImage}draft_green.svg';
+const String history_green = '${baseImage}history_green.svg';
+const String history_white = '${baseImage}history_white.svg';
+const String on_going_white = '${baseImage}on_going_white.svg';
+const String on_going_green = '${baseImage}on_going_green.svg';
+const String up_coming_green = '${baseImage}up_coming_green.svg';
+const String up_coming_white = '${baseImage}up_coming_white.svg';
+const String rating_white = '${baseImage}rating_white.svg';
+const String rating_green = '${baseImage}rating_green.svg';
 
 const String defaultUserAvatarLink =
     "https://media.altchar.com/prod/images/gm_article_promo_image/23364b481aa9-edg-viper.jpg";

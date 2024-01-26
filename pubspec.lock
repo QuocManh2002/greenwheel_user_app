@@ -490,10 +490,10 @@ packages:
     dependency: "direct main"
     description:
       name: flutter_local_notifications
-      sha256: bb5cd63ff7c91d6efe452e41d0d0ae6348925c82eafd10ce170ef585ea04776e
+      sha256: c18f1de98fe0bb9dd5ba91e1330d4febc8b6a7de6aae3ffe475ef423723e72f3
       url: "https://pub.dev"
     source: hosted
-    version: "16.2.0"
+    version: "16.3.2"
   flutter_local_notifications_linux:
     dependency: transitive
     description:
@@ -1589,6 +1589,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
+  vn_badwords_filter:
+    dependency: "direct main"
+    description:
+      name: vn_badwords_filter
+      sha256: "75864064e8d651cd1d22ac7ff9bcfd175ca0c45a0a8227c301eb2bb0919f3a98"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.2"
   vnpay_client:
     dependency: "direct main"
     description:

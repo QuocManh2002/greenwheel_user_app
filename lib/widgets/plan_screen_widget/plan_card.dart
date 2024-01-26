@@ -37,7 +37,7 @@ class PlanCard extends StatelessWidget {
       onTap: () {
         sharedPreferences.setString('selectedDate', plan.startDate.toString());
         sharedPreferences.setInt('selectedDuration',
-            plan.endDate.difference(plan.startDate).inDays +1);
+            plan.endDate.difference(plan.startDate).inDays + 1);
         Navigator.of(context).push(MaterialPageRoute(
             builder: (ctx) => DetailPlanNewScreen(
                   planId: plan.id,
@@ -59,6 +59,7 @@ class PlanCard extends StatelessWidget {
         height: 15.h,
         width: double.infinity,
         child: Card(
+          color: Colors.white,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           clipBehavior: Clip.hardEdge,

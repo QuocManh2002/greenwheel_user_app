@@ -1,22 +1,32 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/comments.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/goong_request.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
+import 'package:greenwheel_user_app/screens/authentication_screen/select_default_address.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_by_location.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/comment_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:greenwheel_user_app/widgets/search_screen_widget/tag.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:readmore/readmore.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:vn_badwords_filter/vn_badwords_filter.dart';
 
 class LocationScreen extends StatefulWidget {
   const LocationScreen({super.key, required this.location});
@@ -33,11 +43,17 @@ class _LocationScreenState extends State<LocationScreen> {
   bool isLoading = true;
   List<dynamic> imageUrls = [];
   List<Tag> tagList = [];
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController _commentController = TextEditingController();
+  List<CommentViewModel> _comments = [];
+
+  var default_address = sharedPreferences.getString('defaultAddress');
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     getData();
+    // sharedPreferences.remove('default_address');
   }
 
   getData() {
@@ -55,6 +71,8 @@ class _LocationScreenState extends State<LocationScreen> {
       isLoading = false;
     });
   }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -75,36 +93,23 @@ class _LocationScreenState extends State<LocationScreen> {
                                 children: [
                                   CarouselSlider(
                                       items: imageUrls
-                                          .map(
-                                              // (item) => Hero(
-                                              //     tag: widget.location.id,
-                                              //     child: FadeInImage(
-                                              //       // height: 20.h,
-                                              //       placeholder: MemoryImage(
-                                              //           kTransparentImage),
-                                              //       image: NetworkImage(
-                                              //           item.toString()),
-                                              //       fit: BoxFit.cover,
-                                              //       width: double.infinity,
-                                              //     )),
-                                              (item) => CachedNetworkImage(
-                                                    key: UniqueKey(),
-                                                    height: 25.h,
-                                                    width: double.infinity,
-                                                    fit: BoxFit.cover,
-                                                    placeholder: (context,
-                                                            url) =>
-                                                        Image.memory(
-                                                            kTransparentImage),
-                                                    errorWidget:
-                                                        (context, url, error) =>
-                                                            Image.network(
-                                                      'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
-                                                      height: 25.h,
-                                                      fit: BoxFit.cover,
-                                                    ),
-                                                    imageUrl: item.toString(),
-                                                  ))
+                                          .map((item) => CachedNetworkImage(
+                                                key: UniqueKey(),
+                                                height: 25.h,
+                                                width: double.infinity,
+                                                fit: BoxFit.cover,
+                                                placeholder: (context, url) =>
+                                                    Image.memory(
+                                                        kTransparentImage),
+                                                errorWidget:
+                                                    (context, url, error) =>
+                                                        Image.network(
+                                                  'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                                                  height: 25.h,
+                                                  fit: BoxFit.cover,
+                                                ),
+                                                imageUrl: item.toString(),
+                                              ))
                                           .toList(),
                                       carouselController: carouselController,
                                       options: CarouselOptions(
@@ -148,11 +153,9 @@ class _LocationScreenState extends State<LocationScreen> {
                                       ))
                                 ],
                               ),
-                              const SizedBox(
-                                height: 20,
-                              ),
                               Padding(
-                                padding: const EdgeInsets.only(left: 12),
+                                padding:
+                                    const EdgeInsets.only(left: 12, top: 20),
                                 child: Text(
                                   widget.location.name,
                                   style: const TextStyle(
@@ -160,29 +163,17 @@ class _LocationScreenState extends State<LocationScreen> {
                                       fontWeight: FontWeight.w900),
                                 ),
                               ),
-                              const SizedBox(
-                                height: 12,
-                              ),
                               Padding(
-                                padding: const EdgeInsets.only(left: 12),
+                                padding: const EdgeInsets.only(
+                                    left: 12, top: 12, bottom: 16),
                                 child: Row(
                                   children: [
                                     RatingBar(rating: 5),
-                                    Text(' ${12} đánh giá')
+                                    const Text(' ${12} đánh giá')
                                   ],
                                 ),
                               ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                child: Container(
-                                  height: 1.8,
-                                  color: Colors.grey.withOpacity(0.4),
-                                ),
-                              ),
+                              buildDivider(),
                               const SizedBox(
                                 height: 16,
                               ),
@@ -207,8 +198,11 @@ class _LocationScreenState extends State<LocationScreen> {
                                 ),
                               ),
                               Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                      horizontal: 12),
+                                  padding: const EdgeInsets.only(
+                                    left: 12,
+                                    right: 12,
+                                    bottom: 16,
+                                  ),
                                   child: ReadMoreText(
                                     widget.location.description,
                                     trimLines: 3,
@@ -223,17 +217,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                         color: primaryColor,
                                         fontWeight: FontWeight.bold),
                                   )),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                child: Container(
-                                  height: 1.8,
-                                  color: Colors.grey.withOpacity(0.4),
-                                ),
-                              ),
+                              buildDivider(),
                               const SizedBox(
                                 height: 16,
                               ),
@@ -265,19 +249,10 @@ class _LocationScreenState extends State<LocationScreen> {
                               const SizedBox(
                                 height: 16,
                               ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
-                                child: Container(
-                                  height: 1.8,
-                                  color: Colors.grey.withOpacity(0.4),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
+                              buildDivider(),
                               const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 12),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 16),
                                 child: Text(
                                   "Hướng dẫn di chuyển",
                                   style: TextStyle(
@@ -285,19 +260,55 @@ class _LocationScreenState extends State<LocationScreen> {
                                       fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              const SizedBox(
-                                height: 16,
-                              ),
                               Container(
                                 alignment: Alignment.center,
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (ctx) => LocalMapScreen(
-                                                location: widget.location)));
+                                    if (default_address == null) {
+                                      AwesomeDialog(
+                                              context: context,
+                                              dialogType: DialogType.warning,
+                                              animType: AnimType.leftSlide,
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              title:
+                                                  'Không tìm thấy địa chỉ mặc định',
+                                              titleTextStyle: const TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold),
+                                              desc:
+                                                  'Bạn phải thêm địa chỉ mặc định để xem được bản đồ định hướng. Bạn có muốn thêm địa chỉ mặc định không?',
+                                              descTextStyle: const TextStyle(
+                                                  fontSize: 15,
+                                                  color: Colors.black54),
+                                              btnOkColor: Colors.blue,
+                                              btnOkText: 'Có',
+                                              btnOkOnPress: () {
+                                                Navigator.of(context).push(
+                                                    MaterialPageRoute(
+                                                        builder: (ctx) =>
+                                                            SelectDefaultAddress(
+                                                                callback:
+                                                                    callback)));
+                                              },
+                                              btnCancelColor: Colors.orange,
+                                              btnCancelText: 'Không',
+                                              btnCancelOnPress: () {})
+                                          .show();
+                                    } else {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (ctx) => LocalMapScreen(
+                                                  location: widget.location)));
+                                    }
                                   },
-                                  icon: const Icon(Icons.map),
+                                  icon: default_address == null
+                                      ? Icon(
+                                          Icons.warning,
+                                          color: Colors.red.withOpacity(0.5),
+                                        )
+                                      : const Icon(Icons.map),
                                   label: const Text(
                                     "Bản đồ định hướng",
                                     style:
@@ -305,50 +316,42 @@ class _LocationScreenState extends State<LocationScreen> {
                                   ),
                                   style: elevatedButtonStyle.copyWith(
                                       backgroundColor: MaterialStatePropertyAll(
-                                          Colors.grey.withOpacity(0.6)),
-                                      foregroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.black)),
+                                          default_address == null
+                                              ? Colors.grey.withOpacity(0.2)
+                                              : Colors.grey.withOpacity(0.6)),
+                                      foregroundColor: MaterialStatePropertyAll(
+                                          default_address == null
+                                              ? Colors.grey
+                                              : Colors.black)),
                                 ),
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Container(
-                                alignment: Alignment.center,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {},
-                                  icon: const Icon(Icons.menu_book),
-                                  label: const Text(
-                                    "Hướng dẫn cộng đồng",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  style: elevatedButtonStyle.copyWith(
-                                      backgroundColor: MaterialStatePropertyAll(
-                                          Colors.grey.withOpacity(0.6)),
-                                      foregroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.black)),
-                                ),
-                              ),
-                              const SizedBox(
-                                height: 16,
                               ),
                               Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(horizontal: 12),
+                                    const EdgeInsets.symmetric(vertical: 16),
                                 child: Container(
-                                  height: 1.8,
-                                  color: Colors.grey.withOpacity(0.4),
+                                  alignment: Alignment.center,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {},
+                                    icon: const Icon(Icons.menu_book),
+                                    label: const Text(
+                                      "Hướng dẫn cộng đồng",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    style: elevatedButtonStyle.copyWith(
+                                        backgroundColor:
+                                            MaterialStatePropertyAll(
+                                                Colors.grey.withOpacity(0.6)),
+                                        foregroundColor:
+                                            const MaterialStatePropertyAll(
+                                                Colors.black)),
+                                  ),
                                 ),
                               ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-
+                              buildDivider(),
                               const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 12),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 16),
                                 child: Text(
                                   "Bình luận",
                                   style: TextStyle(
@@ -356,25 +359,67 @@ class _LocationScreenState extends State<LocationScreen> {
                                       fontWeight: FontWeight.bold),
                                 ),
                               ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Container(
-                                alignment: Alignment.center,
-                                child: Column(children: [
-                                  const Text(
-                                    "5",
-                                    style: const TextStyle(fontSize: 20),
-                                  ),
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                  RatingBar(rating: 5),
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                  const Text('(${12})')
-                                ]),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(left: 12, right: 6),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Đánh giá địa điểm',
+                                            style: TextStyle(
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          Row(
+                                            children: [
+                                              Padding(
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        vertical: 4),
+                                                child: RatingBar(rating: 5),
+                                              ),
+                                              const SizedBox(
+                                                width: 2,
+                                              ),
+                                              const Text(
+                                                '5/5',
+                                                style: TextStyle(
+                                                    color: primaryColor,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              const SizedBox(
+                                                width: 4,
+                                              ),
+                                               Text('(${_comments.length} đánh giá)')
+                                            ],
+                                          ),
+                                        ]),
+                                    TextButton(
+                                        onPressed: () {},
+                                        child: const Row(
+                                          children: [
+                                            Text(
+                                              'Xem tất cả',
+                                              style: TextStyle(
+                                                  fontSize: 16,
+                                                  color: primaryColor),
+                                            ),
+                                            Icon(
+                                              Icons.keyboard_arrow_right,
+                                              color: primaryColor,
+                                              size: 23,
+                                            )
+                                          ],
+                                        ))
+                                  ],
+                                ),
                               ),
                               const SizedBox(
                                 height: 16,
@@ -382,34 +427,65 @@ class _LocationScreenState extends State<LocationScreen> {
                               ListView.builder(
                                 physics: const BouncingScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: comments.length,
+                                itemCount: _comments.length,
                                 itemBuilder: (context, index) => Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 10),
-                                  child: CommentCard(comment: comments[index]),
+                                  child: CommentCard(comment: _comments[index]),
                                 ),
                               ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 20),
-                                child: OutlinedButton(
-                                  onPressed: () {},
-                                  style: OutlinedButton.styleFrom(
-                                      foregroundColor: Colors.black,
-                                      side: const BorderSide(
-                                          color: Colors.black, width: 2)),
-                                  child: const Text(
-                                    "Xem tất cả đánh giá",
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                ),
+                              SizedBox(
+                                height: 2.h,
                               ),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              const SizedBox(
-                                height: 16,
-                              ),
+                              Form(
+                                  key: _formKey,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(
+                                        left: 20, right: 12),
+                                    child: Row(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                      SizedBox(
+                                        width: 78.w,
+                                        child: defaultTextFormField(
+                                          controller: _commentController,
+                                          inputType: TextInputType.text,
+                                          maxligne: 1,
+                                          text: 'Bình luận',
+                                          onValidate: (value) {
+                                            if (value!.isEmpty) {
+                                              return "Bình luận của bạn không được để trống";
+                                            } else if (VNBadwordsFilter
+                                                .isProfane(value)) {
+                                              return "Bình luận của bạn chứa từ ngữ không hợp lệ";
+                                            } else if (! Utils().IsValidSentence(value)) {
+                                              return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
+                                            }
+                                          },
+                                        ),
+                                      ),
+                                      Container(
+                                        margin: EdgeInsets.only(top: 0.8.h,),
+                                        child: IconButton(
+                                            onPressed: () {
+                                              if (_formKey.currentState!
+                                                  .validate()) {
+                                                  addComment(_commentController.text);
+                                                  _commentController.clear();
+                                              }
+                                            },
+                                            icon: const Icon(
+                                              Icons.send,
+                                              size: 40,
+                                              color: primaryColor,
+                                            )),
+                                      )
+                                    ]),
+                                  )),
+
+                              SizedBox(
+                                height: 4.h,
+                              )
                             ],
                           ),
                         ),
@@ -445,4 +521,45 @@ class _LocationScreenState extends State<LocationScreen> {
                     ],
                   )));
   }
+
+  Widget buildDivider() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Container(
+          height: 1.8,
+          color: Colors.grey.withOpacity(0.4),
+        ),
+      );
+
+  callback(SearchStartLocationResult? selectedAddress,
+      PointLatLng? selectedLatLng) async {
+    if (selectedAddress != null) {
+      setState(() {
+        default_address = selectedAddress.address;
+      });
+    } else {
+      var result = await getPlaceDetail(selectedLatLng!);
+      if (result != null) {
+        setState(() {
+          default_address = result['results'][0]['formatted_address'];
+        });
+      }
+    }
+    Utils().SaveDefaultAddressToSharedPref(
+        default_address!,
+        selectedAddress == null
+            ? selectedLatLng!
+            : PointLatLng(selectedAddress.lat, selectedAddress.lng));
+  }
+
+  addComment(String content){
+    setState(() {
+      _comments.add(CommentViewModel(
+      id: 1, 
+      customerName: sharedPreferences.getString('userName')!, 
+      content: content, 
+      date: DateTime.now(), 
+      imgUrl: defaultUserAvatarLink));
+    });
+  }
+
 }

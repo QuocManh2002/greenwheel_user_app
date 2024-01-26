@@ -196,6 +196,7 @@ class _OTPScreenState extends State<OTPScreen> {
         List<CustomerViewModel>? customer =
             await customerService.GetCustomerByPhone(payload['phone_number']);
         if (customer.isNotEmpty) {
+          sharedPreferences.setString('userName', customer[0].name);
           String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
           if(deviceToken != ''){
             sharedPreferences.setString('deviceToken', deviceToken);

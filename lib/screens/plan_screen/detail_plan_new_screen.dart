@@ -2,6 +2,7 @@
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
@@ -57,6 +58,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   List<SupplierViewModel>? _saveSupplier;
   int _currentIndexEmergencyCard = 0;
   int _selectedTab = 0;
+  bool _isPublic = true;
 
   @override
   void initState() {
@@ -132,7 +134,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       sharedPreferences.setString(
           'plan_start_date', _planDetail!.startDate.toString());
       sharedPreferences.setString('plan_start_time',
-          '${_planDetail!.startDate.hour}:${_planDetail!.startDate.minute}');
+          '${_planDetail!.departureDate.hour}:${_planDetail!.departureDate.minute}');
       sharedPreferences.setString(
           'plan_end_date', _planDetail!.endDate.toString());
       sharedPreferences.setString(
@@ -219,11 +221,39 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 24),
                               alignment: Alignment.centerLeft,
-                              child: Text(
-                                _planDetail!.name,
-                                overflow: TextOverflow.clip,
-                                style: const TextStyle(
-                                    fontSize: 22, fontWeight: FontWeight.bold),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      _planDetail!.name,
+                                      overflow: TextOverflow.clip,
+                                      style: const TextStyle(
+                                          fontSize: 22,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  ),
+                                  Column(
+                                    children: [
+                                      CupertinoSwitch(
+                                        value: _isPublic,
+                                        activeColor: primaryColor,
+                                        onChanged: (value) {
+                                          setState(() {
+                                            _isPublic = value;
+                                          });
+                                        },
+                                      ),
+                                      Text(
+                                        _isPublic ? 'Công khai' : 'Riêng tư',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            color: _isPublic
+                                                ? primaryColor
+                                                : Colors.grey),
+                                      )
+                                    ],
+                                  )
+                                ],
                               ),
                             ),
                             const SizedBox(
@@ -257,9 +287,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                           });
                                         },
                                         child: TabIconButton(
-                                          iconDefaultUrl: basic_information_green,
-                                          iconSelectedUrl: basic_information_white,
-                                          text: 'Thông tin cơ bản',
+                                          iconDefaultUrl:
+                                              basic_information_green,
+                                          iconSelectedUrl:
+                                              basic_information_white,
+                                          text: 'Thông tin',
                                           isSelected: _selectedTab == 0,
                                           index: 0,
                                         ),
@@ -315,17 +347,22 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             Container(
                               child: _selectedTab == 0
                                   ? Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        const Padding(padding: EdgeInsets.symmetric(horizontal: 24),
+                                        const Padding(
+                                          padding: EdgeInsets.symmetric(
+                                              horizontal: 24),
                                           child: Text(
-                                            'Thông tin cơ bản', style: TextStyle(
-                                              fontSize: 20, 
-                                              fontWeight: FontWeight.bold
-                                            ),
+                                            'Thông tin cơ bản',
+                                            style: TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold),
                                           ),
                                         ),
-                                        const SizedBox(height: 16,),
+                                        const SizedBox(
+                                          height: 16,
+                                        ),
                                         BaseInformationWidget(
                                             plan: _planDetail!),
                                         Padding(

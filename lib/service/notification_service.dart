@@ -77,11 +77,12 @@ class NotificationService {
             importance: Importance.max);
 
     AndroidNotificationDetails androidNotificationDetails =
-        AndroidNotificationDetails(androidNotificationChannel.id.toString(),
+        AndroidNotificationDetails(androidNotificationChannel.id,
             androidNotificationChannel.name.toString(),
             channelDescription: 'Your channel description',
-            importance: Importance.high,
-            priority: Priority.high,
+            importance: Importance.max,
+            priority: Priority.max,
+            icon: '@mipmap/ic_launcher',
             ticker: 'ticker');
 
     // const DarwinNotificationDetails darwinNotificationDetails =
@@ -94,16 +95,16 @@ class NotificationService {
     NotificationDetails notificationDetails =
         NotificationDetails(android: androidNotificationDetails);
 
-    Future.delayed(
-      Duration.zero,
-      () {
+    // Future.delayed(
+    //   Duration.zero,
+    //   () {
         _flutterLocalNotificationsPlugin.show(
             0,
             message.notification!.title.toString(),
             message.notification!.body.toString(),
             notificationDetails);
-      },
-    );
+    //   },
+    // );
   }
 
   void handleMessage(BuildContext context, RemoteMessage message) {

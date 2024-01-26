@@ -132,7 +132,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       final initialDateTime = DateFormat.Hm().parse(timeText);
       setState(() {
         _selectTime = TimeOfDay.fromDateTime(initialDateTime);
-        _timeController.text = timeText;
+        _timeController.text = DateFormat.Hm().format(initialDateTime);
       });
     } else {
       _selectTime =

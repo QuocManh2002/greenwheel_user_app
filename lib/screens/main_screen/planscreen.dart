@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/empty_plan.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_button.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_icon_button.dart';
 
 class PlanScreen extends StatefulWidget {
   const PlanScreen({super.key});
@@ -109,8 +111,9 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
+          backgroundColor:const Color(0xFFf2f2f2),
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor:const Color(0xFFf2f2f2),
         title: const Text(
           "Kế hoạch",
           style: TextStyle(
@@ -124,15 +127,11 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: [
-                        const SizedBox(
-                          width: 16,
-                        ),
-                        InkWell(
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: InkWell(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(12)),
                           onTap: () {
@@ -140,16 +139,20 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                               _selectedTab = 0;
                             });
                           },
-                          child: TabButton(
+                          child: TabIconButton(
+                            iconDefaultUrl: up_coming_green,
+                            iconSelectedUrl: up_coming_white,
                             text: 'Sắp đến',
                             isSelected: _selectedTab == 0,
-                            index: 0,
+                            index: 0,hasHeight: true,
                           ),
                         ),
-                        const SizedBox(
-                          width: 16,
-                        ),
-                        InkWell(
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Expanded(
+                        child: InkWell(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(12)),
                           onTap: () {
@@ -157,16 +160,20 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                               _selectedTab = 1;
                             });
                           },
-                          child: TabButton(
+                          child: TabIconButton(
+                            iconDefaultUrl: on_going_green,
+                            iconSelectedUrl: on_going_white,
                             text: 'Đang diễn ra',
                             isSelected: _selectedTab == 1,
-                            index: 1,
+                            index: 1,hasHeight: true,
                           ),
                         ),
-                        const SizedBox(
-                          width: 16,
-                        ),
-                        InkWell(
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Expanded(
+                        child: InkWell(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(12)),
                           onTap: () {
@@ -174,16 +181,21 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                               _selectedTab = 2;
                             });
                           },
-                          child: TabButton(
+                          child: TabIconButton(
+                            iconDefaultUrl: history_green,
+                            iconSelectedUrl: history_white,
                             text: 'Lịch sử',
                             isSelected: _selectedTab == 2,
                             index: 2,
+                            hasHeight: true,
                           ),
                         ),
-                        const SizedBox(
-                          width: 16,
-                        ),
-                        InkWell(
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Expanded(
+                        child: InkWell(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(12)),
                           onTap: () {
@@ -191,16 +203,21 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                               _selectedTab = 3;
                             });
                           },
-                          child: TabButton(
+                          child: TabIconButton(
+                            iconDefaultUrl: cancel_green,
+                            iconSelectedUrl: cancel_white,
                             text: 'Đã hủy',
                             isSelected: _selectedTab == 3,
                             index: 3,
+                            hasHeight: true,
                           ),
                         ),
-                        const SizedBox(
-                          width: 16,
-                        ),
-                        InkWell(
+                      ),
+                      const SizedBox(
+                        width: 8,
+                      ),
+                      Expanded(
+                        child: InkWell(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(12)),
                           onTap: () {
@@ -208,17 +225,16 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                               _selectedTab = 4;
                             });
                           },
-                          child: TabButton(
+                          child: TabIconButton(
+                            iconDefaultUrl: draft_green,
+                            iconSelectedUrl: draft_white,
                             text: 'Bản nháp',
                             isSelected: _selectedTab == 4,
-                            index: 4,
+                            index: 4,hasHeight: true,
                           ),
                         ),
-                        const SizedBox(
-                          width: 16,
-                        ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                   Expanded(
                       child: Container(

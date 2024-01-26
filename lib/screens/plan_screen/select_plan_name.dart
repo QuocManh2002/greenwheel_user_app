@@ -73,7 +73,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
         isCreate = true;
       });
       bool isEnableToAddService = DateTime.parse(endDate)
-          .isAfter(DateTime.now().add(const Duration(days: 2)));
+          .isAfter(DateTime.now().add(const Duration(days: 3)));
       if (isEnableToAddService) {
         // ignore: use_build_context_synchronously
         AwesomeDialog(
