@@ -19,22 +19,25 @@ class CustomerService {
           fetchPolicy: FetchPolicy.noCache,
           document: gql("""
             query getCustomerByPhone(\$phone: String) {
-    travelers
+    accounts
     (
       where: { 
         phone: {eq: \$phone } 
         }
       )
         {
-        nodes{
-          id
-          defaultAddress
-      defaultCoordinate{
+        nodes {
+      id
+      defaultAddress
+      defaultCoordinate {
         coordinates
       }
-          account{name avatarUrl isMale gcoinBalance}
-          phone
-        }
+      name
+      avatarUrl
+      isMale
+      gcoinBalance
+      phone
+    }
     }
 }
           """),
@@ -46,7 +49,7 @@ class CustomerService {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['travelers']['nodes'];
+      List? res = result.data!['accounts']['nodes'];
       if (res == null || res.isEmpty) {
         return [];
       }

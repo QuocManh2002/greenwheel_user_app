@@ -25,7 +25,7 @@ class ProductViewModel {
         name: json["name"],
         paymentType: json["paymentType"],
         price: json["price"],
-        thumbnailUrl: json["thumbnailUrl"],
+        thumbnailUrl: json["imageUrl"],
         supplierId: json["supplier"]["id"],
         supplierName: json["supplier"]["name"],
         partySize: json["partySize"],

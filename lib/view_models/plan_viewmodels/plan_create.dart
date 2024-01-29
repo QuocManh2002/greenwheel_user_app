@@ -11,6 +11,7 @@ class PlanCreate {
   String? savedContacts;
   int? numOfExpPeriod;
   final DateTime departureDate;
+  int? gcoinBudget;
 
   PlanCreate(
       {required this.locationId,
@@ -24,5 +25,6 @@ class PlanCreate {
       required this.schedule,
       this.numOfExpPeriod,
       required this.departureDate,
+      this.gcoinBudget,
       this.savedContacts});
 }

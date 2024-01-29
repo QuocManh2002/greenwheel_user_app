@@ -111,7 +111,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
       });
 
       var finalList = _planService.convertPlanScheduleToJson(testList);
-
+      print(finalList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
     } else {
       setState(() {

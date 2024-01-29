@@ -14,7 +14,6 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/suggest_plan.dart';
-import 'package:intl/intl.dart';
 
 class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
@@ -28,15 +27,11 @@ class PlanService {
         document: gql("""
 mutation{
   completeDraftPlan(dto: {
-    numOfExpPeriod:${model.numOfExpPeriod}
-    schedule:${model.schedule}
+    gcoinBudgetPerCapita: ${model.gcoinBudget}
     id:$planId
+    name:"${model.name}"
+    proposedSchedule:${model.schedule}
     savedContacts:${model.savedContacts}
-    departureDate: "${model.departureDate.year}-${model.departureDate.month}-${model.departureDate.day} ${model.departureDate.hour}:${model.departureDate.minute}:00.000Z"
-    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
-    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day}"
-    memberLimit:${model.memberLimit}
-    name: "${model.name}"
   }){
     id
   }
@@ -160,61 +155,78 @@ query getOrderDetailsByPlanId(\$planId: Int) {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query GetPlanById(\$planId: Int){
-  plans(where: {id: {eq: \$planId}}){
-    nodes{
+  plans(where: { id: { eq: \$planId } }) {
+    nodes {
       name
       id
       startDate
       endDate
-      schedule
+      proposedSchedule {
+        events {
+          shortDescription
+          type
+          description
+          duration
+        }
+      }
       memberLimit
-      savedContacts
+      savedContacts {
+        name
+        phone
+        address
+        type
+        imageUrl
+      }
       status
       joinMethod
-      numOfExpPeriod
-      departureDate
-      departurePosition{
+      periodCount
+      departDate
+      departure {
         coordinates
       }
-      orders{
+      orders {
         id
-      planId
-      deposit
-      total
-      servingDates
-      note
-      createdAt
-      period
-      supplier{
-        id
-        phone
-        name
-        type
-        thumbnailUrl
-        address
-      }
-      details {
-        id
-        price
-        quantity
-        product {
+        planId
+        deposit
+        total
+        servingDates
+        note
+        createdAt
+        period
+        supplier {
+          id
+          phone
           name
+          imageUrl
+          address
         }
-      }}
-      location{id name imageUrls}
+        details {
+          id
+          price
+          quantity
+          product {
+            name
+            type
+          }
+        }
+      }
+      destination {
+        id
+        name
+        imageUrls
+      }
       members {
         status
-        traveler {
-          account {
-            name
-          }
+        account {
+          name
           phone
         }
-        travelerId
+        id
       }
     }
   }
 }
+
 """), variables: {"planId": planId}));
 
       if (result.hasException) {
@@ -259,7 +271,7 @@ query GetPlanById(\$planId: Int){
       startDate
       endDate
       status
-      location{
+      destination{
         id
           description
           imageUrls
@@ -267,19 +279,33 @@ query GetPlanById(\$planId: Int){
           activities
           seasons
           topographic
-          templateSchedule
           coordinate{coordinates}
           address
-          hotline
           province{
             id
             name
-            thumbnailUrl
+            imageUrl
           }
-          emergencyContacts
-          templateEvents
+          emergencyContacts{
+            name
+            phone
+            address
+            type
+          }
+            templateEvents{
+            type
+            shortDescription
+            description
+          }
+          comments{
+            id
+            comment
+            account{
+              avatarUrl
+              name
+            }
+          }
       }
-
     }
   }
 }
@@ -332,7 +358,7 @@ query GetPlanById(\$planId: Int){
       List<PlanScheduleItem> item = [];
       final date = startDate.add(Duration(days: i));
       if (i < schedules.length) {
-        for (final planItem in schedules[i]) {
+        for (final planItem in schedules[i]['events']) {
           print(planItem['time']);
           item.add(PlanScheduleItem(
             shortDescription: planItem['shortDescription'],
@@ -340,7 +366,7 @@ query GetPlanById(\$planId: Int){
               type: schedule_item_types_vn[
                   schedule_item_types.indexOf(planItem['type'].toString())],
               time: TimeOfDay.fromDateTime(DateTime.parse(
-                  "1970-01-01 ${planItem['time'].toString().substring(0, 2)}:${planItem['time'].toString().substring(3, 5)}:00")),
+                  "1970-01-01 ${planItem['duration'].toString().substring(0, 2)}:${planItem['duration'].toString().substring(3, 5)}:00")),
               description: planItem['description'],
               date: date));
         }
@@ -368,15 +394,17 @@ query GetPlanById(\$planId: Int){
           // json.encode(DateFormat.Hms()
           //     .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
           //     .toString()),
-          item.activityTime,
-          'orderGuid': item.orderId == null ? null: json.encode(item.orderId),
+          json.encode("${item.activityTime}:00:00"),
+          // 'orderGuid': item.orderId == null ? null: json.encode(item.orderId),
           'description': json.encode(item.description),
           'shortDescription': json.encode(item.shortDescription),
           'type': schedule_item_types[schedule_item_types_vn.indexOf(type)]
         });
         print(schedule_item_types[schedule_item_types_vn.indexOf(type)]);
       }
-      rs.add(items);
+      rs.add({
+        "events": items
+      });
     }
     return rs;
   }
@@ -448,9 +476,9 @@ mutation{
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
-  changePlanJoinMethod(dto: {
-    id: ${planId}
-    joinMethod:QR
+  updatePlanJoinMethod(dto: {
+    joinMethod:SCAN,
+    planId:$planId
   }){
     id
   }
@@ -460,7 +488,7 @@ mutation{
         throw Exception(result.exception);
       }
 
-      int? res = result.data!['changePlanJoinMethod']['id'];
+      int? res = result.data!['updatePlanJoinMethod']['id'];
       if (res == null || res == 0) {
         return false;
       }

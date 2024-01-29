@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -26,7 +27,7 @@ class SessionCard extends StatelessWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
-  final void Function() callbackFunction;
+  final void Function(OrderViewModel order) callbackFunction;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,7 @@ class SessionCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              var service = services.firstWhere((s) => s.name == supplier.type);
+              // var service = services.firstWhere((s) => s.name == supplier.type);
               Navigator.of(context).pop();
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -52,7 +53,7 @@ class SessionCard extends StatelessWidget {
                     endDate: endDate,
                     numberOfMember: 0,
                     supplier: supplier,
-                    serviceType: service,
+                    serviceType: serviceType,
                     location: location,
                     session: session,
                     callbackFunction: callbackFunction,

@@ -78,7 +78,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     List<Widget> listMotel = [];
 
     for (var item in _planDetail!.orders!) {
-      if (item.supplierType == "RESTAURANT") {
+      if (item.serviceType!.id == 1) {
         listRestaurant.add(SupplierOrderCard(order: item));
       } else {
         listMotel.add(SupplierOrderCard(order: item));
@@ -375,9 +375,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                         fontWeight:
                                                             FontWeight.bold),
                                                   )),
-                                                  SizedBox(height: 1.h,),
                                               SizedBox(
-                                                height: 10.h,
+                                                height: 1.h,
+                                              ),
+                                              SizedBox(
+                                                height: 13.h,
                                                 width: double.infinity,
                                                 child: PageView.builder(
                                                   scrollDirection:

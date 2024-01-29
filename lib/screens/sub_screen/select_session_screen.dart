@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/sessions.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/session_card.dart';
 import 'package:sizer2/sizer2.dart';
@@ -23,7 +25,7 @@ class SelectSessionScreen extends StatefulWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
-  final void Function() callbackFunction;
+  final void Function(OrderViewModel order) callbackFunction;
 
   @override
   State<SelectSessionScreen> createState() => _SelectSessionScreenState();

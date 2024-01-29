@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/sessions.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_supplier.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -26,7 +26,7 @@ class SupplierCard extends StatelessWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
-  final void Function() callbackFunction;
+  final void Function(OrderViewModel order) callbackFunction;
 
   @override
   Widget build(BuildContext context) {
@@ -43,14 +43,15 @@ class SupplierCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              ServiceType service = services[0];
-              if (supplier.type == "VEHICLE_SHOP") {
-                service = services[4];
-              } else {
-                service = services.firstWhere((s) => s.name == supplier.type);
-              }
+              // ServiceType service = services[0];
+              // if (supplier.type == "VEHICLE_SHOP") {
+              //   service = services[4];
+              // } 
+              // else {
+              //   service = services.firstWhere((s) => s.name == supplier.type);
+              // }
               // Navigator.of(context).pop();
-              if (service.id == 1) {
+              if (serviceType.id == 1) {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => SelectSessionScreen(
@@ -58,14 +59,13 @@ class SupplierCard extends StatelessWidget {
                       endDate: endDate,
                       numberOfMember: 0,
                       supplier: supplier,
-                      serviceType:
-                          services.firstWhere((s) => s.name == supplier.type),
+                      serviceType:serviceType,
                       location: location,
                       callbackFunction: callbackFunction,
                     ),
                   ),
                 );
-              } else if (service.id == 2) {
+              } else if (serviceType.id == 5) {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => ServiceMenuScreen(
@@ -73,21 +73,20 @@ class SupplierCard extends StatelessWidget {
                       endDate: endDate,
                       numberOfMember: numberOfMember,
                       supplier: supplier,
-                      serviceType:
-                          services.firstWhere((s) => s.name == supplier.type),
+                      serviceType:serviceType,
                       location: location,
                       session: sessions[1],
                       callbackFunction: callbackFunction,
                     ),
                   ),
-                );
-              } else if (service.id == 4) {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (ctx) => EmergencySupplier(supplier: supplier)));
-              } else if (service.id == 5) {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (ctx) => EmergencySupplier(supplier: supplier)));
-              }
+                );}
+              //  else if (service.id == 4) {
+              //   Navigator.of(context).push(MaterialPageRoute(
+              //       builder: (ctx) => EmergencySupplier(supplier: supplier)));
+              // } else if (service.id == 5) {
+              //   Navigator.of(context).push(MaterialPageRoute(
+              //       builder: (ctx) => EmergencySupplier(supplier: supplier)));
+              // }
             },
             child: Row(
               children: [

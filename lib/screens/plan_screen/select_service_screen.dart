@@ -45,6 +45,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   List<OrderViewModel>? listRestaurantOrder = [];
   List<OrderViewModel>? listMotelOrder = [];
   num total = 0;
+  num memberLimit = sharedPreferences.getInt('plan_number_of_member')!;
 
   @override
   void initState() {
@@ -60,16 +61,19 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
   }
 
-  callback() async {
-    orderList = await _planService
-        .getOrderCreatePlan(sharedPreferences.getInt('planId')!);
+  callback(OrderViewModel order) async {
+    // orderList = await _planService
+    //     .getOrderCreatePlan(sharedPreferences.getInt('planId')!);
+
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
     listMotelOrder = [];
     listRestaurantOrder = [];
+
+    orderList!.add(order);
     total = 0;
     for (var item in orderList!) {
-      if (item.supplierType == "RESTAURANT") {
+      if (item.serviceType!.id == 1) {
         listRestaurant.add(SupplierOrderCard(order: item));
         listRestaurantOrder!.add(item);
       } else {
@@ -86,6 +90,8 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     for (final order in orderList!) {
       total += order.total;
     }
+    final budget = ((total / memberLimit)/1000).ceil();
+    sharedPreferences.setInt('plan_budget', budget);
   }
 
   @override
@@ -120,7 +126,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                 startDate: startDate!,
                                 endDate: endDate!,
                                 numberOfMember: numberOfMember!,
-                                serviceType: services[1],
+                                serviceType: services[4],
                                 location: widget.location,
                                 callbackFunction: callback,
                               ),
@@ -162,7 +168,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
               ]),
           Container(
             margin: const EdgeInsets.only(top: 8),
-            height: _listRestaurant.isEmpty && _listMotel.isEmpty ? 50.h : 58.h,
+            height: _listRestaurant.isEmpty && _listMotel.isEmpty ? 50.h : 46.h,
             child: TabBarView(controller: tabController, children: [
               _listRestaurant.isEmpty && _listMotel.isEmpty
                   ? Image.asset(
@@ -194,21 +200,42 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           ),
           const Spacer(),
           if (total != 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Tổng cộng: ',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Tổng cộng: ',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ],
                   ),
-                  Text(
-                    '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
-                    style: const TextStyle(fontSize: 18),
+                ),
+                SizedBox(height: 1.h,),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Khoản thu bình quân: ',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(((total / memberLimit)/1000).ceil())} GCOIN',
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           const SizedBox(
             height: 12,
@@ -321,9 +348,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           //       }
           //     },
           //     child: const Text('Hoàn tất')),
-          SizedBox(
-            height: 3.h,
-          )
+
         ],
       ),
     );

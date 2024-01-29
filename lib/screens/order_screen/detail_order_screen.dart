@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/sessions.dart';
@@ -28,7 +30,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       noteController.text = widget.order.note!;
     }
     _servingDates =
-        widget.order.servingDates.map((e) => DateTime.parse(e)).toList();
+        widget.order.servingDates.map((e) => DateTime.parse(json.decode(e))).toList();
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
         .range;
@@ -51,7 +53,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   height: 30.h,
                   width: double.infinity,
                   child: Image.network(
-                    widget.order.supplierThumbnailUrl,
+                    widget.order.supplierImageUrl,
                     fit: BoxFit.fitWidth,
                     height: 30.h,
                   ),
@@ -243,7 +245,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           width: 8,
                         ),
                          Text(
-                        widget.order.supplierType == "MOTEL" ?  'Thời gian check-in:': 'Thời gian phục vụ:',
+                        widget.order.serviceType!.id == 5?  'Thời gian check-in:': 'Thời gian phục vụ:',
                           style:const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -251,7 +253,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           width: 8,
                         ),
                         Text(
-                         widget.order.supplierType == "MOTEL" ? '12:00 SA' : _servingTime,
+                         widget.order.serviceType!.id == 5 ? '12:00 SA' : _servingTime,
                           style: const TextStyle(fontSize: 18),
                         )
                       ],

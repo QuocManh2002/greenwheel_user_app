@@ -13,9 +13,10 @@ import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
+import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/order_detail_create.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/cart_item_card.dart';
 import 'package:intl/intl.dart';
@@ -46,7 +47,7 @@ class CartScreen extends StatefulWidget {
   final String note;
   final int numberOfMember;
   final Session session;
-  final void Function() callbackFunction; 
+  final void Function(OrderViewModel order) callbackFunction; 
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -64,7 +65,6 @@ class _CartScreenState extends State<CartScreen> {
   bool isIndividual = false;
   bool canPay = false;
   int? planId;
-  PlanDetail? plan;
   int quantity = 1;
   int selectedDays = 1;
 
@@ -108,8 +108,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   setUpdata() async {
-    plan = await planService.GetPlanById(planId!);
-    print("PLAN END DATE: ${plan!.endDate}");
+
   }
 
   @override
@@ -611,8 +610,8 @@ class _CartScreenState extends State<CartScreen> {
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'NotoSans',
-                                    color: Colors.grey,
-                                    decoration: TextDecoration.lineThrough,
+                                    color: Colors.black,
+                                    
                                   ),
                                 ),
                               ],
@@ -621,36 +620,36 @@ class _CartScreenState extends State<CartScreen> {
                           const SizedBox(
                             height: 10,
                           ),
-                          Container(
-                            width: 90.w,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const Text(
-                                  'Đặt cọc (30%)', // Replace with your first text
-                                  style: TextStyle(
-                                      fontSize: 16,
-                                      fontFamily: 'NotoSans',
-                                      color: Colors.black),
-                                ),
-                                Text(
-                                  currencyFormat.format(((finalTotal *
-                                              30 /
-                                              100) /
-                                          1000) *
-                                      (_servingDates.isEmpty
-                                          ? 1
-                                          : _servingDates
-                                              .length)), // Replace with your second text
-                                  style: const TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'NotoSans',
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                          // Container(
+                          //   width: 90.w,
+                          //   child: Row(
+                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          //     children: [
+                          //       const Text(
+                          //         'Đặt cọc (30%)', // Replace with your first text
+                          //         style: TextStyle(
+                          //             fontSize: 16,
+                          //             fontFamily: 'NotoSans',
+                          //             color: Colors.black),
+                          //       ),
+                          //       Text(
+                          //         currencyFormat.format(((finalTotal *
+                          //                     30 /
+                          //                     100) /
+                          //                 1000) *
+                          //             (_servingDates.isEmpty
+                          //                 ? 1
+                          //                 : _servingDates
+                          //                     .length)), // Replace with your second text
+                          //         style: const TextStyle(
+                          //           fontSize: 17,
+                          //           fontWeight: FontWeight.bold,
+                          //           fontFamily: 'NotoSans',
+                          //         ),
+                          //       ),
+                          //     ],
+                          //   ),
+                          // ),
                           const SizedBox(
                             height: 20,
                           ),
@@ -673,7 +672,7 @@ class _CartScreenState extends State<CartScreen> {
                                     },
                                   ).show();
                                 } else {
-                                  await paymentStart();
+                                  addOrder();
                                 }
                                 // }
                               },
@@ -683,7 +682,7 @@ class _CartScreenState extends State<CartScreen> {
                               ),
                               child: const Center(
                                 child: Text(
-                                  'Thanh toán',
+                                  'Thêm đơn hàng mẫu',
                                   style: TextStyle(
                                     color: Colors.white, // Text color
                                     fontSize: 18,
@@ -770,7 +769,7 @@ class _CartScreenState extends State<CartScreen> {
         desc: "Ấn tiếp tục để trở về",
         btnOkText: "Tiếp tục",
         btnOkOnPress: () {
-          widget.callbackFunction();
+          // widget.callbackFunction();
           Navigator.of(context).pop();
           Navigator.of(context).pop();
         },
@@ -787,6 +786,52 @@ class _CartScreenState extends State<CartScreen> {
         btnOkOnPress: () {},
       ).show();
     }
+  }
+
+  addOrder(){
+
+    var order = convertCart();
+    final total = (finalTotal) *
+                                      (_servingDates.isEmpty
+                                          ? 1
+                                          : _servingDates
+                                              .length);
+    List<OrderDetailViewModel> details = [];
+    for(final item in list){
+      details.add(OrderDetailViewModel(
+        id: 1, 
+        productName: item.product.name, 
+        quantity: item.qty, 
+        price: item.product.price.toDouble()));
+    }
+    OrderViewModel newOrder = OrderViewModel(
+      id: 1, 
+      details: details,
+      deposit: deposit, 
+      period: order.period, 
+      servingDates: order.servingDates, 
+      total: total, 
+      createdAt: DateTime.now(), 
+      supplierId: widget.supplier.id, 
+      supplierName: widget.supplier.name, 
+      supplierPhone: widget.supplier.phone, 
+      supplierAddress: widget.supplier.address, 
+      serviceType: widget.serviceType,
+      supplierImageUrl: widget.supplier.thumbnailUrl);
+    AwesomeDialog(
+        context: context,
+        dialogType: DialogType.success,
+        animType: AnimType.topSlide,
+        showCloseIcon: true,
+        title: "Thanh toán thành công",
+        desc: "Ấn tiếp tục để trở về",
+        btnOkText: "Tiếp tục",
+        btnOkOnPress: () {
+          widget.callbackFunction(newOrder);
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+        },
+      ).show();
   }
 
   Future pickDateRange() async {

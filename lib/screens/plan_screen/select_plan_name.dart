@@ -62,6 +62,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
 
     int? rs = await _planService.createPlan(
         PlanCreate(
+            gcoinBudget: sharedPreferences.getInt('plan_budget'),
             numOfExpPeriod: numOfExpPeriod,
             locationId: widget.location.id,
             startDate: _startDate,

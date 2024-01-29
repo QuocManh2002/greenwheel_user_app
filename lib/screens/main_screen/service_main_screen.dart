@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_loading_screen.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
@@ -24,7 +23,7 @@ class ServiceMainScreen extends StatefulWidget {
   final LocationViewModel location;
   final DateTime startDate;
   final DateTime endDate;
-  final void Function() callbackFunction;
+  final void Function(OrderViewModel order) callbackFunction;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();
@@ -49,17 +48,18 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
 
     if (widget.serviceType.id == 1) {
       title = "Dịch vụ ăn uống";
-      type.add("RESTAURANT");
-    } else if (widget.serviceType.id == 2 || widget.serviceType.id == 6) {
+      type.add("FOOD");
+    } else if (widget.serviceType.id == 5) {
       title = "Dịch vụ lưu trú";
-      type.addAll(["CAMPING_SHOP", "MOTEL"]);
-    } else if (widget.serviceType.id == 3 || widget.serviceType.id == 5) {
-      title = "Dịch vụ đi lại";
-      type.addAll(["REPAIR_SHOP", "TAXI", "VEHICLE_SHOP"]);
-    } else {
-      title = "Dịch vụ tiện lợi";
-      type.add("GROCERY");
+      type.add("ROOM");
     }
+    //  else if (widget.serviceType.id == 3 || widget.serviceType.id == 5) {
+    //   title = "Dịch vụ đi lại";
+    //   type.addAll(["REPAIR_SHOP", "TAXI", "VEHICLE_SHOP"]);
+    // } else {
+    //   title = "Dịch vụ tiện lợi";
+    //   type.add("GROCERY");
+    // }
 
     list = await supplierService.getSuppliers(
         widget.location.longitude, widget.location.latitude, type);
@@ -97,7 +97,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                         if (sharedPreferences.getInt("planId") == null) {
                           Navigator.of(context).pop();
                         }
-                          widget.callbackFunction();
+                          // widget.callbackFunction();
                           Navigator.of(context).pop();
                         // Close the current page
                       },

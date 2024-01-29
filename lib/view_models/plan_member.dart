@@ -22,9 +22,9 @@ class PlanMemberViewModel {
     });
 
     factory PlanMemberViewModel.fromJson(Map<String, dynamic> json) => PlanMemberViewModel(
-        name: json["traveler"]["account"]["name"],
-        travelerId: json["travelerId"],
-        phone: json["traveler"]["phone"],
+        name: json["account"]["name"],
+        travelerId: json["id"],
+        phone: json["account"]["phone"],
         status: json["status"],
     );
 

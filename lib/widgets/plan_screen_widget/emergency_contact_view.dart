@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
+import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_detail_service.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:sizer2/sizer2.dart';
@@ -19,39 +21,84 @@ class EmergencyContactView extends StatelessWidget {
                 callback: () {})));
       },
       child: Container(
+        width: 72.w,
         padding: const EdgeInsets.all(12),
         decoration: const BoxDecoration(
           color: Color(0xFFf2f2f2),
           borderRadius: BorderRadius.all(Radius.circular(12)),
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Row(
           children: [
-            Text(
-              emergency.name ?? 'Không có thông tin',
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 1.h,
-            ),
-            Row(
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Icon(
-                  Icons.call,
-                  color: Colors.grey,
+                SizedBox(
+                  width: 66.w,
+                  child: Text(
+                    emergency.name ?? 'Không có thông tin',
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 SizedBox(
-                  width: 1.h,
+                  height: 1.h,
                 ),
-                Text(
-                  emergency.phone == null
-                      ? 'Không có thông tin'
-                      : '0${emergency.phone!.substring(3)}',
-                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.call,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(
+                      width: 1.h,
+                    ),
+                    Text(
+                      emergency.phone == null
+                          ? 'Không có thông tin'
+                          : '0${emergency.phone!.substring(3)}',
+                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                    )
+                  ],
+                ),
+                SizedBox(
+                  height: 1.h,
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.home,
+                      color: Colors.grey,
+                    ),
+                    SizedBox(
+                      width: 1.h,
+                    ),
+                    SizedBox(
+                      width: 58.w,
+                      child: Text(
+                        emergency.address == null
+                            ? 'Không có thông tin'
+                            : emergency.address!,
+                        overflow: TextOverflow.ellipsis,
+                        style:
+                            const TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                    )
+                  ],
                 )
               ],
-            )
+            ),
+            const Spacer(),
+            IconButton(
+                onPressed: () async{
+                  await FlutterPhoneDirectCaller.callNumber('0${emergency.phone!.substring(3)}');
+                },
+                icon: const Icon(
+                  Icons.call,
+                  color: primaryColor,
+                  size: 40,
+                )),
+            const Spacer(),
           ],
         ),
       ),

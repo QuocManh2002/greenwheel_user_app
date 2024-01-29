@@ -201,7 +201,7 @@ class _OTPScreenState extends State<OTPScreen> {
           if(deviceToken != ''){
             sharedPreferences.setString('deviceToken', deviceToken);
           }
-          Utils().SaveDefaultAddressToSharedPref(customer[0].defaultAddress, customer[0].defaultCoordinate);
+          // Utils().SaveDefaultAddressToSharedPref(customer[0].defaultAddress!, customer[0].defaultCoordinate!);
           sharedPreferences.setString("userPhone", payload['phone_number']);
           // ignore: use_build_context_synchronously
           Navigator.push(context,

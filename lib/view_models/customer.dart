@@ -9,37 +9,37 @@ class CustomerViewModel {
   String? avatarUrl;
   String phone;
   double balance;
-  String defaultAddress;
-  PointLatLng defaultCoordinate;
+  String? defaultAddress;
+  PointLatLng? defaultCoordinate;
 
   CustomerViewModel customerFromJson(String str) =>
       CustomerViewModel.fromJson(json.decode(str));
 
   String customerToJson(CustomerViewModel data) => json.encode(data.toJson());
 
-  CustomerViewModel({
-    required this.id,
-    required this.name,
-    required this.isMale,
-    required this.avatarUrl,
-    required this.phone,
-    required this.balance,
-    required this.defaultAddress,
-    required this.defaultCoordinate
-  });
+  CustomerViewModel(
+      {required this.id,
+      required this.name,
+      required this.isMale,
+      required this.avatarUrl,
+      required this.phone,
+      required this.balance,
+      required this.defaultAddress,
+      required this.defaultCoordinate});
 
   factory CustomerViewModel.fromJson(Map<String, dynamic> json) =>
       CustomerViewModel(
         id: json["id"],
-        name: json["account"]["name"],
-        isMale: json["account"]["isMale"],
-        avatarUrl: json['account']["avatarUrl"],
+        name: json["name"],
+        isMale: json["isMale"],
+        avatarUrl: json["avatarUrl"],
         phone: json["phone"],
         defaultAddress: json['defaultAddress'],
-        defaultCoordinate: PointLatLng(
-          json['defaultCoordinate']['coordinates'][1]
-          , json['defaultCoordinate']['coordinates'][0]),
-        balance: double.parse(json["account"]["gcoinBalance"].toString()),
+        defaultCoordinate: json['defaultCoordinate'] == null
+            ? PointLatLng(0, 0)
+            : PointLatLng(json['defaultCoordinate']['coordinates'][1],
+                json['defaultCoordinate']['coordinates'][0]),
+        balance: double.parse(json["gcoinBalance"].toString()),
       );
 
   Map<String, dynamic> toJson() => {

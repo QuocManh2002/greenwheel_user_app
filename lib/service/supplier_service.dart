@@ -16,6 +16,13 @@ class SupplierService extends Iterable {
           },
         },
       ];
+      List<Map<String, dynamic>> typeConditions1 = [
+        {
+          "products": {
+          "some": { "type": { "in": types.map((type) => type).toList() } }
+        }
+        },
+      ];
 
       print(typeConditions);
 
@@ -39,7 +46,7 @@ class SupplierService extends Iterable {
               where: {
                 isHidden: { eq: false },
                 $coordinateString
-                or: $typeConditions
+                or: $typeConditions1
               }
             ) {
               nodes {
@@ -47,11 +54,10 @@ class SupplierService extends Iterable {
                 name
                 address
                 phone
-                thumbnailUrl
+                imageUrl
                 coordinate {
                   coordinates
                 }
-                type
               }
             }
           }

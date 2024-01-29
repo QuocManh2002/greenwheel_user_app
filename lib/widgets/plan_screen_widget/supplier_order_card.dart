@@ -45,7 +45,7 @@ class SupplierOrderCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 15.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(order.supplierThumbnailUrl),
+                    image: NetworkImage(order.supplierImageUrl),
                     fit: BoxFit.cover,
                     width: 15.h,
                     filterQuality: FilterQuality.high,

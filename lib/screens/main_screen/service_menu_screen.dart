@@ -8,6 +8,8 @@ import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
@@ -42,7 +44,7 @@ class ServiceMenuScreen extends StatefulWidget {
   final String iniNote;
   final LocationViewModel location;
   final int numberOfMember;
-  final void Function() callbackFunction;
+  final void Function(OrderViewModel order) callbackFunction;
 
   @override
   State<ServiceMenuScreen> createState() => _ServiceMenuScreenState();

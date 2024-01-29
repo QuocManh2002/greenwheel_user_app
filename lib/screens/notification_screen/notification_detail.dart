@@ -58,7 +58,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
     List<Widget> listMotel = [];
 
     for (var item in _targetViewModel!.orders!) {
-      if (item.supplierType == "RESTAURANT") {
+      if (item.serviceType!.id == 5) {
         listRestaurant.add(SupplierOrderCard(order: item));
       } else {
         listMotel.add(SupplierOrderCard(order: item));

@@ -142,6 +142,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
               planId: sharedPreferences.getInt('planId')!);
           break;
         case 5:
+          _stepperText = 'Tạo khoản thu';
+          activePage = SelectServiceScreen(location: widget.location, isClone: false);
+        case 6:
           _stepperText = 'Hoàn tất kế hoạch';
           activePage = SelectPlanName(
             location: widget.location,
@@ -236,7 +239,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                     SizedBox(
                       width: 2.h,
                     ),
-                  if (_currentStep < 5)
+                  if (_currentStep < 6)
                     Expanded(
                       child: ElevatedButton(
                           style: elevatedButtonStyle,
@@ -461,7 +464,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                         btnCancelColor: Colors.blue,
                                         btnCancelOnPress: () {
                                           setState(() {
-                                            _currentStep++;
+                                            _currentStep += 2;
                                           });
                                           getCurrentPage();
                                         },
@@ -561,8 +564,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     String _scheduleText = sharedPreferences.getString('plan_schedule')!;
     final List<dynamic> _schedule = json.decode(_scheduleText);
     String rsText = '';
-    for (final detail in _schedule[index]) {
-      if (detail != _schedule[index].last) {
+    for (final detail in _schedule[index]['events']) {
+      if (detail != _schedule[index]['events'].last) {
         rsText +=
             '${json.decode(detail['shortDescription']) ?? 'Không có mô tả'}, ';
       } else {
@@ -621,10 +624,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                 onPressed: () {
                   Navigator.of(context).pop();
                   setState(() {
-                    activePage = SelectServiceScreen(
-                        location: widget.location, isClone: false);
-                    _stepperText = 'Thêm dịch vụ';
+                   _currentStep++;
                   });
+                   getCurrentPage();
                 },
                 child: const Text(
                   'Tham khảo',
@@ -638,7 +640,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                 onPressed: () {
                  if(_formKey.currentState!.validate()){
                    setState(() {
-                    _currentStep++;
+                    _currentStep += 2;
                   });
                   getCurrentPage();
                  }

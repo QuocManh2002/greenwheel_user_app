@@ -4,7 +4,6 @@ class SupplierViewModel {
   String phone;
   String thumbnailUrl;
   String address;
-  String type;
   double longitude;
   double latitude;
 
@@ -16,16 +15,15 @@ class SupplierViewModel {
       required this.address,
       required this.longitude,
       required this.latitude,
-      required this.type});
+});
 
   factory SupplierViewModel.fromJson(Map<String, dynamic> json) =>
       SupplierViewModel(
         id: json["id"],
         name: json["name"],
         phone: json["phone"],
-        thumbnailUrl: json["thumbnailUrl"],
+        thumbnailUrl: json["imageUrl"],
         address: json["address"],
-        type: json["type"],
         latitude: json["coordinate"]["coordinates"][1],
         longitude: json["coordinate"]["coordinates"][0],
       );
@@ -36,7 +34,6 @@ class SupplierViewModel {
         "phone": phone,
         "thumbnailUrl": thumbnailUrl,
         "address": address,
-        "type": type,
         "latitude": latitude,
         "longitude": longitude,
       };

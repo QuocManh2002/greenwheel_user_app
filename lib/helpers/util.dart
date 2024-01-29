@@ -46,6 +46,7 @@ class Utils {
     sharedPreferences.remove('numOfExpPeriod');
     sharedPreferences.remove('plan_departureDate');
     sharedPreferences.remove('plan_closeRegDate');
+    sharedPreferences.remove('plan_budget');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {

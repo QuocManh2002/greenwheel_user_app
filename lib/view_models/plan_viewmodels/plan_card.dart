@@ -25,8 +25,8 @@ class PlanCardViewModel {
         id: json["id"],
         startDate: DateTime.parse(json["startDate"]),
         endDate: DateTime.parse(json["endDate"]),
-        location: LocationViewModel.fromJson(json["location"]),
-        province: ProvinceViewModel.fromJson(json["location"]["province"]),
+        location: LocationViewModel.fromJson(json["destination"]),
+        province: ProvinceViewModel.fromJson(json["destination"]["province"]),
         status: json["status"],
         name: json["name"]
     );
