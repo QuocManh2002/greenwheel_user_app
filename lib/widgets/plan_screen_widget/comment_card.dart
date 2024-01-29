@@ -13,7 +13,7 @@ class CommentCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
           shape: BoxShape.rectangle,
-          border: Border.all(color: Colors.black38, width: 2),
+          border: Border.all(color: Colors.black38, width: 1),
           borderRadius: BorderRadius.circular(12)),
       width: double.infinity,
       child: Row(

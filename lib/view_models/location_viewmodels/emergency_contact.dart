@@ -7,20 +7,23 @@ class EmergencyContactViewModel {
   String? type;
   String? phone;
   String? address;
+  String? imageUrl;
 
-  EmergencyContactViewModel({this.address, this.name, this.phone, this.type});
+  EmergencyContactViewModel({this.address, this.name, this.phone, this.type, this.imageUrl});
 
   factory EmergencyContactViewModel.fromJsonByLocation(Map<String, dynamic> json) =>
       EmergencyContactViewModel(
           address: json['address'],
           name: json['name'],
           phone: json['phone'],
+          imageUrl: json['imageUrl'],
           type: json['type']);
       factory EmergencyContactViewModel.fromJsonByPlan(Map<String, dynamic> json) =>
       EmergencyContactViewModel(
           address: json['address'],
           name: json['name'],
           phone: json['phone'],
+          imageUrl: json['imageUrl'],
           type: contact_types[int.parse(json['type'].toString())]); 
   Map<String, dynamic> toJson(EmergencyContactViewModel model) => {
         "address": json.encode(model.address),

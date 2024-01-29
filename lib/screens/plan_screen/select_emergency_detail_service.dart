@@ -1,5 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
@@ -12,11 +13,13 @@ class SelectEmergencyDetailService extends StatefulWidget {
       {super.key,
       required this.emergency,
       required this.index,
+      required this.isView,
       required this.callback});
 
   final EmergencyContactViewModel emergency;
   final int index;
   final void Function() callback;
+  final bool isView;
 
   @override
   State<SelectEmergencyDetailService> createState() =>
@@ -43,9 +46,10 @@ class _SelectEmergencyDetailServiceState
                   foregroundColor: MaterialStatePropertyAll(Colors.white)
                 ),
                 onPressed: () {
-                  
                   Navigator.of(context).pop();
-                  widget.callback();
+                  if(!widget.isView){
+                    widget.callback();
+                  }
                 },
               ),
             ),
@@ -79,7 +83,7 @@ class _SelectEmergencyDetailServiceState
                   height: 1.h,
                 ),
                 Padding(
-                  padding: EdgeInsets.only(left: 2.h, right: 1.h),
+                  padding: EdgeInsets.only(left: 2.h, right: 2.h),
                   child: Row(
                     children: [
                       const Text(
@@ -93,7 +97,11 @@ class _SelectEmergencyDetailServiceState
                         '0${widget.emergency.phone!.substring(3)}',
                         style:
                             const TextStyle(fontSize: 20, color: Colors.grey),
-                      )
+                      ),
+                      const Spacer(),
+                      IconButton(onPressed: ()async{ 
+                        await FlutterPhoneDirectCaller.callNumber('0${widget.emergency.phone!.substring(3)}');
+                      }, icon:const Icon(Icons.call, color: primaryColor, size: 32,))
                     ],
                   ),
                 ),
@@ -118,7 +126,7 @@ class _SelectEmergencyDetailServiceState
                           ])),
                 ),
                 const Spacer(),
-                if (!isEnableToAdd)
+                if (!isEnableToAdd && !widget.isView)
                   Container(
                     alignment: Alignment.center,
                     child: ElevatedButton(

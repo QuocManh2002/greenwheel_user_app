@@ -1,4 +1,5 @@
 
+import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 
@@ -10,19 +11,14 @@ class LocationViewModel {
   List<String> activities;
   List<String> seasons;
   String topographic;
-  List<dynamic> templatePlan;
   double latitude;
   double longitude;
   String address;
-  String? lifeguardPhone;
-  String? lifeguardAddress;
-  String? clinicPhone;
-  String? clinicAddress;
-  String hotline;
   ProvinceViewModel province;
-  int suggestedTripLength;
+  int? suggestedTripLength;
   List<EmergencyContactViewModel>? emergencyContacts;
   List<dynamic>? templateEvents;
+  List<CommentViewModel>? comments;
 
   LocationViewModel(
       {required this.id,
@@ -32,17 +28,12 @@ class LocationViewModel {
       required this.activities,
       required this.seasons,
       required this.topographic,
-      required this.templatePlan,
       required this.latitude,
       required this.longitude,
       required this.address,
-      this.lifeguardPhone,
-      this.lifeguardAddress,
-      this.clinicPhone,
-      this.clinicAddress,
-      required this.hotline,
       required this.province,
-      required this.suggestedTripLength,
+      this.comments,
+      this.suggestedTripLength,
       this.emergencyContacts,
       this.templateEvents});
 
@@ -55,18 +46,12 @@ class LocationViewModel {
           activities: List<String>.from(json["activities"].map((x) => x)),
           seasons: List<String>.from(json["seasons"].map((x) => x)),
           topographic: json["topographic"],
-          templatePlan: json["templateSchedule"],
           latitude: json["coordinate"]["coordinates"][1].toDouble(),
           longitude: json["coordinate"]["coordinates"][0].toDouble(),
           address: json["address"],
-          lifeguardPhone: json["lifeguardPhone"],
-          lifeguardAddress: json["lifeguardAddress"],
-          clinicPhone: json["clinicPhone"],
-          clinicAddress: json["clinicAddress"],
-          hotline: json["hotline"],
-          suggestedTripLength:
-              List<dynamic>.from(json['templateSchedule'].map((x) => x)).length,
+          suggestedTripLength:1,
           province: ProvinceViewModel.fromJson(json["province"]),
+          comments: List<CommentViewModel>.from(json['comments'].map((e) => CommentViewModel.fromJson(e))).toList(),
           emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
           templateEvents: json['templateEvents']);
 

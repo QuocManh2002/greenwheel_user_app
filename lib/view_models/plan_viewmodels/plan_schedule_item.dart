@@ -9,7 +9,7 @@ const uuid = Uuid();
 class PlanScheduleItem {
   final String id;
   final String? description;
-  TimeOfDay time;
+  TimeOfDay? time;
   final DateTime? date;
   final String? orderId;
   final String? type;
@@ -18,7 +18,7 @@ class PlanScheduleItem {
 
   PlanScheduleItem(
       {String? id,
-      required this.time,
+      this.time,
       this.description,
       this.shortDescription,
       this.date,
@@ -43,7 +43,7 @@ class PlanScheduleItem {
         // "type": "GATHER"
 
         "time": json.encode(DateFormat.Hms()
-            .format(DateTime(0, 0, 0, time.hour, time.minute))
+            .format(DateTime(0, 0, 0, time!.hour, time!.minute))
             .toString()),
         "orderGuid": orderId == null ? null : json.encode(orderId),
         "description": json.encode(description),

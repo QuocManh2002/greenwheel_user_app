@@ -12,6 +12,7 @@ import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/select_default_address.dart';
+import 'package:greenwheel_user_app/screens/location_screen/add_comment_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_by_location.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
@@ -22,11 +23,9 @@ import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/comment_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:greenwheel_user_app/widgets/search_screen_widget/tag.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:readmore/readmore.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
-import 'package:vn_badwords_filter/vn_badwords_filter.dart';
 
 class LocationScreen extends StatefulWidget {
   const LocationScreen({super.key, required this.location});
@@ -71,8 +70,6 @@ class _LocationScreenState extends State<LocationScreen> {
       isLoading = false;
     });
   }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -290,7 +287,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                         builder: (ctx) =>
                                                             SelectDefaultAddress(
                                                                 callback:
-                                                                    callback)));
+                                                                    callbackSelectDefaultLocation)));
                                               },
                                               btnCancelColor: Colors.orange,
                                               btnCancelText: 'Không',
@@ -397,7 +394,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                               const SizedBox(
                                                 width: 4,
                                               ),
-                                               Text('(${_comments.length} đánh giá)')
+                                              Text(
+                                                  '(${widget.location.comments!.length} đánh giá)')
                                             ],
                                           ),
                                         ]),
@@ -427,62 +425,47 @@ class _LocationScreenState extends State<LocationScreen> {
                               ListView.builder(
                                 physics: const BouncingScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: _comments.length,
+                                itemCount: widget.location.comments!.length > 2 ? 2 : widget.location.comments!.length,
                                 itemBuilder: (context, index) => Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 10),
-                                  child: CommentCard(comment: _comments[index]),
+                                  child: CommentCard(
+                                      comment:
+                                          widget.location.comments![index]),
                                 ),
                               ),
-                              SizedBox(
-                                height: 2.h,
+                              Container(
+                                alignment: Alignment.centerRight,
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 12),
+                                  child: OutlinedButton.icon(
+                                      style: OutlinedButton.styleFrom(
+                                          side: const BorderSide(
+                                              color: primaryColor),
+                                          foregroundColor: primaryColor,
+                                          shape: const RoundedRectangleBorder(
+                                              borderRadius: BorderRadius.all(
+                                                  Radius.circular(12)),
+                                              side: BorderSide(
+                                                  color: primaryColor))),
+                                      icon: const Icon(Icons.comment),
+                                      onPressed: () {
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (ctx) =>
+                                                    AddCommentScreen(
+                                                      callback:
+                                                          callbackAddComment,
+                                                      comments: widget
+                                                          .location.comments,
+                                                    )));
+                                      },
+                                      label: const Text(
+                                        'Thêm bình luận',
+                                      )),
+                                ),
                               ),
-                              Form(
-                                  key: _formKey,
-                                  child: Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 20, right: 12),
-                                    child: Row(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                      SizedBox(
-                                        width: 78.w,
-                                        child: defaultTextFormField(
-                                          controller: _commentController,
-                                          inputType: TextInputType.text,
-                                          maxligne: 1,
-                                          text: 'Bình luận',
-                                          onValidate: (value) {
-                                            if (value!.isEmpty) {
-                                              return "Bình luận của bạn không được để trống";
-                                            } else if (VNBadwordsFilter
-                                                .isProfane(value)) {
-                                              return "Bình luận của bạn chứa từ ngữ không hợp lệ";
-                                            } else if (! Utils().IsValidSentence(value)) {
-                                              return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
-                                            }
-                                          },
-                                        ),
-                                      ),
-                                      Container(
-                                        margin: EdgeInsets.only(top: 0.8.h,),
-                                        child: IconButton(
-                                            onPressed: () {
-                                              if (_formKey.currentState!
-                                                  .validate()) {
-                                                  addComment(_commentController.text);
-                                                  _commentController.clear();
-                                              }
-                                            },
-                                            icon: const Icon(
-                                              Icons.send,
-                                              size: 40,
-                                              color: primaryColor,
-                                            )),
-                                      )
-                                    ]),
-                                  )),
-
                               SizedBox(
                                 height: 4.h,
                               )
@@ -530,7 +513,7 @@ class _LocationScreenState extends State<LocationScreen> {
         ),
       );
 
-  callback(SearchStartLocationResult? selectedAddress,
+  callbackSelectDefaultLocation(SearchStartLocationResult? selectedAddress,
       PointLatLng? selectedLatLng) async {
     if (selectedAddress != null) {
       setState(() {
@@ -551,15 +534,14 @@ class _LocationScreenState extends State<LocationScreen> {
             : PointLatLng(selectedAddress.lat, selectedAddress.lng));
   }
 
-  addComment(String content){
+  callbackAddComment(String commentText) {
     setState(() {
       _comments.add(CommentViewModel(
-      id: 1, 
-      customerName: sharedPreferences.getString('userName')!, 
-      content: content, 
-      date: DateTime.now(), 
-      imgUrl: defaultUserAvatarLink));
+          id: 1,
+          customerName: sharedPreferences.getString('userName')!,
+          content: commentText,
+          date: DateTime.now(),
+          imgUrl: defaultUserAvatarLink));
     });
   }
-
 }

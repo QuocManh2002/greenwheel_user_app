@@ -36,6 +36,7 @@ class EmergencyContactCard extends StatelessWidget {
                   builder: (ctx) => SelectEmergencyDetailService(
                         emergency: emergency,
                         index: index,
+                        isView: false,
                         callback: () {
                           callback();
                         },

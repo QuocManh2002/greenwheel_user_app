@@ -114,6 +114,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   setUpData() async {
+    int _memberLimit = sharedPreferences.getInt('plan_number_of_member')!;
     defaultAddress = sharedPreferences.getString('defaultAddress');
     final defaultCoordinate = sharedPreferences.getStringList('defaultCoordinate');
     defaultLatLng = PointLatLng(double.parse(defaultCoordinate![0]), double.parse(defaultCoordinate[1]));
@@ -150,9 +151,10 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
       });
     } else {
-      _selectedDate = DateTime.now().add(const Duration(hours: 3));
-      _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
-      sharedPreferences.setString(
+      if(_memberLimit == 1){
+        _selectedDate = DateTime.now().add(const Duration(hours: 2));
+        _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
+         sharedPreferences.setString(
           'plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
       final defaultDepartureDate = DateTime(
               _selectedDate!.year, _selectedDate!.month, _selectedDate!.day)
@@ -160,6 +162,19 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
           .add(Duration(minutes: _selectTime.minute));
       sharedPreferences.setString(
           'plan_departureDate', defaultDepartureDate.toString());
+      }else{
+        final closeRegDate = DateTime.parse(sharedPreferences.getString('plan_closeRegDate')!);
+        _selectedDate = closeRegDate.add(const Duration(days: 4));
+        _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
+         sharedPreferences.setString(
+          'plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
+      final defaultDepartureDate = DateTime(
+              _selectedDate!.year, _selectedDate!.month, _selectedDate!.day)
+          .add(Duration(hours: _selectTime.hour))
+          .add(Duration(minutes: _selectTime.minute));
+      sharedPreferences.setString(
+          'plan_departureDate', defaultDepartureDate.toString());
+      }     
     }
 
     double? startLat = sharedPreferences.getDouble('plan_start_lat');
@@ -205,9 +220,9 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                               DateTime? newDay = await showDatePicker(
                                   context: context,
                                   locale: const Locale('vi_VN'),
-                                  initialDate: DateTime.now(),
-                                  firstDate: DateTime(1900),
-                                  lastDate: DateTime(2025),
+                                  initialDate: _selectedDate,
+                                  firstDate: _selectedDate!,
+                                  lastDate: _selectedDate!.add(const Duration(days: 830)),
                                   builder: (context, child) {
                                     return Theme(
                                       data: ThemeData().copyWith(
@@ -218,8 +233,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                                         cancelText: 'HỦY',
                                         confirmText: 'LƯU',
                                         initialDate: _selectedDate!,
-                                        firstDate: DateTime.now(),
-                                        lastDate: DateTime(2025),
+                                        firstDate: _selectedDate!,
+                                        lastDate:  _selectedDate!.add(const Duration(days: 830)),
                                       ),
                                     );
                                   });

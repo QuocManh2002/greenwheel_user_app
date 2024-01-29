@@ -11,6 +11,7 @@ import 'package:greenwheel_user_app/screens/plan_screen/base_information_screen.
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -20,6 +21,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_base_info_dialog.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -43,22 +45,28 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    getCurrentPage();
   }
 
   int _currentStep = 0;
   PlanService _planService = PlanService();
   String _stepperText = '';
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  TextEditingController _budgetController = TextEditingController();
 
   Future<bool> createDraftPlan(int numOfExpPeriod, DateTime departureDate,
       DateTime endDate, int numberOfMember) async {
     var duration = sharedPreferences.getDouble('plan_duration_value');
     var startDate =
         DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    var closeRegDate =
+        DateTime.parse(sharedPreferences.getString('plan_closeRegDate')!);
     // departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
     return await _planService.createPlanDraft(PlanCreate(
         numOfExpPeriod: numOfExpPeriod,
         locationId: widget.location.id,
         startDate: startDate,
+        closeRegDate: closeRegDate,
         endDate: endDate,
         departureDate: departureDate,
         latitude: sharedPreferences.getDouble('plan_start_lat')!,
@@ -93,53 +101,60 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     ).show();
   }
 
+  late Widget activePage;
+
+  getCurrentPage() {
+    setState(() {
+      switch (_currentStep) {
+        case 0:
+          _stepperText = 'Thông tin cơ bản';
+          activePage = BaseInformationScreen(
+            location: widget.location,
+          );
+          break;
+        case 1:
+          _stepperText = 'Thông tin cơ bản';
+          activePage = SelectStartLocationScreen(
+            location: widget.location,
+          );
+          break;
+        case 2:
+          _stepperText = 'Thông tin cơ bản';
+          activePage = const SelectStartDateScreen();
+          break;
+        case 3:
+          _stepperText = 'Lên lịch trình';
+          widget.schedule == null
+              ? activePage = CreatePlanScheduleScreen(
+                  isCreate: widget.isCreate,
+                  isClone: false,
+                )
+              : activePage = CreatePlanScheduleScreen(
+                  isCreate: widget.isCreate,
+                  schedule: widget.schedule,
+                  isClone: true,
+                );
+          break;
+        case 4:
+          _stepperText = 'Liên lạc khẩn cấp';
+          activePage = SelectEmergencyService(
+              location: widget.location,
+              planId: sharedPreferences.getInt('planId')!);
+          break;
+        case 5:
+          _stepperText = 'Hoàn tất kế hoạch';
+          activePage = SelectPlanName(
+            location: widget.location,
+            isCreate: widget.isCreate,
+            isClone: widget.schedule == null ? false : true,
+          );
+          break;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    late Widget activePage;
-    switch (_currentStep) {
-      case 0:
-        _stepperText = 'Thông tin cơ bản';
-        activePage = BaseInformationScreen(
-          location: widget.location,
-        );
-        break;
-      case 1:
-        _stepperText = 'Thông tin cơ bản';
-        activePage = SelectStartLocationScreen(
-          location: widget.location,
-        );
-        break;
-      case 2:
-        _stepperText = 'Thông tin cơ bản';
-        activePage = const SelectStartDateScreen();
-        break;
-      case 3:
-        _stepperText = 'Lên lịch trình';
-        widget.schedule == null
-            ? activePage = CreatePlanScheduleScreen(
-                isCreate: widget.isCreate,
-                isClone: false,
-              )
-            : activePage = CreatePlanScheduleScreen(
-                isCreate: widget.isCreate,
-                schedule: widget.schedule,
-                isClone: true,
-              );
-        break;
-      case 4:
-        _stepperText = 'Liên lạc khẩn cấp';
-        activePage = SelectEmergencyService(
-            location: widget.location,
-            planId: sharedPreferences.getInt('planId')!);
-        break;
-      case 5:
-        _stepperText = 'Hoàn tất kế hoạch';
-        activePage = SelectPlanName(
-          location: widget.location,
-          isCreate: widget.isCreate,
-        );
-        break;
-    }
     return SafeArea(
         child: Scaffold(
       resizeToAvoidBottomInset: false,
@@ -155,7 +170,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         ),
       ),
       body: Container(
-        color:Colors.white,
+        color: Colors.white,
         child: Column(
           children: [
             Expanded(
@@ -164,11 +179,12 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                   Container(
                     alignment: Alignment.center,
                     height: 7.h,
-                  child: Text(_stepperText,
-                  style:const TextStyle(
-                    fontSize: 22, 
-                    fontWeight: FontWeight.bold
-                  ),),),
+                    child: Text(
+                      _stepperText,
+                      style: const TextStyle(
+                          fontSize: 22, fontWeight: FontWeight.bold),
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     child: Container(
@@ -208,6 +224,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                               setState(() {
                                 _currentStep--;
                               });
+                              getCurrentPage();
                             }
                           },
                           child: const Text(
@@ -235,8 +252,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                       context: context,
                                       dialogType: DialogType.warning,
                                       body: const Padding(
-                                        padding:
-                                            EdgeInsets.symmetric(horizontal: 32),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 32),
                                         child: Center(
                                           child: Text(
                                             'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
@@ -259,11 +276,12 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                   sharedPreferences
                                       .getString('plan_departureDate')!);
                               DateTime endDate = DateTime.parse(
-                                  sharedPreferences.getString('plan_end_date')!);
+                                  sharedPreferences
+                                      .getString('plan_end_date')!);
                               int numberOfMember = sharedPreferences
                                   .getInt('plan_number_of_member')!;
-                              String? timeText =
-                                  sharedPreferences.getString('plan_start_time');
+                              String? timeText = sharedPreferences
+                                  .getString('plan_start_time');
                               final initialDateTime =
                                   DateFormat.Hm().parse(timeText!);
                               final _selectTime =
@@ -279,8 +297,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                       btnOkText: 'Xác nhận',
                                       btnOkOnPress: () async {
                                         setState(() {
-                                            activePage = const CreateScheduleLoadingScreen();
-                                          });
+                                          activePage =
+                                              const CreateScheduleLoadingScreen();
+                                        });
                                         if (widget.isCreate) {
                                           if (await createDraftPlan(
                                               sharedPreferences
@@ -295,14 +314,17 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                               numberOfMember)) {
                                             setState(() {
                                               _currentStep++;
+                                              getCurrentPage();
                                             });
                                           } else {
-                                            print('error when create draft plan');
+                                            print(
+                                                'error when create draft plan');
                                           }
                                         } else {
                                           setState(() {
                                             _currentStep++;
                                           });
+                                          getCurrentPage();
                                         }
                                       },
                                       body: ConfirmBaseInfoDialog(
@@ -341,9 +363,10 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                               } else {
                                 String? startDateText = sharedPreferences
                                     .getString('plan_start_date');
-                                final _startDate = DateTime.parse(startDateText!);
-                                String? endDateText =
-                                    sharedPreferences.getString('plan_end_date');
+                                final _startDate =
+                                    DateTime.parse(startDateText!);
+                                String? endDateText = sharedPreferences
+                                    .getString('plan_end_date');
                                 final _endDate = DateTime.parse(endDateText!);
                                 final _duration = _endDate
                                         .difference(DateTime(_startDate.year,
@@ -360,6 +383,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                       setState(() {
                                         _currentStep++;
                                       });
+                                      getCurrentPage();
                                     },
                                     btnCancelColor: Colors.orange,
                                     btnCancelText: 'Chỉnh sửa',
@@ -385,7 +409,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                           ),
                                           for (int i = 0; i < _duration; i++)
                                             buildConfirmScheduleItem(
-                                                _startDate.add(Duration(days: i)),
+                                                _startDate
+                                                    .add(Duration(days: i)),
                                                 i),
                                         ],
                                       ),
@@ -417,14 +442,37 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                   btnOkOnPress: () {},
                                 ).show();
                               } else {
-                                setState(() {
-                                  _currentStep++;
-                                });
+                                // showBudgetDialog();
+                                AwesomeDialog(
+                                        context: context,
+                                        dialogType: DialogType.question,
+                                        title:
+                                            'Bạn có muốn tạo khoản thu cho kế hoạch không?',
+                                        padding: const EdgeInsets.symmetric(
+                                            horizontal: 12),
+                                        titleTextStyle: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                        btnOkColor: Colors.orange,
+                                        btnOkText: 'Có',
+                                        btnOkOnPress: () {
+                                          showBudgetDialog();
+                                        },
+                                        btnCancelColor: Colors.blue,
+                                        btnCancelOnPress: () {
+                                          setState(() {
+                                            _currentStep++;
+                                          });
+                                          getCurrentPage();
+                                        },
+                                        btnCancelText: 'Không')
+                                    .show();
                               }
                             } else {
                               setState(() {
                                 _currentStep++;
                               });
+                              getCurrentPage();
                             }
                           },
                           child: const Text(
@@ -546,4 +594,63 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
           ],
         ));
   }
+
+  Future showBudgetDialog() => showDialog(
+        context: context,
+        builder: (ctx) => AlertDialog(
+          title: const Text(
+            'Nhập khoản thu (GCOIN):',
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          content: Form(
+            key: _formKey,
+            child: defaultTextFormField(
+                controller: _budgetController, inputType: TextInputType.number,
+                onValidate: (value) {
+                  if(value == null || value.isEmpty){
+                    return "Khoản thu không hợp lệ";
+                  }
+                  if(int.parse(value) <= 0 ){
+                    return "Khoản thu không hợp lệ";
+                  }
+                },
+                ),
+          ),
+          actions: [
+            TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  setState(() {
+                    activePage = SelectServiceScreen(
+                        location: widget.location, isClone: false);
+                    _stepperText = 'Thêm dịch vụ';
+                  });
+                },
+                child: const Text(
+                  'Tham khảo',
+                  style: TextStyle(color: primaryColor, fontSize: 16),
+                )),
+            TextButton(
+                style: const ButtonStyle(
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(12)),
+                        side: BorderSide(color: primaryColor, width: 1)))),
+                onPressed: () {
+                 if(_formKey.currentState!.validate()){
+                   setState(() {
+                    _currentStep++;
+                  });
+                  getCurrentPage();
+                 }
+                },
+                child: const Text(
+                  'Xác nhận',
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: primaryColor,
+                      fontWeight: FontWeight.bold),
+                ))
+          ],
+        ),
+      );
 }

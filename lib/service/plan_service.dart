@@ -27,14 +27,11 @@ class PlanService {
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 mutation{
-  updatePlan(dto: {
+  completeDraftPlan(dto: {
     numOfExpPeriod:${model.numOfExpPeriod}
     schedule:${model.schedule}
     id:$planId
     savedContacts:${model.savedContacts}
-    departureCoordinate:[
-      ${model.longitude},${model.latitude}
-    ]
     departureDate: "${model.departureDate.year}-${model.departureDate.month}-${model.departureDate.day} ${model.departureDate.hour}:${model.departureDate.minute}:00.000Z"
     startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
     endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day}"
@@ -51,7 +48,7 @@ mutation{
       } else {
         var rstext = result.data!;
         // bool isSuccess = rstext['createPlanDraft']['result']['success'];
-        int planId = rstext['updatePlan']['id'];
+        int planId = rstext['completeDraftPlan']['id'];
         sharedPreferences.setInt("planId", planId);
         return planId;
       }
@@ -66,17 +63,15 @@ mutation{
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 mutation{
-  createPlan(dto: {
-    numOfExpPeriod: ${model.numOfExpPeriod}
-    locationId: ${model.locationId}
-    departureCoordinate:[
-      ${model.longitude},${model.latitude}
-    ]
-    departureDate: "${model.departureDate.year}-${model.departureDate.month}-${model.departureDate.day} ${model.departureDate.hour}:${model.departureDate.minute}:00.000Z"
-    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
+  createDraftPlan(dto: {
+    closeRegDate:"${model.closeRegDate!.year}-${model.closeRegDate!.month}-${model.closeRegDate!.day}"
+    departDate:"${model.departureDate.year}-${model.departureDate.month}-${model.departureDate.day} ${model.departureDate.hour}:${model.departureDate.minute}:00.000Z"
+    departure:[${model.longitude},${model.latitude}]
+    destinationId:${model.locationId}
     endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day}"
     memberLimit:${model.memberLimit}
-    name: "${model.name}"
+    periodCount:${model.numOfExpPeriod}
+    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
   }){
     id
   }
@@ -89,44 +84,10 @@ mutation{
       } else {
         var rstext = result.data!;
         // bool isSuccess = rstext['createPlanDraft']['result']['success'];
-        int planId = rstext['createPlan']['id'];
+        int planId = rstext['createDraftPlan']['id'];
         sharedPreferences.setInt("planId", planId);
         return true;
       }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<List<PlanCardViewModel>> getPlanCardByStatus(String status) async {
-    try {
-      QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-{
-  plans
-    (where: {status:{eq:$status}} order: {id:DESC})
-  {
-    nodes{
-      id
-      startDate
-      endDate
-      location{name imageUrls province{name}}
-    }
-  }
-}
-""")));
-      if (result.hasException) {
-        throw Exception(result.exception);
-      }
-
-      List? res = result.data!['plans']['nodes'];
-      if (res == null || res.isEmpty) {
-        return [];
-      }
-
-      List<PlanCardViewModel> plans =
-          res.map((plan) => PlanCardViewModel.fromJson(plan)).toList();
-      return plans;
     } catch (error) {
       throw Exception(error);
     }
@@ -385,8 +346,8 @@ query GetPlanById(\$planId: Int){
         }
         item.sort(
           (a, b) {
-            var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
-            var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
+            var adate = DateTime(0, 0, 0, a.time!.hour, a.time!.minute);
+            var bdate = DateTime(0, 0, 0, b.time!.hour, b.time!.minute);
             return adate.compareTo(bdate);
           },
         );
@@ -403,9 +364,11 @@ query GetPlanById(\$planId: Int){
       for (final item in schedule.items) {
         final type = schedule_item_types_vn.firstWhere((element) => element == item.type);
         items.add({
-          'time': json.encode(DateFormat.Hms()
-              .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
-              .toString()),
+          'duration': 
+          // json.encode(DateFormat.Hms()
+          //     .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
+          //     .toString()),
+          item.activityTime,
           'orderGuid': item.orderId == null ? null: json.encode(item.orderId),
           'description': json.encode(item.description),
           'shortDescription': json.encode(item.shortDescription),

@@ -10,6 +10,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:dart_jts/dart_jts.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:vn_badwords_filter/vn_badwords_filter.dart';
 
 class Utils {
   static List<Widget> modelBuilder<M>(
@@ -26,16 +27,6 @@ class Utils {
     return TimeOfDay.fromDateTime(initialDateTime);
   }
 
-  List<PlanScheduleItem> sortByTime(List<PlanScheduleItem> list) {
-    list.sort(
-      (a, b) {
-        var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
-        var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
-        return adate.compareTo(bdate);
-      },
-    );
-    return list;
-  }
 
   void clearPlanSharePref() {
     sharedPreferences.setInt("planId", 0);
@@ -54,6 +45,7 @@ class Utils {
     sharedPreferences.remove('plan_saved_emergency');
     sharedPreferences.remove('numOfExpPeriod');
     sharedPreferences.remove('plan_departureDate');
+    sharedPreferences.remove('plan_closeRegDate');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {
@@ -132,6 +124,30 @@ class Utils {
         return false;
       }
     }
+    return true;
+  }
+
+  String? checkValidTextInput(String? text){
+    if (text!.isEmpty) {
+      return "Bình luận của bạn không được để trống";
+    } else if (VNBadwordsFilter.isProfane(text)) {
+      return "Bình luận của bạn chứa từ ngữ không hợp lệ";
+    } else if (!_isValidSentence(text)) {
+      return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
+    }
+  }
+
+  bool _isValidSentence(String sentence) {
+    List<String> words = sentence.split(' ');
+    Map<String, int> wordFrequency = {};
+
+    for (String word in words) {
+      wordFrequency[word] = (wordFrequency[word] ?? 0) + 1;
+      if (wordFrequency[word]! >= 3) {
+        return false;
+      }
+    }
+
     return true;
   }
 }

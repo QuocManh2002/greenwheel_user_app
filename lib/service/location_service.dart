@@ -14,7 +14,7 @@ class LocationService extends Iterable {
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 {
-    locations
+    destinations
     (
       first: 10, 
       order: { 
@@ -30,17 +30,32 @@ class LocationService extends Iterable {
           activities
           seasons
           topographic
-          templateSchedule
           coordinate{coordinates}
           address
-          hotline
           province{
             id
             name
-            thumbnailUrl
+            imageUrl
           }
-          emergencyContacts
-          templateEvents
+          emergencyContacts{
+            name
+            phone
+            address
+            type
+          }
+            templateEvents{
+            type
+            shortDescription
+            description
+          }
+          comments{
+            id
+            comment
+            account{
+              avatarUrl
+              name
+            }
+          }
         }
     }
 }
@@ -52,7 +67,7 @@ class LocationService extends Iterable {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['locations']['nodes'];
+      List? res = result.data!['destinations']['nodes'];
       if (res == null || res.isEmpty) {
         return [];
       }
@@ -180,17 +195,24 @@ query search(\$search: String!) {
           activities
           seasons
           topographic
-          templateSchedule
           coordinate{coordinates}
           address
-          hotline
           province{
             id
             name
-            thumbnailUrl
+            imageUrl
           }
-          emergencyContacts
-          templateEvents
+          emergencyContacts{
+            name
+            phone
+            address
+            type
+          }
+            templateEvents{
+            type
+            shortDescription
+            description
+          }
         }
     }
 }
@@ -199,7 +221,7 @@ query search(\$search: String!) {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query search(\$search: String!) {
-    locations
+    destinations
     (
       first: 100, 
       searchTerm: \$search,
@@ -219,17 +241,24 @@ query search(\$search: String!) {
           activities
           seasons
           topographic
-          templateSchedule
           coordinate{coordinates}
           address
-          hotline
           province{
             id
             name
-            thumbnailUrl
+            imageUrl
           }
-          emergencyContacts
-          templateEvents
+          emergencyContacts{
+            name
+            phone
+            address
+            type
+          }
+            templateEvents{
+            type
+            shortDescription
+            description
+          }
         }
     }
 }
@@ -239,7 +268,7 @@ query search(\$search: String!) {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['locations']['nodes'];
+      List? res = result.data!['destinations']['nodes'];
       if (res == null || res.isEmpty) {
         return [];
       }
@@ -261,7 +290,7 @@ query search(\$search: String!) {
 {
   provinces(
     where: {
-      locations : {
+      destinations : {
         any : true
       }
     }
@@ -269,7 +298,7 @@ query search(\$search: String!) {
     nodes{
       id
       name
-      thumbnailUrl
+      imageUrl
     }
   }
 }
@@ -298,29 +327,34 @@ query search(\$search: String!) {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query getById(\$id: Int) {
-  locations(where: { provinceId: { eq: \$id } }) {
-    nodes {
-      id
-      description
-      imageUrls
-      name
-      activities
-      seasons
-      topographic
-      templateSchedule
-      coordinate {
-        coordinates
-      }
-      address
-      hotline
-      province{
+  destinations(where: { provinceId: { eq: \$id } }) {
+    nodes{
+          id
+          description
+          imageUrls
+          name
+          activities
+          seasons
+          topographic
+          coordinate{coordinates}
+          address
+          province{
             id
             name
-            thumbnailUrl
+            imageUrl
           }
-      emergencyContacts
-      templateEvents
-    }
+          emergencyContacts{
+            name
+            phone
+            address
+            type
+          }
+            templateEvents{
+            type
+            shortDescription
+            description
+          }
+        }
   }
 }
 """), variables: {"id": provinceId}));
@@ -329,7 +363,7 @@ query getById(\$id: Int) {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['locations']['nodes'];
+      List? res = result.data!['destinations']['nodes'];
       if (res == null || res.isEmpty) {
         return [];
       }
@@ -346,29 +380,34 @@ query getById(\$id: Int) {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query getByLocationId(\$id: Int) {
-  locations(where: { id: { eq: \$id } }) {
-    nodes {
-      id
-      description
-      imageUrls
-      name
-      activities
-      seasons
-      topographic
-      templateSchedule
-      coordinate {
-        coordinates
-      }
-      address
-      hotline
-      province{
+  destinations(where: { id: { eq: \$id } }) {
+    nodes{
+          id
+          description
+          imageUrls
+          name
+          activities
+          seasons
+          topographic
+          coordinate{coordinates}
+          address
+          province{
             id
             name
-            thumbnailUrl
+            imageUrl
           }
-      emergencyContacts
-      templateEvents
-    }
+          emergencyContacts{
+            name
+            phone
+            address
+            type
+          }
+            templateEvents{
+            type
+            shortDescription
+            description
+          }
+        }
   }
 }
 """), variables: {"id": locationId}));
@@ -377,7 +416,7 @@ query getByLocationId(\$id: Int) {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['locations']['nodes'];
+      List? res = result.data!['destinations']['nodes'];
       if (res == null || res.isEmpty) {
         return null;
       }

@@ -1,9 +1,10 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity_view.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -46,6 +47,13 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
           widget.startDate,
           widget.endDate.difference(widget.startDate).inDays + 1);
     });
+    PlanSchedule? todaySchedule = _scheduleList.firstWhereOrNull((element) =>element.date.isBefore(DateTime.now()) && element.date.difference(DateTime.now()).inDays == 0);
+    if(todaySchedule != null){
+      setState(() {
+      _currentPage = DateTime.now().difference(_scheduleList.first.date).inDays + 1;
+      });
+    }
+
   }
 
   Widget getPageView(int _index) {
@@ -80,10 +88,8 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
               physics: const BouncingScrollPhysics(),
               shrinkWrap: true,
               itemCount: _scheduleList[_index].items.length,
-              itemBuilder: (context, index) => PlanScheduleActivity(
+              itemBuilder: (context, index) => PlanScheduleActivityView(
                 item: _scheduleList[_index].items[index],
-                showBottomSheet: (item) {},
-                isSelected: false,
               ),
             )),
     );

@@ -1,7 +1,9 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:sizer2/sizer2.dart';
@@ -18,6 +20,8 @@ class _TestScreen1State extends State<TestScreen1> {
   final NotificationService _notiService = NotificationService();
   TextEditingController _commentController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  double rating = 0;
+  TextEditingController _ratingController = TextEditingController();
 
   bool _isValidSentence(String sentence) {
     List<String> words = sentence.split(' ');
@@ -37,6 +41,7 @@ class _TestScreen1State extends State<TestScreen1> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
+          resizeToAvoidBottomInset: false,
       appBar: AppBar(),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -58,16 +63,17 @@ class _TestScreen1State extends State<TestScreen1> {
               child: defaultTextFormField(
                 controller: _commentController,
                 inputType: TextInputType.text,
-                maxligne: 2,
+                maxline: 2,
                 text: 'Bình luận',
-                onValidate: (value) {
-                  if (value!.isEmpty) {
-                    return "Bình luận của bạn không được để trống";
-                  } else if (VNBadwordsFilter.isProfane(value)) {
-                    return "Bình luận của bạn chứa từ ngữ không hợp lệ";
-                  } else if (!_isValidSentence(value)) {
-                    return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
-                  }
+                onValidate: (text) {
+                //  Utils().checkValidTextInput(text);
+                   if (text!.isEmpty) {
+      return "Bình luận của bạn không được để trống";
+    } else if (VNBadwordsFilter.isProfane(text)) {
+      return "Bình luận của bạn chứa từ ngữ không hợp lệ";
+    } else if (!Utils().IsValidSentence(text)) {
+      return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
+    }
                 },
               )),
           SizedBox(
@@ -89,9 +95,32 @@ class _TestScreen1State extends State<TestScreen1> {
                       .show();
                 }
               },
-              child: const Text('Check valid text'))
+              child: const Text('Check valid text')),
+              SizedBox(height: 2.h,),
+              RatingBar.builder(
+                minRating: 0,
+                itemBuilder: (ctx, _) => const Icon(Icons.star, color: Colors.amber,), 
+                onRatingUpdate: (value) => setState(() {
+                  rating = value;
+                }),),
+
+                if(rating>0 && rating <4)
+                TextFormFieldWithLength(
+                  controller: _ratingController, 
+                  inputType: TextInputType.text,
+                  hinttext: 'Để lại góp ý của bạn cho ứng dụng...',
+                  onValidate: (value) {
+                    Utils().checkValidTextInput(value);
+                  },
+                  )
         ],
       ),
     ));
+  }
+
+  onRating(){
+    setState(() {
+      
+    });
   }
 }

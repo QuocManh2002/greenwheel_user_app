@@ -19,6 +19,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_icon_button.dart';
@@ -69,12 +70,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     setupData();
   }
 
-  void removeItem(String item, List<String> list) {
-    setState(() {
-      list.remove(item);
-    });
-  }
-
   setupData() async {
     _planDetail = null;
     _planDetail = await _planService.GetPlanById(widget.planId);
@@ -120,7 +115,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     if (location != null) {
       final defaultComboDate = listComboDate
               .firstWhere((element) =>
-                  element.duration == location.suggestedTripLength * 2)
+                  element.duration == location.suggestedTripLength! * 2)
               .id -
           1;
       sharedPreferences.setInt('planId', widget.planId);
@@ -380,8 +375,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                         fontWeight:
                                                             FontWeight.bold),
                                                   )),
+                                                  SizedBox(height: 1.h,),
                                               SizedBox(
-                                                height: 18.h,
+                                                height: 10.h,
                                                 width: double.infinity,
                                                 child: PageView.builder(
                                                   scrollDirection:
@@ -396,13 +392,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                   },
                                                   itemBuilder:
                                                       (context, index) {
-                                                    return EmergencyContactCard(
-                                                        emergency: _planDetail!
-                                                                .savedContacts![
-                                                            index],
-                                                        index: index,
-                                                        callback: () {},
-                                                        isSelected: true);
+                                                    return EmergencyContactView(
+                                                      emergency: _planDetail!
+                                                              .savedContacts![
+                                                          index],
+                                                    );
                                                   },
                                                 ),
                                               ),
@@ -460,7 +454,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                       color: Colors.black),
                                                 ),
                                                 for (final member
-                                                    in _joinedMember)
+                                                    in _planDetail!.members!)
                                                   Padding(
                                                     padding: const EdgeInsets
                                                         .symmetric(

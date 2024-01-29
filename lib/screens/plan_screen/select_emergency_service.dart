@@ -23,7 +23,6 @@ class SelectEmergencyService extends StatefulWidget {
 class _SelectEmergencyServiceState extends State<SelectEmergencyService>
     with TickerProviderStateMixin {
   bool isLoading = true;
-  PlanDetail? planDetail;
   PlanService _planService = PlanService();
   List<EmergencyContactViewModel>? emergencyContacts;
   List<EmergencyContactViewModel>? selectedEmergencyContacts = [];
@@ -42,7 +41,6 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
     setState(() {
       emergencyContacts = widget.location.emergencyContacts;
     });
-    planDetail = await _planService.GetPlanById(widget.planId);
   }
 
   // callback() {

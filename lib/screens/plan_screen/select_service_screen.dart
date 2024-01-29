@@ -22,8 +22,10 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectServiceScreen extends StatefulWidget {
-  const SelectServiceScreen({super.key, required this.location});
+  const SelectServiceScreen(
+      {super.key, required this.location, required this.isClone});
   final LocationViewModel location;
+  final bool isClone;
 
   @override
   State<SelectServiceScreen> createState() => _SelectServiceScreenState();
@@ -53,8 +55,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   }
 
   setUpData() async {
-    startDate =
-        DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
   }
@@ -89,259 +90,241 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text(
-            'Thêm dịch vụ',
-            style: TextStyle(color: Colors.white),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Column(
+        children: [
+          SizedBox(
+            height: 3.h,
           ),
-          leading: BackButton(
-            style: const ButtonStyle(
-                foregroundColor: MaterialStatePropertyAll(Colors.white)),
-            onPressed: () async {
-              await saveToOffline();
-              Utils().clearPlanSharePref();
-              Navigator.of(context).pop();
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (ctx) => const TabScreen(pageIndex: 1)));
-            },
-          ),
-        ),
-        body: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Column(
-            children: [
-              SizedBox(
-                height: 3.h,
-              ),
-              Container(
-                  alignment: Alignment.centerLeft,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        "Các loại dịch vụ",
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      Container(
-                        height: 5.h,
-                        width: 18.h,
-                        child: ElevatedButton.icon(
-                          label: const Text("Tìm & đặt"),
-                          icon: const Icon(Icons.search),
-                          onPressed: () {
-                            switch (tabController.index) {
-                              case 0:
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (ctx) => ServiceMainScreen(
-                                    startDate: startDate!,
-                                    endDate: endDate!,
-                                    numberOfMember: numberOfMember!,
-                                    serviceType: services[1],
-                                    location: widget.location,
-                                    callbackFunction: callback,
-                                  ),
-                                ));
-                                break;
-                              case 1:
-                                Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (ctx) => ServiceMainScreen(
-                                    endDate: endDate!,
-                                    startDate: startDate!,
-                                    numberOfMember: numberOfMember!,
-                                    serviceType: services[0],
-                                    location: widget.location,
-                                    callbackFunction: callback,
-                                  ),
-                                ));
-                                break;
-                            }
-                          },
-                          style: elevatedButtonStyle,
-                        ),
-                      ),
-                    ],
-                  )),
-              TabBar(
-                  controller: tabController,
-                  indicatorColor: primaryColor,
-                  labelColor: primaryColor,
-                  unselectedLabelColor: Colors.grey,
-                  tabs: [
-                    Tab(
-                      text: "(${_listMotel.length})",
-                      icon: const Icon(Icons.hotel),
-                    ),
-                    Tab(
-                      text: "(${_listRestaurant.length})",
-                      icon: const Icon(Icons.restaurant),
-                    )
-                  ]),
-              Container(
-                margin: const EdgeInsets.only(top: 8),
-                height:
-                    _listRestaurant.isEmpty && _listMotel.isEmpty ? 50.h : 58.h,
-                child: TabBarView(controller: tabController, children: [
-                  _listRestaurant.isEmpty && _listMotel.isEmpty
-                      ? Image.asset(
-                          empty_plan,
-                          fit: BoxFit.cover,
-                        )
-                      : ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _listMotel.length,
-                          itemBuilder: (context, index) {
-                            return _listMotel[index];
-                          },
-                        ),
-                  _listRestaurant.isEmpty && _listMotel.isEmpty
-                      ? Image.asset(
-                          empty_plan,
-                          fit: BoxFit.cover,
-                        )
-                      : ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _listRestaurant.length,
-                          itemBuilder: (context, index) {
-                            return _listRestaurant[index];
-                          },
-                        ),
-                ]),
-              ),
-              const Spacer(),
-              if (total != 0)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      const Text(
-                        'Tổng cộng: ',
-                        style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                      ),
-                      Text(
-                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
-                        style: const TextStyle(fontSize: 18),
-                      ),
-                    ],
+          Container(
+              alignment: Alignment.centerLeft,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    "Các loại dịch vụ",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
+                  Container(
+                    height: 5.h,
+                    width: 18.h,
+                    child: ElevatedButton.icon(
+                      label: const Text("Tìm & đặt"),
+                      icon: const Icon(Icons.search),
+                      onPressed: () {
+                        switch (tabController.index) {
+                          case 0:
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (ctx) => ServiceMainScreen(
+                                startDate: startDate!,
+                                endDate: endDate!,
+                                numberOfMember: numberOfMember!,
+                                serviceType: services[1],
+                                location: widget.location,
+                                callbackFunction: callback,
+                              ),
+                            ));
+                            break;
+                          case 1:
+                            Navigator.of(context).push(MaterialPageRoute(
+                              builder: (ctx) => ServiceMainScreen(
+                                endDate: endDate!,
+                                startDate: startDate!,
+                                numberOfMember: numberOfMember!,
+                                serviceType: services[0],
+                                location: widget.location,
+                                callbackFunction: callback,
+                              ),
+                            ));
+                            break;
+                        }
+                      },
+                      style: elevatedButtonStyle,
+                    ),
+                  ),
+                ],
+              )),
+          TabBar(
+              controller: tabController,
+              indicatorColor: primaryColor,
+              labelColor: primaryColor,
+              unselectedLabelColor: Colors.grey,
+              tabs: [
+                Tab(
+                  text: "(${_listMotel.length})",
+                  icon: const Icon(Icons.hotel),
                 ),
-              const SizedBox(
-                height: 12,
-              ),
-              ElevatedButton(
-                  style: elevatedButtonStyle,
-                  onPressed: () {
-                    final dateNotFullyService = checkFullyTimeService();
-                    if (dateNotFullyService == null) {
-                      AwesomeDialog(
-                              context: context,
-                              dialogType: DialogType.info,
-                              body: Padding(
-                                padding: const EdgeInsets.all(12),
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        alignment: Alignment.center,
-                                        child: const Text(
-                                          'Xác nhận thông tin dịch vụ',
-                                          style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold),
-                                              textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 16,),
-                                      if (_listRestaurant.isNotEmpty)
-                                        for (final order
-                                            in listRestaurantOrder!)
-                                          Padding(
-                                            padding: const EdgeInsets.only(left: 16, right: 16),
-                                            child: Text(
-                                              '${order.supplierName} đã đặt ${order.details!.length} đơn dịch vụ - ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.total)} VND',
-                                              style:
-                                                  const TextStyle(fontSize: 16),
-                                            ),
-                                          ),
-                                      const SizedBox(
-                                        height: 8,
-                                      ),
-                                      if (_listMotel.isNotEmpty)
-                                        for (final order in listMotelOrder!)
-                                          Padding(
-                                            padding: const EdgeInsets.only(left: 16, right: 16),
-                                            child: Text(
-                                              '${order.supplierName} đã đặt ${order.details!.length} đơn dịch vụ - ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.total)} VND',
-                                              style:
-                                                  const TextStyle(fontSize: 16),
-                                            ),
-                                          ),
-                                          const SizedBox(height: 16,),
-                                          Padding(
-                                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                                            child: Row(
-                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                              children: [
-                                                 const
-                                                 Text('Tổng cộng: ', style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold
-                                                ),),
-                                                Text('${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND')
-                                              ],
-                                            ),
-                                          )
-                                    ]),
-                              ),
-                              btnOkColor: Colors.blue,
-                              btnOkText: 'Xác nhận',
-                              btnOkOnPress: () {
-                                completeService();
-                              },
-                              btnCancelColor: Colors.orange,
-                              btnCancelText: 'Chỉnh sửa',
-                              btnCancelOnPress: () {})
-                          .show();
-                    } else {
-                      AwesomeDialog(
-                              context: context,
-                              dialogType: DialogType.info,
-                              body: Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.all(12),
-                                  child: Text(
-                                    'Ngày ${dateNotFullyService.day}/${dateNotFullyService.month}/${dateNotFullyService.year} chưa được đặt dịch vụ, bạn có chắc chắn muốn hoàn tất',
-                                    style: const TextStyle(fontSize: 16),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ),
-                              btnOkText: 'Xác nhận',
-                              btnOkOnPress: () {
-                                completeService();
-                              },
-                              btnOkColor: Colors.blue,
-                              btnCancelColor: Colors.orange,
-                              btnCancelOnPress: () {},
-                              btnCancelText: 'Chỉnh sửa')
-                          .show();
-                    }
-                  },
-                  child: const Text('Hoàn tất')),
-              SizedBox(
-                height: 3.h,
-              )
-            ],
+                Tab(
+                  text: "(${_listRestaurant.length})",
+                  icon: const Icon(Icons.restaurant),
+                )
+              ]),
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            height: _listRestaurant.isEmpty && _listMotel.isEmpty ? 50.h : 58.h,
+            child: TabBarView(controller: tabController, children: [
+              _listRestaurant.isEmpty && _listMotel.isEmpty
+                  ? Image.asset(
+                      empty_plan,
+                      fit: BoxFit.cover,
+                    )
+                  : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: _listMotel.length,
+                      itemBuilder: (context, index) {
+                        return _listMotel[index];
+                      },
+                    ),
+              _listRestaurant.isEmpty && _listMotel.isEmpty
+                  ? Image.asset(
+                      empty_plan,
+                      fit: BoxFit.cover,
+                    )
+                  : ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: _listRestaurant.length,
+                      itemBuilder: (context, index) {
+                        return _listRestaurant[index];
+                      },
+                    ),
+            ]),
           ),
-        ),
+          const Spacer(),
+          if (total != 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Tổng cộng: ',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ],
+              ),
+            ),
+          const SizedBox(
+            height: 12,
+          ),
+          // ElevatedButton(
+          //     style: elevatedButtonStyle,
+          //     onPressed: () {
+          //       final dateNotFullyService = checkFullyTimeService();
+          //       if (dateNotFullyService == null) {
+          //         AwesomeDialog(
+          //                 context: context,
+          //                 dialogType: DialogType.info,
+          //                 body: Padding(
+          //                   padding: const EdgeInsets.all(12),
+          //                   child: Column(
+          //                       mainAxisAlignment: MainAxisAlignment.start,
+          //                       crossAxisAlignment: CrossAxisAlignment.start,
+          //                       children: [
+          //                         Container(
+          //                           alignment: Alignment.center,
+          //                           child: const Text(
+          //                             'Xác nhận thông tin dịch vụ',
+          //                             style: TextStyle(
+          //                                 fontSize: 18,
+          //                                 fontWeight: FontWeight.bold),
+          //                             textAlign: TextAlign.center,
+          //                           ),
+          //                         ),
+          //                         const SizedBox(
+          //                           height: 16,
+          //                         ),
+          //                         if (_listRestaurant.isNotEmpty)
+          //                           for (final order in listRestaurantOrder!)
+          //                             Padding(
+          //                               padding: const EdgeInsets.only(
+          //                                   left: 16, right: 16),
+          //                               child: Text(
+          //                                 '${order.supplierName} đã đặt ${order.details!.length} đơn dịch vụ - ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.total)} VND',
+          //                                 style: const TextStyle(fontSize: 16),
+          //                               ),
+          //                             ),
+          //                         const SizedBox(
+          //                           height: 8,
+          //                         ),
+          //                         if (_listMotel.isNotEmpty)
+          //                           for (final order in listMotelOrder!)
+          //                             Padding(
+          //                               padding: const EdgeInsets.only(
+          //                                   left: 16, right: 16),
+          //                               child: Text(
+          //                                 '${order.supplierName} đã đặt ${order.details!.length} đơn dịch vụ - ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.total)} VND',
+          //                                 style: const TextStyle(fontSize: 16),
+          //                               ),
+          //                             ),
+          //                         const SizedBox(
+          //                           height: 16,
+          //                         ),
+          //                         Padding(
+          //                           padding: const EdgeInsets.symmetric(
+          //                               horizontal: 16),
+          //                           child: Row(
+          //                             mainAxisAlignment:
+          //                                 MainAxisAlignment.spaceBetween,
+          //                             children: [
+          //                               const Text(
+          //                                 'Tổng cộng: ',
+          //                                 style: TextStyle(
+          //                                     fontSize: 18,
+          //                                     fontWeight: FontWeight.bold),
+          //                               ),
+          //                               Text(
+          //                                   '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND')
+          //                             ],
+          //                           ),
+          //                         )
+          //                       ]),
+          //                 ),
+          //                 btnOkColor: Colors.blue,
+          //                 btnOkText: 'Xác nhận',
+          //                 btnOkOnPress: () {
+          //                   completeService();
+          //                 },
+          //                 btnCancelColor: Colors.orange,
+          //                 btnCancelText: 'Chỉnh sửa',
+          //                 btnCancelOnPress: () {})
+          //             .show();
+          //       } else {
+          //         AwesomeDialog(
+          //                 context: context,
+          //                 dialogType: DialogType.info,
+          //                 body: Center(
+          //                   child: Padding(
+          //                     padding: const EdgeInsets.all(12),
+          //                     child: Text(
+          //                       'Ngày ${dateNotFullyService.day}/${dateNotFullyService.month}/${dateNotFullyService.year} chưa được đặt dịch vụ, bạn có chắc chắn muốn hoàn tất',
+          //                       style: const TextStyle(fontSize: 16),
+          //                       textAlign: TextAlign.center,
+          //                     ),
+          //                   ),
+          //                 ),
+          //                 btnOkText: 'Xác nhận',
+          //                 btnOkOnPress: () {
+          //                   completeService();
+          //                 },
+          //                 btnOkColor: Colors.blue,
+          //                 btnCancelColor: Colors.orange,
+          //                 btnCancelOnPress: () {},
+          //                 btnCancelText: 'Chỉnh sửa')
+          //             .show();
+          //       }
+          //     },
+          //     child: const Text('Hoàn tất')),
+          SizedBox(
+            height: 3.h,
+          )
+        ],
       ),
     );
   }
@@ -431,12 +414,46 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       ),
       btnOkColor: primaryColor,
       btnOkOnPress: () async {
-        Utils().clearPlanSharePref();
-        Navigator.of(context).pop();
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (ctx) => const TabScreen(
-                  pageIndex: 1,
-                )));
+        if (widget.isClone) {
+          AwesomeDialog(
+            context: context,
+            dialogType: DialogType.question,
+            animType: AnimType.leftSlide,
+            title: 'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
+            titleTextStyle:
+                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            btnOkText: 'Có',
+            btnOkOnPress: () {},
+            btnOkColor: Colors.orange,
+            btnCancelColor: Colors.blue,
+            btnCancelText: 'Không',
+            btnCancelOnPress: () {
+              Utils().clearPlanSharePref();
+
+              Navigator.of(context).pop();
+
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(
+                    builder: (ctx) => const TabScreen(
+                          pageIndex: 1,
+                        )),
+                (route) => false,
+              );
+            },
+          ).show();
+        } else {
+          Utils().clearPlanSharePref();
+
+          Navigator.of(context).pop();
+
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+                builder: (ctx) => const TabScreen(
+                      pageIndex: 1,
+                    )),
+            (route) => false,
+          );
+        }
       },
     ).show();
   }

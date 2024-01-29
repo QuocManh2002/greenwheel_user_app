@@ -10,10 +10,12 @@ class PlanScheduleActivity extends StatelessWidget {
       {super.key,
       required this.item,
       required this.showBottomSheet,
+      required this.isCreate,
       required this.isSelected});
   final PlanScheduleItem item;
   final void Function(PlanScheduleItem item) showBottomSheet;
   final bool isSelected;
+  final bool isCreate;
 
   @override
   Widget build(BuildContext context) {
@@ -45,22 +47,27 @@ class PlanScheduleActivity extends StatelessWidget {
                             height: 12,
                           ),
                           Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
                             children: [
-                              const Column(
+                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Mô tả:',
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
+                                  Container(
+                                    alignment: Alignment.topLeft,
+                                    child:const Text(
+                                      'Mô tả:',
+                                      // overflow: TextOverflow.clip,
+                                      style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 6,
                                   ),
-                                  Text(
+                                  const Text(
                                     'Mô tả chi tiết:',
+                                    overflow: TextOverflow.clip,
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold),
@@ -82,16 +89,24 @@ class PlanScheduleActivity extends StatelessWidget {
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    item.shortDescription!,
-                                    style: const TextStyle(fontSize: 16),
+                                  SizedBox(
+                                    width: 40.w,
+                                    child: Text(
+                                      item.shortDescription!,
+                                      style: const TextStyle(fontSize: 16),
+                                      overflow: TextOverflow.clip,
+                                    ),
                                   ),
                                   const SizedBox(
                                     height: 6,
                                   ),
-                                  Text(
-                                    item.description!,
-                                    style: const TextStyle(fontSize: 16),
+                                  SizedBox(
+                                    width: 40.w,
+                                    child: Text(
+                                      item.description!,
+                                      style: const TextStyle(fontSize: 16),
+                                      overflow: TextOverflow.clip,
+                                    ),
                                   ),
                                   // const SizedBox(
                                   //   height: 6,
@@ -131,8 +146,9 @@ class PlanScheduleActivity extends StatelessWidget {
               width: 100.w,
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
-                  color:
-                      isSelected ? primaryColor.withOpacity(0.3) : const Color(0xFFf2f2f2),
+                  color: isSelected
+                      ? primaryColor.withOpacity(0.3)
+                      : const Color(0xFFf2f2f2),
                   boxShadow: const [
                     BoxShadow(
                       blurRadius: 3,
@@ -236,8 +252,10 @@ class PlanScheduleActivity extends StatelessWidget {
                               height: 0.8.h,
                             ),
                             Text(
+                              isCreate ? 
+                              '${item.activityTime.toString()} giờ':
                               DateFormat.Hm().format(DateTime(
-                                  0, 0, 0, item.time.hour, item.time.minute)),
+                                  0, 0, 0, item.time!.hour, item.time!.minute)),
                               style: const TextStyle(
                                   fontSize: 17, fontWeight: FontWeight.bold),
                             )

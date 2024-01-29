@@ -99,12 +99,9 @@ mutation{
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''
 mutation {
   registerTraveler(dto: {
-    avatarUrl:""
      deviceToken:${json.encode(model.deviceToken)}
      isMale: ${model.isMale}
      name:${json.encode(model.name)}
-     defaultAddress: "${model.defaultAddress}"
-     defaultCoordinate: [${model.defaultCoordinate.longitude},${model.defaultCoordinate.latitude}]
   }){
     id
   }

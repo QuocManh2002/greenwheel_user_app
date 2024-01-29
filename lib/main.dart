@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -17,6 +19,7 @@ import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
 
 late SharedPreferences sharedPreferences;
 late FirebaseAuth auth;
@@ -65,7 +68,9 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     String? userToken = sharedPreferences.getString("userToken");
     if (userToken != null) {
-      print(userToken);
+      // debugPrint(userToken, wrapWidth: 1100);
+      log(userToken);
+      debugPrint(userToken);
       //Call to refreshToken
       TokenRefresher.refreshToken();
     }

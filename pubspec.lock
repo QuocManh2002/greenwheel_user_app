@@ -241,6 +241,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.1"
+  cron:
+    dependency: "direct main"
+    description:
+      name: cron
+      sha256: "06e8d65e25bb040a10d8f6086df9a88ab9db57fda19a458c4f85fa5fdc80ac3f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.0"
   cross_file:
     dependency: transitive
     description:
@@ -510,6 +518,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "7.0.0+1"
+  flutter_phone_direct_caller:
+    dependency: "direct main"
+    description:
+      name: flutter_phone_direct_caller
+      sha256: a50abfb49656d39e777278348742d0d09ecfa5d4918bbc4e0b19df46e8dfd858
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.1.1"
   flutter_plugin_android_lifecycle:
     dependency: transitive
     description:
@@ -526,6 +542,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.0"
+  flutter_rating_bar:
+    dependency: "direct main"
+    description:
+      name: flutter_rating_bar
+      sha256: d2af03469eac832c591a1eba47c91ecc871fe5708e69967073c043b2d775ed93
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.0.1"
   flutter_svg:
     dependency: "direct main"
     description:

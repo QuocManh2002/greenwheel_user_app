@@ -1,8 +1,10 @@
 import 'dart:convert';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -33,8 +35,6 @@ class CreatePlanScheduleScreen extends StatefulWidget {
 class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   double _currentPage = 0;
   final PageController _pageController = PageController(initialPage: 0);
-  // final ComboDate _selectCombo =
-  //     listComboDate[sharedPreferences.getInt('plan_combo_date')!];
   List<PlanSchedule> testList = [];
   final PlanService _planService = PlanService();
   PlanScheduleItem? _selectedItem;
@@ -64,53 +64,22 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   }
 
   setUpData() async {
-    // final initialDateTime = DateFormat.Hm().parse(startTime);
-    // final initialDate =
-    //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-    // departureDate =
-    //     DateTime(initialDate.year, initialDate.month, initialDate.day)
-    //         .add(Duration(hours: initialDateTime.hour))
-    //         .add(Duration(minutes: initialDateTime.minute));
-    // _startDate =
-    //     departureDate!.add(Duration(seconds: (duration! * 3600).ceil()));
-
-    // var checkDate =
-    //     DateTime(_startDate!.year, _startDate!.month, _startDate!.day, 6, 0);
     _isNotOverDay = startDate.day == _departureDate.day;
-    // if (!_isNotOverDay) {
-    //   final _newStartDate =
-    //       DateTime.parse(startDate).add(const Duration(days: 1));
-    // sharedPreferences.setString('plan_start_date', _newStartDate.toString());
-    // }
-
     if (widget.isCreate) {
       if (!widget.isClone) {
         testList = _planService.generateEmptySchedule(startDate, _endDate);
         var finalList = _planService.convertPlanScheduleToJson(testList);
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       } else {
-        var list = _planService.GetPlanScheduleFromJsonNew(
-            widget.schedule!, startDate, _endDate.difference(startDate).inDays+1);
-        // if (!_isNotOverDay) {
-        //   final departureDate = DateTime.parse(
-        //       sharedPreferences.getString('plan_departureDate')!);
-        //   list = [PlanSchedule(date: departureDate, items: []), ...list];
-        //   print(list.length);
-        // }
+        var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
+            startDate, _endDate.difference(startDate).inDays + 1);
         testList = _planService.GetPlanScheduleClone(list);
         var finalList = _planService.convertPlanScheduleToJson(testList);
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       }
     } else {
-      // var scheduleText = sharedPreferences.getString('plan_schedule');
-      var list = _planService.GetPlanScheduleFromJsonNew(
-          widget.schedule!, startDate, _endDate.difference(startDate).inDays+1);
-
-      // if (!_isNotOverDay) {
-      //   final departureDate =
-      //       DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-      //   list = [PlanSchedule(date: departureDate, items: []), ...list];
-      // }
+      var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
+          startDate, _endDate.difference(startDate).inDays + 1);
       testList = list;
       var finalList = _planService.convertPlanScheduleToJson(testList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
@@ -135,8 +104,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             .firstWhere((element) => element.date == item.date)
             .items
             .sort((a, b) {
-          var adate = DateTime(0, 0, 0, a.time.hour, a.time.minute);
-          var bdate = DateTime(0, 0, 0, b.time.hour, b.time.minute);
+          var adate = DateTime(0, 0, 0, a.time!.hour, a.time!.minute);
+          var bdate = DateTime(0, 0, 0, b.time!.hour, b.time!.minute);
           return adate.compareTo(bdate);
         });
       });
@@ -273,6 +242,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                     children: List.generate(
                       testList[_index].items.length,
                       (index) => PlanScheduleActivity(
+                          isCreate: widget.isCreate,
                           key: UniqueKey(),
                           item: testList[_index].items[index],
                           showBottomSheet: _showBottomSheet,
@@ -280,7 +250,12 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                               _selectedItem == testList[_index].items[index]),
                     ),
                     onReorder: (oldIndex, newIndex) {
-                      List<TimeOfDay> _timeList = testList[_index].items.map((e) => e.time,).toList();
+                      List<TimeOfDay> _timeList = testList[_index]
+                          .items
+                          .map(
+                            (e) => e.time!,
+                          )
+                          .toList();
                       setState(() {
                         if (oldIndex < newIndex) {
                           newIndex -= 1;
@@ -288,7 +263,9 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                         final PlanScheduleItem item =
                             testList[_index].items.removeAt(oldIndex);
                         testList[_index].items.insert(newIndex, item);
-                        for(int i = 0 ;i < testList[_index].items.length; i++){
+                        for (int i = 0;
+                            i < testList[_index].items.length;
+                            i++) {
                           testList[_index].items[i].time = _timeList[i];
                         }
                       });
@@ -301,6 +278,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   _updateItem(PlanScheduleItem item) {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (ctx) => NewScheduleItemScreen(
+            maxActivityTime: 12,
             callback: callback,
             selectedIndex: _currentPage.toInt(),
             item: item,
@@ -407,21 +385,32 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                           testList[0]
                               .date
                               .add(Duration(days: _currentPage.toInt())));
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (ctx) => NewScheduleItemScreen(
-                                callback: callback,
-                                startDate: testList[0].date,
-                                selectedIndex: _currentPage.toInt(),
-                                initialTime: _currentSchedule.items.isEmpty
-                                    ? TimeOfDay.now()
-                                    : TimeOfDay(
-                                        hour: _currentSchedule
-                                                .items.last.time.hour +
-                                            1,
-                                        minute: _currentSchedule
-                                            .items.last.time.minute),
-                                isNotOverDay: _isNotOverDay,
-                              )));
+                      var consumedTime = 0;
+                      // _currentSchedule.items
+                      //     .map((e) => consumedTime += e.activityTime!);
+                          for(final item in _currentSchedule.items){
+                            consumedTime += item.activityTime!;
+                          }
+                      if (consumedTime == 12) {
+                        Utils().ShowFullyActivityTimeDialog(context);
+                      } else {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => NewScheduleItemScreen(
+                                  callback: callback,
+                                  maxActivityTime: 12 - consumedTime,
+                                  startDate: testList[0].date,
+                                  selectedIndex: _currentPage.toInt(),
+                                  initialTime: _currentSchedule.items.isEmpty
+                                      ? TimeOfDay.now()
+                                      : TimeOfDay(
+                                          hour: _currentSchedule
+                                                  .items.last.time!.hour +
+                                              1,
+                                          minute: _currentSchedule
+                                              .items.last.time!.minute),
+                                  isNotOverDay: _isNotOverDay,
+                                )));
+                      }
                     },
                     child: const Row(
                       children: [

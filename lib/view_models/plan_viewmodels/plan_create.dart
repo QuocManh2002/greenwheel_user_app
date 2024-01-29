@@ -4,6 +4,7 @@ class PlanCreate {
   final double longitude;
   final DateTime startDate;
   final DateTime endDate;
+  final DateTime? closeRegDate;
   final int memberLimit;
   final String name;
   final String schedule;
@@ -16,6 +17,7 @@ class PlanCreate {
       required this.startDate,
       required this.endDate,
       required this.latitude,
+      this.closeRegDate,
       required this.longitude,
       required this.memberLimit,
       required this.name,

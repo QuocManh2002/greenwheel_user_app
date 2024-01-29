@@ -20,9 +20,14 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectPlanName extends StatefulWidget {
-  const SelectPlanName({super.key, required this.location, required this.isCreate});
+  const SelectPlanName(
+      {super.key,
+      required this.location,
+      required this.isCreate,
+      required this.isClone});
   final LocationViewModel location;
   final bool isCreate;
+  final bool isClone;
 
   @override
   State<SelectPlanName> createState() => _SelectPlanNameState();
@@ -45,10 +50,12 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     int numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod')!;
 
     final initialDateTime = DateFormat.Hm().parse(startTime);
-    final initialDate = DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-    DateTime departureDate = DateTime(initialDate.year, initialDate.month, initialDate.day)
-        .add(Duration(hours: initialDateTime.hour))
-        .add(Duration(minutes: initialDateTime.minute));
+    final initialDate =
+        DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+    DateTime departureDate =
+        DateTime(initialDate.year, initialDate.month, initialDate.day)
+            .add(Duration(hours: initialDateTime.hour))
+            .add(Duration(minutes: initialDateTime.minute));
 
     int planId = sharedPreferences.getInt('planId')!;
     var _startDate = DateTime.parse(startDate);
@@ -82,9 +89,12 @@ class _SelectPlanNameState extends State<SelectPlanName> {
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                 Text(
-                  widget.isCreate ?  "Tạo kế hoạch thành công" : 'Cập nhật kế hoạch thành công',
-                  style:const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                Text(
+                  widget.isCreate
+                      ? "Tạo kế hoạch thành công"
+                      : 'Cập nhật kế hoạch thành công',
+                  style: const TextStyle(
+                      fontSize: 16, fontWeight: FontWeight.bold),
                 ),
                 SizedBox(
                   height: 2.h,
@@ -102,13 +112,47 @@ class _SelectPlanNameState extends State<SelectPlanName> {
             btnCancelText: 'Không',
             btnCancelColor: Colors.blue,
             btnCancelOnPress: () {
-              
-              Utils().clearPlanSharePref();
-              Navigator.of(context).pop();
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (ctx) => const TabScreen(
-                        pageIndex: 1,
-                      )));
+              if (widget.isClone) {
+                AwesomeDialog(
+                  context: context,
+                  dialogType: DialogType.question,
+                  animType: AnimType.leftSlide,
+                  title:
+                      'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
+                  titleTextStyle: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                  btnOkText: 'Có',
+                  btnOkOnPress: () {},
+                  btnOkColor: Colors.orange,
+                  btnCancelColor: Colors.blue,
+                  btnCancelText: 'Không',
+                  btnCancelOnPress: () {
+                    Utils().clearPlanSharePref();
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pop();
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                          builder: (ctx) => const TabScreen(
+                                pageIndex: 1,
+                              )),
+                      (route) => false,
+                    );
+                  },
+                ).show();
+              } else {
+                Utils().clearPlanSharePref();
+                // ignore: use_build_context_synchronously
+                Navigator.of(context).pop();
+                // ignore: use_build_context_synchronously
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (ctx) => const TabScreen(
+                            pageIndex: 1,
+                          )),
+                  (route) => false,
+                );
+              }
             },
             btnOkText: 'Có',
             btnOkColor: primaryColor,
@@ -118,8 +162,10 @@ class _SelectPlanNameState extends State<SelectPlanName> {
               sharedPreferences.setInt("planId", rs);
               Navigator.of(context).pop();
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (ctx) =>
-                      SelectServiceScreen(location: widget.location)));
+                  builder: (ctx) => SelectServiceScreen(
+                        location: widget.location,
+                        isClone: widget.isClone,
+                      )));
             }).show();
       } else {
         PlanDetail? plan = await _planService.GetPlanById(rs);
@@ -158,12 +204,47 @@ class _SelectPlanNameState extends State<SelectPlanName> {
             btnOkText: 'Ok',
             btnOkColor: primaryColor,
             btnOkOnPress: () {
-              Utils().clearPlanSharePref();
-              // ignore: use_build_context_synchronously
-              Navigator.of(context).pop();
-              // ignore: use_build_context_synchronously
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (ctx) => const TabScreen(pageIndex: 1)));
+              if (widget.isClone) {
+                AwesomeDialog(
+                  context: context,
+                  dialogType: DialogType.question,
+                  animType: AnimType.leftSlide,
+                  title:
+                      'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
+                  titleTextStyle: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                  btnOkText: 'Có',
+                  btnOkOnPress: () {},
+                  btnOkColor: Colors.orange,
+                  btnCancelColor: Colors.blue,
+                  btnCancelText: 'Không',
+                  btnCancelOnPress: () {
+                    Utils().clearPlanSharePref();
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pop();
+                    // ignore: use_build_context_synchronously
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(
+                          builder: (ctx) => const TabScreen(
+                                pageIndex: 1,
+                              )),
+                      (route) => false,
+                    );
+                  },
+                ).show();
+              } else {
+                Utils().clearPlanSharePref();
+                // ignore: use_build_context_synchronously
+                Navigator.of(context).pop();
+                // ignore: use_build_context_synchronously
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                      builder: (ctx) => const TabScreen(
+                            pageIndex: 1,
+                          )),
+                  (route) => false,
+                );
+              }
             }).show();
       }
     }

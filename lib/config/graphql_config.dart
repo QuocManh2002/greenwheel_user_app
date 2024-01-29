@@ -7,7 +7,7 @@ class GraphQlConfig {
     String? userToken = sharedPreferences.getString("userToken");
     print("1: $userToken");
     final HttpLink httpLink = HttpLink(
-        "https://greenwheelsv2.azurewebsites.net/graphql");
+        "https://btssapp.azurewebsites.net/graphql");
 
     final AuthLink authLink =
         AuthLink(getToken: () async => 'Bearer $userToken');

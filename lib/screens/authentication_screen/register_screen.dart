@@ -174,24 +174,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(
                   height: 16,
                 ),
-                defaultTextFormField(
-                  readonly: true,
-                  controller: addressController,
-                  inputType: TextInputType.streetAddress,
-                  text: 'Địa chỉ',
-                  hinttext: '113 Hồng Lĩnh, ...',
-                  onTap: () {
-                    Navigator.of(context).push(MaterialPageRoute(
-                        builder: (ctx) => SelectDefaultAddress(
-                              callback: callback,
-                            )));
-                  },
-                  onValidate: (value) {
-                    if (value!.isEmpty) {
-                      return "Địa chỉ mặc định không được để trống";
-                    }
-                  },
-                ),
+                // defaultTextFormField(
+                //   readonly: true,
+                //   controller: addressController,
+                //   inputType: TextInputType.streetAddress,
+                //   text: 'Địa chỉ',
+                //   hinttext: '113 Hồng Lĩnh, ...',
+                //   onTap: () {
+                //     Navigator.of(context).push(MaterialPageRoute(
+                //         builder: (ctx) => SelectDefaultAddress(
+                //               callback: callback,
+                //             )));
+                //   },
+                //   onValidate: (value) {
+                //     if (value!.isEmpty) {
+                //       return "Địa chỉ mặc định không được để trống";
+                //     }
+                //   },
+                // ),
                 Row(
                   children: [
                     Checkbox(
@@ -264,9 +264,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
         var id = await _newService.registerTraveler(RegisterViewModel(
             deviceToken: sharedPreferences.getString('deviceToken')!,
             isMale: isMale,
-            email: emailController.text,
-            defaultAddress: addressController.text,
-            defaultCoordinate: _selectedAddressLatLng!,
             name: nameController.text));
         if (id != null || id != 0) {
           await TokenRefresher.refreshToken();
@@ -281,22 +278,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
   }
 
-  callback(SearchStartLocationResult? selectedAddress,
-      PointLatLng? selectedLatLng) async {
-    if (selectedAddress != null) {
-      setState(() {
-        addressController.text = selectedAddress.address;
-        _selectedAddressLatLng =
-            PointLatLng(selectedAddress.lat, selectedAddress.lng);
-      });
-    } else {
-      var result = await getPlaceDetail(selectedLatLng!);
-      if (result != null) {
-        setState(() {
-          _selectedAddressLatLng = selectedLatLng;
-          addressController.text = result['results'][0]['formatted_address'];
-        });
-      }
-    }
-  }
+  // callback(SearchStartLocationResult? selectedAddress,
+  //     PointLatLng? selectedLatLng) async {
+  //   if (selectedAddress != null) {
+  //     setState(() {
+  //       addressController.text = selectedAddress.address;
+  //       _selectedAddressLatLng =
+  //           PointLatLng(selectedAddress.lat, selectedAddress.lng);
+  //     });
+  //   } else {
+  //     var result = await getPlaceDetail(selectedLatLng!);
+  //     if (result != null) {
+  //       setState(() {
+  //         _selectedAddressLatLng = selectedLatLng;
+  //         addressController.text = result['results'][0]['formatted_address'];
+  //       });
+  //     }
+  //   }
+  // }
 }

@@ -18,7 +18,7 @@ class ProvinceViewModel {
     factory ProvinceViewModel.fromJson(Map<String, dynamic> json) => ProvinceViewModel(
         id: json["id"],
         name: json["name"],
-        thumbnailUrl: json["thumbnailUrl"],
+        thumbnailUrl: json["imageUrl"],
     );
 
     Map<String, dynamic> toJson() => {
