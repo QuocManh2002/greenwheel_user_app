@@ -59,9 +59,9 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
 
     for (var item in _targetViewModel!.orders!) {
       if (item.serviceType!.id == 5) {
-        listRestaurant.add(SupplierOrderCard(order: item));
+        // listRestaurant.add(SupplierOrderCard(order: item));
       } else {
-        listMotel.add(SupplierOrderCard(order: item));
+        // listMotel.add(SupplierOrderCard(order: item));
       }
       total += item.total;
     }
@@ -266,8 +266,8 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
                                     height: 60.h,
                                     child: PLanScheduleWidget(
                                       schedule: _targetViewModel!.schedule,
-                                      startDate: _targetViewModel!.startDate,
-                                      endDate: _targetViewModel!.endDate,
+                                      startDate: _targetViewModel!.startDate!,
+                                      endDate: _targetViewModel!.endDate!,
                                     ),
                                   ),
                                   const SizedBox(

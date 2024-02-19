@@ -6,8 +6,9 @@ import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierOrderCard extends StatelessWidget {
-  const SupplierOrderCard({super.key, required this.order});
+  const SupplierOrderCard({super.key, required this.order, required this.startDate});
   final OrderViewModel order;
+  final DateTime startDate;
 
   @override
   Widget build(BuildContext context) {
@@ -16,6 +17,7 @@ class SupplierOrderCard extends StatelessWidget {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (ctx) => OrderDetailScreen(
                   order: order,
+                  startDate: startDate,
                 )));
       },
       child: Container(

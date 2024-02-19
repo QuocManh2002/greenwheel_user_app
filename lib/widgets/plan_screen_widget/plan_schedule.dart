@@ -186,6 +186,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                     });
                   },
                   child: PlanScheduleTitle(
+                    index: index,
                     date: _scheduleList[index].date,
                     isSelected: _currentPage == index.toDouble(),
                   )),

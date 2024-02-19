@@ -27,7 +27,7 @@ class SessionCard extends StatelessWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
-  final void Function(OrderViewModel order) callbackFunction;
+  final void Function() callbackFunction;
 
   @override
   Widget build(BuildContext context) {

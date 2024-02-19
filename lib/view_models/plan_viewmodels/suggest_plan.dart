@@ -1,7 +1,7 @@
 class SuggestPlanViewModel {
   int id;
-  int leaderId;
-  String leaderName;
+  int? leaderId;
+  String? leaderName;
   String planName;
   DateTime startDate;
   DateTime endDate;
@@ -9,8 +9,8 @@ class SuggestPlanViewModel {
   SuggestPlanViewModel(
       {required this.endDate,
       required this.id,
-      required this.leaderId,
-      required this.leaderName,
+       this.leaderId,
+       this.leaderName,
       required this.planName,
       required this.startDate});
 
@@ -18,8 +18,8 @@ class SuggestPlanViewModel {
       SuggestPlanViewModel(
         endDate: DateTime.parse(json['endDate']), 
         id: json['id'], 
-        leaderId: json['leader']['account']['id'], 
-        leaderName: json['leader']['account']['name'], 
+        // leaderId: json['leader']['account']['id'], 
+        // leaderName: json['leader']['account']['name'], 
         planName: json['name'], 
         startDate: DateTime.parse(json['startDate']));
 }

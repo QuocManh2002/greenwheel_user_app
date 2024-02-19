@@ -6,7 +6,6 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -16,6 +15,7 @@ import 'package:greenwheel_user_app/screens/location_screen/add_comment_screen.d
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_by_location.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
+import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
@@ -42,9 +42,8 @@ class _LocationScreenState extends State<LocationScreen> {
   bool isLoading = true;
   List<dynamic> imageUrls = [];
   List<Tag> tagList = [];
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _commentController = TextEditingController();
   List<CommentViewModel> _comments = [];
+  LocationService _locationService = LocationService();
 
   var default_address = sharedPreferences.getString('defaultAddress');
   @override
@@ -57,6 +56,7 @@ class _LocationScreenState extends State<LocationScreen> {
 
   getData() {
     imageUrls = widget.location.imageUrls;
+    _comments = widget.location.comments!;
     // province tag
     tagList.add(getTag(widget.location.topographic));
     for (final activity in widget.location.activities) {
@@ -425,13 +425,13 @@ class _LocationScreenState extends State<LocationScreen> {
                               ListView.builder(
                                 physics: const BouncingScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: widget.location.comments!.length > 2 ? 2 : widget.location.comments!.length,
+                                itemCount: _comments.length > 2 ? 2 : _comments.length,
                                 itemBuilder: (context, index) => Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 10),
                                   child: CommentCard(
                                       comment:
-                                          widget.location.comments![index]),
+                                          _comments.reversed.elementAt(index)),
                                 ),
                               ),
                               Container(
@@ -455,10 +455,11 @@ class _LocationScreenState extends State<LocationScreen> {
                                             MaterialPageRoute(
                                                 builder: (ctx) =>
                                                     AddCommentScreen(
+                                                      location: widget.location,
+                                                      destinationId: widget.location.id,
                                                       callback:
                                                           callbackAddComment,
-                                                      comments: widget
-                                                          .location.comments,
+                                                      comments: _comments,
                                                     )));
                                       },
                                       label: const Text(
@@ -534,14 +535,10 @@ class _LocationScreenState extends State<LocationScreen> {
             : PointLatLng(selectedAddress.lat, selectedAddress.lng));
   }
 
-  callbackAddComment(String commentText) {
+  callbackAddComment() async{
+    var comments = await _locationService.getComments(widget.location.id);
     setState(() {
-      _comments.add(CommentViewModel(
-          id: 1,
-          customerName: sharedPreferences.getString('userName')!,
-          content: commentText,
-          date: DateTime.now(),
-          imgUrl: defaultUserAvatarLink));
+      _comments = comments;
     });
   }
 }

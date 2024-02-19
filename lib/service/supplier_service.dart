@@ -24,7 +24,7 @@ class SupplierService extends Iterable {
         },
       ];
 
-      print(typeConditions);
+      print(typeConditions1);
 
       String coordinateString = '''
         coordinate: {
@@ -44,7 +44,6 @@ class SupplierService extends Iterable {
           query GetSuppliers {
             suppliers(
               where: {
-                isHidden: { eq: false },
                 $coordinateString
                 or: $typeConditions1
               }

@@ -18,7 +18,6 @@ import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
@@ -79,9 +78,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
 
     for (var item in _planDetail!.orders!) {
       if (item.serviceType!.id == 1) {
-        listRestaurant.add(SupplierOrderCard(order: item));
+        listRestaurant.add(SupplierOrderCard(order: item, startDate: _planDetail!.startDate!,));
       } else {
-        listMotel.add(SupplierOrderCard(order: item));
+        listMotel.add(SupplierOrderCard(order: item, startDate: _planDetail!.startDate!));
       }
       total += item.total;
     }
@@ -129,7 +128,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       sharedPreferences.setString(
           'plan_start_date', _planDetail!.startDate.toString());
       sharedPreferences.setString('plan_start_time',
-          '${_planDetail!.departureDate.hour}:${_planDetail!.departureDate.minute}');
+          '${_planDetail!.departureDate!.hour}:${_planDetail!.departureDate!.minute}');
       sharedPreferences.setString(
           'plan_end_date', _planDetail!.endDate.toString());
       sharedPreferences.setString(
@@ -220,7 +219,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      _planDetail!.name,
+                                      _planDetail!.name ?? 'Chuyến đi chưa đặt tên',
                                       overflow: TextOverflow.clip,
                                       style: const TextStyle(
                                           fontSize: 22,
@@ -511,8 +510,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                   schedule:
                                                       _planDetail!.schedule,
                                                   startDate:
-                                                      _planDetail!.startDate,
-                                                  endDate: _planDetail!.endDate,
+                                                      _planDetail!.startDate!,
+                                                  endDate: _planDetail!.endDate!,
                                                 ),
                                               ),
                                             ],
@@ -696,7 +695,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         animType: AnimType.topSlide,
         title: "Xác nhận tham gia",
         desc:
-            "Kinh phí cho chuyến đi này là ${(total / _planDetail!.memberLimit).ceil()} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
+            "Kinh phí cho chuyến đi này là ${_planDetail!.gcoinBudgetPerCapita} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
         btnOkText: "Xác nhận",
         btnOkOnPress: () async {
           int? rs = await _planService.joinPlan(widget.planId);

@@ -32,9 +32,13 @@ class _SelectEmergencyDetailServiceState
   Widget build(BuildContext context) {
     List<String>? selectedIndex =
       sharedPreferences.getStringList('selectedIndex');
-  var isEnableToAdd = selectedIndex!.any(
+  var isEnableToAdd = false;
+  if(selectedIndex != null){
+    isEnableToAdd = selectedIndex.any(
     (element) => element == widget.index.toString(),
   );
+  }
+   
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
@@ -132,7 +136,7 @@ class _SelectEmergencyDetailServiceState
                     child: ElevatedButton(
                         style: elevatedButtonStyle,
                         onPressed: () {
-                          selectedIndex.add(widget.index.toString());
+                          selectedIndex!.add(widget.index.toString());
                           sharedPreferences.setStringList(
                               'selectedIndex', selectedIndex);
                           AwesomeDialog(

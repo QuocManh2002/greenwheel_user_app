@@ -38,7 +38,7 @@ class ProvinceCard extends StatelessWidget {
                       Image.memory(kTransparentImage),
                   errorWidget: (context, url, error) =>
                   Image.network('https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0', height: 25.h, fit: BoxFit.cover,),
-                imageUrl:'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',)
+                imageUrl: province.thumbnailUrl,)
             ),
             Positioned(
                 left: 0,

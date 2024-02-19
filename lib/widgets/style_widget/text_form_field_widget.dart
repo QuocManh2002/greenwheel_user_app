@@ -15,38 +15,53 @@ Widget defaultTextFormField(
         InputBorder? border,
         String? hinttext,
         int? maxline,
+        int? borderSize,
+        TextAlign? textAlign,
+        EdgeInsets? padding,
+        bool? autofocus,
+        int? maxLength,
         bool readonly = false}) =>
     TextFormField(
+      autofocus: autofocus ?? false,
+      textAlignVertical: TextAlignVertical.top,
+
         controller: controller,
+        maxLength: maxLength ?? 60,
         keyboardType: inputType,
+        textAlign: textAlign ?? TextAlign.start,
         onFieldSubmitted: onFieldSubmit,
         onTap: onTap,
         maxLines: maxline ?? 1,
         minLines: 1,
         readOnly: readonly,
         obscureText: obscure,
+        cursorColor: primaryColor,
         onChanged: onChange,
         style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
         decoration: InputDecoration(
             labelText: text,
             hintText: hinttext,
             prefixIcon: prefixIcon,
+            counterText: '',
+            // contentPadding:padding ?? EdgeInsets.all(16),
             suffixIcon: suffixIcon,
             prefixIconColor: primaryColor,
             floatingLabelBehavior: FloatingLabelBehavior.always,
             labelStyle: const TextStyle(color: primaryColor, fontSize: 20),
             floatingLabelStyle:
                 const TextStyle(color: Colors.grey, fontSize: 20),
-            focusedBorder: const OutlineInputBorder(
+            focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: primaryColor,
+                  width: borderSize == null ? 1 : borderSize.toDouble()
                 ),
-                borderRadius: BorderRadius.all(Radius.circular(14))),
-            border: const OutlineInputBorder(
+                borderRadius:const BorderRadius.all(Radius.circular(14))),
+            border: OutlineInputBorder(
                 borderSide: BorderSide(
                   color: Colors.grey,
+                  width: borderSize == null ? 1 : borderSize.toDouble()
                 ),
-                borderRadius: BorderRadius.all(Radius.circular(14)))),
+                borderRadius:const BorderRadius.all(Radius.circular(14)))),
         validator: onValidate);
 
 Widget TextFormFieldWithLength(
@@ -77,6 +92,7 @@ Widget TextFormFieldWithLength(
         minLines: minline ?? 1,
         readOnly: readonly,
         maxLength: maxLength ?? 120,
+        cursorColor: primaryColor,
         obscureText: obscure,
         onChanged: onChange,
         style: const TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
@@ -103,3 +119,5 @@ Widget TextFormFieldWithLength(
                 ),
                 borderRadius: BorderRadius.all(Radius.circular(14)))),
         validator: onValidate);
+
+        

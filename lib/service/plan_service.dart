@@ -27,11 +27,11 @@ class PlanService {
         document: gql("""
 mutation{
   completeDraftPlan(dto: {
-    gcoinBudgetPerCapita: ${model.gcoinBudget}
+    departDate:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
+    gcoinBudgetPerCapita:${model.gcoinBudget}
     id:$planId
     name:"${model.name}"
-    proposedSchedule:${model.schedule}
-    savedContacts:${model.savedContacts}
+    startDate:"${model.startDate!.year}-${model.startDate!.month}-${model.startDate!.day}"
   }){
     id
   }
@@ -54,19 +54,19 @@ mutation{
 
   Future<bool> createPlanDraft(PlanCreate model) async {
     try {
+var schedule = json.decode(model.schedule);
+print(schedule.toString());
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 mutation{
   createDraftPlan(dto: {
-    closeRegDate:"${model.closeRegDate!.year}-${model.closeRegDate!.month}-${model.closeRegDate!.day}"
-    departDate:"${model.departureDate.year}-${model.departureDate.month}-${model.departureDate.day} ${model.departureDate.hour}:${model.departureDate.minute}:00.000Z"
     departure:[${model.longitude},${model.latitude}]
     destinationId:${model.locationId}
-    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day}"
     memberLimit:${model.memberLimit}
     periodCount:${model.numOfExpPeriod}
-    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day}"
+    proposedSchedule:$schedule
+    savedContacts:${model.savedContacts}
   }){
     id
   }
@@ -91,15 +91,14 @@ mutation{
   Future<List<OrderViewModel>> getOrderCreatePlan(int planId) async {
     try {
       QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-query getOrderDetailsByPlanId(\$planId: Int) {
-  orders(where: { planId: { eq: \$planId } }) {
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""{
+  orders(where: { planId: { eq: $planId } }) {
     nodes {
       id
       planId
       deposit
       total
-      servingDates
+      serveDateIndexes
       note
       createdAt
       period
@@ -107,8 +106,7 @@ query getOrderDetailsByPlanId(\$planId: Int) {
         id
         phone
         name
-        type
-        thumbnailUrl
+        imageUrl
         address
       }
       details {
@@ -117,12 +115,13 @@ query getOrderDetailsByPlanId(\$planId: Int) {
         quantity
         product {
           name
+          type
         }
       }
     }
   }
 }
-"""), variables: {"planId": planId}));
+""")));
 
       if (result.hasException) {
         throw Exception(result.exception);
@@ -161,6 +160,7 @@ query GetPlanById(\$planId: Int){
       id
       startDate
       endDate
+      gcoinBudgetPerCapita
       proposedSchedule {
         events {
           shortDescription
@@ -178,7 +178,6 @@ query GetPlanById(\$planId: Int){
         imageUrl
       }
       status
-      joinMethod
       periodCount
       departDate
       departure {
@@ -189,7 +188,7 @@ query GetPlanById(\$planId: Int){
         planId
         deposit
         total
-        servingDates
+        serveDateIndexes
         note
         createdAt
         period
@@ -300,6 +299,7 @@ query GetPlanById(\$planId: Int){
           comments{
             id
             comment
+            createdAt
             account{
               avatarUrl
               name
@@ -359,10 +359,11 @@ query GetPlanById(\$planId: Int){
       final date = startDate.add(Duration(days: i));
       if (i < schedules.length) {
         for (final planItem in schedules[i]['events']) {
-          print(planItem['time']);
+          // print(planItem['time']);
           item.add(PlanScheduleItem(
+            activityTime: int.parse(planItem['duration'].toString().substring(0, 2)),
             shortDescription: planItem['shortDescription'],
-              orderId: planItem['orderGuid'],
+              // orderId: planItem['orderGuid'],
               type: schedule_item_types_vn[
                   schedule_item_types.indexOf(planItem['type'].toString())],
               time: TimeOfDay.fromDateTime(DateTime.parse(
@@ -508,8 +509,8 @@ mutation{
     id: $planId
     latitude: ${model.latitude}
     longitude: ${model.longitude} 
-    startDate:"${model.startDate.year}-${model.startDate.month}-${model.startDate.day} ${model.startDate.hour}:${model.startDate.minute}:00.000Z"
-    endDate:"${model.endDate.year}-${model.endDate.month}-${model.endDate.day} 22:00:00.000Z"
+    startDate:"${model.startDate!.year}-${model.startDate!.month}-${model.startDate!.day} ${model.startDate!.hour}:${model.startDate!.minute}:00.000Z"
+    endDate:"${model.endDate!.year}-${model.endDate!.month}-${model.endDate!.day} 22:00:00.000Z"
     memberLimit:${model.memberLimit}
     name: ${json.encode(model.name)}
     schedule:${model.schedule}
@@ -557,7 +558,7 @@ mutation{
   }
 
   generateEmptySchedule(DateTime startDate, DateTime endDate) {
-    final duration = endDate.difference(startDate).inDays + 1;
+    final duration = endDate.difference(startDate).inDays;
     List<PlanSchedule> result = [];
     for (int i = 0; i < duration; i++) {
       result
@@ -573,22 +574,16 @@ mutation{
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
   plans(where: {
-    locationId:{
+    destinationId:{
       eq: $locationId
     }
     status:{
-      in:[CANCELED READY SHARED VERIFIED]
+      in:[READY VERIFIED PUBLISHED PENDING]
     }
   }){
     nodes{
       id
       name
-      leader{
-        account{
-          name
-          id
-        }
-      }
       startDate
       endDate
     }

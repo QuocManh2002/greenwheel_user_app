@@ -5,9 +5,13 @@ import 'package:sizer2/sizer2.dart';
 
 class PlanScheduleTitle extends StatelessWidget {
   const PlanScheduleTitle(
-      {super.key, required this.date, required this.isSelected});
+      {super.key,
+      required this.date,
+      required this.isSelected,
+      required this.index});
   final DateTime date;
   final bool isSelected;
+  final int index;
 
   @override
   Widget build(BuildContext context) {
@@ -24,35 +28,38 @@ class PlanScheduleTitle extends StatelessWidget {
           ],
           borderRadius: const BorderRadius.all(Radius.circular(12))),
       child: Column(children: [
-        const SizedBox(
-          height: 16,
-        ),
-        Text(
-          DateFormat.MMMM('vi_VN').format(date),
-          style: TextStyle(
-              fontSize: 15,
-              color: isSelected ? Colors.white : Colors.grey,
-              fontWeight: FontWeight.w500),
-        ),
         const Spacer(),
+        // Text(
+        //   DateFormat.MMMM('vi_VN').format(date),
+        //   style: TextStyle(
+        //       fontSize: 15,
+        //       color: isSelected ? Colors.white : Colors.grey,
+        //       fontWeight: FontWeight.w500),
+        // ),
         Text(
-          DateFormat.d().format(date),
+          'Ngày',
           style: TextStyle(
-              fontSize: 18,
+              fontSize: 20,
               fontWeight: FontWeight.bold,
               color: isSelected ? Colors.white : Colors.grey),
         ),
-        const Spacer(),
+        // const SizedBox(height: 8,),
+        // Text(
+        //   DateFormat.d().format(date),
+        //   style: TextStyle(
+        //       fontSize: 18,
+        //       fontWeight: FontWeight.bold,
+        //       color: isSelected ? Colors.white : Colors.grey),
+        // ),
+        
         Text(
-          DateFormat.EEEE('vi_VN').format(date),
+          (index + 1).toString(),
           style: TextStyle(
-              fontSize: 15,
+              fontSize: 24,
               color: isSelected ? Colors.white : Colors.grey,
-              fontWeight: FontWeight.w500),
+              fontWeight: FontWeight.bold),
         ),
-        const SizedBox(
-          height: 16,
-        ),
+        const Spacer(),
       ]),
     );
   }

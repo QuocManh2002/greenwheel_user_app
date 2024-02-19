@@ -23,20 +23,20 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CartScreen extends StatefulWidget {
-  const CartScreen({
-    super.key,
-    required this.location,
-    required this.supplier,
-    required this.list,
-    required this.total,
-    required this.serviceType,
-    required this.endDate,
-    required this.startDate,
-    this.note = "",
-    required this.numberOfMember,
-    required this.session,
-    required this.callbackFunction
-  });
+  const CartScreen(
+      {super.key,
+      required this.location,
+      required this.supplier,
+      required this.list,
+      required this.total,
+      required this.serviceType,
+      required this.endDate,
+      required this.startDate,
+      this.note = "",
+      required this.numberOfMember,
+      required this.session,
+      this.isOrder,
+      required this.callbackFunction});
   final LocationViewModel location;
   final SupplierViewModel supplier;
   final List<ItemCart> list;
@@ -47,7 +47,8 @@ class CartScreen extends StatefulWidget {
   final String note;
   final int numberOfMember;
   final Session session;
-  final void Function(OrderViewModel order) callbackFunction; 
+  final bool? isOrder;
+  final void Function() callbackFunction;
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -99,17 +100,15 @@ class _CartScreenState extends State<CartScreen> {
     //                                           3
     //                                       ? '${DateTime.now().add(const Duration(days: 3)).day}/${DateTime.now().add(const Duration(days: 3)).month}/${DateTime.now().add(const Duration(days: 3)).year}'
     //                                       : '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}',
- 
-    if(widget.startDate.difference(DateTime.now()).inDays + 1 <3){
+
+    if (widget.startDate.difference(DateTime.now()).inDays + 1 < 3) {
       _servingDates = [DateTime.now().add(const Duration(days: 3))];
-    }else{
+    } else {
       _servingDates = [widget.startDate];
     }
   }
 
-  setUpdata() async {
-
-  }
+  setUpdata() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -611,7 +610,6 @@ class _CartScreenState extends State<CartScreen> {
                                     fontWeight: FontWeight.bold,
                                     fontFamily: 'NotoSans',
                                     color: Colors.black,
-                                    
                                   ),
                                 ),
                               ],
@@ -658,32 +656,32 @@ class _CartScreenState extends State<CartScreen> {
                             height: 6.h,
                             child: ElevatedButton(
                               onPressed: () async {
-                                if (isIndividual) {
-                                  AwesomeDialog(
-                                    context: context,
-                                    dialogType: DialogType.warning,
-                                    animType: AnimType.topSlide,
-                                    showCloseIcon: true,
-                                    title: "Xác nhận thanh toán",
-                                    desc: "Bạn sẽ thanh toán theo cá nhân",
-                                    btnOkText: "OK",
-                                    btnOkOnPress: () async {
-                                      await paymentStart();
-                                    },
-                                  ).show();
-                                } else {
+                                // if (isIndividual) {
+                                //   AwesomeDialog(
+                                //     context: context,
+                                //     dialogType: DialogType.warning,
+                                //     animType: AnimType.topSlide,
+                                //     showCloseIcon: true,
+                                //     title: "Xác nhận thanh toán",
+                                //     desc: "Bạn sẽ thanh toán theo cá nhân",
+                                //     btnOkText: "OK",
+                                //     btnOkOnPress: () async {
+                                //       await paymentStart();
+                                //     },
+                                //   ).show();
+                                // } else {
                                   addOrder();
-                                }
+                                // }
                                 // }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
                                     Colors.green, // Background color
                               ),
-                              child: const Center(
+                              child:  Center(
                                 child: Text(
-                                  'Thêm đơn hàng mẫu',
-                                  style: TextStyle(
+                                 (widget.isOrder != null && widget.isOrder!)?   'Thanh toán' : 'Thêm đơn hàng mẫu',
+                                  style:const TextStyle(
                                     color: Colors.white, // Text color
                                     fontSize: 18,
                                   ),
@@ -751,13 +749,12 @@ class _CartScreenState extends State<CartScreen> {
         period: widget.session.enumName,
         details: details,
         servingDates: dates,
-        note: noteController.text
-        );
+        note: noteController.text);
     return order;
   }
 
   paymentStart() async {
-    int? check = await orderService.addOrder(convertCart());
+    String? check = await orderService.addOrder(convertCart());
     if (check != null) {
       // ignore: use_build_context_synchronously
       AwesomeDialog(
@@ -788,37 +785,50 @@ class _CartScreenState extends State<CartScreen> {
     }
   }
 
-  addOrder(){
-
+  addOrder() async {
     var order = convertCart();
-    final total = (finalTotal) *
-                                      (_servingDates.isEmpty
-                                          ? 1
-                                          : _servingDates
-                                              .length);
+    print(sharedPreferences.getString('plan_start_date'));
+    final total =
+        (finalTotal) * (_servingDates.isEmpty ? 1 : _servingDates.length);
     List<OrderDetailViewModel> details = [];
-    for(final item in list){
+    for (final item in list) {
       details.add(OrderDetailViewModel(
-        id: 1, 
-        productName: item.product.name, 
-        quantity: item.qty, 
-        price: item.product.price.toDouble()));
+          id: item.product.id,
+          productName: item.product.name,
+          quantity: item.qty,
+          price: item.product.price.toDouble()));
     }
-    OrderViewModel newOrder = OrderViewModel(
-      id: 1, 
-      details: details,
-      deposit: deposit, 
-      period: order.period, 
-      servingDates: order.servingDates, 
-      total: total, 
-      createdAt: DateTime.now(), 
-      supplierId: widget.supplier.id, 
-      supplierName: widget.supplier.name, 
-      supplierPhone: widget.supplier.phone, 
-      supplierAddress: widget.supplier.address, 
-      serviceType: widget.serviceType,
-      supplierImageUrl: widget.supplier.thumbnailUrl);
-    AwesomeDialog(
+    // OrderViewModel newOrder = OrderViewModel(
+    //     id: "1",
+    //     details: details,
+    //     deposit: deposit,
+    //     period: order.period,
+    //     serveDateIndexes: order.servingDates,
+    //     total: total,
+    //     createdAt: DateTime.now(),
+    //     supplierId: widget.supplier.id,
+    //     supplierName: widget.supplier.name,
+    //     supplierPhone: widget.supplier.phone,
+    //     supplierAddress: widget.supplier.address,
+    //     serviceType: widget.serviceType,
+    //     supplierImageUrl: widget.supplier.thumbnailUrl);
+    var startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    var rs = await orderService.addOrder(OrderCreateViewModel(
+        servingDates: [
+          for(final date in _servingDates)
+            date.difference(startDate).inDays
+        ],
+        period: order.period,
+        details: [
+          for (final item in details)
+            OrderDetailCreateViewModel(
+                productId: item.id, quantity: item.quantity)
+        ],
+        planId: sharedPreferences.getInt('planId')));
+
+    if (rs != 0) {
+// ignore: use_build_context_synchronously
+      AwesomeDialog(
         context: context,
         dialogType: DialogType.success,
         animType: AnimType.topSlide,
@@ -827,11 +837,12 @@ class _CartScreenState extends State<CartScreen> {
         desc: "Ấn tiếp tục để trở về",
         btnOkText: "Tiếp tục",
         btnOkOnPress: () {
-          widget.callbackFunction(newOrder);
+          widget.callbackFunction();
           Navigator.of(context).pop();
           Navigator.of(context).pop();
         },
       ).show();
+    }
   }
 
   Future pickDateRange() async {
@@ -866,8 +877,6 @@ class _CartScreenState extends State<CartScreen> {
       selectedDays = servingDates.length;
     });
     servingDates.sort((a, b) => a.compareTo(b));
-    print(servingDates);
-    print(isConsecutiveDates(servingDates));
   }
 
   isConsecutiveDates(List<DateTime> dates) {

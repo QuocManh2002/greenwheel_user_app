@@ -4,8 +4,6 @@ import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -19,6 +17,7 @@ class SupplierCard extends StatelessWidget {
       required this.numberOfMember,
       required this.startDate,
       required this.callbackFunction,
+      this.isOrder,
       required this.endDate});
   final DateTime startDate;
   final DateTime endDate;
@@ -26,7 +25,8 @@ class SupplierCard extends StatelessWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
-  final void Function(OrderViewModel order) callbackFunction;
+  final bool? isOrder;
+  final void Function() callbackFunction;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +61,7 @@ class SupplierCard extends StatelessWidget {
                       supplier: supplier,
                       serviceType:serviceType,
                       location: location,
+                      isOrder: isOrder,
                       callbackFunction: callbackFunction,
                     ),
                   ),
@@ -75,6 +76,7 @@ class SupplierCard extends StatelessWidget {
                       supplier: supplier,
                       serviceType:serviceType,
                       location: location,
+                      isOrder: isOrder,
                       session: sessions[1],
                       callbackFunction: callbackFunction,
                     ),

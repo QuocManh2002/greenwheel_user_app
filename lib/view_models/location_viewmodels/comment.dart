@@ -18,6 +18,6 @@ class CommentViewModel {
           id: json['id'],
           customerName: json['account']['name'],
           content: json['comment'],
-          date: DateTime.now(),
+          date: DateTime.parse(json['createdAt']),
           imgUrl: defaultUserAvatarLink);
 }

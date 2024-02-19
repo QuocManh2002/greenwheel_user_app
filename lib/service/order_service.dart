@@ -9,8 +9,20 @@ import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
 class OrderService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
   static GraphQLClient client = config.getClient();
-
-  Future<int?> addOrder(OrderCreateViewModel order) async {
+//           mutation {
+//   createOrder(         
+//     dto: {
+//       details: $details
+//       note: ${json.encode(order.note)}
+//       period: ${order.period}
+//       planId: ${order.planId}
+//       servingDates: ${order.servingDates}
+//     }
+//   ) {
+//     id
+//   }
+// }
+  Future<String?> addOrder(OrderCreateViewModel order) async {
     try {
       List<Map<String, dynamic>> details = order.details.map((detail) {
         return {
@@ -18,20 +30,21 @@ class OrderService extends Iterable {
           'value': detail.quantity,
         };
       }).toList();
+      print(details);
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
-          mutation {
-  createOrder(         
-    dto: {
-      details: $details
-      note: ${json.encode(order.note)}
-      period: ${order.period}
-      planId: ${order.planId}
-      servingDates: ${order.servingDates}
-    }
-  ) {
+
+
+mutation{
+  createOrder(dto: {
+    cart:$details
+    note:${json.encode(order.note)}
+    period:${order.period}
+    planId: ${order.planId}
+    serveDateIndexes:${order.servingDates}
+  }){
     id
   }
 }
@@ -43,7 +56,7 @@ class OrderService extends Iterable {
         throw Exception(result.exception);
       }
 
-      final int? orderId = result.data?['createOrder']["id"];
+      final String? orderId = result.data?['createOrder']["id"];
       if (orderId == null) {
         return null;
       }

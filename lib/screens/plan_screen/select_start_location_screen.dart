@@ -38,7 +38,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   TextEditingController _dateController = TextEditingController();
   DateTime? _selectedDate = DateTime.now();
   CircleAnnotationManager? _circleAnnotationManagerStart;
-  CircleAnnotationManager? _circleAnnotationManagerEnd;
   PolylinePoints polylinePoints = PolylinePoints();
   PointLatLng? _selectedLocation;
   bool _isSearching = false;
@@ -196,148 +195,17 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                SizedBox(
-                  height: 2.h,
-                ),
-                const Text(
-                  'Thời gian xuất phát',
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                ),
+                // SizedBox(
+                //   height: 2.h,
+                // ),
+                // const Text(
+                //   'Thời gian xuất phát',
+                //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                // ),
                 SizedBox(
                   height: 1.h,
                 ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: defaultTextFormField(
-                            readonly: true,
-                            controller: _dateController,
-                            inputType: TextInputType.datetime,
-                            text: 'Ngày',
-                            onTap: () async {
-                              DateTime? newDay = await showDatePicker(
-                                  context: context,
-                                  locale: const Locale('vi_VN'),
-                                  initialDate: _selectedDate,
-                                  firstDate: _selectedDate!,
-                                  lastDate: _selectedDate!.add(const Duration(days: 830)),
-                                  builder: (context, child) {
-                                    return Theme(
-                                      data: ThemeData().copyWith(
-                                          colorScheme: const ColorScheme.light(
-                                              primary: primaryColor,
-                                              onPrimary: Colors.white)),
-                                      child: DatePickerDialog(
-                                        cancelText: 'HỦY',
-                                        confirmText: 'LƯU',
-                                        initialDate: _selectedDate!,
-                                        firstDate: _selectedDate!,
-                                        lastDate:  _selectedDate!.add(const Duration(days: 830)),
-                                      ),
-                                    );
-                                  });
-                              if (newDay != null) {
-                                _selectedDate = newDay;
-                                _dateController.text =
-                                    DateFormat('dd/MM/yyyy').format(newDay);
-                                sharedPreferences.setString(
-                                    'plan_start_date', newDay.toString());
-                                sharedPreferences.setString(
-                                    'plan_departureDate', newDay.toString());
-                              }
-                            },
-                            prefixIcon: const Icon(Icons.calendar_month),
-                            onValidate: (value) {
-                              if (value!.isEmpty) {
-                                return "Ngày của hoạt động không được để trống";
-                              }
-                            }),
-                      ),
-                      SizedBox(
-                        width: 3.w,
-                      ),
-                      Expanded(
-                        child: defaultTextFormField(
-                            readonly: true,
-                            controller: _timeController,
-                            inputType: TextInputType.datetime,
-                            text: 'Giờ',
-                            onTap: () {
-                              showTimePicker(
-                                context: context,
-                                initialTime: _selectTime,
-                                builder: (context, child) {
-                                  return Theme(
-                                    data: ThemeData().copyWith(
-                                        colorScheme: const ColorScheme.light(
-                                            primary: primaryColor,
-                                            onPrimary: Colors.white)),
-                                    child: TimePickerDialog(
-                                      initialTime: _selectTime,
-                                    ),
-                                  );
-                                },
-                              ).then((value) {
-                                if (!Utils().checkTimeAfterNow1Hour(
-                                    value!,
-                                    DateTime(
-                                        _selectedDate!.year,
-                                        _selectedDate!.month,
-                                        _selectedDate!.day))) {
-                                  AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.warning,
-                                      btnOkColor: Colors.orange,
-                                      body: const Padding(
-                                        padding: EdgeInsets.symmetric(
-                                            horizontal: 16),
-                                        child: Center(
-                                          child: Text(
-                                            'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
-                                            style: TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold),
-                                            textAlign: TextAlign.center,
-                                          ),
-                                        ),
-                                      ),
-                                      btnOkOnPress: () {
-                                        _selectTime = TimeOfDay.fromDateTime(
-                                            DateTime.now()
-                                                .add(const Duration(hours: 1)));
-                                        _timeController.text = DateFormat.Hm()
-                                            .format(DateTime(
-                                                0,
-                                                0,
-                                                0,
-                                                _selectTime.hour,
-                                                _selectTime.minute));
-                                        sharedPreferences.setString(
-                                            'plan_start_time',
-                                            _timeController.text);
-                                      }).show();
-                                } else {
-                                  _selectTime = value;
-                                  _timeController.text = DateFormat.Hm().format(
-                                      DateTime(0, 0, 0, _selectTime.hour,
-                                          _selectTime.minute));
-                                  sharedPreferences.setString(
-                                      'plan_start_time', _timeController.text);
-                                }
-                              });
-                            },
-                            onValidate: (value) {
-                              if (value!.isEmpty) {
-                                return "Ngày của hoạt động không được để trống";
-                              }
-                            },
-                            prefixIcon: const Icon(Icons.watch_later_outlined)),
-                      ),
-                    ],
-                  ),
-                ),
+                
                 SizedBox(
                   height: 2.h,
                 ),
@@ -358,6 +226,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                       keyboardType: TextInputType.streetAddress,
                       cursorColor: primaryColor,
                       maxLines: 1,
+                      autofocus: true,
                       onTap: () {
                         setState(() {
                           _isSearching = true;
@@ -384,7 +253,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                     ),
                   ),
                 ),
-                if (_isSearching)
+                // if (_isSearching)
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 2.h),
                     child: InkWell(
@@ -497,7 +366,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                       ]),
                     ),
                   ),
-                if (_isSearching || isShowResult)
+                // if (_isSearching || isShowResult)
                   Padding(
                     padding:
                         EdgeInsets.symmetric(horizontal: 2.h, vertical: 1.h),

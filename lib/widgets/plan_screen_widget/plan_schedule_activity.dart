@@ -48,22 +48,18 @@ class PlanScheduleActivity extends StatelessWidget {
                           ),
                           Row(
                             children: [
-                               Column(
+                              Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
                                   Container(
                                     alignment: Alignment.topLeft,
-                                    child:const Text(
+                                    child: const Text(
                                       'Mô tả:',
-                                      // overflow: TextOverflow.clip,
                                       style: TextStyle(
                                           fontSize: 16,
                                           fontWeight: FontWeight.bold),
                                     ),
-                                  ),
-                                  const SizedBox(
-                                    height: 6,
                                   ),
                                   const Text(
                                     'Mô tả chi tiết:',
@@ -72,15 +68,7 @@ class PlanScheduleActivity extends StatelessWidget {
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold),
                                   ),
-                                  // SizedBox(
-                                  //   height: 6,
-                                  // ),
-                                  // Text(
-                                  //   'Thời gian hoạt động:',
-                                  //   style: TextStyle(
-                                  //       fontSize: 16,
-                                  //       fontWeight: FontWeight.bold),
-                                  // ),
+            
                                 ],
                               ),
                               const SizedBox(
@@ -108,14 +96,6 @@ class PlanScheduleActivity extends StatelessWidget {
                                       overflow: TextOverflow.clip,
                                     ),
                                   ),
-                                  // const SizedBox(
-                                  //   height: 6,
-                                  // ),
-                                  // Text(
-                                  //   '${item.activityTime ?? 1} giờ', style:const TextStyle(
-                                  //     fontSize: 16
-                                  //   ),
-                                  // )
                                 ],
                               )
                             ],
@@ -123,15 +103,11 @@ class PlanScheduleActivity extends StatelessWidget {
                           const SizedBox(
                             height: 6,
                           ),
-                          Row(
-                            children: [
-                              Text(
-                                DateFormat.yMMMMEEEEd('vi_VN')
-                                    .format(item.date!),
-                                style: const TextStyle(
-                                    fontSize: 16, fontWeight: FontWeight.bold),
-                              )
-                            ],
+                          Text(
+                            DateFormat.yMMMMEEEEd('vi_VN')
+                                .format(item.date!),
+                            style: const TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
                           )
                         ],
                       ),
@@ -215,13 +191,6 @@ class PlanScheduleActivity extends StatelessWidget {
                               height: 1.h,
                             ),
                             const Icon(
-                              Icons.calendar_month,
-                              size: 22,
-                            ),
-                            SizedBox(
-                              height: 1.h,
-                            ),
-                            const Icon(
                               Icons.watch_later_outlined,
                               size: 22,
                             ),
@@ -244,18 +213,10 @@ class PlanScheduleActivity extends StatelessWidget {
                               height: 0.8.h,
                             ),
                             Text(
-                              DateFormat.yMMMMEEEEd('vi_VN').format(item.date!),
-                              style: const TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold),
-                            ),
-                            SizedBox(
-                              height: 0.8.h,
-                            ),
-                            Text(
-                              isCreate ? 
-                              '${item.activityTime.toString()} giờ':
-                              DateFormat.Hm().format(DateTime(
-                                  0, 0, 0, item.time!.hour, item.time!.minute)),
+                              // isCreate ?
+                              '${item.activityTime.toString()} giờ',
+                              // DateFormat.Hm().format(DateTime(
+                              //     0, 0, 0, item.time!.hour, item.time!.minute)),
                               style: const TextStyle(
                                   fontSize: 17, fontWeight: FontWeight.bold),
                             )

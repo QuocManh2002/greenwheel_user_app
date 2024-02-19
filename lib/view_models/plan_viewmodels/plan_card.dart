@@ -4,7 +4,7 @@ import 'package:greenwheel_user_app/view_models/province.dart';
 
 class PlanCardViewModel {
     int id;
-    String name;
+    String? name;
     DateTime startDate;
     DateTime endDate;
     String status;
@@ -18,7 +18,7 @@ class PlanCardViewModel {
         required this.location,
         required this.province,
         required this.status,
-        required this.name
+        this.name
     });
 
     factory PlanCardViewModel.fromJson(Map<String, dynamic> json) => PlanCardViewModel(

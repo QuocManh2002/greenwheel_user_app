@@ -96,12 +96,12 @@ class SuggestPlanCard extends StatelessWidget {
                         ],
                       ),
                       const Spacer(),
-                      Text(
-                        'Leader: ${plan.leaderName}',
-                        style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.w400),
-                      ),
-                      const Spacer(),
+                      // Text(
+                      //   'Leader: ${plan.leaderName}',
+                      //   style: const TextStyle(
+                      //       fontSize: 14, fontWeight: FontWeight.w400),
+                      // ),
+                      // const Spacer(),
                     ],
                   ),
                 )

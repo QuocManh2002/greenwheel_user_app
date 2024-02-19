@@ -8,8 +8,9 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class OrderDetailScreen extends StatefulWidget {
-  const OrderDetailScreen({super.key, required this.order});
+  const OrderDetailScreen({super.key, required this.order, required this.startDate});
   final OrderViewModel order;
+  final DateTime startDate;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -20,6 +21,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool isExpanded = false;
   List<DateTime> _servingDates = [];
   String _servingTime = '';
+  String _orderType = '';
   @override
   void initState() {
     // TODO: implement initState
@@ -30,7 +32,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       noteController.text = widget.order.note!;
     }
     _servingDates =
-        widget.order.servingDates.map((e) => DateTime.parse(json.decode(e))).toList();
+        widget.order.serveDateIndexes.map((e) => widget.startDate.add(Duration(days: e))).toList();
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
         .range;
@@ -189,7 +191,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                   '+${_servingDates.length - 1} ngày',
                                   style: const TextStyle(fontSize: 18),
                                 ),
-                              if (widget.order.servingDates.length > 1)
+                              if (widget.order.serveDateIndexes.length > 1)
                                 IconButton(
                                     onPressed: () {
                                       setState(() {
@@ -245,7 +247,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           width: 8,
                         ),
                          Text(
-                        widget.order.serviceType!.id == 5?  'Thời gian check-in:': 'Thời gian phục vụ:',
+                        widget.order.type != 'FOOD'?  'Thời gian check-in:': 'Thời gian phục vụ:',
                           style:const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -253,7 +255,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           width: 8,
                         ),
                         Text(
-                         widget.order.serviceType!.id == 5 ? '12:00 SA' : _servingTime,
+                         widget.order.type! != 'FOOD' ? '12:00 SA' : _servingTime,
                           style: const TextStyle(fontSize: 18),
                         )
                       ],

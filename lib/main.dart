@@ -70,7 +70,7 @@ class MainApp extends StatelessWidget {
     if (userToken != null) {
       // debugPrint(userToken, wrapWidth: 1100);
       log(userToken);
-      debugPrint(userToken);
+      // debugPrint(userToken);
       //Call to refreshToken
       TokenRefresher.refreshToken();
     }

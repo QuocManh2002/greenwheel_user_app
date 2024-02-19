@@ -2,6 +2,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 
 class LocationService extends Iterable {
@@ -51,6 +52,7 @@ class LocationService extends Iterable {
           comments{
             id
             comment
+            createdAt
             account{
               avatarUrl
               name
@@ -427,6 +429,71 @@ query getByLocationId(\$id: Int) {
       throw Exception(error);
     }
   }
+
+  Future<bool> commentOnDestination(String commentText, int destinationId) async{
+        try {
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+mutation {
+  commentOnDestination(dto: { comment: "$commentText", destinationId: $destinationId }) {
+    id
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      int? res = result.data!['commentOnDestination']['id'];
+      if (res == null || res == 0) {
+        return false;
+      }
+      return true;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<CommentViewModel>> getComments(int destinationId)async{
+    try{
+      QueryResult result = await client.query(
+        QueryOptions(document: gql("""
+{
+  destinations(where: {
+    id:{
+      eq: 1
+    }
+  }){
+    nodes{
+      comments{
+        id
+        comment
+        createdAt
+        account{
+          id
+          name
+        }
+      }
+    }
+  }
+}
+"""))
+      );
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      List? res = result.data!['destinations']['nodes'][0]['comments'];
+      if(res == null || res.isEmpty){
+        return [];
+      }
+      List<CommentViewModel> comments = res.map((comment) => CommentViewModel.fromJson(comment)).toList();
+      return comments;
+    }catch (error) {
+      throw Exception(error);
+    }
+  }
+
+
 
   @override
   // TODO: implement iterator

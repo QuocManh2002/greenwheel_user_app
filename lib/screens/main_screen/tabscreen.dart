@@ -18,7 +18,7 @@ class TabScreen extends StatefulWidget {
 class _TabScreenState extends State<TabScreen> {
   int _selectedPageIndex = 0;
   NotificationService _notificationService = NotificationService();
-  CustomerService _customerService = CustomerService();
+  // CustomerService _customerService = CustomerService();
 
   void selectPage(int index) {
     setState(() {
@@ -40,7 +40,7 @@ class _TabScreenState extends State<TabScreen> {
     var isDeviceTokenSended = sharedPreferences.getBool('isDeviceTokenSended');
     if (isDeviceTokenSended == null || !isDeviceTokenSended) {
       sharedPreferences.setBool("isDeviceTokenSended", true);
-      await _customerService.sendDeviceToken();
+      // await _customerService.sendDeviceToken();
     }
   }
 

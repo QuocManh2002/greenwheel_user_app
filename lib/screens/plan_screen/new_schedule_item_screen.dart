@@ -17,7 +17,7 @@ class NewScheduleItemScreen extends StatefulWidget {
       required this.startDate,
       required this.selectedIndex,
       required this.isNotOverDay,
-      required this.initialTime,
+      // required this.initialTime,
       required this.maxActivityTime,
       this.item});
   final void Function(
@@ -25,7 +25,7 @@ class NewScheduleItemScreen extends StatefulWidget {
   final DateTime startDate;
   final PlanScheduleItem? item;
   final int selectedIndex;
-  final TimeOfDay initialTime;
+  // final TimeOfDay initialTime;
   final bool isNotOverDay;
   final int maxActivityTime;
 
@@ -37,13 +37,13 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  final TextEditingController _timeController = TextEditingController();
+  // final TextEditingController _timeController = TextEditingController();
+  final TextEditingController _activityTimeController = TextEditingController();
   final TextEditingController _shortDescriptionController =
       TextEditingController();
-  TimeOfDay _selectTime = TimeOfDay.now();
+  // TimeOfDay _selectTime = TimeOfDay.now();
   DateTime _selectedDate = DateTime.now();
   String? _selectedType;
-  int _activityTime = 1;
   int _maxActivityTime = 12;
 
   @override
@@ -56,32 +56,34 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   onChangeQuantity(String type) {
     if (type == "add") {
       setState(() {
-        _activityTime += 1;
+        _activityTimeController.text = (int.parse(_activityTimeController.text) + 1).toString();
       });
     } else {
       setState(() {
-        _activityTime -= 1;
+        _activityTimeController.text = (int.parse(_activityTimeController.text) - 1).toString();
       });
     }
   }
 
   setUpData() {
     // _maxActivityTime = widget.availableTime;
+    // _activityTimeController.text = '1';
     if (widget.item != null) {
-      _selectTime = widget.item!.time!;
+      // _selectTime = widget.item!.time!;
       _selectedDate = widget.item!.date!;
       _descriptionController.text = widget.item!.description!;
       _selectedType = widget.item!.type;
       _shortDescriptionController.text = widget.item!.shortDescription!;
+      _activityTimeController.text = widget.item!.activityTime!.toString();
       setState(() {
         _dateController.text =
             DateFormat.yMMMMEEEEd('vi_VN').format(widget.item!.date!);
-        _timeController.text = DateFormat.Hm().format(DateTime(
-            _selectedDate.year,
-            _selectedDate.month,
-            _selectedDate.day,
-            _selectTime.hour,
-            _selectTime.minute));
+        // _timeController.text = DateFormat.Hm().format(DateTime(
+        //     _selectedDate.year,
+        //     _selectedDate.month,
+        //     _selectedDate.day,
+        //     _selectTime.hour,
+        //     _selectTime.minute));
       });
     } else {
       setState(() {
@@ -89,9 +91,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
             .format(widget.startDate.add(Duration(days: widget.selectedIndex)));
         _selectedDate =
             widget.startDate.add(Duration(days: widget.selectedIndex));
-        _selectTime = widget.initialTime;
-        _timeController.text = DateFormat.Hm().format(DateTime(
-            0, 0, 0, widget.initialTime.hour, widget.initialTime.minute));
+            _activityTimeController.text = '1';
+        // _selectTime = widget.initialTime;
+        // _timeController.text = DateFormat.Hm().format(DateTime(
+        //     0, 0, 0, widget.initialTime.hour, widget.initialTime.minute));
       });
     }
   }
@@ -139,10 +142,9 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           PlanScheduleItem(
                               shortDescription:
                                   _shortDescriptionController.text,
-                              time: _selectTime,
                               description: _descriptionController.text,
                               date: _selectedDate,
-                              activityTime: _activityTime,
+                              activityTime: int.parse(_activityTimeController.text),
                               type: _selectedType),
                           true,
                           null);
@@ -151,9 +153,9 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                   } else {
                     widget.callback(
                         PlanScheduleItem(
+                          activityTime: int.parse(_activityTimeController.text),
                             shortDescription: _shortDescriptionController.text,
                             type: _selectedType,
-                            time: _selectTime,
                             description: _descriptionController.text,
                             date: _selectedDate,
                             id: widget.item!.id),
@@ -203,16 +205,16 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
             SizedBox(
               height: 2.h,
             ),
-            TextFormField(
-              controller: _dateController,
-              readOnly: true,
-              style:
-                  const TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
-              decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.calendar_month),
-                  prefixIconColor: primaryColor,
-                  border: OutlineInputBorder(borderSide: BorderSide.none)),
-            ),
+            // TextFormField(
+            //   controller: _dateController,
+            //   readOnly: true,
+            //   style:
+            //       const TextStyle(fontWeight: FontWeight.normal, fontSize: 18),
+            //   decoration: const InputDecoration(
+            //       prefixIcon: Icon(Icons.calendar_month),
+            //       prefixIconColor: primaryColor,
+            //       border: OutlineInputBorder(borderSide: BorderSide.none)),
+            // ),
             Container(
               width: 100.w,
               alignment: Alignment.center,
@@ -220,8 +222,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
               padding: const EdgeInsets.only(left: 12, right: 8),
               decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey),
-                  borderRadius:
-                      const BorderRadius.all(Radius.circular(14))),
+                  borderRadius: const BorderRadius.all(Radius.circular(14))),
               child: DropdownButton<String>(
                 hint: const Text(
                   'Dạng hoạt động',
@@ -265,9 +266,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         inputType: TextInputType.text,
                         maxLength: 40,
                         maxline: 2,
-                        text: widget.item != null
-                            ? 'Mô tả hoạt động'
-                            : 'Mô tả hoạt động mới',
+                        text: 'Mô tả',
                         onValidate: (value) {
                           if (value!.isEmpty) {
                             return "Mô tả của hoạt động không được để trống";
@@ -280,11 +279,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                     TextFormFieldWithLength(
                         controller: _descriptionController,
                         inputType: TextInputType.text,
-                        maxLength: 120,
+                        maxLength: 110,
                         maxline: 3,
-                        text: widget.item != null
-                            ? 'Mô tả chi tiết hoạt động'
-                            : 'Mô tả chi tiết hoạt động mới',
+                        minline: 3,
+                        text: 'Mô tả chi tiết',
                         onValidate: (value) {
                           if (value!.isEmpty) {
                             return "Mô tả chi tiết của hoạt động không được để trống";
@@ -315,30 +313,32 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             color: primaryColor,
                             iconSize: 24,
                             onPressed: () {
-                              if (_activityTime > 1) {
+                              if (int.parse(_activityTimeController.text) > 1) {
                                 onChangeQuantity("subtract");
                               }
                             },
                             icon: const Icon(Icons.remove)),
-                        Container(
-                          alignment: Alignment.center,
-                          height: 4.h,
-                          width: 7.h,
-                          decoration: BoxDecoration(
-                              shape: BoxShape.rectangle,
-                              border: Border.all(color: Colors.black, width: 2),
-                              borderRadius: BorderRadius.circular(8)),
-                          child: Text(
-                            _activityTime.toString(),
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          ),
-                        ),
+                        SizedBox(
+                            width: 7.h,
+                            height: 5.h,
+                            child: defaultTextFormField(
+                                onValidate: (value) {
+                                  if (value == null ||
+                                      value.isEmpty ||
+                                      int.parse(value) <= 0) {
+                                    return "Thời gian hoạt động không hợp lệ";
+                                  }
+                                },
+                                borderSize: 2,
+                                textAlign: TextAlign.center,
+                                controller: _activityTimeController,
+                                inputType: TextInputType.number)),
                         IconButton(
                             color: primaryColor,
                             iconSize: 24,
                             onPressed: () {
-                              if (_activityTime == widget.maxActivityTime) {
+                              if (int.parse(_activityTimeController.text) ==
+                                  widget.maxActivityTime) {
                                 Utils().ShowFullyActivityTimeDialog(context);
                               } else {
                                 onChangeQuantity("add");

@@ -15,11 +15,11 @@ String planDetailToJson(PlanDetail data) => json.encode(data.toJson());
 
 class PlanDetail {
   int id;
-  String name;
-  DateTime departureDate;
-  DateTime startDate;
-  DateTime endDate;
-  String joinMethod;
+  String? name;
+  DateTime? departureDate;
+  DateTime? startDate;
+  DateTime? endDate;
+  String? joinMethod;
   List<dynamic> schedule;
   int memberLimit;
   String status;
@@ -32,6 +32,7 @@ class PlanDetail {
   List<EmergencyContactViewModel>? savedContacts;
   int numOfExpPeriod;
   List<PlanMemberViewModel>? members;
+  int? gcoinBudgetPerCapita;
 
   PlanDetail(
       {required this.id,
@@ -44,9 +45,10 @@ class PlanDetail {
       required this.locationId,
       required this.imageUrls,
       required this.name,
-      required this.joinMethod,
+      this.joinMethod,
       this.savedContacts,
       this.members,
+      this.gcoinBudgetPerCapita,
       required this.startLocationLat,
       required this.startLocationLng,
       required this.numOfExpPeriod,
@@ -67,6 +69,7 @@ class PlanDetail {
         imageUrls: json["destination"]["imageUrls"],
         joinMethod: json["joinMethod"],
         numOfExpPeriod: json['periodCount'],
+        gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'],
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
         startLocationLng: json["departure"]["coordinates"][0].toDouble(),
         members: List<PlanMemberViewModel>.from(json['members'].map((e) => PlanMemberViewModel.fromJson(e))).toList(),
@@ -75,8 +78,8 @@ class PlanDetail {
 
   Map<String, dynamic> toJson() => {
         "id": id,
-        "startDate": startDate.toIso8601String(),
-        "endDate": endDate.toIso8601String(),
+        "startDate": startDate!.toIso8601String(),
+        "endDate": endDate!.toIso8601String(),
         "schedule": schedule,
         "memberLimit": memberLimit,
         "status": status,

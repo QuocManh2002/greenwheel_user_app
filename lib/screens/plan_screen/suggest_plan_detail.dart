@@ -28,10 +28,10 @@ class SuggestPlanDetailScreen extends StatefulWidget {
   const SuggestPlanDetailScreen(
       {super.key,
       required this.planId,
-      required this.leaderName,
+       this.leaderName,
       required this.location});
   final int planId;
-  final String leaderName;
+  final String? leaderName;
   final LocationViewModel location;
 
   @override
@@ -66,9 +66,9 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
 
     for (var item in _planDetail!.orders!) {
       if (item.serviceType!.id == 1) {
-        listRestaurant.add(SupplierOrderCard(order: item));
+        listRestaurant.add(SupplierOrderCard(order: item, startDate: _planDetail!.startDate!));
       } else {
-        listMotel.add(SupplierOrderCard(order: item));
+        listMotel.add(SupplierOrderCard(order: item, startDate: _planDetail!.startDate!));
       }
       total += item.total;
     }
@@ -135,7 +135,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
                           padding: const EdgeInsets.symmetric(horizontal: 24),
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            _planDetail!.name,
+                            _planDetail!.name!,
                             overflow: TextOverflow.clip,
                             style: const TextStyle(
                                 fontSize: 22, fontWeight: FontWeight.bold),
@@ -326,34 +326,34 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
                                           ],
                                         ),
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 24),
-                                        child: Container(
-                                          alignment: Alignment.topLeft,
-                                          child: Row(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                'Leader:',
-                                                style: TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              SizedBox(
-                                                width: 3.w,
-                                              ),
-                                              Text(
-                                                widget.leaderName,
-                                                style: const TextStyle(
-                                                    fontSize: 18),
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
+                                      // Padding(
+                                      //   padding: const EdgeInsets.symmetric(
+                                      //       horizontal: 24),
+                                      //   child: Container(
+                                      //     alignment: Alignment.topLeft,
+                                      //     child: Row(
+                                      //       crossAxisAlignment:
+                                      //           CrossAxisAlignment.start,
+                                      //       children: [
+                                      //         const Text(
+                                      //           'Leader:',
+                                      //           style: TextStyle(
+                                      //               fontSize: 18,
+                                      //               fontWeight:
+                                      //                   FontWeight.bold),
+                                      //         ),
+                                      //         SizedBox(
+                                      //           width: 3.w,
+                                      //         ),
+                                      //         Text(
+                                      //           widget.leaderName,
+                                      //           style: const TextStyle(
+                                      //               fontSize: 18),
+                                      //         )
+                                      //       ],
+                                      //     ),
+                                      //   ),
+                                      // ),
                                       SizedBox(height: 2.h,)
                                     ],
                                   )
@@ -380,8 +380,8 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
                                               child: PLanScheduleWidget(
                                                 schedule: _planDetail!.schedule,
                                                 startDate:
-                                                    _planDetail!.startDate,
-                                                endDate: _planDetail!.endDate,
+                                                    _planDetail!.startDate!,
+                                                endDate: _planDetail!.endDate!,
                                               ),
                                             ),
                                           ],
@@ -569,8 +569,8 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
     sharedPreferences.setString('plan_saved_emergency', rsList.toString());
     var test1 = _planService.GetPlanScheduleFromJsonNew(
         _planDetail!.schedule,
-        _planDetail!.startDate,
-        _planDetail!.endDate.difference(_planDetail!.startDate).inDays + 1);
+        _planDetail!.startDate!,
+        _planDetail!.endDate!.difference(_planDetail!.startDate!).inDays + 1);
     List<dynamic> listrs = [];
     List<dynamic> listItem = [];
     for (final plan in test1) {
@@ -585,6 +585,8 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
     print(json.encode(listrs));
     print(json.decode(encodeList));
     sharedPreferences.setString('plan_schedule', json.encode(listrs));
+    sharedPreferences.setInt('sourceId', widget.planId);
+    print(_planDetail!.schedule);
     Navigator.of(context).push(MaterialPageRoute(
         builder: (ctx) => CreateNewPlanScreen(
               location: widget.location,
