@@ -8,6 +8,7 @@ import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
@@ -21,11 +22,13 @@ class CreatePlanScheduleScreen extends StatefulWidget {
       required this.isCreate,
       this.schedule,
       required this.isClone,
+      required this.location,
       this.planId});
   final bool isCreate;
   final int? planId;
   List<dynamic>? schedule;
   final bool isClone;
+  final LocationViewModel location;
 
   @override
   State<CreatePlanScheduleScreen> createState() =>
@@ -283,6 +286,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
         builder: (ctx) => NewScheduleItemScreen(
             maxActivityTime: 12,
             callback: callback,
+            location: widget.location,
             selectedIndex: _currentPage.toInt(),
             item: item,
             // initialTime: const TimeOfDay(hour: 0, minute: 0),
@@ -400,6 +404,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (ctx) => NewScheduleItemScreen(
                                   callback: callback,
+                                  location: widget.location,
                                   maxActivityTime: 12 - consumedTime,
                                   startDate: testList[0].date,
                                   selectedIndex: _currentPage.toInt(),

@@ -1,10 +1,11 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -23,7 +24,6 @@ class SelectEmergencyService extends StatefulWidget {
 class _SelectEmergencyServiceState extends State<SelectEmergencyService>
     with TickerProviderStateMixin {
   bool isLoading = true;
-  PlanService _planService = PlanService();
   List<EmergencyContactViewModel>? emergencyContacts;
   List<EmergencyContactViewModel>? selectedEmergencyContacts = [];
   List<dynamic> rsList = [];
@@ -75,7 +75,7 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
         .map((e) => EmergencyContactViewModel().toJson(e))
         .toList();
     print(rsList);
-    sharedPreferences.setString('plan_saved_emergency', rsList.toString());
+    sharedPreferences.setString('plan_saved_emergency', json.encode(rsList));
   }
 
   @override

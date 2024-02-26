@@ -1,31 +1,18 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
-class SupplierOrderCard extends StatelessWidget {
-  const SupplierOrderCard({super.key, required this.order, required this.startDate});
-  final OrderViewModel order;
-  final DateTime startDate;
+class SurchargeCard extends StatelessWidget {
+  const SurchargeCard({super.key, required this.amount, required this.note});
+  final String amount;
+  final String note;
 
   @override
   Widget build(BuildContext context) {
-    var total = 0.0;
-    for(final detail in order.details!){
-      total += detail.unitPrice * detail.quantity;
-    }
-
-    return InkWell(
-      onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (ctx) => OrderDetailScreen(
-                  order: order,
-                  startDate: startDate,
-                )));
-      },
-      child: Container(
+    return Container(
         decoration: BoxDecoration(
           boxShadow: const [
             BoxShadow(
@@ -48,11 +35,11 @@ class SupplierOrderCard extends StatelessWidget {
               decoration:
                   BoxDecoration(borderRadius: BorderRadius.circular(14)),
               child: Hero(
-                  tag: order.id,
+                  tag: UniqueKey(),
                   child: FadeInImage(
                     height: 15.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(order.supplierImageUrl),
+                    image: NetworkImage('https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0'),
                     fit: BoxFit.cover,
                     width: 15.h,
                     filterQuality: FilterQuality.high,
@@ -69,7 +56,7 @@ class SupplierOrderCard extends StatelessWidget {
                   const SizedBox(
                     height: 12,
                   ),
-                  Text(order.supplierName,
+                  Text(note,
                       overflow: TextOverflow.clip,
                       maxLines: 2,
                       style: const TextStyle(
@@ -77,12 +64,12 @@ class SupplierOrderCard extends StatelessWidget {
                   const SizedBox(
                     height: 8,
                   ),
-                  Text("Đã đặt ${order.details!.length.toString()} sản phẩm"),
-                  const SizedBox(
-                    height: 8,
-                  ),
+                  // Text("Đã đặt ${order.details!.length.toString()} sản phẩm"),
+                  // const SizedBox(
+                  //   height: 8,
+                  // ),
                   Text(
-                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND",
+                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(int.parse(amount))} GCOIN",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )
                 ],
@@ -90,7 +77,6 @@ class SupplierOrderCard extends StatelessWidget {
             )
           ]),
         ),
-      ),
-    );
+      );
   }
 }

@@ -32,11 +32,9 @@ class DetailPlanNewScreen extends StatefulWidget {
   const DetailPlanNewScreen(
       {super.key,
       required this.planId,
-      required this.location,
       required this.isEnableToJoin});
   final int planId;
   final bool isEnableToJoin;
-  final LocationViewModel location;
 
   @override
   State<DetailPlanNewScreen> createState() => _DetailPlanScreenState();
@@ -59,6 +57,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   int _currentIndexEmergencyCard = 0;
   int _selectedTab = 0;
   bool _isPublic = true;
+  bool _isEnableToShare = false;
 
   @override
   void initState() {
@@ -76,11 +75,18 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
 
+    _isPublic = _planDetail!.isPublic;
+    _isEnableToShare = _isPublic && _planDetail!.status != 'READY';
+
     for (var item in _planDetail!.orders!) {
-      if (item.serviceType!.id == 1) {
-        listRestaurant.add(SupplierOrderCard(order: item, startDate: _planDetail!.startDate!,));
+      if (item.type == 'FOOD') {
+        listRestaurant.add(SupplierOrderCard(
+          order: item,
+          startDate: _planDetail!.startDate!,
+        ));
       } else {
-        listMotel.add(SupplierOrderCard(order: item, startDate: _planDetail!.startDate!));
+        listMotel.add(
+            SupplierOrderCard(order: item, startDate: _planDetail!.startDate!));
       }
       total += item.total;
     }
@@ -88,7 +94,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     setState(() {
       _listMotel = listMotel;
       _listRestaurant = listRestaurant;
-      // _orderList = orderList;
     });
     if (_planDetail != null) {
       // if (_planDetail!.savedContacts != null) {
@@ -104,7 +109,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       setState(() {
         isLoading = false;
       });
-      print(_saveSupplier);
     }
   }
 
@@ -219,7 +223,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      _planDetail!.name ?? 'Chuyến đi chưa đặt tên',
+                                      _planDetail!.name ??
+                                          'Chuyến đi chưa đặt tên',
                                       overflow: TextOverflow.clip,
                                       style: const TextStyle(
                                           fontSize: 22,
@@ -231,9 +236,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                       CupertinoSwitch(
                                         value: _isPublic,
                                         activeColor: primaryColor,
-                                        onChanged: (value) {
+                                        onChanged: (value) async {
+                                          final planStatus = await _planService
+                                              .publicizePlan(widget.planId);
                                           setState(() {
-                                            _isPublic = value;
+                                            _isPublic = planStatus;
+                                            _isEnableToShare = _isPublic && _planDetail!.status != 'READY';
                                           });
                                         },
                                       ),
@@ -511,7 +519,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                       _planDetail!.schedule,
                                                   startDate:
                                                       _planDetail!.startDate!,
-                                                  endDate: _planDetail!.endDate!,
+                                                  endDate:
+                                                      _planDetail!.endDate!,
                                                 ),
                                               ),
                                             ],
@@ -629,7 +638,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                           ],
                         )),
                       ),
-                      buildNewFooter()
+                      if (_planDetail!.memberLimit != 1) buildNewFooter()
                     ],
                   )));
   }
@@ -646,7 +655,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           builder: (ctx) => SharePlanScreen(
                 planMembers: _planMembers,
                 isEnableToJoin: widget.isEnableToJoin,
-                locationName: widget.location.name,
                 planId: widget.planId,
               )));
     } else {
@@ -740,10 +748,38 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     Expanded(
                       child: ElevatedButton.icon(
                         icon: const Icon(Icons.share),
-                        onPressed: onShare,
-                        style: elevatedButtonStyle,
+                        onPressed: _isEnableToShare ?  onShare :() {
+                          
+                        },
+                        style: _isEnableToShare ?
+                         elevatedButtonStyle:elevatedButtonStyle.copyWith(
+                          backgroundColor: MaterialStatePropertyAll(Colors.grey.withOpacity(0.5),),
+                          foregroundColor:const MaterialStatePropertyAll(Colors.grey)
+                         ),
                         label: const Text(
-                          "Chia sẻ kế hoạch",
+                          "Mời",
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                      ),
+                    ),
+                    if(_isEnableToShare)
+                    SizedBox(
+                      width: 1.h,
+                    ),
+                    if(_isEnableToShare)
+                    Expanded(
+                      child: ElevatedButton.icon(
+                        icon: const Icon(
+                          Icons.check_circle_outline,
+                          size: 28,
+                        ),
+                        onPressed: onConfirmMember,
+                        style: elevatedButtonStyle.copyWith(
+                            backgroundColor:
+                                MaterialStatePropertyAll(Colors.blue)),
+                        label: const Text(
+                          "Chốt",
                           style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
@@ -784,16 +820,38 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         'status': false,
         'message': 'Đã đủ số lượng thành viên của chuyến đi'
       };
-    } else if (_planDetail!.orders != null && _planDetail!.orders!.isNotEmpty) {
-      if (_planDetail!.orders!.any((element) => element.createdAt
-          .add(const Duration(hours: 72))
-          .isAfter(DateTime.now()))) {
-        return {
-          'status': false,
-          'message': 'Kế hoạch có đơn hàng đang trong thời gian xác nhậnß'
-        };
-      }
     }
+    // else if (_planDetail!.orders != null && _planDetail!.orders!.isNotEmpty) {
+    //   if (_planDetail!.orders!.any((element) => element.createdAt
+    //       .add(const Duration(hours: 72))
+    //       .isAfter(DateTime.now()))) {
+    //     return {
+    //       'status': false,
+    //       'message': 'Kế hoạch có đơn hàng đang trong thời gian xác nhậnß'
+    //     };
+    //   }
+    // }
     return enableToShare;
+  }
+
+  onConfirmMember() async {
+    final rs = await _planService.confirmMember(widget.planId);
+    if (rs != 0) {
+      AwesomeDialog(
+        context: context,
+        animType: AnimType.rightSlide,
+        dialogType: DialogType.success,
+        title: 'Đã chốt số lượng thành viên của chuyến đi',
+        titleTextStyle:
+            const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        padding: const EdgeInsets.all(12),
+      ).show();
+      Future.delayed(const Duration(milliseconds: 1500), () {
+        Navigator.of(context).pop();
+        setState(() {
+          _isEnableToShare = false;
+        });
+      });
+    }
   }
 }

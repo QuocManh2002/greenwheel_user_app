@@ -1,4 +1,4 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -22,15 +22,11 @@ class BaseInformationScreen extends StatefulWidget {
 
 class _BaseInformationState extends State<BaseInformationScreen> {
   int _selectedCombo = 0;
-  int _selectedQuantity = 1;
   late FixedExtentScrollController _scrollController;
   bool isWarning = false;
   ComboDate? _suggestComboDate;
   DateTime? _focusedDay;
   DateTime? _selectedDate;
-  CalendarFormat _calendarFormat = CalendarFormat.month;
-  DateTime? _rangeStart;
-  DateTime? _rangeEnd;
   bool _isSelecting = false;
   TextEditingController _memberController = TextEditingController();
 
@@ -90,7 +86,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
     sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id - 1);
     if (member != null) {
       setState(() {
-        _selectedQuantity = member;
+        _memberController.text = member.toString();
       });
     } else {
       sharedPreferences.setInt('plan_number_of_member', 1);
@@ -214,7 +210,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(
-            height: 3.h,
+            height: 2.h,
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -233,8 +229,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                   height: 5.h,
                   child: defaultTextFormField(
                       maxLength: 2,
-                      
-                      padding:const EdgeInsets.all(16),
+                      padding: const EdgeInsets.all(16),
                       onTap: () {
                         setState(() {
                           _isSelecting = false;
@@ -301,52 +296,9 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                   icon: const Icon(Icons.add)),
             ],
           ),
-          // if (int.parse(_memberController.text) > 1)
-          //   Column(
-          //     children: [
-          //       SizedBox(
-          //         height: 4.h,
-          //       ),
-          //       const Text(
-          //         'Ngày chốt số lượng thành viên',
-          //         style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          //       ),
-          //       SizedBox(
-          //         height: 2.h,
-          //       ),
-          //       Padding(
-          //         padding: const EdgeInsets.symmetric(horizontal: 12),
-          //         child: TableCalendar(
-          //           locale: 'vi_VN',
-          //           rangeStartDay: _focusedDay,
-          //           currentDay: _focusedDay,
-          //           focusedDay: _focusedDay!,
-          //           selectedDayPredicate: (day) =>
-          //               isSameDay(_selectedDate, day),
-          //           calendarFormat: _calendarFormat,
-          //           onDaySelected: _onDaySelected,
-          //           firstDay: DateTime.now(),
-          //           lastDay: DateTime.now().add(const Duration(days: 830)),
-          //           calendarStyle: const CalendarStyle(
-          //             rangeStartDecoration: BoxDecoration(
-          //                 color: primaryColor, shape: BoxShape.circle),
-          //             outsideDaysVisible: false,
-          //             todayTextStyle: TextStyle(color: Colors.black),
-          //             selectedDecoration: BoxDecoration(
-          //                 color: primaryColor, shape: BoxShape.circle),
-          //             todayDecoration: BoxDecoration(
-          //                 shape: BoxShape.circle, color: Colors.transparent),
-          //           ),
-          //           onPageChanged: (focusedDay) {
-          //             _focusedDay = focusedDay;
-          //           },
-          //         ),
-          //       ),
-          //       SizedBox(
-          //         height: 6.h,
-          //       )
-          //     ],
-          //   )
+          SizedBox(
+            height: 2.h,
+          ),
         ],
       ),
     );

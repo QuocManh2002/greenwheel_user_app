@@ -1,26 +1,20 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/create_schedule_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/base_information_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/select_start_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_base_info_dialog.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
@@ -57,15 +51,14 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _budgetController = TextEditingController();
 
-  Future<bool> createDraftPlan(int numOfExpPeriod, DateTime departureDate,
+  Future<int> createDraftPlan(int numOfExpPeriod, DateTime departureDate,
       DateTime endDate, int numberOfMember) async {
-    var duration = sharedPreferences.getDouble('plan_duration_value');
     var startDate =
         DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     var closeRegDate =
         DateTime.parse(sharedPreferences.getString('plan_closeRegDate')!);
     // departureDate.add(Duration(seconds: (duration! * 3600).ceil()));
-    return await _planService.createPlanDraft(PlanCreate(
+    return await _planService.createDraftPlan(PlanCreate(
         numOfExpPeriod: numOfExpPeriod,
         locationId: widget.location.id,
         startDate: startDate,
@@ -128,56 +121,62 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     setState(() {
       switch (_currentStep) {
         case 0:
-          _stepperText = 'Thông tin cơ bản';
+          _stepperText = 'Thông tin chuyến đi';
           _stepperNumber = 1;
           activePage = BaseInformationScreen(
             location: widget.location,
           );
           break;
         case 1:
-          _stepperText = 'Thông tin cơ bản';
-          _stepperNumber = 1;
-
+          _stepperText = 'Thông tin chuyến đi';
+          _stepperNumber = 2;
           activePage = SelectStartLocationScreen(
             location: widget.location,
           );
           break;
         case 2:
-          _stepperText = 'Lên lịch trình';
-          _stepperNumber = 2;
-
-          widget.schedule == null
-              ? activePage = CreatePlanScheduleScreen(
-                  isCreate: widget.isCreate,
-                  isClone: false,
-                )
-              : activePage = CreatePlanScheduleScreen(
-                  isCreate: widget.isCreate,
-                  schedule: widget.schedule,
-                  isClone: true,
-                );
-          break;
-        case 3:
-          _stepperText = 'Liên lạc khẩn cấp';
+          _stepperText = 'Thông tin chuyến đi';
           _stepperNumber = 3;
-          activePage = SelectEmergencyService(
-              location: widget.location,
-              planId: sharedPreferences.getInt('planId')!);
-          break;
-        case 4:
-          _stepperText = 'Hoàn tất kế hoạch';
-          _stepperNumber = 4;
           activePage = SelectPlanName(
             location: widget.location,
             isCreate: widget.isCreate,
             isClone: widget.schedule == null ? false : true,
           );
+        case 3:
+          _stepperText = 'Liên lạc khẩn cấp';
+          _stepperNumber = 4;
+          activePage = SelectEmergencyService(
+              location: widget.location,
+              planId: sharedPreferences.getInt('planId')!);
+          break;
+        case 4:
+          _stepperText = 'Lên lịch trình';
+          _stepperNumber = 5;
+          widget.schedule == null
+              ? activePage = CreatePlanScheduleScreen(
+                  isCreate: widget.isCreate,
+                  location: widget.location,
+                  isClone: false,
+                )
+              : activePage = CreatePlanScheduleScreen(
+                  isCreate: widget.isCreate,
+                  schedule: widget.schedule,
+                  location: widget.location,
+                  isClone: true,
+                );
           break;
         case 5:
-          _stepperText = 'Tạo khoản thu';
+          _stepperText = 'Dịch vụ';
           _stepperNumber = 5;
-          activePage =
-              SelectServiceScreen(location: widget.location, isClone: false);
+          activePage = SelectServiceScreen(
+            isOrder: sharedPreferences.getInt('plan_number_of_member')! == 1,
+            location: widget.location,
+            isClone: widget.schedule == null ? false : true,
+            memberLimit: sharedPreferences.getInt('plan_number_of_member')!,
+            completePlan: () async {
+              return 1;
+            },
+          );
           break;
       }
     });
@@ -254,7 +253,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
               padding: EdgeInsets.symmetric(horizontal: 2.h),
               child: Row(
                 children: [
-                  if (_currentStep > 0 && _currentStep < 2)
+                  if (_currentStep > 0 && _currentStep < 5)
                     Expanded(
                       child: ElevatedButton(
                           style: elevatedButtonStyle.copyWith(
@@ -282,7 +281,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                             style: TextStyle(fontSize: 22),
                           )),
                     ),
-                  if (_currentStep > 0 && _currentStep < 2)
+                  if (_currentStep > 0 && _currentStep < 5)
                     SizedBox(
                       width: 2.h,
                     ),
@@ -310,11 +309,31 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                       btnOkOnPress: () {})
                                   .show();
                             }
-                            if (_currentStep == 1 &&
-                                sharedPreferences
-                                        .getDouble('plan_duration_value') ==
-                                    null) {
-                              handleValidationSelectLocationScreen();
+                            if (_currentStep == 1) {
+                              if (sharedPreferences
+                                      .getDouble('plan_duration_value') ==
+                                  null) {
+                                handleValidationSelectLocationScreen();
+                              } else {
+                                final rs = await _planService.createDraftPlan(
+                                    PlanCreate(
+                                        locationId: widget.location.id,
+                                        latitude: sharedPreferences
+                                            .getDouble('plan_start_lat')!,
+                                        longitude: sharedPreferences
+                                            .getDouble('plan_start_lng')!,
+                                        memberLimit: sharedPreferences
+                                            .getInt('plan_number_of_member')!,
+                                        schedule: '',
+                                        numOfExpPeriod: sharedPreferences
+                                            .getInt('numOfExpPeriod')!));
+                                if (rs != 0) {
+                                  setState(() {
+                                    _currentStep++;
+                                  });
+                                  getCurrentPage();
+                                }
+                              }
                             }
                             // else if (_currentStep == 1 &&
                             //     !checkValidStartDateTime()) {
@@ -417,6 +436,58 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                             //       .show();
                             // }
                             else if (_currentStep == 2) {
+                              setState(() {
+                                _currentStep++;
+                              });
+                              getCurrentPage();
+                            } else if (_currentStep == 3) {
+                              List<String>? selectedEmergencyIndexList =
+                                  sharedPreferences
+                                      .getStringList('selectedIndex');
+                              if (selectedEmergencyIndexList == null ||
+                                  selectedEmergencyIndexList.isEmpty) {
+                                AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.warning,
+                                  body: const Center(
+                                    child: Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: Text(
+                                        'Bạn phải chọn ít nhất một liên lạc khẩn cấp cho chuyến đi',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                  btnOkColor: Colors.orange,
+                                  btnOkText: 'Ok',
+                                  btnOkOnPress: () {},
+                                ).show();
+                              } else {
+                                // final rs =
+                                // await _planService.secondPhaseCreatePlan(
+                                //     PlanCreate(
+                                //       name: sharedPreferences
+                                //           .getString('plan_name'),
+                                //       savedContacts: json
+                                //           .decode(
+                                //               sharedPreferences.getString(
+                                //                   'plan_saved_emergency')!)
+                                //           .toString(),
+                                //       departureDate: DateTime.parse(
+                                //           sharedPreferences.getString(
+                                //               'plan_departureDate')!),
+                                //     ),
+                                //     sharedPreferences.getInt('planId')!);
+
+                                setState(() {
+                                  _currentStep += 1;
+                                });
+                                getCurrentPage();
+                              }
+                            } else if (_currentStep == 4) {
                               if (checkValidNumberOfActivity()) {
                                 AwesomeDialog(
                                         context: context,
@@ -457,10 +528,32 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                     btnOkText: 'Xác nhận',
                                     btnOkColor: Colors.blue,
                                     btnOkOnPress: () {
-                                      setState(() {
-                                        _currentStep++;
-                                      });
-                                      getCurrentPage();
+                                      if (sharedPreferences.getInt(
+                                              'plan_number_of_member')! ==
+                                          1) {
+                                        completePlan();
+                                      }
+                                      Navigator.of(context).pushAndRemoveUntil(
+                                          MaterialPageRoute(
+                                              builder: (ctx) =>
+                                                  SelectServiceScreen(
+                                                    isOrder: sharedPreferences
+                                                            .getInt(
+                                                                'plan_number_of_member')! ==
+                                                        1,
+                                                    location: widget.location,
+                                                    isClone:
+                                                        widget.schedule == null
+                                                            ? false
+                                                            : true,
+                                                    memberLimit:
+                                                        sharedPreferences.getInt(
+                                                            'plan_number_of_member')!,
+                                                    completePlan: () async {
+                                                      return 1;
+                                                    },
+                                                  )),
+                                          (route) => false);
                                     },
                                     btnCancelColor: Colors.orange,
                                     btnCancelText: 'Chỉnh sửa',
@@ -490,136 +583,123 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                       ),
                                     )).show();
                               }
-                            } else if (_currentStep == 3) {
-                              List<String>? selectedEmergencyIndexList =
-                                  sharedPreferences
-                                      .getStringList('selectedIndex');
-                              if (selectedEmergencyIndexList == null ||
-                                  selectedEmergencyIndexList.isEmpty) {
-                                AwesomeDialog(
-                                  context: context,
-                                  dialogType: DialogType.warning,
-                                  body: const Center(
-                                    child: Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: Text(
-                                        'Bạn phải chọn ít nhất một liên lạc khẩn cấp cho chuyến đi',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                                  btnOkColor: Colors.orange,
-                                  btnOkText: 'Ok',
-                                  btnOkOnPress: () {},
-                                ).show();
-                              } else {
-                                // showBudgetDialog();
-                                setState(() {
-                                  _currentStep += 1;
-                                });
-                                getCurrentPage();
-                              }
-                            } else if (_currentStep == 4) {
-                              var memberlimit = sharedPreferences
-                                      .getInt('plan_number_of_member') ??
-                                  1;
-                              var rs = await _planService.createPlanDraft(
-                                  PlanCreate(
-                                      locationId: widget.location.id,
-                                      latitude: sharedPreferences
-                                          .getDouble('plan_start_lat')!,
-                                      longitude: sharedPreferences
-                                          .getDouble('plan_start_lng')!,
-                                      memberLimit: memberlimit,
-                                      schedule: sharedPreferences
-                                              .getString('plan_schedule') ??
-                                          [].toString(),
-                                      savedContacts:
-                                          sharedPreferences.getString(
-                                                  'plan_saved_emergency') ??
-                                              [].toString(),
-                                      gcoinBudget: sharedPreferences
-                                              .getInt('plan_budget') ??
-                                          0,
-                                      numOfExpPeriod: sharedPreferences
-                                          .getInt('numOfExpPeriod')!));
-                              if (rs) {
-                                if (memberlimit == 1) {
-                                  final complete = await completePlan();
-                                  if (complete != 0) {
-// ignore: use_build_context_synchronously
-                                    AwesomeDialog(
-                                      context: context,
-                                      animType: AnimType.bottomSlide,
-                                      dialogType: DialogType.question,
-                                      padding: const EdgeInsets.all(16),
-                                      title:
-                                          'Bạn có muốn đặt thêm các dịch vụ cho chuyến đi này không?',
-                                      titleTextStyle: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                      ),
-                                      btnOkColor: Colors.orange,
-                                      btnOkText: 'Có',
-                                      btnOkOnPress: () {
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (ctx) =>
-                                                    SelectServiceScreen(
-                                                      location: widget.location,
-                                                      isClone: false,
-                                                      isOrder: true,
-                                                    )));
-                                      },
-                                      btnCancelColor: Colors.blue,
-                                      btnCancelText: 'Không',
-                                      btnCancelOnPress: () {
-                                        sharedPreferences.setInt(
-                                            'plan_budget', 0);
-                                        completePlan();
-                                      },
-                                    ).show();
-                                  }
-                                } else {
-                                  // ignore: use_build_context_synchronously
-                                  AwesomeDialog(
-                                          context: context,
-                                          dialogType: DialogType.question,
-                                          title:
-                                              'Bạn có muốn tạo các đơn hàng mẫu cho kế hoạch không?',
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 12),
-                                          titleTextStyle: const TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold),
-                                          desc:
-                                              'Việc này sẽ giúp bạn ước chừng được khoản chi tiêu cho kế hoạch này',
-                                          descTextStyle: const TextStyle(
-                                              fontSize: 16, color: Colors.grey),
-                                          btnOkColor: Colors.orange,
-                                          btnOkText: 'Có',
-                                          btnOkOnPress: () {
-                                            Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (ctx) =>
-                                                        SelectServiceScreen(
-                                                            location:
-                                                                widget.location,
-                                                            isClone: false)));
-                                          },
-                                          btnCancelColor: Colors.blue,
-                                          btnCancelOnPress: () {
-                                            sharedPreferences.setInt(
-                                                'plan_budget', 0);
-                                            completePlan();
-                                          },
-                                          btnCancelText: 'Không')
-                                      .show();
-                                }
-                              }
+
+//                               var memberlimit = sharedPreferences
+//                                       .getInt('plan_number_of_member') ??
+//                                   1;
+//                               var rs = await _planService.createPlanDraft(
+//                                   PlanCreate(
+//                                       locationId: widget.location.id,
+//                                       latitude: sharedPreferences
+//                                           .getDouble('plan_start_lat')!,
+//                                       longitude: sharedPreferences
+//                                           .getDouble('plan_start_lng')!,
+//                                       memberLimit: memberlimit,
+//                                       schedule: sharedPreferences
+//                                               .getString('plan_schedule') ??
+//                                           [].toString(),
+//                                       savedContacts:
+//                                           sharedPreferences.getString(
+//                                                   'plan_saved_emergency') ??
+//                                               [].toString(),
+//                                       gcoinBudget: sharedPreferences
+//                                               .getInt('plan_budget') ??
+//                                           0,
+//                                       numOfExpPeriod: sharedPreferences
+//                                           .getInt('numOfExpPeriod')!));
+//                               if (rs) {
+//                                 if (memberlimit == 1) {
+//                                   final complete = await completePlan();
+//                                   if (complete != 0) {
+// // ignore: use_build_context_synchronously
+//                                     AwesomeDialog(
+//                                       context: context,
+//                                       animType: AnimType.bottomSlide,
+//                                       dialogType: DialogType.question,
+//                                       padding: const EdgeInsets.all(16),
+//                                       title:
+//                                           'Bạn có muốn đặt thêm các dịch vụ cho chuyến đi này không?',
+//                                       titleTextStyle: const TextStyle(
+//                                         fontSize: 18,
+//                                         fontWeight: FontWeight.bold,
+//                                       ),
+//                                       btnOkColor: Colors.orange,
+//                                       btnOkText: 'Có',
+//                                       btnOkOnPress: () {
+//                                         Navigator.of(context).push(
+//                                             MaterialPageRoute(
+//                                                 builder: (ctx) =>
+//                                                     SelectServiceScreen(
+//                                                       location: widget.location,
+//                                                       isClone: false,
+//                                                       isOrder: true,
+//                                                       memberLimit: memberlimit,
+//                                                       completePlan:
+//                                                           completePlan,
+//                                                     )));
+//                                       },
+//                                       btnCancelColor: Colors.blue,
+//                                       btnCancelText: 'Không',
+//                                       btnCancelOnPress: () {
+//                                         sharedPreferences.setInt(
+//                                             'plan_budget', 0);
+//                                         completePlan();
+//                                       },
+//                                     ).show();
+//                                   }
+//                                 } else {
+//                                   // ignore: use_build_context_synchronously
+//                                   AwesomeDialog(
+//                                           context: context,
+//                                           dialogType: DialogType.question,
+//                                           title:
+//                                               'Bạn có muốn tạo các đơn hàng mẫu cho kế hoạch không?',
+//                                           padding: const EdgeInsets.symmetric(
+//                                               horizontal: 12),
+//                                           titleTextStyle: const TextStyle(
+//                                               fontSize: 18,
+//                                               fontWeight: FontWeight.bold),
+//                                           desc:
+//                                               'Việc này sẽ giúp bạn ước chừng được khoản chi tiêu cho kế hoạch này',
+//                                           descTextStyle: const TextStyle(
+//                                               fontSize: 16, color: Colors.grey),
+//                                           btnOkColor: Colors.orange,
+//                                           btnOkText: 'Có',
+//                                           btnOkOnPress: () {
+//                                             Navigator.of(context).push(
+//                                                 MaterialPageRoute(
+//                                                     builder: (ctx) =>
+//                                                         SelectServiceScreen(
+//                                                             completePlan:
+//                                                                 completePlan,
+//                                                             memberLimit:
+//                                                                 memberlimit,
+//                                                             location:
+//                                                                 widget.location,
+//                                                             isClone: false)));
+//                                           },
+//                                           btnCancelColor: Colors.blue,
+//                                           btnCancelOnPress: () async {
+//                                             sharedPreferences.setInt(
+//                                                 'plan_budget', 0);
+//                                             final rs = await completePlan();
+//                                             if (rs != 0) {
+//                                               // ignore: use_build_context_synchronously
+//                                               Navigator.of(context)
+//                                                   .pushAndRemoveUntil(
+//                                                 MaterialPageRoute(
+//                                                     builder: (ctx) =>
+//                                                         const TabScreen(
+//                                                           pageIndex: 1,
+//                                                         )),
+//                                                 (route) => false,
+//                                               );
+//                                             }
+//                                           },
+//                                           btnCancelText: 'Không')
+//                                       .show();
+//                                 }
+                              // }
                             } else {
                               setState(() {
                                 _currentStep++;
@@ -628,7 +708,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                             }
                           },
                           child: Text(
-                            _currentStep != 4 ? 'Tiếp tục' : 'Hoàn tất',
+                            _currentStep != 5 ? 'Tiếp tục' : 'Hoàn tất',
                             style: const TextStyle(fontSize: 22),
                           )),
                     ),
@@ -690,23 +770,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
   }
 
   bool checkValidNumberOfActivity() {
-    // final startDateText = sharedPreferences.getString('plan_start_date');
-    // final _startDate = DateTime.parse(startDateText!);
-    // final endDateText = sharedPreferences.getString('plan_end_date');
-    // final _endDate = DateTime.parse(endDateText!);
     String _scheduleText = sharedPreferences.getString('plan_schedule')!;
     final List<dynamic> _schedule = json.decode(_scheduleText);
-    // print(_endDate.difference(DateTime(_startDate.year, _startDate.month, _startDate.day)).inDays +1);
-    // if (_schedule.length >
-    //     _endDate
-    //             .difference(
-    //                 DateTime(_startDate.year, _startDate.month, _startDate.day))
-    //             .inDays +
-    //         1) {
-    //   _schedule.remove(_schedule[0]);
-    //   sharedPreferences.setString('plan_schedule', json.encode(_schedule));
-    // }
-    return _schedule.any((element) => element.length == 0);
+    return _schedule.any((element) => element['events'].length == 0);
   }
 
   Widget buildConfirmScheduleItem(int index) {
@@ -810,20 +876,24 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
       );
 
   Future<int> completePlan() async {
-    var rs = await _planService.createPlan(
+    var rs = await _planService.completeCreatePlan(
         PlanCreate(
-            locationId: widget.location.id,
-            latitude: sharedPreferences.getDouble('plan_start_lat')!,
-            longitude: sharedPreferences.getDouble('plan_start_lng')!,
-            memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
-            schedule:
-                sharedPreferences.getString('plan_schedule') ?? [].toString(),
-            name: sharedPreferences.getString('plan_name'),
-            gcoinBudget: sharedPreferences.getInt('plan_budget') ?? 0,
-            startDate:
-                DateTime.parse(sharedPreferences.getString('plan_start_date')!),
-            departureDate: DateTime.parse(
-                sharedPreferences.getString('plan_departureDate')!)),
+          locationId: widget.location.id,
+          name: sharedPreferences.getString('plan_name'),
+          latitude: sharedPreferences.getDouble('plan_start_lat')!,
+          longitude: sharedPreferences.getDouble('plan_start_lng')!,
+          memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
+          savedContacts: json
+              .decode(sharedPreferences.getString('plan_saved_emergency')!)
+              .toString(),
+          startDate:
+              DateTime.parse(sharedPreferences.getString('plan_start_date')!),
+          departureDate: DateTime.parse(
+              sharedPreferences.getString('plan_departureDate')!),
+          schedule:
+              sharedPreferences.getString('plan_schedule') ?? [].toString(),
+          gcoinBudget: sharedPreferences.getInt('plan_budget') ?? 0,
+        ),
         sharedPreferences.getInt('planId')!);
     return rs;
     // if (rs != 0) {

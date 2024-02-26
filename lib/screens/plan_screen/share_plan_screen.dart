@@ -29,11 +29,9 @@ class SharePlanScreen extends StatefulWidget {
   const SharePlanScreen(
       {super.key,
       required this.planId,
-      required this.locationName,
       required this.planMembers,
       required this.isEnableToJoin});
   final int planId;
-  final String locationName;
   final bool isEnableToJoin;
   final List<PlanMemberViewModel> planMembers;
 
@@ -267,7 +265,6 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                     TempPlan(
                       planId: widget.planId,
                       isEnableToJoin: widget.isEnableToJoin,
-                      locationName: widget.locationName,
                     ),
                     "plan"),
                 version: QrVersions.auto,

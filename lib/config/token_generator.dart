@@ -14,7 +14,6 @@ class TokenGenerator {
           {
             'planId': encoded.planId,
             'isEnableToJoin': encoded.isEnableToJoin,
-            'locationName': encoded.locationName,
           },
         );
       } else {

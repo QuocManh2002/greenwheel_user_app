@@ -17,7 +17,6 @@ class LocationViewModel {
   ProvinceViewModel province;
   int? suggestedTripLength;
   List<EmergencyContactViewModel>? emergencyContacts;
-  List<dynamic>? templateEvents;
   List<CommentViewModel>? comments;
 
   LocationViewModel(
@@ -34,8 +33,7 @@ class LocationViewModel {
       required this.province,
       this.comments,
       this.suggestedTripLength,
-      this.emergencyContacts,
-      this.templateEvents});
+      this.emergencyContacts,});
 
   factory LocationViewModel.fromJson(Map<String, dynamic> json) =>
       LocationViewModel(
@@ -52,7 +50,5 @@ class LocationViewModel {
           suggestedTripLength:1,
           province: ProvinceViewModel.fromJson(json["province"]),
           comments: List<CommentViewModel>.from(json['comments'].map((e) => CommentViewModel.fromJson(e))).toList(),
-          emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
-          templateEvents: json['templateEvents']);
-
+          emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),);
 }

@@ -41,7 +41,6 @@ class PlanCard extends StatelessWidget {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (ctx) => DetailPlanNewScreen(
                   planId: plan.id,
-                  location: plan.location,
                   isEnableToJoin: false,
                 )));
       },

@@ -33,6 +33,7 @@ class PlanDetail {
   int numOfExpPeriod;
   List<PlanMemberViewModel>? members;
   int? gcoinBudgetPerCapita;
+  bool isPublic;
 
   PlanDetail(
       {required this.id,
@@ -53,6 +54,7 @@ class PlanDetail {
       required this.startLocationLng,
       required this.numOfExpPeriod,
       required this.departureDate,
+      required this.isPublic,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -61,7 +63,7 @@ class PlanDetail {
         departureDate: DateTime.parse(json['departDate']),
         startDate: DateTime.parse(json["startDate"]),
         endDate: DateTime.parse(json["endDate"]),
-        schedule: json["proposedSchedule"],
+        schedule: json["schedule"],
         memberLimit: json["memberLimit"],
         status: json["status"],
         locationName: json["destination"]["name"],
@@ -69,6 +71,7 @@ class PlanDetail {
         imageUrls: json["destination"]["imageUrls"],
         joinMethod: json["joinMethod"],
         numOfExpPeriod: json['periodCount'],
+        isPublic: json['isPublic'],
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'],
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
         startLocationLng: json["departure"]["coordinates"][0].toDouble(),

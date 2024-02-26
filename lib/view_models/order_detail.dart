@@ -13,12 +13,14 @@ class OrderDetailViewModel {
     String productName;
     int quantity;
     double price;
+    double unitPrice;
 
     OrderDetailViewModel({
         required this.id,
         required this.productName,
         required this.quantity,
         required this.price,
+        required this.unitPrice
     });
 
     factory OrderDetailViewModel.fromJson(Map<String, dynamic> json) => OrderDetailViewModel(
@@ -26,6 +28,7 @@ class OrderDetailViewModel {
         productName: json["product"]["name"],
         quantity: json["quantity"],
         price: double.parse(json["price"].toString()),
+        unitPrice: double.parse(json['product']['price'].toString())
     );
 
     Map<String, dynamic> toJson() => {

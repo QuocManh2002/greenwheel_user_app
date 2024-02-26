@@ -754,8 +754,8 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   paymentStart() async {
-    String? check = await orderService.addOrder(convertCart());
-    if (check != null) {
+    int check = await orderService.addOrder(convertCart());
+    if (check != 0) {
       // ignore: use_build_context_synchronously
       AwesomeDialog(
         context: context,
@@ -796,6 +796,7 @@ class _CartScreenState extends State<CartScreen> {
           id: item.product.id,
           productName: item.product.name,
           quantity: item.qty,
+          unitPrice: item.product.price.toDouble(),
           price: item.product.price.toDouble()));
     }
     // OrderViewModel newOrder = OrderViewModel(
@@ -833,7 +834,7 @@ class _CartScreenState extends State<CartScreen> {
         dialogType: DialogType.success,
         animType: AnimType.topSlide,
         showCloseIcon: true,
-        title: "Thanh toán thành công",
+        title: widget.isOrder!= null && widget.isOrder! ?  "Thanh toán thành công" :"Thêm đơn hàng mẫu thành công",
         desc: "Ấn tiếp tục để trở về",
         btnOkText: "Tiếp tục",
         btnOkOnPress: () {

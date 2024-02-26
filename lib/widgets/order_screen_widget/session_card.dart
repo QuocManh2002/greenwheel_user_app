@@ -3,8 +3,6 @@ import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -19,6 +17,7 @@ class SessionCard extends StatelessWidget {
     required this.startDate,
     required this.callbackFunction,
     required this.endDate,
+    this.isOrder
   });
   final Session session;
   final DateTime startDate;
@@ -28,6 +27,7 @@ class SessionCard extends StatelessWidget {
   final LocationViewModel location;
   final int numberOfMember;
   final void Function() callbackFunction;
+  final bool? isOrder;
 
   @override
   Widget build(BuildContext context) {
@@ -49,6 +49,7 @@ class SessionCard extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (ctx) => ServiceMenuScreen(
+                    isOrder: isOrder,
                     startDate: startDate,
                     endDate: endDate,
                     numberOfMember: 0,

@@ -47,6 +47,8 @@ class Utils {
     sharedPreferences.remove('plan_departureDate');
     sharedPreferences.remove('plan_closeRegDate');
     sharedPreferences.remove('plan_budget');
+    sharedPreferences.remove('plan_name');
+    sharedPreferences.remove('plan_start_address');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {

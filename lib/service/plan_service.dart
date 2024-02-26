@@ -19,43 +19,10 @@ class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
 
-  Future<int> createPlan(PlanCreate model, int planId) async {
-    print(model.schedule);
-    try {
-      QueryResult result = await client.mutate(MutationOptions(
-        fetchPolicy: FetchPolicy.noCache,
-        document: gql("""
-mutation{
-  completeDraftPlan(dto: {
-    departDate:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
-    gcoinBudgetPerCapita:${model.gcoinBudget}
-    id:$planId
-    name:"${model.name}"
-    startDate:"${model.startDate!.year}-${model.startDate!.month}-${model.startDate!.day}"
-  }){
-    id
-  }
-}
-"""),
-      ));
-      if (result.hasException) {
-        throw Exception(result.exception);
-      } else {
-        var rstext = result.data!;
-        // bool isSuccess = rstext['createPlanDraft']['result']['success'];
-        int planId = rstext['completeDraftPlan']['id'];
-        sharedPreferences.setInt("planId", planId);
-        return planId;
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
 
-  Future<bool> createPlanDraft(PlanCreate model) async {
+  Future<int> createDraftPlan(PlanCreate model) async {
+    
     try {
-var schedule = json.decode(model.schedule);
-print(schedule.toString());
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
@@ -65,8 +32,6 @@ mutation{
     destinationId:${model.locationId}
     memberLimit:${model.memberLimit}
     periodCount:${model.numOfExpPeriod}
-    proposedSchedule:$schedule
-    savedContacts:${model.savedContacts}
   }){
     id
   }
@@ -78,56 +43,226 @@ mutation{
         throw Exception(result.exception);
       } else {
         var rstext = result.data!;
-        // bool isSuccess = rstext['createPlanDraft']['result']['success'];
         int planId = rstext['createDraftPlan']['id'];
         sharedPreferences.setInt("planId", planId);
-        return true;
+        return planId;
       }
     } catch (error) {
       throw Exception(error);
     }
   }
 
+//   Future<int> secondPhaseCreatePlan(PlanCreate model, int planId) async {
+//     try {
+//       QueryResult result = await client.mutate(MutationOptions(
+//         fetchPolicy: FetchPolicy.noCache,
+//         document: gql("""
+//   mutation{
+//   secondPhaseCreatePlan(dto: {
+//     id:$planId
+//     name:"${model.name}"
+//     savedContacts:${model.savedContacts}
+//   }){
+//     id
+//   }
+// }
+// """),
+//       ));
+
+//       if (result.hasException) {
+//         throw Exception(result.exception);
+//       } else {
+//         var rstext = result.data!;
+//         int planId = rstext['secondPhaseCreatePlan']['id'];
+//         return planId;
+//       }
+//     } catch (error) {
+//       throw Exception(error);
+//     }
+//   }
+
+// mutation{
+//   completeCreatePlan(dto: {
+//     departDate: ""
+//     gcoinBudgetPerCapita: 1
+//     id:1
+//     name:"name"
+//     savedContacts:[]
+//     schedule:[]
+//     surcharges:[]
+//     travelDuration:"04:00"
+//   }){
+//     id
+//   }
+// }
+
+Future<int> completeCreatePlan(PlanCreate model, int planId) async {
+
+    try {
+      DateTime _travelDuration = DateTime(0,0,0).add(Duration(seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600).toInt()));
+      var schedule = json.decode(model.schedule!);
+        print("""
+  mutation{
+  completeCreatePlan(dto: {
+    travelDuration:"${_travelDuration.hour.toString().length == 1 ? '0${_travelDuration.hour}':_travelDuration.hour}:${_travelDuration.minute.toString().length == 1? '0${_travelDuration.minute}' :_travelDuration.minute}"
+    gcoinBudgetPerCapita: ${model.gcoinBudget}
+    id:$planId
+    name:"${model.name}"
+    savedContacts:${model.savedContacts}
+    schedule:$schedule
+    departDate:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
+  }){
+    id
+  }
+}
+""");
+      QueryResult result = await client.mutate(MutationOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
+  mutation{
+  completeCreatePlan(dto: {
+    travelDuration:"${_travelDuration.hour.toString().length == 1 ? '0${_travelDuration.hour}':_travelDuration.hour}:${_travelDuration.minute.toString().length == 1? '0${_travelDuration.minute}' :_travelDuration.minute}"
+    gcoinBudgetPerCapita: ${model.gcoinBudget}
+    id:$planId
+    name:"${model.name}"
+    savedContacts:${model.savedContacts}
+    schedule:$schedule
+    departDate:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
+  }){
+    id
+  }
+}
+"""),
+      ));
+
+      if (result.hasException) {
+        throw Exception(result.exception);
+      } else {
+        var rstext = result.data!;
+        int planId = rstext['completeCreatePlan']['id'];
+        return planId;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+
+
+//   Future<int> createPlan(PlanCreate model, int planId) async {
+//     print(model.schedule);
+//     try {
+//       QueryResult result = await client.mutate(MutationOptions(
+//         fetchPolicy: FetchPolicy.noCache,
+//         document: gql("""
+// mutation{
+//   completeDraftPlan(dto: {
+//     departDate:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
+//     gcoinBudgetPerCapita:${model.gcoinBudget}
+//     id:$planId
+//     name:"${model.name}"
+//     startDate:"${model.startDate!.year}-${model.startDate!.month}-${model.startDate!.day}"
+//   }){
+//     id
+//   }
+// }
+// """),
+//       ));
+//       if (result.hasException) {
+//         throw Exception(result.exception);
+//       } else {
+//         var rstext = result.data!;
+//         // bool isSuccess = rstext['createPlanDraft']['result']['success'];
+//         int planId = rstext['completeDraftPlan']['id'];
+//         sharedPreferences.setInt("planId", planId);
+//         return planId;
+//       }
+//     } catch (error) {
+//       throw Exception(error);
+//     }
+//   }
+
+//   Future<bool> createPlanDraft(PlanCreate model) async {
+//     try {
+//       var schedule = json.decode(model.schedule!);
+//       print(schedule.toString());
+//       QueryResult result = await client.mutate(MutationOptions(
+//         fetchPolicy: FetchPolicy.noCache,
+//         document: gql("""
+// mutation{
+//   createDraftPlan(dto: {
+//     departure:[${model.longitude},${model.latitude}]
+//     destinationId:${model.locationId}
+//     memberLimit:${model.memberLimit}
+//     periodCount:${model.numOfExpPeriod}
+//     proposedSchedule:$schedule
+//     savedContacts:${model.savedContacts}
+//   }){
+//     id
+//   }
+// }
+// """),
+//       ));
+
+//       if (result.hasException) {
+//         throw Exception(result.exception);
+//       } else {
+//         var rstext = result.data!;
+//         // bool isSuccess = rstext['createPlanDraft']['result']['success'];
+//         int planId = rstext['createDraftPlan']['id'];
+//         sharedPreferences.setInt("planId", planId);
+//         return true;
+//       }
+//     } catch (error) {
+//       throw Exception(error);
+//     }
+//   }
+
   Future<List<OrderViewModel>> getOrderCreatePlan(int planId) async {
     try {
       QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""{
-  orders(where: { planId: { eq: $planId } }) {
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+{
+  plans(where: { id: { eq: $planId } }) {
     nodes {
-      id
-      planId
-      deposit
-      total
-      serveDateIndexes
-      note
-      createdAt
-      period
-      supplier{
+      orders {
         id
-        phone
-        name
-        imageUrl
-        address
-      }
-      details {
-        id
-        price
-        quantity
-        product {
+        planId
+        deposit
+        total
+        serveDateIndexes
+        note
+        createdAt
+        period
+        supplier {
+          id
+          phone
           name
-          type
+          imageUrl
+          address
+        }
+        details {
+          id
+          price
+          quantity
+          product {
+            name
+            type
+            price
+          }
         }
       }
     }
   }
 }
+
 """)));
 
       if (result.hasException) {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['orders']['nodes'];
+      List? res = result.data!['plans']['nodes'][0]['orders'];
       if (res == null || res.isEmpty) {
         return [];
       }
@@ -160,8 +295,9 @@ query GetPlanById(\$planId: Int){
       id
       startDate
       endDate
+      isPublic
       gcoinBudgetPerCapita
-      proposedSchedule {
+      schedule {
         events {
           shortDescription
           type
@@ -206,6 +342,7 @@ query GetPlanById(\$planId: Int){
           product {
             name
             type
+            price
           }
         }
       }
@@ -291,11 +428,6 @@ query GetPlanById(\$planId: Int){
             address
             type
           }
-            templateEvents{
-            type
-            shortDescription
-            description
-          }
           comments{
             id
             comment
@@ -361,8 +493,9 @@ query GetPlanById(\$planId: Int){
         for (final planItem in schedules[i]['events']) {
           // print(planItem['time']);
           item.add(PlanScheduleItem(
-            activityTime: int.parse(planItem['duration'].toString().substring(0, 2)),
-            shortDescription: planItem['shortDescription'],
+              activityTime:
+                  int.parse(planItem['duration'].toString().substring(0, 2)),
+              shortDescription: planItem['shortDescription'],
               // orderId: planItem['orderGuid'],
               type: schedule_item_types_vn[
                   schedule_item_types.indexOf(planItem['type'].toString())],
@@ -389,13 +522,14 @@ query GetPlanById(\$planId: Int){
     for (final schedule in list) {
       var items = [];
       for (final item in schedule.items) {
-        final type = schedule_item_types_vn.firstWhere((element) => element == item.type);
+        final type = schedule_item_types_vn
+            .firstWhere((element) => element == item.type);
         items.add({
-          'duration': 
-          // json.encode(DateFormat.Hms()
-          //     .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
-          //     .toString()),
-          json.encode("${item.activityTime}:00:00"),
+          'duration':
+              // json.encode(DateFormat.Hms()
+              //     .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
+              //     .toString()),
+              json.encode("${item.activityTime}:00:00"),
           // 'orderGuid': item.orderId == null ? null: json.encode(item.orderId),
           'description': json.encode(item.description),
           'shortDescription': json.encode(item.shortDescription),
@@ -403,9 +537,7 @@ query GetPlanById(\$planId: Int){
         });
         print(schedule_item_types[schedule_item_types_vn.indexOf(type)]);
       }
-      rs.add({
-        "events": items
-      });
+      rs.add({"events": items});
     }
     return rs;
   }
@@ -602,6 +734,50 @@ mutation{
       List<SuggestPlanViewModel> plans =
           res.map((plan) => SuggestPlanViewModel.fromJson(plan)).toList();
       return plans;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<bool> publicizePlan(int planId) async {
+    try {
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+mutation{
+  publicizePlan(planId: $planId){
+    id
+    isPublic
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      bool? res = result.data!['publicizePlan']['isPublic'];
+      return res!;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int> confirmMember(int planId) async {
+    try {
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+mutation{
+  confirmMembers(planId: $planId){
+    id
+    isPublic
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      int? res = result.data!['confirmMembers']['id'];
+      return res!;
     } catch (error) {
       throw Exception(error);
     }

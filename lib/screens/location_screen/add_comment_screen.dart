@@ -4,7 +4,6 @@ import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/comment_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:readmore/readmore.dart';
@@ -127,6 +126,7 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                           hinttext: 'Để lại bình luận, góp ý của bạn cho địa điểm này...',
                           maxline: 3,
                           minline: 3,
+                          maxLength: 95,
                           onValidate: (value) {
                             if (value!.length < 10) {
                               return "Bình luận của bạn phải từ 10 - 120 ký tự";

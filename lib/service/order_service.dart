@@ -22,7 +22,7 @@ class OrderService extends Iterable {
 //     id
 //   }
 // }
-  Future<String?> addOrder(OrderCreateViewModel order) async {
+  Future<int> addOrder(OrderCreateViewModel order) async {
     try {
       List<Map<String, dynamic>> details = order.details.map((detail) {
         return {
@@ -56,10 +56,7 @@ mutation{
         throw Exception(result.exception);
       }
 
-      final String? orderId = result.data?['createOrder']["id"];
-      if (orderId == null) {
-        return null;
-      }
+      final int orderId = result.data?['createOrder']["id"];
       return orderId;
     } catch (error) {
       throw Exception(error);

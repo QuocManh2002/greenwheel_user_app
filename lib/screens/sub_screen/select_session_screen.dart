@@ -119,6 +119,7 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
                 itemCount: sessions.length,
                 itemBuilder: (context, index) {
                   return SessionCard(
+                    isOrder: widget.isOrder,
                     session: sessions[index],
                     endDate: widget.endDate,
                     startDate: widget.startDate,

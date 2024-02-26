@@ -9,9 +9,7 @@ import 'package:greenwheel_user_app/screens/plan_screen/locate_start_location.da
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/search_location_result_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:intl/intl.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -30,20 +28,16 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   var durationText;
   var distanceValue;
   var durationValue;
-
   List<SearchStartLocationResult> _resultList = [];
   bool isShowResult = false;
-  TimeOfDay _selectTime = TimeOfDay.now();
-  TextEditingController _timeController = TextEditingController();
-  TextEditingController _dateController = TextEditingController();
-  DateTime? _selectedDate = DateTime.now();
   CircleAnnotationManager? _circleAnnotationManagerStart;
   PolylinePoints polylinePoints = PolylinePoints();
   PointLatLng? _selectedLocation;
   bool _isSearching = false;
   String? defaultAddress = '';
-  PointLatLng? defaultLatLng ;
+  PointLatLng? defaultLatLng;
   PointLatLng? _selectedLatLng;
+  bool _isSelectedLocation = false;
 
   Future<void> getMapInfo() async {
     if (_selectedLocation != null) {
@@ -54,8 +48,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   _getRouteInfo() async {
     var jsonResponse = await getRouteInfo(_selectedLocation!,
         PointLatLng(widget.location.latitude, widget.location.longitude));
-
-    // var route = jsonResponse['routes'][0]['overview_polyline']['points'];
     setState(() {
       durationText = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
       distanceText = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
@@ -98,6 +90,9 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         btnOkText: 'Ok',
       ).show();
     } else {
+      setState(() {
+        _isSelectedLocation = true;
+      });
       _selectedLocation = selectedLocation;
       _getRouteInfo();
     }
@@ -113,10 +108,11 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   setUpData() async {
-    int _memberLimit = sharedPreferences.getInt('plan_number_of_member')!;
     defaultAddress = sharedPreferences.getString('defaultAddress');
-    final defaultCoordinate = sharedPreferences.getStringList('defaultCoordinate');
-    defaultLatLng = PointLatLng(double.parse(defaultCoordinate![0]), double.parse(defaultCoordinate[1]));
+    final defaultCoordinate =
+        sharedPreferences.getStringList('defaultCoordinate');
+    defaultLatLng = PointLatLng(double.parse(defaultCoordinate![0]),
+        double.parse(defaultCoordinate[1]));
     double? plan_distance = sharedPreferences.getDouble('plan_distance_value');
     if (plan_distance != null) {
       double? plan_duration =
@@ -126,56 +122,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         distanceValue = plan_distance;
       });
     }
-
-    String? timeText = sharedPreferences.getString('plan_start_time');
-    if (timeText != null) {
-      final initialDateTime = DateFormat.Hm().parse(timeText);
-      setState(() {
-        _selectTime = TimeOfDay.fromDateTime(initialDateTime);
-        _timeController.text = DateFormat.Hm().format(initialDateTime);
-      });
-    } else {
-      _selectTime =
-          TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 3)));
-      _timeController.text = DateFormat.Hm()
-          .format(DateTime(0, 0, 0, _selectTime.hour, _selectTime.minute));
-      sharedPreferences.setString('plan_start_time', _timeController.text);
-    }
-
-    String? dateText = sharedPreferences.getString('plan_departureDate');
-    if (dateText != null) {
-      setState(() {
-        _selectedDate = DateTime.parse(dateText);
-        // sharedPreferences.setString('plan_departureDate', dateText);
-        _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
-      });
-    } else {
-      if(_memberLimit == 1){
-        _selectedDate = DateTime.now().add(const Duration(hours: 2));
-        _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
-         sharedPreferences.setString(
-          'plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
-      final defaultDepartureDate = DateTime(
-              _selectedDate!.year, _selectedDate!.month, _selectedDate!.day)
-          .add(Duration(hours: _selectTime.hour))
-          .add(Duration(minutes: _selectTime.minute));
-      sharedPreferences.setString(
-          'plan_departureDate', defaultDepartureDate.toString());
-      }else{
-        final closeRegDate = DateTime.parse(sharedPreferences.getString('plan_closeRegDate')!);
-        _selectedDate = closeRegDate.add(const Duration(days: 4));
-        _dateController.text = DateFormat('dd/MM/yyyy').format(_selectedDate!);
-         sharedPreferences.setString(
-          'plan_start_date', _selectedDate!.toLocal().toString().split(' ')[0]);
-      final defaultDepartureDate = DateTime(
-              _selectedDate!.year, _selectedDate!.month, _selectedDate!.day)
-          .add(Duration(hours: _selectTime.hour))
-          .add(Duration(minutes: _selectTime.minute));
-      sharedPreferences.setString(
-          'plan_departureDate', defaultDepartureDate.toString());
-      }     
-    }
-
     double? startLat = sharedPreferences.getDouble('plan_start_lat');
     if (startLat != null) {
       double? startLng = sharedPreferences.getDouble('plan_start_lng');
@@ -184,6 +130,10 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       distanceValue = sharedPreferences.getDouble('plan_distance_value');
       durationText = sharedPreferences.getString('plan_duration_text');
       durationValue = sharedPreferences.getDouble('plan_duration_value');
+      setState(() {
+        _searchController.text = sharedPreferences.getString('plan_start_address')!;
+        _isSelectedLocation = true;
+      });
     }
   }
 
@@ -195,17 +145,10 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
           child: SingleChildScrollView(
             child: Column(
               children: [
-                // SizedBox(
-                //   height: 2.h,
-                // ),
-                // const Text(
-                //   'Thời gian xuất phát',
-                //   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                // ),
                 SizedBox(
                   height: 1.h,
                 ),
-                
+
                 SizedBox(
                   height: 2.h,
                 ),
@@ -254,77 +197,79 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                   ),
                 ),
                 // if (_isSearching)
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 2.h),
-                    child: InkWell(
-                      borderRadius: const BorderRadius.all(Radius.circular(14)),
-                      onTap: () {
-                        setState(() {
-                          _isSearching = false;
-                          _searchController.text =
-                              defaultAddress == null || defaultAddress!.isEmpty
-                                  ? 'Không có dữ liệu'
-                                  : defaultAddress!;
-                          _onSelectLocation(defaultLatLng!);
-                        });
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(14),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2.h),
+                  child: InkWell(
+                    borderRadius: const BorderRadius.all(Radius.circular(14)),
+                    onTap: () {
+                      setState(() {
+                        _isSearching = false;
+                        _searchController.text =
+                            defaultAddress == null || defaultAddress!.isEmpty
+                                ? 'Không có dữ liệu'
+                                : defaultAddress!;
+                                sharedPreferences.setString('plan_start_address', defaultAddress == null || defaultAddress!.isEmpty
+                                ? 'Không có dữ liệu'
+                                : defaultAddress!);
+                        _onSelectLocation(defaultLatLng!);
+                      });
+                    },
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(14),
+                        ),
+                        border: Border.all(
+                            color: Colors.grey.withOpacity(0.5), width: 1),
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 3,
+                            color: Colors.black12,
+                            offset: Offset(1, 3),
+                          )
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Row(children: [
+                          Icon(Icons.my_location,
+                              color: redColor.withOpacity(0.8), size: 32),
+                          SizedBox(
+                            width: 2.w,
                           ),
-                          border: Border.all(
-                              color: Colors.grey.withOpacity(0.5), width: 1),
-                          boxShadow: const [
-                            BoxShadow(
-                              blurRadius: 3,
-                              color: Colors.black12,
-                              offset: Offset(1, 3),
-                            )
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: Row(children: [
-                            Icon(Icons.my_location,
-                                color: redColor.withOpacity(0.8), size: 32),
-                            SizedBox(
-                              width: 2.w,
-                            ),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(
-                                  height: 4,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const SizedBox(
+                                height: 4,
+                              ),
+                              const Text(
+                                'Vị trí mặc định',
+                                style: TextStyle(
+                                    fontSize: 13, fontWeight: FontWeight.bold),
+                              ),
+                              SizedBox(
+                                width: 75.w,
+                                child: Text(
+                                  defaultAddress == null ||
+                                          defaultAddress!.isEmpty
+                                      ? 'Không có dữ liệu'
+                                      : defaultAddress!,
+                                  style: const TextStyle(fontSize: 15),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                                const Text(
-                                  'Vị trí mặc định',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                                SizedBox(
-                                  width: 75.w,
-                                  child: Text(
-                                    defaultAddress == null ||
-                                            defaultAddress!.isEmpty
-                                        ? 'Không có dữ liệu'
-                                        : defaultAddress!,
-                                    style: const TextStyle(fontSize: 15),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                                const SizedBox(
-                                  height: 4,
-                                )
-                              ],
-                            )
-                          ]),
-                        ),
+                              ),
+                              const SizedBox(
+                                height: 4,
+                              )
+                            ],
+                          )
+                        ]),
                       ),
                     ),
                   ),
+                ),
                 if (isShowResult)
                   Padding(
                     padding:
@@ -367,52 +312,142 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                     ),
                   ),
                 // if (_isSearching || isShowResult)
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2.h, vertical: 1.h),
+                  child: InkWell(
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (ctx) => LocateStartLocation(
+                                location: widget.location,
+                                callback: callback,
+                              )));
+                    },
+                    borderRadius: const BorderRadius.all(Radius.circular(14)),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(14),
+                        ),
+                        border: Border.all(
+                            color: Colors.grey.withOpacity(0.5), width: 1),
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 3,
+                            color: Colors.black12,
+                            offset: Offset(1, 3),
+                          )
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Row(children: [
+                          const Icon(
+                            Icons.map,
+                            size: 32,
+                          ),
+                          SizedBox(
+                            width: 2.w,
+                          ),
+                          const Text(
+                            'Chọn từ bản đồ',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold),
+                          )
+                        ]),
+                      ),
+                    ),
+                  ),
+                ),
+
+                if (_isSelectedLocation)
                   Padding(
                     padding:
-                        EdgeInsets.symmetric(horizontal: 2.h, vertical: 1.h),
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (ctx) => LocateStartLocation(
-                                  location: widget.location,
-                                  callback: callback,
-                                )));
-                      },
-                      borderRadius: const BorderRadius.all(Radius.circular(14)),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: const BorderRadius.all(
-                            Radius.circular(14),
+                        EdgeInsets.symmetric(horizontal: 2.h, vertical: 0.5.h),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(14)),
+                        border: Border.all(
+                            color: Colors.grey.withOpacity(0.5), width: 1),
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 3,
+                            color: Colors.black12,
+                            offset: Offset(1, 3),
+                          )
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Row(children: [
+                          const Icon(
+                            Icons.directions_car,
+                            size: 32,
                           ),
-                          border: Border.all(
-                              color: Colors.grey.withOpacity(0.5), width: 1),
-                          boxShadow: const [
-                            BoxShadow(
-                              blurRadius: 3,
-                              color: Colors.black12,
-                              offset: Offset(1, 3),
-                            )
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
-                          child: Row(children: [
-                            const Icon(
-                              Icons.map,
-                              size: 32,
-                            ),
-                            SizedBox(
-                              width: 2.w,
-                            ),
-                            const Text(
-                              'Chọn từ bản đồ',
-                              style: TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            )
-                          ]),
-                        ),
+                          SizedBox(
+                            width: 2.w,
+                          ),
+                          const Text(
+                            'Quãng đường di chuyển',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '$distanceText',
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                          SizedBox(width: 1.h,)
+                        ]),
+                      ),
+                    ),
+                  ),
+                  if (_isSelectedLocation)
+                  Padding(
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 2.h, vertical: 0.5.h),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(14)),
+                        border: Border.all(
+                            color: Colors.grey.withOpacity(0.5), width: 1),
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 3,
+                            color: Colors.black12,
+                            offset: Offset(1, 3),
+                          )
+                        ],
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: Row(children: [
+                          const Icon(
+                            Icons.watch_later,
+                            size: 32,
+                          ),
+                          SizedBox(
+                            width: 2.w,
+                          ),
+                          const Text(
+                            'Thời gian di chuyển',
+                            style: TextStyle(
+                                fontSize: 15, fontWeight: FontWeight.bold),
+                          ),
+                          const Spacer(),
+                          Text(
+                            '$durationText',
+                            style: const TextStyle(fontSize: 15),
+                          ),
+                          SizedBox(width: 1.h,)
+                        ]),
                       ),
                     ),
                   )
@@ -526,6 +561,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         _selectedLatLng = point;
         _searchController.text = result['results'][0]['formatted_address'];
       });
+      sharedPreferences.setString('plan_start_address', _searchController.text );
     }
   }
 }

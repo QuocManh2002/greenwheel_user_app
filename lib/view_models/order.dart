@@ -1,9 +1,8 @@
-import 'package:greenwheel_user_app/models/service_type.dart';
+
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 
 class OrderViewModel {
-  String id;
-  // int travelerId;
+  int id;
   double deposit;
   double total;
   String? note;
@@ -18,12 +17,10 @@ class OrderViewModel {
   String supplierAddress;
   List<OrderDetailViewModel>? details;
   String period;
-  ServiceType? serviceType;
   String? type;
 
   OrderViewModel(
       {required this.id,
-      // required this.travelerId,
       required this.deposit,
       required this.period,
       this.note,
@@ -35,13 +32,11 @@ class OrderViewModel {
       required this.supplierName,
       required this.supplierPhone,
       required this.supplierAddress,
-      this.serviceType,
       this.type,
       required this.supplierImageUrl});
 
   factory OrderViewModel.fromJson(Map<String, dynamic> json) => OrderViewModel(
       id: json["id"],
-      // travelerId: json["travelerId"],
       deposit: double.parse(json["deposit"].toString()),
       note: json["note"],
       serveDateIndexes: json["serveDateIndexes"],

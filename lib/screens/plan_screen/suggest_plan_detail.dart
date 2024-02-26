@@ -65,7 +65,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
     List<Widget> listMotel = [];
 
     for (var item in _planDetail!.orders!) {
-      if (item.serviceType!.id == 1) {
+      if (item.type! == 'FOOD') {
         listRestaurant.add(SupplierOrderCard(order: item, startDate: _planDetail!.startDate!));
       } else {
         listMotel.add(SupplierOrderCard(order: item, startDate: _planDetail!.startDate!));

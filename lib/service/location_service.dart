@@ -44,11 +44,6 @@ class LocationService extends Iterable {
             address
             type
           }
-            templateEvents{
-            type
-            shortDescription
-            description
-          }
           comments{
             id
             comment
