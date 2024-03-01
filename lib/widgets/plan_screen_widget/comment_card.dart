@@ -49,11 +49,14 @@ class CommentCard extends StatelessWidget {
                 DateFormat('dd/MM/yyyy').format(comment.date),
                 style: const TextStyle(fontSize: 13),
               ),
-              Text(
-                comment.content,
-                style: const TextStyle(
-                    fontSize: 15),
-                overflow: TextOverflow.clip,
+              SizedBox(
+                width: 70.w,
+                child: Text(
+                  comment.content,
+                  style: const TextStyle(
+                      fontSize: 15),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
               SizedBox(height: 1.h,)
             ],

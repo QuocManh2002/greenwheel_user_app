@@ -4,6 +4,7 @@
 
 import 'dart:convert';
 
+import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -34,6 +35,8 @@ class PlanDetail {
   List<PlanMemberViewModel>? members;
   int? gcoinBudgetPerCapita;
   bool isPublic;
+  String? travelDuration;
+  List<dynamic>? tempOrders;
 
   PlanDetail(
       {required this.id,
@@ -55,17 +58,21 @@ class PlanDetail {
       required this.numOfExpPeriod,
       required this.departureDate,
       required this.isPublic,
+      this.travelDuration,
+      this.tempOrders,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
         id: json["id"],
         name: json["name"],
-        departureDate: DateTime.parse(json['departDate']),
+        tempOrders: json['tempOrders'],
+        departureDate: DateTime.parse(json['departAt']),
         startDate: DateTime.parse(json["startDate"]),
         endDate: DateTime.parse(json["endDate"]),
         schedule: json["schedule"],
         memberLimit: json["memberLimit"],
         status: json["status"],
+        travelDuration: json['travelDuration'],
         locationName: json["destination"]["name"],
         locationId: json["destination"]["id"],
         imageUrls: json["destination"]["imageUrls"],

@@ -104,7 +104,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
             height: 3.h,
           ),
           const Text(
-            'Thời gian trải nghiệm',
+            'Thời gian trải nghiệm mong muốn',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
           SizedBox(

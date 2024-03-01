@@ -9,10 +9,12 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 // ignore: must_be_immutable
@@ -45,6 +47,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   DateTime? departureDate;
   DateTime startDate = DateTime.now();
   int _numberOfDay = 0;
+  List<OrderViewModel> _orderList = [];
 
   // String startTime = sharedPreferences.getString('plan_start_time')!;
 
@@ -101,7 +104,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   callback(PlanScheduleItem item, bool isCreate, PlanScheduleItem? oldItem) {
     if (isCreate) {
       setState(() {
-        print(item.date);
         testList
             .firstWhere((element) => element.date == item.date)
             .items
@@ -213,8 +215,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
       color: Colors.white,
       width: 100.w,
       child:
-          // !_isNotOverDay ?
-
           testList[_index].items.isEmpty
               ? Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -256,12 +256,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                               _selectedItem == testList[_index].items[index]),
                     ),
                     onReorder: (oldIndex, newIndex) {
-                      List<TimeOfDay> _timeList = testList[_index]
-                          .items
-                          .map(
-                            (e) => e.time!,
-                          )
-                          .toList();
                       setState(() {
                         if (oldIndex < newIndex) {
                           newIndex -= 1;
@@ -269,12 +263,11 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                         final PlanScheduleItem item =
                             testList[_index].items.removeAt(oldIndex);
                         testList[_index].items.insert(newIndex, item);
-                        for (int i = 0;
-                            i < testList[_index].items.length;
-                            i++) {
-                          testList[_index].items[i].time = _timeList[i];
-                        }
                       });
+                      var finalList =
+                          _planService.convertPlanScheduleToJson(testList);
+                      sharedPreferences.setString(
+                          'plan_schedule', json.encode(finalList));
                     },
                   ),
                 ),
@@ -371,6 +364,85 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                   ),
                 ),
               ),
+              SizedBox(
+                width: 2.h,
+              ),
+              IconButton(
+                  style: ButtonStyle(
+                      shape: const MaterialStatePropertyAll(CircleBorder(
+                          side: BorderSide(color: primaryColor, width: 1))),
+                      backgroundColor: MaterialStatePropertyAll(
+                          Colors.white.withOpacity(0.7))),
+                  onPressed: () async {
+                    _orderList = await _planService.getOrderCreatePlan(
+                        sharedPreferences.getInt('planId')!);
+                    var total = 0.0;
+                    for (final order in _orderList) {
+                      for (final detail in order.details!) {
+                        total += detail.quantity * detail.unitPrice!;
+                      }
+                    }
+
+                    // ignore: use_build_context_synchronously
+                    AwesomeDialog(
+                            context: context,
+                            animType: AnimType.leftSlide,
+                            dialogType: DialogType.info,
+                            body: Padding(
+                              padding: const EdgeInsets.all(12),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Container(
+                                      alignment: Alignment.center,
+                                      child: const Text(
+                                        'Đơn hàng mẫu đã lên',
+                                        style: TextStyle(
+                                            fontSize: 20,
+                                            fontWeight: FontWeight.bold),
+                                      )),
+                                  SizedBox(
+                                    height: 8,
+                                  ),
+                                  for (final order in _orderList)
+                                    Padding(
+                                      padding: const EdgeInsets.only(left: 0),
+                                      child: Text(
+                                        '- ${order.supplierName} - ${order.details!.length} sản phẩm',
+                                        style: TextStyle(fontSize: 16),
+                                      ),
+                                    ),
+                                  const SizedBox(
+                                    height: 8,
+                                  ),
+                                  Row(
+                                    children: [
+                                      const Text(
+                                        'Tổng cộng: ',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Spacer(),
+                                      Text(
+                                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
+                                        style: TextStyle(fontSize: 18),
+                                      )
+                                    ],
+                                  )
+                                ],
+                              ),
+                            ),
+                            btnOkColor: Colors.blue,
+                            btnOkText: 'Tiếp tục',
+                            btnOkOnPress: () {})
+                        .show();
+                  },
+                  icon: const Icon(
+                    Icons.attach_money_rounded,
+                    color: primaryColor,
+                    size: 23,
+                  )),
               const Spacer(),
               // if (departureDate!
               //     .add(Duration(days: _currentPage.toInt()))

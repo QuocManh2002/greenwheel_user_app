@@ -7,6 +7,9 @@ class ProductViewModel {
   int supplierId;
   String supplierName;
   int? partySize;
+  String? supplierThumbnailUrl;
+  String? supplierPhone;
+  String? supplierAddress;
 
   ProductViewModel({
     required this.id,
@@ -17,6 +20,9 @@ class ProductViewModel {
     required this.supplierId,
     required this.supplierName,
     required this.partySize,
+    this.supplierThumbnailUrl,
+    this.supplierPhone,
+    this.supplierAddress
   });
 
   factory ProductViewModel.fromJson(Map<String, dynamic> json) =>
@@ -29,6 +35,9 @@ class ProductViewModel {
         supplierId: json["supplier"]["id"],
         supplierName: json["supplier"]["name"],
         partySize: json["partySize"],
+        supplierThumbnailUrl: json['supplier']['imageUrl'],
+        supplierPhone: json['supplier']['phone'],
+        supplierAddress: json['supplier']['address']
       );
 
   Map<String, dynamic> toJson() => {

@@ -79,6 +79,43 @@ class ProductService extends Iterable {
     }
   }
 
+  Future<List<ProductViewModel>> getListProduct(List<String> productIds) async {
+    try {
+      final QueryResult result =
+          await client.query(QueryOptions(document: gql("""
+{
+  products(where: { id: { in: $productIds } }) {
+    nodes {
+      id
+      name
+      paymentType
+      price
+      imageUrl
+      partySize
+      supplier {
+        id
+        name
+        imageUrl
+        phone
+        address
+      }
+    }
+  }
+}
+""")));
+      final List? res = result.data?['products']['nodes'];
+      if (res == null || res.isEmpty) {
+        return [];
+      } else {
+        final List<ProductViewModel> products =
+            res.map((product) => ProductViewModel.fromJson(product)).toList();
+        return products;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
   @override
   // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();

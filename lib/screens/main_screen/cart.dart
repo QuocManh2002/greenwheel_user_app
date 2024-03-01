@@ -13,10 +13,8 @@ import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
-import 'package:greenwheel_user_app/view_models/order_detail_create.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/cart_item_card.dart';
 import 'package:intl/intl.dart';
@@ -670,7 +668,7 @@ class _CartScreenState extends State<CartScreen> {
                                 //     },
                                 //   ).show();
                                 // } else {
-                                  addOrder();
+                                addOrder();
                                 // }
                                 // }
                               },
@@ -678,10 +676,12 @@ class _CartScreenState extends State<CartScreen> {
                                 backgroundColor:
                                     Colors.green, // Background color
                               ),
-                              child:  Center(
+                              child: Center(
                                 child: Text(
-                                 (widget.isOrder != null && widget.isOrder!)?   'Thanh toán' : 'Thêm đơn hàng mẫu',
-                                  style:const TextStyle(
+                                  (widget.isOrder != null && widget.isOrder!)
+                                      ? 'Thanh toán'
+                                      : 'Thêm đơn hàng mẫu',
+                                  style: const TextStyle(
                                     color: Colors.white, // Text color
                                     fontSize: 18,
                                   ),
@@ -730,12 +730,16 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   OrderCreateViewModel convertCart() {
-    List<OrderDetailCreateViewModel> details = list.map((itemCart) {
-      return OrderDetailCreateViewModel(
-        productId: itemCart.product
-            .id, // Replace with the actual property from ProductViewModel
-        quantity: quantity,
-      );
+    List<Map> details = list.map((itemCart) {
+      // return OrderDetailCreateViewModel(
+      //   productId: itemCart.product
+      //       .id, // Replace with the actual property from ProductViewModel
+      //   quantity: quantity,
+      // );
+      return {
+        'productId': itemCart.product.id,
+        'quantity': itemCart.product.price
+      };
     }).toList();
 
     List<dynamic> dates = [];
@@ -753,83 +757,94 @@ class _CartScreenState extends State<CartScreen> {
     return order;
   }
 
-  paymentStart() async {
-    int check = await orderService.addOrder(convertCart());
-    if (check != 0) {
-      // ignore: use_build_context_synchronously
-      AwesomeDialog(
-        context: context,
-        dialogType: DialogType.success,
-        animType: AnimType.topSlide,
-        showCloseIcon: true,
-        title: "Thanh toán thành công",
-        desc: "Ấn tiếp tục để trở về",
-        btnOkText: "Tiếp tục",
-        btnOkOnPress: () {
-          // widget.callbackFunction();
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-        },
-      ).show();
-    } else {
-      // ignore: use_build_context_synchronously
-      AwesomeDialog(
-        context: context,
-        dialogType: DialogType.error,
-        animType: AnimType.topSlide,
-        title: "Thanh toán thất bại",
-        desc: "Xuất hiện lỗi trong quá trình thanh toán",
-        btnOkText: "OK",
-        btnOkOnPress: () {},
-      ).show();
-    }
-  }
+  // paymentStart() async {
+  //   int check = await orderService.addOrder(convertCart());
+  //   if (check != 0) {
+  //     // ignore: use_build_context_synchronously
+  //     AwesomeDialog(
+  //       context: context,
+  //       dialogType: DialogType.success,
+  //       animType: AnimType.topSlide,
+  //       showCloseIcon: true,
+  //       title: "Thanh toán thành công",
+  //       desc: "Ấn tiếp tục để trở về",
+  //       btnOkText: "Tiếp tục",
+  //       btnOkOnPress: () {
+  //         // widget.callbackFunction();
+  //         Navigator.of(context).pop();
+  //         Navigator.of(context).pop();
+  //       },
+  //     ).show();
+  //   } else {
+  //     // ignore: use_build_context_synchronously
+  //     AwesomeDialog(
+  //       context: context,
+  //       dialogType: DialogType.error,
+  //       animType: AnimType.topSlide,
+  //       title: "Thanh toán thất bại",
+  //       desc: "Xuất hiện lỗi trong quá trình thanh toán",
+  //       btnOkText: "OK",
+  //       btnOkOnPress: () {},
+  //     ).show();
+  //   }
+  // }
 
   addOrder() async {
+    var total = 0;
     var order = convertCart();
+    var startDate =
+        DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     print(sharedPreferences.getString('plan_start_date'));
-    final total =
-        (finalTotal) * (_servingDates.isEmpty ? 1 : _servingDates.length);
+    // int rs = 0;
+    List<int> servingDateIndexs = [
+      for (final date in _servingDates) date.difference(startDate).inDays
+    ];
     List<OrderDetailViewModel> details = [];
+    List<Map> detailsMap = [];
     for (final item in list) {
+      total += item.product.price * item.qty;
       details.add(OrderDetailViewModel(
           id: item.product.id,
           productName: item.product.name,
           quantity: item.qty,
           unitPrice: item.product.price.toDouble(),
           price: item.product.price.toDouble()));
+          detailsMap.add(
+            {
+              'productId':item.product.id,
+              'productName': item.product.name,
+              'quantity': item.qty,
+              'unitPrice': item.product.price.toDouble(),
+              'price':item.product.price.toDouble()
+            }
+          );
     }
-    // OrderViewModel newOrder = OrderViewModel(
-    //     id: "1",
-    //     details: details,
-    //     deposit: deposit,
-    //     period: order.period,
-    //     serveDateIndexes: order.servingDates,
-    //     total: total,
-    //     createdAt: DateTime.now(),
-    //     supplierId: widget.supplier.id,
-    //     supplierName: widget.supplier.name,
-    //     supplierPhone: widget.supplier.phone,
-    //     supplierAddress: widget.supplier.address,
-    //     serviceType: widget.serviceType,
-    //     supplierImageUrl: widget.supplier.thumbnailUrl);
-    var startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-    var rs = await orderService.addOrder(OrderCreateViewModel(
-        servingDates: [
-          for(final date in _servingDates)
-            date.difference(startDate).inDays
-        ],
-        period: order.period,
-        details: [
-          for (final item in details)
-            OrderDetailCreateViewModel(
-                productId: item.id, quantity: item.quantity)
-        ],
-        planId: sharedPreferences.getInt('planId')));
 
-    if (rs != 0) {
-// ignore: use_build_context_synchronously
-      AwesomeDialog(
+    final tempOrder = {
+      'total': total,
+      'servingDates': servingDateIndexs,
+      'period': order.period,
+      'details': detailsMap,
+      'type': widget.serviceType.name,
+      'note': noteController.text,
+      'supplierId': widget.supplier.id,
+      'createdAt': DateTime.now().toString(),
+      'supplierName': widget.supplier.name,
+      'supplierPhone': widget.supplier.phone,
+      'supplierImageUrl': widget.supplier.thumbnailUrl,
+      'supplierAddress': widget.supplier.address
+    };
+    if (!widget.isOrder!) {
+      var temp = sharedPreferences.getString('plan_temp_order');
+      if (temp == null) {
+        final tempEncode = json.encode([tempOrder]);
+        sharedPreferences.setString('plan_temp_order', tempEncode);
+      } else {
+        final tempDecode = json.decode(temp);
+        tempDecode.add(tempOrder);
+        sharedPreferences.setString('plan_temp_order', json.encode(tempDecode));
+      }
+        AwesomeDialog(
         context: context,
         dialogType: DialogType.success,
         animType: AnimType.topSlide,
@@ -844,6 +859,30 @@ class _CartScreenState extends State<CartScreen> {
         },
       ).show();
     }
+//      rs = await orderService.addOrder(
+//       OrderCreateViewModel(
+//         servingDates: servingDateIndexs,
+//         period: order.period,
+//         details:orderDetails,
+//         ));
+
+//     if (rs != 0) {
+// // ignore: use_build_context_synchronously
+//       AwesomeDialog(
+//         context: context,
+//         dialogType: DialogType.success,
+//         animType: AnimType.topSlide,
+//         showCloseIcon: true,
+//         title: widget.isOrder!= null && widget.isOrder! ?  "Thanh toán thành công" :"Thêm đơn hàng mẫu thành công",
+//         desc: "Ấn tiếp tục để trở về",
+//         btnOkText: "Tiếp tục",
+//         btnOkOnPress: () {
+//           widget.callbackFunction();
+//           Navigator.of(context).pop();
+//           Navigator.of(context).pop();
+//         },
+//       ).show();
+//     }
   }
 
   Future pickDateRange() async {

@@ -44,6 +44,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
   TextEditingController _timeController = TextEditingController();
   TextEditingController _dateController = TextEditingController();
   DateTime? _selectedDate = DateTime.now();
+  bool isOverDate = false;
 
   createPlan() async {
     int memberLimit = sharedPreferences.getInt('plan_number_of_member')!;
@@ -67,20 +68,20 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     var _startDate = DateTime.parse(startDate);
 
     int? rs = await _planService.createDraftPlan(
-        PlanCreate(
-            gcoinBudget: sharedPreferences.getInt('plan_budget'),
-            numOfExpPeriod: numOfExpPeriod,
-            locationId: widget.location.id,
-            startDate: _startDate,
-            departureDate: departureDate,
-            endDate: DateTime.parse(endDate),
-            latitude: lat,
-            longitude: lng,
-            memberLimit: memberLimit,
-            name: _nameController.text,
-            schedule: json.decode(schedule).toString(),
-            savedContacts: sharedPreferences.getString('plan_saved_emergency')),
-        );
+      PlanCreate(
+          gcoinBudget: sharedPreferences.getInt('plan_budget'),
+          numOfExpPeriod: numOfExpPeriod,
+          locationId: widget.location.id,
+          startDate: _startDate,
+          departureDate: departureDate,
+          endDate: DateTime.parse(endDate),
+          latitude: lat,
+          longitude: lng,
+          memberLimit: memberLimit,
+          name: _nameController.text,
+          schedule: json.decode(schedule).toString(),
+          savedContacts: sharedPreferences.getString('plan_saved_emergency')),
+    );
 
     if (rs != 0) {
       setState(() {
@@ -274,66 +275,50 @@ class _SelectPlanNameState extends State<SelectPlanName> {
         DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
     if (arrivedTime.isAfter(DateTime(0, 0, 0, 16, 0)) &&
         arrivedTime.isBefore(DateTime(0, 0, 1, 6, 0))) {
-      setState(() {
-        _rangeEnd =
+      if (arrivedTime.isBefore(DateTime(0, 0, 0, 20, 0))) {
+        setState(() {
+          isOverDate = true;
+        });
+      } else {
+        setState(() {
+          isOverDate = false;
+          _rangeEnd =
               departureDate.add(Duration(days: _initComboDate.numberOfDay));
-        _selectedComboDate = listComboDate.firstWhere(
-            (element) => element.duration == _initComboDate.duration + 1);
-      });
-      sharedPreferences.setString(
-            'plan_start_date', departureDate.add(const Duration(days: 1)).toLocal().toString().split(' ')[0]);
+          _selectedComboDate = listComboDate.firstWhere(
+              (element) => element.duration == _initComboDate.duration + 1);
+        });
+        sharedPreferences.setString(
+            'plan_start_date',
+            departureDate
+                .add(const Duration(days: 1))
+                .toLocal()
+                .toString()
+                .split(' ')[0]);
         sharedPreferences.setString(
             'plan_end_date',
             departureDate
                 .add(Duration(days: _initComboDate.numberOfNight))
                 .toString()
                 .split(' ')[0]);
+      }
     }
-    // else if(arrivedTime.isAfter(DateTime(0,0,0,20,0))){
-    //   final newStartDate = departureDate.add(const Duration(days: 1));
-    //   // if (!_isChangeComboDate) {
-    //     setState(() {
-    //       _rangeEnd =
-    //           newStartDate.add(Duration(days: _initComboDate.numberOfDay - 1));
-    //       _selectedComboDate = listComboDate.firstWhere(
-    //           (element) => element.duration == _initComboDate.duration + 2);
-    //     });
-    //     sharedPreferences.setString(
-    //         'plan_start_date', newStartDate.toLocal().toString().split(' ')[0]);
-    //     sharedPreferences.setString(
-    //         'plan_end_date',
-    //         newStartDate
-    //             .add(Duration(days: _initComboDate.numberOfDay - 1))
-    //             .toString()
-    //             .split(' ')[0]);
-    //   // } else {
-    //   //   setState(() {
-    //   //     _rangeEnd =
-    //   //         newStartDate.add(Duration(days: _initComboDate.numberOfDay - 1));
-    //   //   });
-    //   //   sharedPreferences.setString(
-    //   //       'plan_start_date', newStartDate.toString().split(' ')[0]);
-    //   //   sharedPreferences.setString(
-    //   //       'plan_end_date',
-    //   //       newStartDate
-    //   //           .add(Duration(days: _initComboDate.numberOfDay - 1))
-    //   //           .toString()
-    //   //           .split(' ')[0]);
-    //   // }
-    // }
-    else{
+    else {
       setState(() {
         _rangeEnd =
-              departureDate.add(Duration(days: _initComboDate.numberOfDay - 1));
+            departureDate.add(Duration(days: _initComboDate.numberOfDay - 1));
         _selectedComboDate = _initComboDate;
       });
-      sharedPreferences.setString('plan_end_date', departureDate
-                .add(Duration(days: _initComboDate.numberOfDay - 1))
-                .toString()
-                .split(' ')[0]);
+      sharedPreferences.setString(
+          'plan_end_date',
+          departureDate
+              .add(Duration(days: _initComboDate.numberOfDay - 1))
+              .toString()
+              .split(' ')[0]);
     }
     sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id);
-    // sharedPreferences.setInt('numOfExpPeriod', _selectedComboDate.duration.toInt());
+    if(isOverDate){
+    sharedPreferences.setInt('numOfExpPeriod', _selectedComboDate.duration.toInt());
+    }
   }
 
   @override
@@ -349,12 +334,13 @@ class _SelectPlanNameState extends State<SelectPlanName> {
         element.numberOfDay + element.numberOfNight == _numOfExpPeriod);
     _initComboDate = _selectedComboDate;
     final _duration = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
-    final initDate = DateTime.now().add(Duration(days: 4));
+    final initDate = DateTime.now().add(Duration(days: 7));
     _dateController.text = '${initDate.day}/${initDate.month}/${initDate.year}';
     _timeController.text =
         DateFormat.Hm().format(DateTime.now().add(const Duration(hours: 1)));
     _rangeEnd = initDate.add(Duration(days: _duration - 1));
-    final _startTime = DateTime(0,0,0,DateTime.now().hour + 1, DateTime.now().minute);
+    final _startTime =
+        DateTime(0, 0, 0, DateTime.now().hour + 1, DateTime.now().minute);
     sharedPreferences.setString('plan_departureDate', initDate.toString());
     sharedPreferences.setString('plan_start_time', _startTime.toString());
     sharedPreferences.setString(
@@ -524,7 +510,10 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                                       DateTime(0, 0, 0, _selectTime.hour,
                                           _selectTime.minute));
                                   sharedPreferences.setString(
-                                      'plan_start_time', DateTime(0,0,0,_selectTime.hour, _selectTime.minute).toString());
+                                      'plan_start_time',
+                                      DateTime(0, 0, 0, _selectTime.hour,
+                                              _selectTime.minute)
+                                          .toString());
                                 }).show();
                           } else {
                             setState(() {
@@ -534,7 +523,10 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                                       _selectTime.minute));
                             });
                             sharedPreferences.setString(
-                                      'plan_start_time', DateTime(0,0,0,_selectTime.hour, _selectTime.minute).toString());
+                                'plan_start_time',
+                                DateTime(0, 0, 0, _selectTime.hour,
+                                        _selectTime.minute)
+                                    .toString());
                             handleChangeComboDate();
                           }
                         });
@@ -582,6 +574,8 @@ class _SelectPlanNameState extends State<SelectPlanName> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
+              isOverDate ? 
+               '${_selectedComboDate.numberOfNight} ngày ${_selectedComboDate.numberOfDay} đêm':
               '${_initComboDate.numberOfDay} ngày, ${_initComboDate.numberOfNight} đêm',
               style: const TextStyle(color: Colors.grey, fontSize: 16),
             ),

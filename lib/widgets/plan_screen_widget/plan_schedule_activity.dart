@@ -132,9 +132,9 @@ class PlanScheduleActivity extends StatelessWidget {
                       offset: Offset(2, 4),
                     )
                   ],
-                  border: item.orderId != null
+                  border: item.type == 'Ăn uống'
                       ? Border.all(color: primaryColor, width: 2)
-                      : Border(),
+                      : const Border(),
                   borderRadius: const BorderRadius.all(Radius.circular(12))),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -170,7 +170,7 @@ class PlanScheduleActivity extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      color: Colors.black54,
+                      color: item.type == 'Ăn uống' ? primaryColor:Colors.black54,
                       height: 2,
                     ),
                     SizedBox(

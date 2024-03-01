@@ -5,12 +5,10 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:dart_jts/dart_jts.dart';
 import 'package:flutter/services.dart' show rootBundle;
-import 'package:vn_badwords_filter/vn_badwords_filter.dart';
 
 class Utils {
   static List<Widget> modelBuilder<M>(
@@ -49,6 +47,7 @@ class Utils {
     sharedPreferences.remove('plan_budget');
     sharedPreferences.remove('plan_name');
     sharedPreferences.remove('plan_start_address');
+    sharedPreferences.remove('plan_temp_order');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {
@@ -130,16 +129,6 @@ class Utils {
     return true;
   }
 
-  String? checkValidTextInput(String? text){
-    if (text!.isEmpty) {
-      return "Bình luận của bạn không được để trống";
-    } else if (VNBadwordsFilter.isProfane(text)) {
-      return "Bình luận của bạn chứa từ ngữ không hợp lệ";
-    } else if (!_isValidSentence(text)) {
-      return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
-    }
-  }
-
   bool _isValidSentence(String sentence) {
     List<String> words = sentence.split(' ');
     Map<String, int> wordFrequency = {};
@@ -152,5 +141,20 @@ class Utils {
     }
 
     return true;
+  }
+
+  handleServerException(String content, BuildContext context){
+    AwesomeDialog(context: context,
+    animType: AnimType.leftSlide,
+    dialogType: DialogType.error,
+    title: content,
+    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+    titleTextStyle: const TextStyle(
+      fontSize: 18, fontWeight: FontWeight.bold
+    ),
+    btnOkColor: Colors.red,
+    btnOkText: 'Ok',
+    btnOkOnPress: (){}
+    ).show();
   }
 }

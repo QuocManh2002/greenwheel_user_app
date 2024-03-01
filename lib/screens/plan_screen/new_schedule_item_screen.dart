@@ -49,7 +49,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   String? _selectedType;
   bool _isModify = false;
   TimeOfDay _startTime = TimeOfDay(hour: 12, minute: 0);
-  bool _isRestActivity = false;
   bool _isFoodActivity = false;
   bool _isOrderedActivity = false;
 
@@ -273,16 +272,9 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                   if (value == 'Ăn uống') {
                     setState(() {
                       _isFoodActivity = true;
-                      _isRestActivity = false;
-                    });
-                  } else if (value == 'Nghỉ ngơi') {
-                    setState(() {
-                      _isFoodActivity = false;
-                      _isRestActivity = true;
                     });
                   } else {
                     setState(() {
-                      _isRestActivity = false;
                       _isFoodActivity = false;
                     });
                   }
@@ -481,12 +473,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                 SizedBox(
                                   height: 1.h,
                                 ),
-                                Text(
-                                  '12:00 - ${DateFormat.Hm().format(DateTime(0, 0, 0, _startTime.hour, _startTime.minute))}',
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                  ),
-                                ),
                               ],
                             ),
                           ),
@@ -498,43 +484,63 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
             SizedBox(
               height: 2.h,
             ),
-            if (_isFoodActivity || _isRestActivity)
-              _isOrderedActivity ? 
-              Row(
-                children: [
-                  const Spacer(),
-                  Container(
-                    alignment: Alignment.topRight,
-                    width: 50.w,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: primaryColor,
-                      width: 1.5),
-                      borderRadius:const BorderRadius.all(Radius.circular(14))
-                    ),
-                    child:const Text('Đã đặt đơn hàng mẫu', style: TextStyle(fontSize: 17, color: primaryColor, fontWeight: FontWeight.bold),),
-                    ),
-                ],
-              ):
-              Container(
-                alignment: Alignment.topRight,
-                child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ServiceMainScreen(isOrder: false, serviceType: _isFoodActivity ? services[0] :services[4], location: widget.location, numberOfMember: sharedPreferences.getInt('plan_number_of_member')!, startDate: DateTime.parse(sharedPreferences.getString('plan_start_date')!), endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!), callbackFunction: callback,)));
-                      // Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => ServiceMainScreen(serviceType: _isFoodActivity ? services[0] :services[4],  location: widget. , numberOfMember: numberOfMember, startDate: startDate, endDate: endDate, callbackFunction: callbackFunction)))
-                    },
-                    icon: Icon( _isFoodActivity ? Icons.restaurant : Icons.hotel),
-                    style: elevatedButtonStyle.copyWith(
-                        minimumSize: MaterialStatePropertyAll(Size(50.w, 5.h))),
-                    label: const Text('Thêm đơn hàng mẫu')),
-              )
+            if (_isFoodActivity)
+              _isOrderedActivity
+                  ? Row(
+                      children: [
+                        const Spacer(),
+                        Container(
+                          alignment: Alignment.topRight,
+                          width: 50.w,
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 16, vertical: 8),
+                          decoration: BoxDecoration(
+                              border:
+                                  Border.all(color: primaryColor, width: 1.5),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(14))),
+                          child: const Text(
+                            'Đã đặt đơn hàng mẫu',
+                            style: TextStyle(
+                                fontSize: 17,
+                                color: primaryColor,
+                                fontWeight: FontWeight.bold),
+                          ),
+                        ),
+                      ],
+                    )
+                  : Container(
+                      alignment: Alignment.topRight,
+                      child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (ctx) => ServiceMainScreen(
+                                      isOrder: false,
+                                      serviceType: services[0],
+                                      location: widget.location,
+                                      numberOfMember: sharedPreferences
+                                          .getInt('plan_number_of_member')!,
+                                      startDate: DateTime.parse(
+                                          sharedPreferences
+                                              .getString('plan_start_date')!),
+                                      endDate: DateTime.parse(sharedPreferences
+                                          .getString('plan_end_date')!),
+                                      callbackFunction: callback,
+                                    )));
+                          },
+                          icon: const Icon(Icons.restaurant),
+                          style: elevatedButtonStyle.copyWith(
+                              minimumSize:
+                                  MaterialStatePropertyAll(Size(50.w, 5.h))),
+                          label: const Text('Thêm đơn hàng mẫu')),
+                    )
           ],
         ),
       ),
     ));
   }
 
-  callback(){
+  callback() {
     setState(() {
       _isOrderedActivity = true;
     });

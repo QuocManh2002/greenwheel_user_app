@@ -9,18 +9,18 @@ OrderDetailViewModel orderDetailFromJson(String str) => OrderDetailViewModel.fro
 String orderDetailToJson(OrderDetailViewModel data) => json.encode(data.toJson());
 
 class OrderDetailViewModel {
-    int id;
+    int? id;
     String productName;
     int quantity;
-    double price;
-    double unitPrice;
+    double? price;
+    double? unitPrice;
 
     OrderDetailViewModel({
-        required this.id,
+         this.id,
         required this.productName,
         required this.quantity,
-        required this.price,
-        required this.unitPrice
+         this.price,
+         this.unitPrice
     });
 
     factory OrderDetailViewModel.fromJson(Map<String, dynamic> json) => OrderDetailViewModel(

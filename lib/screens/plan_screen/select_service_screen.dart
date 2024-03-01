@@ -12,13 +12,17 @@ import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_service_infor.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -48,19 +52,27 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     with TickerProviderStateMixin {
   late TabController tabController;
   final PlanService _planService = PlanService();
+  final OrderService _orderService = OrderService();
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
   List<Widget> _listSurcharges = [];
   DateTime? startDate;
   DateTime? endDate;
   int? numberOfMember;
+  List<Map> _listSurchargeObjects = [];
   final OfflineService _offlineService = OfflineService();
-  List<OrderViewModel>? orderList = [];
+  List<dynamic>? orderList = [];
   List<OrderViewModel>? listRestaurantOrder = [];
   List<OrderViewModel>? listMotelOrder = [];
+  num totalFood = 0;
+  num totalRest = 0;
+  num totalSurcharge = 0;
   num total = 0;
   String activitiesText = '';
   num memberLimit = sharedPreferences.getInt('plan_number_of_member')!;
+  bool _isShowSchedule = false;
+  int tabIndex = 0;
+  PlanCreate? plan;
 
   @override
   void initState() {
@@ -74,44 +86,65 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   setUpData() async {
     final duration = sharedPreferences.getInt('numOfExpPeriod');
     startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-    // endDate = startDate!.add(Duration(days: (duration!/2).ceil()));
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
     await callback();
   }
 
   callback() async {
-    orderList = await _planService
-        .getOrderCreatePlan(sharedPreferences.getInt('planId')!);
-
+    orderList = json.decode(sharedPreferences.getString('plan_temp_order')!);
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
     listMotelOrder = [];
     listRestaurantOrder = [];
-
-    // orderList!.add(order);
+    // totalSurcharge = 0;
+    totalFood = 0;
+    totalRest = 0;
     total = 0;
     for (var item in orderList!) {
-      if (item.type == 'FOOD') {
+      List<OrderDetailViewModel> details = [];
+      for (final detail in item['details']) {
+        details.add(OrderDetailViewModel(
+            price: detail['unitPrice'],
+            productName: detail['productName'],
+            unitPrice: detail['unitPrice'],
+            quantity: detail['quantity']));
+      }
+      final temp = OrderViewModel(
+          note: item['note'],
+          details: details,
+          type: item['type'],
+          period: item['period'],
+          serveDateIndexes: item['servingDates'],
+          total: double.parse(item['total'].toString()),
+          createdAt: DateTime.parse(item['createdAt']),
+          supplierId: item['supplierId'],
+          supplierName: item['supplierName'],
+          supplierPhone: item['supplierPhone'],
+          supplierAddress: item['supplierAddress'],
+          supplierImageUrl: item['supplierImageUrl']);
+      if (item['type'] == 'FOOD') {
         listRestaurant
-            .add(SupplierOrderCard(order: item, startDate: startDate!));
-        listRestaurantOrder!.add(item);
+            .add(SupplierOrderCard(order: temp, startDate: startDate!, isTempOrder: false, planId: sharedPreferences.getInt('planId')!));
+        listRestaurantOrder!.add(temp);
+        totalFood += getTotal(temp);
       } else {
         listMotel.add(SupplierOrderCard(
-          order: item,
+          order: temp,
           startDate: startDate!,
+          isTempOrder: false,
+          planId: sharedPreferences.getInt('planId')!,
         ));
-        listMotelOrder!.add(item);
+        listMotelOrder!.add(temp);
+        totalRest += getTotal(temp);
       }
+      total += getTotal(temp);
     }
     if (orderList!.isNotEmpty) {
       setState(() {
         _listMotel = listMotel;
         _listRestaurant = listRestaurant;
       });
-    }
-    for (final order in orderList!) {
-      total += getTotal(order);
     }
     final budget = ((total / memberLimit) / 100).ceil();
     if (sharedPreferences.getInt('plan_number_of_member')! != 1) {
@@ -122,7 +155,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   getTotal(OrderViewModel order) {
     var total = 0.0;
     for (final detail in order.details!) {
-      total += detail.unitPrice * detail.quantity;
+      total += detail.price! * detail.quantity;
     }
     return total;
   }
@@ -131,10 +164,104 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
+        resizeToAvoidBottomInset: false,
         appBar: AppBar(
           title: Text((widget.isOrder != null && widget.isOrder!)
               ? 'Thêm dịch vụ'
               : 'Tạo đơn hàng mẫu'),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  showModalBottomSheet(
+                      context: context,
+                      builder: (ctx) => ConfirmServiceInfor(
+                            listSurcharges: _listSurchargeObjects,
+                            total: total / 100.toDouble(),
+                            budgetPerCapita:
+                                ((total / memberLimit) / 100).ceil().toDouble(),
+                            listFood: listRestaurantOrder!,
+                            listRest: listMotelOrder!,
+                          ));
+                  // AwesomeDialog(
+                  //         context: context,
+                  //         animType: AnimType.leftSlide,
+                  //         dialogType: DialogType.info,
+                  //         body: Padding(
+                  //           padding: const EdgeInsets.all(12),
+                  //           child: Column(
+                  //             crossAxisAlignment: CrossAxisAlignment.start,
+                  //             children: [
+                  //               Container(
+                  //                   alignment: Alignment.center,
+                  //                   child: const Text(
+                  //                     'Đơn hàng mẫu đã lên',
+                  //                     style: TextStyle(
+                  //                         fontSize: 20,
+                  //                         fontWeight: FontWeight.bold),
+                  //                   )),
+                  //               const SizedBox(
+                  //                 height: 8,
+                  //               ),
+                  //               for (final order in orderList!)
+                  //                 Padding(
+                  //                   padding: const EdgeInsets.only(left: 0),
+                  //                   child: Text(
+                  //                     '- ${order['supplierName']} - ${order['details']!.length} sản phẩm',
+                  //                     style: const TextStyle(fontSize: 16),
+                  //                   ),
+                  //                 ),
+                  //               const SizedBox(
+                  //                 height: 4,
+                  //               ),
+                  //               if (_listSurchargeObjects.isNotEmpty)
+                  //                 Container(
+                  //                     alignment: Alignment.center,
+                  //                     child: const Text(
+                  //                       'Phụ thu',
+                  //                       style: TextStyle(
+                  //                           fontSize: 20,
+                  //                           fontWeight: FontWeight.bold),
+                  //                     )),
+                  //               for (final surcharge in _listSurchargeObjects)
+                  //                 Padding(
+                  //                   padding: const EdgeInsets.only(left: 0),
+                  //                   child: Text(
+                  //                     '- ${surcharge['note']} - ${surcharge['gcoinAmount']} GCOIN',
+                  //                     style: TextStyle(fontSize: 16),
+                  //                   ),
+                  //                 ),
+                  //               const SizedBox(
+                  //                 height: 8,
+                  //               ),
+                  //               Row(
+                  //                 children: [
+                  //                   const Text(
+                  //                     'Tổng cộng: ',
+                  //                     style: TextStyle(
+                  //                         fontSize: 18,
+                  //                         fontWeight: FontWeight.bold),
+                  //                   ),
+                  //                   const Spacer(),
+                  //                   Text(
+                  //                     '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total/100)} GCOIN',
+                  //                     style:const TextStyle(fontSize: 18),
+                  //                   )
+                  //                 ],
+                  //               ),
+                  //             ],
+                  //           ),
+                  //         ),
+                  //         btnOkColor: Colors.blue,
+                  //         btnOkText: 'Tiếp tục',
+                  //         btnOkOnPress: () {})
+                  //     .show();
+                },
+                icon: const Icon(
+                  Icons.attach_money_outlined,
+                  color: Colors.white,
+                  size: 35,
+                ))
+          ],
         ),
         body: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -153,7 +280,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      Container(
+                      SizedBox(
                         height: 5.h,
                         width: 18.h,
                         child: ElevatedButton.icon(
@@ -204,6 +331,11 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                   indicatorColor: primaryColor,
                   labelColor: primaryColor,
                   unselectedLabelColor: Colors.grey,
+                  onTap: (value) {
+                    setState(() {
+                      tabIndex = value;
+                    });
+                  },
                   tabs: [
                     Tab(
                       text: "(${_listMotel.length})",
@@ -215,51 +347,54 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                     ),
                     if (memberLimit != 1)
                       Tab(
-                        text: "(${_listRestaurant.length})",
-                        icon: const Icon(Icons.room_service),
+                        text: "(${_listSurcharges.length})",
+                        icon: const Icon(Icons.account_balance_wallet),
                       )
                   ]),
               Container(
                 margin: const EdgeInsets.only(top: 8),
                 height:
                     _listRestaurant.isEmpty && _listMotel.isEmpty ? 50.h : 46.h,
-                child: TabBarView(controller: tabController, children: [
-                  _listRestaurant.isEmpty && _listMotel.isEmpty
-                      ? Image.asset(
-                          empty_plan,
-                          fit: BoxFit.cover,
-                        )
-                      : ListView.builder(
+                child: TabBarView(
+                    controller: tabController,
+                    physics: const NeverScrollableScrollPhysics(),
+                    children: [
+                      _listRestaurant.isEmpty && _listMotel.isEmpty
+                          ? Image.asset(
+                              empty_plan,
+                              fit: BoxFit.cover,
+                            )
+                          : ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: _listMotel.length,
+                              itemBuilder: (context, index) {
+                                return _listMotel[index];
+                              },
+                            ),
+                      _listRestaurant.isEmpty && _listMotel.isEmpty
+                          ? Image.asset(
+                              empty_plan,
+                              fit: BoxFit.cover,
+                            )
+                          : ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: _listRestaurant.length,
+                              itemBuilder: (context, index) {
+                                return _listRestaurant[index];
+                              },
+                            ),
+                      if (memberLimit != 1)
+                        ListView.builder(
                           physics: const BouncingScrollPhysics(),
                           shrinkWrap: true,
-                          itemCount: _listMotel.length,
+                          itemCount: _listSurcharges.length,
                           itemBuilder: (context, index) {
-                            return _listMotel[index];
+                            return _listSurcharges[index];
                           },
                         ),
-                  _listRestaurant.isEmpty && _listMotel.isEmpty
-                      ? Image.asset(
-                          empty_plan,
-                          fit: BoxFit.cover,
-                        )
-                      : ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _listRestaurant.length,
-                          itemBuilder: (context, index) {
-                            return _listRestaurant[index];
-                          },
-                        ),
-                  if (memberLimit != 1)
-                    ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: _listSurcharges.length,
-                      itemBuilder: (context, index) {
-                        return _listSurcharges[index];
-                      },
-                    ),
-                ]),
+                    ]),
               ),
               const Spacer(),
               if (total != 0)
@@ -276,11 +411,18 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
+                            '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(tabIndex == 0 ? totalRest / 100 : tabIndex == 1 ? totalFood / 100 : totalSurcharge / 100)} GCOIN',
                             style: const TextStyle(fontSize: 18),
                           ),
                         ],
                       ),
+                    ),
+                    SizedBox(
+                      height: 1.h,
+                    ),
+                    Container(
+                      height: 2,
+                      color: Colors.grey.withOpacity(0.4),
                     ),
                     SizedBox(
                       height: 1.h,
@@ -309,9 +451,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                       )
                   ],
                 ),
-              // const SizedBox(
-              //   height: 12,
-              // ),
               ElevatedButton(
                   style: elevatedButtonStyle,
                   onPressed: () async {
@@ -409,7 +548,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                                   fontWeight: FontWeight.bold),
                                             ),
                                             Text(
-                                                '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND')
+                                                '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total / 100)} GCOIN')
                                           ],
                                         ),
                                       )
@@ -419,7 +558,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                               btnOkText: 'Xác nhận',
                               btnOkOnPress: () async {
                                 // if (widget.memberLimit == 1) {
-                                completeService();
+                                completeService(context);
                                 // } else {
                                 //   final rs = await widget.completePlan();
                                 //   if (rs != 0) {
@@ -489,7 +628,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                       //   );
                       // }
 
-                      completeService();
+                      completeService(context);
                     }
                   },
                   child: const Text('Hoàn tất')),
@@ -574,212 +713,401 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     // }
   }
 
-  completeService() {
-    final startDate =
-        DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-    final endDate =
-        DateTime.parse(sharedPreferences.getString('plan_end_date')!);
-    final scheduleList =
-        json.decode(sharedPreferences.getString('plan_schedule')!);
-    final emergencyList =
-        json.decode(sharedPreferences.getString('plan_saved_emergency')!);
+  completeService(BuildContext ctx) {
+    final departureDate =
+        DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+    DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
+        seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+            .toInt()));
+    plan = PlanCreate(
+        numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
+        locationId: widget.location.id,
+        name: sharedPreferences.getString('plan_name'),
+        latitude: sharedPreferences.getDouble('plan_start_lat')!,
+        longitude: sharedPreferences.getDouble('plan_start_lng')!,
+        memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
+        savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
+        
+        // json
+        //     .decode(sharedPreferences.getString('plan_saved_emergency')!)
+        //     .toString(),
+        startDate:
+            DateTime.parse(sharedPreferences.getString('plan_start_date')!),
+        departureDate: departureDate,
+        schedule: sharedPreferences.getString('plan_schedule'),
+        endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
+        travelDuration: DateFormat.Hm().format(_travelDuration),
+        tempOrders: _orderService.convertTempOrders(orderList!).toString(),
+        gcoinBudget: ((total / memberLimit) / 100).ceil());
+    // final startDate =
+    //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    // final endDate =
+    //     DateTime.parse(sharedPreferences.getString('plan_end_date')!);
+    // final scheduleList =
+    //     json.decode(sharedPreferences.getString('plan_schedule')!);
+    // final emergencyList =
+    //     json.decode(sharedPreferences.getString('plan_saved_emergency')!);
+    showModalBottomSheet(
+        backgroundColor: Colors.white.withOpacity(0.94),
+        context: context,
+        builder: (ctx) => ConfirmPlanBottomSheet(
+              locationName: widget.location.name,
+              total: total / 100.toDouble(),
+              budgetPerCapita: ((total / memberLimit) / 100).ceil().toDouble(),
+              orderList: orderList!,
+              onCompletePlan: onCompletePlan,
+              plan: plan,
+              onJoinPlan: (){},
+              listSurcharges: _listSurchargeObjects,
+              isJoin: false,
+            ));
 
-    AwesomeDialog(
-      context: context,
-      dialogType: DialogType.info,
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              alignment: Alignment.center,
-              child: const Text(
-                'Xác nhận kế hoạch chuyến đi',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
-            Text(
-              '${sharedPreferences.getString('plan_name')}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              'Số lượng thành viên: ${sharedPreferences.getInt('plan_number_of_member')}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              'Địa điểm: ${widget.location.name}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              'Ngày bắt đầu: ${startDate.day}/${startDate.month}/${startDate.year}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              'Ngày kết thúc: ${endDate.day}/${endDate.month}/${endDate.year}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              'Thời gian di chuyển: ${sharedPreferences.getString('plan_duration_text')}',
-              style: const TextStyle(fontSize: 16),
-            ),
-            const Text(
-              'Lịch trình: ',
-              style: TextStyle(fontSize: 16),
-            ),
-            for (final day in scheduleList)
-              Padding(
-                padding: const EdgeInsets.only(left: 10, bottom: 10),
-                child: SizedBox(
-                  width: 60.w,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Ngày ${scheduleList.indexOf(day) + 1}: ',
-                        style: const TextStyle(fontSize: 16),
-                      ),
-                      Container(
-                        alignment: Alignment.topLeft,
-                        width: 45.w,
-                        child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              // child: Text(
-                              for (final event in day['events'])
-                                Text(
-                                  '${json.decode(event['shortDescription'])}, ',
-                                  style: const TextStyle(fontSize: 16),
-                                )
-                              // ),
-                            ]),
-                        // child: Text(
-                        //   for (final event in day['events'])
-                        //   '${json.decode(event['shortDescription'])}, '
-                        // ),
-                      ),
-                      // for (final event in day['events'])
-                      //   Text(
-                      //     '${json.decode(event['shortDescription'])}, ',
-                      //     style: const TextStyle(fontSize: 16),
-                      //   )
-                    ],
-                  ),
-                ),
-              ),
-            const Text(
-              'Liên lạc khẩn cấp đã lưu: ',
-              style: TextStyle(fontSize: 16),
-            ),
-            for (final emer in emergencyList)
-              Padding(
-                padding: const EdgeInsets.only(left: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '0${emer['phone'].toString().substring(4, emer['phone'].toString().length - 1)}',
-                      style: const TextStyle(fontSize: 16),
-                    ),
-                    Text(
-                      '${json.decode(emer['name'])}',
-                      style: const TextStyle(fontSize: 16),
-                    )
-                  ],
-                ),
-              )
-          ],
-        ),
-      ),
-      btnOkColor: Colors.blue,
-      btnOkOnPress: () async {
-        if (widget.isClone) {
-          AwesomeDialog(
-            context: context,
-            dialogType: DialogType.question,
-            animType: AnimType.leftSlide,
-            title: 'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
-            titleTextStyle:
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            btnOkText: 'Có',
-            btnOkOnPress: () {},
-            btnOkColor: Colors.orange,
-            btnCancelColor: Colors.blue,
-            btnCancelText: 'Không',
-            btnCancelOnPress: () {
-              Utils().clearPlanSharePref();
+    // AwesomeDialog(
+    //   context: ctx,
+    //   dialogType: DialogType.info,
+    //   body: Padding(
+    //     padding: const EdgeInsets.symmetric(horizontal: 16),
+    //     child: Column(
+    //       crossAxisAlignment: CrossAxisAlignment.start,
+    //       children: [
+    //         Container(
+    //           alignment: Alignment.center,
+    //           child: const Text(
+    //             'Xác nhận kế hoạch chuyến đi',
+    //             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+    //           ),
+    //         ),
+    //         const SizedBox(
+    //           height: 8,
+    //         ),
+    //         Row(
+    //           crossAxisAlignment: CrossAxisAlignment.start,
+    //           children: [
+    //             const Column(
+    //               crossAxisAlignment: CrossAxisAlignment.start,
+    //               mainAxisAlignment: MainAxisAlignment.start,
+    //               children: [
+    //                 Text(
+    //                   'Tên chuyến đi: ',
+    //                   style:
+    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //                 ),
+    //                 Text(
+    //                   'Số lượng thành viên: ',
+    //                   style:
+    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //                 ),
+    //                 Text(
+    //                   'Địa điểm: ',
+    //                   style:
+    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //                 ),
+    //                 Text(
+    //                   'Ngày bắt đầu: ',
+    //                   style:
+    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //                 ),
+    //                 Text(
+    //                   'Ngày kết thúc: ',
+    //                   style:
+    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //                 ),
+    //                 Text(
+    //                   'Thời gian di chuyển: ',
+    //                   style:
+    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //                 ),
+    //               ],
+    //             ),
+    //             const SizedBox(
+    //               width: 2,
+    //             ),
+    //             Column(
+    //               crossAxisAlignment: CrossAxisAlignment.start,
+    //               mainAxisAlignment: MainAxisAlignment.start,
+    //               children: [
+    //                 SizedBox(
+    //                   width: 30.w,
+    //                   child: Text(
+    //                     '${sharedPreferences.getString('plan_name')}',
+    //                     style: const TextStyle(
+    //                       fontSize: 16,
+    //                     ),
+    //                     overflow: TextOverflow.ellipsis,
+    //                   ),
+    //                 ),
+    //                 Text(
+    //                   '${sharedPreferences.getInt('plan_number_of_member')}',
+    //                   style: const TextStyle(fontSize: 16),
+    //                 ),
+    //                 SizedBox(
+    //                   width: 30.w,
+    //                   child: Text(
+    //                     widget.location.name,
+    //                     style: const TextStyle(fontSize: 16),
+    //                     overflow: TextOverflow.ellipsis,
+    //                   ),
+    //                 ),
+    //                 Text(
+    //                   '${startDate.day}/${startDate.month}/${startDate.year}',
+    //                   overflow: TextOverflow.ellipsis,
+    //                   style: const TextStyle(fontSize: 16),
+    //                 ),
+    //                 Text(
+    //                   '${endDate.day}/${endDate.month}/${endDate.year}',
+    //                   overflow: TextOverflow.ellipsis,
+    //                   style: const TextStyle(fontSize: 16),
+    //                 ),
+    //                 Text(
+    //                   '${sharedPreferences.getString('plan_duration_text')}',
+    //                   overflow: TextOverflow.ellipsis,
+    //                   style: const TextStyle(fontSize: 16),
+    //                 ),
+    //               ],
+    //             )
+    //           ],
+    //         ),
+    //         const Row(
+    //           children: [
+    //             Text(
+    //               'Lịch trình: ',
+    //               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //             ),
+    //           ],
+    //         ),
+    //         for (final day in scheduleList)
+    //           Padding(
+    //             padding: const EdgeInsets.only(
+    //               left: 10,
+    //             ),
+    //             child: SizedBox(
+    //               width: 60.w,
+    //               child: Row(
+    //                 crossAxisAlignment: CrossAxisAlignment.start,
+    //                 children: [
+    //                   Text(
+    //                     '- Ngày ${scheduleList.indexOf(day) + 1}: ',
+    //                     style: const TextStyle(
+    //                         fontSize: 16, fontWeight: FontWeight.w500),
+    //                   ),
+    //                   Container(
+    //                     alignment: Alignment.topLeft,
+    //                     width: 40.w,
+    //                     child: Column(
+    //                         crossAxisAlignment: CrossAxisAlignment.start,
+    //                         children: [
+    //                           for (final event in day['events'])
+    //                             Text(
+    //                               '${json.decode(event['shortDescription'])}, ',
+    //                               style: const TextStyle(fontSize: 16),
+    //                             )
+    //                         ]),
+    //                   ),
+    //                 ],
+    //               ),
+    //             ),
+    //           ),
+    //         const Text(
+    //           'Liên lạc khẩn cấp đã lưu: ',
+    //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //         ),
+    //         for (final emer in emergencyList)
+    //           Padding(
+    //             padding: const EdgeInsets.only(left: 10),
+    //             child: Column(
+    //               crossAxisAlignment: CrossAxisAlignment.start,
+    //               children: [
+    //                 Text(
+    //                   '- ${json.decode(emer['name'])}',
+    //                   style: const TextStyle(fontSize: 16),
+    //                 )
+    //               ],
+    //             ),
+    //           ),
+    //         const Text(
+    //           'Đơn hàng mẫu đã lên: ',
+    //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //         ),
+    //         for (final order in orderList!)
+    //           Padding(
+    //             padding: const EdgeInsets.only(left: 10),
+    //             child: SizedBox(
+    //               width: 70.w,
+    //               child: Text(
+    //                 '- ${order.supplierName} - ${order.details!.length} đơn hàng',
+    //                 style: const TextStyle(fontSize: 16),
+    //                 overflow: TextOverflow.ellipsis,
+    //               ),
+    //             ),
+    //           ),
+    //         if (_listSurcharges.isNotEmpty)
+    //           const Text(
+    //             'Phụ thu: ',
+    //             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    //           ),
+    //         if (_listSurcharges.isNotEmpty)
+    //           for (final sur in _listSurchargeObjects)
+    //             Padding(
+    //               padding: const EdgeInsets.only(left: 10),
+    //               child: SizedBox(
+    //                 width: 70.w,
+    //                 child: Text(
+    //                   '- ${json.decode(sur['note'])} - ${sur['gcoinAmount']} GCOIN',
+    //                   style: const TextStyle(fontSize: 16),
+    //                   overflow: TextOverflow.ellipsis,
+    //                 ),
+    //               ),
+    //             )
+    //       ],
+    //     ),
+    //   ),
+    //   btnOkColor: Colors.blue,
+    //   btnOkOnPress: () async {
+    //     if (widget.isClone) {
+    //       AwesomeDialog(
+    //         context: context,
+    //         dialogType: DialogType.question,
+    //         animType: AnimType.leftSlide,
+    //         title: 'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
+    //         titleTextStyle:
+    //             const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    //         btnOkText: 'Có',
+    //         btnOkOnPress: () {},
+    //         btnOkColor: Colors.orange,
+    //         btnCancelColor: Colors.blue,
+    //         btnCancelText: 'Không',
+    //         btnCancelOnPress: () {
+    //           Utils().clearPlanSharePref();
+    //           Navigator.of(context).pop();
+    //           Navigator.of(context).pushAndRemoveUntil(
+    //             MaterialPageRoute(
+    //                 builder: (ctx) => const TabScreen(
+    //                       pageIndex: 1,
+    //                     )),
+    //             (route) => false,
+    //           );
+    //         },
+    //       ).show();
+    //     } else {
+    //       if (memberLimit == 1) {
+    //         Utils().clearPlanSharePref();
+    //         Navigator.of(context).pop();
+    //         Navigator.of(context).pushAndRemoveUntil(
+    //           MaterialPageRoute(
+    //               builder: (ctx) => const TabScreen(
+    //                     pageIndex: 1,
+    //                   )),
+    //           (route) => false,
+    //         );
+    //       } else {
+    //         final startTime =
+    //             DateTime.parse(sharedPreferences.getString('plan_start_time')!);
+    //         final departureDate = DateTime.parse(
+    //                 sharedPreferences.getString('plan_departureDate')!)
+    //             .add(Duration(hours: startTime.hour))
+    //             .add(Duration(minutes: startTime.minute));
+    //         final rs = await _planService.completeCreatePlan(
+    //             PlanCreate(
+    //                 locationId: widget.location.id,
+    //                 name: sharedPreferences.getString('plan_name'),
+    //                 latitude: sharedPreferences.getDouble('plan_start_lat')!,
+    //                 longitude: sharedPreferences.getDouble('plan_start_lng')!,
+    //                 memberLimit:
+    //                     sharedPreferences.getInt('plan_number_of_member') ?? 1,
+    //                 savedContacts: json
+    //                     .decode(sharedPreferences
+    //                         .getString('plan_saved_emergency')!)
+    //                     .toString(),
+    //                 startDate: DateTime.parse(
+    //                     sharedPreferences.getString('plan_start_date')!),
+    //                 departureDate: departureDate,
+    //                 schedule: sharedPreferences.getString('plan_schedule'),
+    //                 gcoinBudget: ((total / memberLimit) / 100).ceil()),
+    //             sharedPreferences.getInt('planId')!,
+    //             _listSurchargeObjects.toString()
+    //             );
+    //         if (rs != 0) {
+    //           Utils().clearPlanSharePref();
 
-              Navigator.of(context).pop();
+    //           Navigator.of(context).pop();
 
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                    builder: (ctx) => const TabScreen(
-                          pageIndex: 1,
-                        )),
-                (route) => false,
-              );
-            },
-          ).show();
-        } else {
-          if (memberLimit == 1) {
-            Utils().clearPlanSharePref();
-
-            Navigator.of(context).pop();
-
-            Navigator.of(context).pushAndRemoveUntil(
-              MaterialPageRoute(
-                  builder: (ctx) => const TabScreen(
-                        pageIndex: 1,
-                      )),
-              (route) => false,
-            );
-          } else {
-            final startTime = DateTime.parse(sharedPreferences.getString('plan_start_time')!);
-            final departureDate = DateTime.parse(sharedPreferences.getString('plan_departureDate')!).add(Duration(hours: startTime.hour)).add(Duration(minutes: startTime.minute));
-            final rs = await _planService.completeCreatePlan(
-                PlanCreate(
-                    locationId: widget.location.id,
-                    name: sharedPreferences.getString('plan_name'),
-                    latitude: sharedPreferences.getDouble('plan_start_lat')!,
-                    longitude: sharedPreferences.getDouble('plan_start_lng')!,
-                    memberLimit:
-                        sharedPreferences.getInt('plan_number_of_member') ?? 1,
-                    savedContacts: json
-                        .decode(sharedPreferences
-                            .getString('plan_saved_emergency')!)
-                        .toString(),
-                    startDate: DateTime.parse(
-                        sharedPreferences.getString('plan_start_date')!),
-                    departureDate: departureDate,
-                    schedule: sharedPreferences.getString('plan_schedule'),
-                    gcoinBudget: ((total / memberLimit) / 100).ceil()),
-                sharedPreferences.getInt('planId')!);
-            if (rs != 0) {
-              Utils().clearPlanSharePref();
-
-              Navigator.of(context).pop();
-
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(
-                    builder: (ctx) => const TabScreen(
-                          pageIndex: 1,
-                        )),
-                (route) => false,
-              );
-            }
-          }
-        }
-      },
-    ).show();
+    //           Navigator.of(context).pushAndRemoveUntil(
+    //             MaterialPageRoute(
+    //                 builder: (ctx) => const TabScreen(
+    //                       pageIndex: 1,
+    //                     )),
+    //             (route) => false,
+    //           );
+    //         }
+    //       }
+    //     }
+    //   },
+    // ).show();
   }
 
   callbackSurcharge(String amount, String note) {
     setState(() {
-      total += int.parse(amount) * 100;
       _listSurcharges.add(SurchargeCard(amount: amount, note: note));
+      totalSurcharge += int.parse(amount) * 100;
+      total += int.parse(amount) * 100;
+      _listSurchargeObjects
+          .add({'note': json.encode(note), 'gcoinAmount': amount});
+      print(_listSurchargeObjects.toString());
     });
+  }
+
+  onCompletePlan() async {
+    if (widget.isClone) {
+      AwesomeDialog(
+        context: context,
+        dialogType: DialogType.question,
+        animType: AnimType.leftSlide,
+        title: 'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
+        titleTextStyle:
+            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        btnOkText: 'Có',
+        btnOkOnPress: () {},
+        btnOkColor: Colors.orange,
+        btnCancelColor: Colors.blue,
+        btnCancelText: 'Không',
+        btnCancelOnPress: () {
+          Utils().clearPlanSharePref();
+          Navigator.of(context).pop();
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+                builder: (ctx) => const TabScreen(
+                      pageIndex: 1,
+                    )),
+            (route) => false,
+          );
+        },
+      ).show();
+    } else {
+      if (memberLimit == 1) {
+        Utils().clearPlanSharePref();
+        Navigator.of(context).pop();
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(
+              builder: (ctx) => const TabScreen(
+                    pageIndex: 1,
+                  )),
+          (route) => false,
+        );
+      } else {
+        final rs = await _planService.createNewPlan(
+            plan!, context, _listSurchargeObjects.toString());
+        if (rs != 0) {
+          Utils().clearPlanSharePref();
+          Navigator.of(context).pop();
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+                builder: (ctx) => const TabScreen(
+                      pageIndex: 1,
+                    )),
+            (route) => false,
+          );
+        }
+      }
+    }
   }
 }

@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -13,11 +15,15 @@ import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.d
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/service/product_service.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/view_models/supplier.dart';
+import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
@@ -30,9 +36,7 @@ import '../../widgets/style_widget/button_style.dart';
 
 class DetailPlanNewScreen extends StatefulWidget {
   const DetailPlanNewScreen(
-      {super.key,
-      required this.planId,
-      required this.isEnableToJoin});
+      {super.key, required this.planId, required this.isEnableToJoin});
   final int planId;
   final bool isEnableToJoin;
 
@@ -45,6 +49,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   bool isLoading = true;
   PlanService _planService = PlanService();
   LocationService _locationService = LocationService();
+  ProductService _productService = ProductService();
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
   PlanDetail? _planDetail;
@@ -53,11 +58,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   List<PlanMemberViewModel> _planMembers = [];
   List<PlanMemberViewModel> _joinedMember = [];
   double total = 0;
-  List<SupplierViewModel>? _saveSupplier;
   int _currentIndexEmergencyCard = 0;
   int _selectedTab = 0;
   bool _isPublic = true;
   bool _isEnableToShare = false;
+  bool _isEnableToOrder = false;
+  List<ProductViewModel> products = [];
+  List<OrderViewModel> tempOrders = [];
+  bool _isShowRealOrder = false;
+  List<OrderViewModel> orderList = [];
 
   @override
   void initState() {
@@ -71,45 +80,94 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   setupData() async {
     _planDetail = null;
     _planDetail = await _planService.GetPlanById(widget.planId);
-
-    List<Widget> listRestaurant = [];
-    List<Widget> listMotel = [];
-
+    List<String> productIds = [];
+    for (final order in _planDetail!.tempOrders!) {
+      Map<String, dynamic> cart = order['cart'];
+      for (final proId in cart.keys.toList()) {
+        if (!productIds.contains(proId)) {
+          productIds.add(proId);
+        }
+      }
+    }
     _isPublic = _planDetail!.isPublic;
     _isEnableToShare = _isPublic && _planDetail!.status != 'READY';
-
-    for (var item in _planDetail!.orders!) {
-      if (item.type == 'FOOD') {
-        listRestaurant.add(SupplierOrderCard(
-          order: item,
-          startDate: _planDetail!.startDate!,
-        ));
-      } else {
-        listMotel.add(
-            SupplierOrderCard(order: item, startDate: _planDetail!.startDate!));
-      }
-      total += item.total;
-    }
+    products = await _productService.getListProduct(productIds);
+    tempOrders = getTempOrder();
     _planMembers = _planDetail!.members!;
-    setState(() {
-      _listMotel = listMotel;
-      _listRestaurant = listRestaurant;
-    });
+    getOrderList();
     if (_planDetail != null) {
-      // if (_planDetail!.savedContacts != null) {
-      //   List<int> ids = _planDetail!.savedContacts!
-      //       .map((e) => int.parse(e.toString()))
-      //       .toList();
-      //   final rs = await _supplierService.getSuppliersByIds(ids);
-      //   setState(() {
-      //     _saveSupplier = rs;
-      //   });
-      // }
-
       setState(() {
         isLoading = false;
       });
     }
+  }
+  
+  getTempOrder() => _planDetail!.tempOrders!.map((e) {
+      var orderTotal = 0.0;
+      final Map<String, dynamic> cart = e['cart'];
+      for (final cart in cart.entries) {
+        orderTotal += products
+                .firstWhere((element) => element.id.toString() == cart.key)
+                .price *
+            cart.value;
+      }
+      ProductViewModel sampleProduct = products.firstWhere(
+          (element) => element.id.toString() == cart.entries.first.key);
+      return OrderViewModel(
+          id: e['id'],
+          details: cart.entries.map((e) {
+            final product = products
+                .firstWhere((element) => element.id.toString() == e.key);
+            return OrderDetailViewModel(
+                id: product.id,
+                productName: product.name,
+                price: product.price.toDouble(),
+                unitPrice: product.price.toDouble(),
+                quantity: e.value);
+          }).toList(),
+          note: e['note'],
+          serveDateIndexes: e["serveDateIndexes"],
+          total: orderTotal,
+          createdAt: DateTime.now(),
+          supplierName: sampleProduct.supplierName,
+          type: e['type'],
+          supplierPhone: sampleProduct.supplierPhone,
+          supplierAddress: sampleProduct.supplierAddress,
+          supplierImageUrl: sampleProduct.supplierThumbnailUrl,
+          period: e['period']);
+    }).toList();
+
+  getOrderList()async {
+    total = 0;
+    if(_isShowRealOrder){
+      orderList =  await _planService.getOrderCreatePlan(widget.planId);
+    }else{
+      orderList = tempOrders;
+    }
+    List<Widget> listRestaurant = [];
+    List<Widget> listMotel = [];
+    for (var item in orderList) {
+      if (item.type == 'MEAL') {
+        listRestaurant.add(SupplierOrderCard(
+          order: item,
+          startDate: _planDetail!.startDate!,
+          isTempOrder: true,
+          planId: widget.planId,
+        ));
+      } else {
+        listMotel.add(SupplierOrderCard(
+          order: item,
+          startDate: _planDetail!.startDate!,
+          isTempOrder: true,
+          planId: widget.planId,
+        ));
+      }
+      total += item.total!;
+    }
+    setState(() {
+      _listMotel = listMotel;
+      _listRestaurant = listRestaurant;
+    });
   }
 
   updatePlan() async {
@@ -233,18 +291,25 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   ),
                                   Column(
                                     children: [
-                                      CupertinoSwitch(
-                                        value: _isPublic,
-                                        activeColor: primaryColor,
-                                        onChanged: (value) async {
-                                          final planStatus = await _planService
-                                              .publicizePlan(widget.planId);
-                                          setState(() {
-                                            _isPublic = planStatus;
-                                            _isEnableToShare = _isPublic && _planDetail!.status != 'READY';
-                                          });
-                                        },
-                                      ),
+                                      if (!widget.isEnableToJoin)
+                                        CupertinoSwitch(
+                                          value: _isPublic,
+                                          activeColor: primaryColor,
+                                          onChanged: (value) async {
+                                            setState(() {
+                                              _isPublic = !_isPublic;
+                                            });
+                                            // final planStatus =
+                                            await _planService
+                                                .publicizePlan(widget.planId);
+                                            setState(() {
+                                              // _isPublic = planStatus;
+                                              _isEnableToShare = _isPublic &&
+                                                  _planDetail!.status !=
+                                                      'READY';
+                                            });
+                                          },
+                                        ),
                                       Text(
                                         _isPublic ? 'Công khai' : 'Riêng tư',
                                         style: TextStyle(
@@ -531,16 +596,49 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                               horizontal: 24),
                                           child: Column(
                                             children: [
-                                              Container(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: const Text(
-                                                    "Các loại dịch vụ",
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  )),
+                                              Row(
+                                                children: [
+                                                  Container(
+                                                      alignment:
+                                                          Alignment.centerLeft,
+                                                      child: const Text(
+                                                        "Các loại dịch vụ",
+                                                        style: TextStyle(
+                                                            fontSize: 20,
+                                                            fontWeight:
+                                                                FontWeight
+                                                                    .bold),
+                                                      )),
+                                                  const Spacer(),
+                                                  Column(
+                                                    children: [
+                                                      CupertinoSwitch(
+                                                        value: _isShowRealOrder,
+                                                        activeColor:
+                                                            primaryColor,
+                                                        onChanged:
+                                                            (value) async {
+                                                          setState(() {
+                                                            _isShowRealOrder =
+                                                                !_isShowRealOrder;
+                                                          });
+                                                          getOrderList();
+                                                        },
+                                                      ),
+                                                      Text(
+                                                        _isShowRealOrder
+                                                            ? 'Đơn hàng'
+                                                            : 'Đơn hàng mẫu',
+                                                        style: TextStyle(
+                                                            fontSize: 13,
+                                                            color: _isShowRealOrder
+                                                                ? primaryColor
+                                                                : Colors.grey),
+                                                      )
+                                                    ],
+                                                  ),
+                                                ],
+                                              ),
                                               const SizedBox(
                                                 height: 16,
                                               ),
@@ -697,7 +795,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onJoinPlan() async {
-    AwesomeDialog(
+      AwesomeDialog(
         context: context,
         dialogType: DialogType.question,
         animType: AnimType.topSlide,
@@ -726,11 +824,44 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             ).show();
           }
         }).show();
+    // var emerList = [];
+    // for(final emer in _planDetail!.savedContacts!){
+    //   emerList.add({
+    //     "name":emer.name,
+    //     "phone":emer.phone,
+    //     "address":emer.address,
+    //     "imageUrl":emer.imageUrl,
+    //     "type":emer.type
+    //   });
+    // }
+    // showModalBottomSheet(
+    //   context: context,
+    //   builder: (ctx) => ConfirmPlanBottomSheet(
+    //     plan: PlanCreate(
+    //       schedule: json.encode(_planDetail!.schedule),
+    //       savedContacts: json.encode(emerList),
+    //       name: _planDetail!.name,
+    //       memberLimit: _planDetail!.memberLimit,
+    //       startDate: _planDetail!.startDate,
+    //       endDate: _planDetail!.endDate,
+    //     ),
+    //     locationName: _planDetail!.locationName,
+    //     orderList: orderList,
+    //     onCompletePlan: (){},
+    //     listSurcharges: [],
+    //     budgetPerCapita: _planDetail!.gcoinBudgetPerCapita!.toDouble(),
+    //     isJoin: true,
+    //     onJoinPlan: (){
+            
+    //     },
+    //     total: total));
+
   }
 
   Widget buildNewFooter() => Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-        child: SizedBox(
+        child: Container(
+          alignment: Alignment.center,
           height: 6.h,
           child: widget.isEnableToJoin
               ? ElevatedButton(
@@ -747,44 +878,50 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        icon: const Icon(Icons.share),
-                        onPressed: _isEnableToShare ?  onShare :() {
-                          
-                        },
-                        style: _isEnableToShare ?
-                         elevatedButtonStyle:elevatedButtonStyle.copyWith(
-                          backgroundColor: MaterialStatePropertyAll(Colors.grey.withOpacity(0.5),),
-                          foregroundColor:const MaterialStatePropertyAll(Colors.grey)
-                         ),
-                        label: const Text(
-                          "Mời",
-                          style: TextStyle(
+                        icon: Icon(_isEnableToOrder
+                            ? Icons.room_service_outlined
+                            : Icons.share),
+                        onPressed: _isEnableToShare ? onShare : () {},
+                        style: _isEnableToOrder
+                            ? elevatedButtonStyle
+                            : _isEnableToShare
+                                ? elevatedButtonStyle
+                                : elevatedButtonStyle.copyWith(
+                                    backgroundColor: MaterialStatePropertyAll(
+                                      Colors.grey.withOpacity(0.5),
+                                    ),
+                                    foregroundColor:
+                                        const MaterialStatePropertyAll(
+                                            Colors.grey)),
+                        label: Text(
+                          _isEnableToOrder ? "Xác nhận đơn hàng mẫu" : "Mời",
+                          style: const TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
                     ),
-                    if(_isEnableToShare)
-                    SizedBox(
-                      width: 1.h,
-                    ),
-                    if(_isEnableToShare)
-                    Expanded(
-                      child: ElevatedButton.icon(
-                        icon: const Icon(
-                          Icons.check_circle_outline,
-                          size: 28,
-                        ),
-                        onPressed: onConfirmMember,
-                        style: elevatedButtonStyle.copyWith(
-                            backgroundColor:
-                                MaterialStatePropertyAll(Colors.blue)),
-                        label: const Text(
-                          "Chốt",
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
+                    if (_isEnableToShare)
+                      SizedBox(
+                        width: 1.h,
+                      ),
+                    if (_isEnableToShare)
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            size: 28,
+                          ),
+                          onPressed: onConfirmMember,
+                          style: elevatedButtonStyle.copyWith(
+                              backgroundColor:
+                                  const MaterialStatePropertyAll(Colors.blue)),
+                          label: const Text(
+                            "Chốt",
+                            style: TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold),
+                          ),
                         ),
                       ),
-                    ),
                   ],
                 ),
         ),
@@ -814,23 +951,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       'status': true,
       'message': 'Kế hoạch đủ điều kiện để chia sẻ'
     };
-
     if (_planDetail!.memberLimit == _joinedMember.length) {
       return {
         'status': false,
         'message': 'Đã đủ số lượng thành viên của chuyến đi'
       };
     }
-    // else if (_planDetail!.orders != null && _planDetail!.orders!.isNotEmpty) {
-    //   if (_planDetail!.orders!.any((element) => element.createdAt
-    //       .add(const Duration(hours: 72))
-    //       .isAfter(DateTime.now()))) {
-    //     return {
-    //       'status': false,
-    //       'message': 'Kế hoạch có đơn hàng đang trong thời gian xác nhậnß'
-    //     };
-    //   }
-    // }
     return enableToShare;
   }
 
@@ -850,6 +976,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         Navigator.of(context).pop();
         setState(() {
           _isEnableToShare = false;
+          _isEnableToOrder = true;
         });
       });
     }

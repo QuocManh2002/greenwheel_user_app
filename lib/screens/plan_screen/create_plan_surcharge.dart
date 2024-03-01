@@ -16,38 +16,47 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(child: 
-    
-    Scaffold(
+    return SafeArea(
+        child: Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-      title:const Text('Tạo khoản phụ thu'),
-    ),
-    body: Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 14),
-      child: Column(children: [
-        SizedBox(height:32,),
-        defaultTextFormField(
-          text: 'Khoản phụ thu (GCOIN)',
-          hinttext: '10, 100, 1000,...',
-          controller: _amountController, 
-          inputType: TextInputType.number),
-        SizedBox(height: 32,),
-      defaultTextFormField(
-          text: 'Ghi chú phụ thu',
-          hinttext: 'Mua bia về nhậu,...',
-          controller: _noteController, 
-          inputType: TextInputType.text),
-        SizedBox(height: 32,),
-      
-        ElevatedButton.icon(onPressed: (){
-          Navigator.of(context).pop();
-          widget.callback(_amountController.text, _noteController.text);
-        }, icon: Icon(Icons.add), style: elevatedButtonStyle,
-        label: Text('Thêm'),
-        )
-      ]),
-    ),
+        title: const Text('Tạo khoản phụ thu'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 14),
+        child: Column(children: [
+          const SizedBox(
+            height: 32,
+          ),
+          defaultTextFormField(
+              text: 'Khoản phụ thu (GCOIN)',
+              hinttext: '10, 100, 1000,...',
+              controller: _amountController,
+              inputType: TextInputType.number),
+          const SizedBox(
+            height: 32,
+          ),
+          defaultTextFormField(
+              maxLength: 40,
+              maxline: 2,
+              text: 'Ghi chú phụ thu',
+              hinttext: 'Mua bia về nhậu,...',
+              controller: _noteController,
+              inputType: TextInputType.text),
+          const SizedBox(
+            height: 32,
+          ),
+          ElevatedButton.icon(
+            onPressed: () {
+              Navigator.of(context).pop();
+              widget.callback(_amountController.text, _noteController.text);
+            },
+            icon: const Icon(Icons.add),
+            style: elevatedButtonStyle,
+            label: const Text('Thêm'),
+          )
+        ]),
+      ),
     ));
   }
 }

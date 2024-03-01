@@ -110,7 +110,7 @@ class _TestScreen1State extends State<TestScreen1> {
                   inputType: TextInputType.text,
                   hinttext: 'Để lại góp ý của bạn cho ứng dụng...',
                   onValidate: (value) {
-                    Utils().checkValidTextInput(value);
+                    // Utils().checkValidTextInput(value);s
                   },
                   )
         ],

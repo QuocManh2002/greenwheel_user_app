@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:intl/intl.dart';
@@ -6,15 +7,17 @@ import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierOrderCard extends StatelessWidget {
-  const SupplierOrderCard({super.key, required this.order, required this.startDate});
+  const SupplierOrderCard({super.key, required this.order, required this.startDate, required this.isTempOrder, required this.planId});
   final OrderViewModel order;
   final DateTime startDate;
+  final bool isTempOrder;
+  final int planId;
 
   @override
   Widget build(BuildContext context) {
     var total = 0.0;
     for(final detail in order.details!){
-      total += detail.unitPrice * detail.quantity;
+      total += detail.price! * detail.quantity;
     }
 
     return InkWell(
@@ -23,6 +26,8 @@ class SupplierOrderCard extends StatelessWidget {
             builder: (ctx) => OrderDetailScreen(
                   order: order,
                   startDate: startDate,
+                  isTempOrder: isTempOrder,
+                  planId: planId,
                 )));
       },
       child: Container(
@@ -48,11 +53,11 @@ class SupplierOrderCard extends StatelessWidget {
               decoration:
                   BoxDecoration(borderRadius: BorderRadius.circular(14)),
               child: Hero(
-                  tag: order.id,
+                  tag: UniqueKey(),
                   child: FadeInImage(
                     height: 15.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(order.supplierImageUrl),
+                    image: NetworkImage(order.supplierImageUrl!),
                     fit: BoxFit.cover,
                     width: 15.h,
                     filterQuality: FilterQuality.high,
@@ -69,11 +74,22 @@ class SupplierOrderCard extends StatelessWidget {
                   const SizedBox(
                     height: 12,
                   ),
-                  Text(order.supplierName,
-                      overflow: TextOverflow.clip,
-                      maxLines: 2,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                        width: 45.w,
+                        child: Text(order.supplierName!,
+                            overflow: TextOverflow.clip,
+                            maxLines: 2,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold)),
+                      ),
+                      const Spacer(),
+                      if(order.id != null)
+                      const Icon(Icons.check_circle, color: primaryColor, size: 30,)
+                    ],
+                  ),
                   const SizedBox(
                     height: 8,
                   ),

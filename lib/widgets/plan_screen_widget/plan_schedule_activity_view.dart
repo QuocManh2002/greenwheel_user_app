@@ -65,7 +65,7 @@ class PlanScheduleActivityView extends StatelessWidget {
                   offset: Offset(2, 4),
                 )
               ],
-              border: item.orderId != null
+              border: item.type == 'Ăn uống'
                   ? Border.all(color: primaryColor, width: 2)
                   : const Border(),
               borderRadius: const BorderRadius.all(Radius.circular(12))),
@@ -82,7 +82,7 @@ class PlanScheduleActivityView extends StatelessWidget {
                   overflow: TextOverflow.clip,
                 ),
                 Container(
-                  color: Colors.black26,
+                  color:item.type == 'Ăn uống' ? primaryColor : Colors.black26,
                   height: 1.5,
                 ),
                 // Text(

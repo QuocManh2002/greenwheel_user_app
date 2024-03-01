@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
 import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
@@ -10,7 +11,7 @@ class OrderService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
   static GraphQLClient client = config.getClient();
 //           mutation {
-//   createOrder(         
+//   createOrder(
 //     dto: {
 //       details: $details
 //       note: ${json.encode(order.note)}
@@ -26,8 +27,8 @@ class OrderService extends Iterable {
     try {
       List<Map<String, dynamic>> details = order.details.map((detail) {
         return {
-          'key': detail.productId,
-          'value': detail.quantity,
+          'key': detail['productId'],
+          'value': detail['quantity'],
         };
       }).toList();
       print(details);
@@ -79,12 +80,6 @@ mutation{
   }
 }
           '''),
-          // variables: {
-          //   "input": {
-          //     "amount": amount,
-          //     "gateway": "VNPAY",
-          //   },
-          // },
         ),
       );
 
@@ -151,6 +146,75 @@ mutation{
       );
       return topup;
     } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  List<dynamic> convertTempOrders(List<dynamic> sourceOrders) {
+    var orders = [];
+    for (final order in sourceOrders) {
+      orders.add({
+        'cart': [
+          for (final detail in order['details'])
+            {'key': detail['productId'], 'value': detail['quantity']}
+        ],
+        'note': json.encode(order['note']),
+        'period': order['period'],
+        'serveDateIndexes': order['servingDates'],
+        'type': order['type'] == "FOOD" ? "MEAL" : "ROOM"
+      });
+    }
+    return orders;
+  }
+
+  Future<int> createOrder(OrderViewModel order, int planId) async{
+    try{
+            List<Map<String, dynamic>> details = order.details!.map((detail) {
+        return {
+          'key': detail.id,
+          'value': detail.quantity
+        };
+      }).toList();
+      print(details);
+      print("""mutation{
+  createOrder(dto: {
+    cart:$details
+    note:"${order.note}"
+    period:${order.period}
+    planId:$planId
+    serveDateIndexes:${order.serveDateIndexes}
+    type:${order.type}
+  }){
+    id
+  }
+}""");
+      
+      final QueryResult result = await client.mutate(
+        MutationOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql("""
+mutation{
+  createOrder(dto: {
+    cart:$details
+    note:"${order.note}"
+    period:${order.period}
+    planId:$planId
+    serveDateIndexes:${order.serveDateIndexes}
+    type:${order.type}
+  }){
+    id
+  }
+}
+"""))
+      );
+      if (result.hasException) {
+        throw Exception(result.exception);
+      } else {
+        var rstext = result.data!;
+        int orderId = rstext['createOrder']['id'];
+        return orderId;
+      }
+    }catch (error) {
       throw Exception(error);
     }
   }

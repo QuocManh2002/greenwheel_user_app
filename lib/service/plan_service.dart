@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
@@ -19,9 +20,76 @@ class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
 
+  Future<int> createNewPlan(
+      PlanCreate model, BuildContext context, String surcharges) async {
+    try {
+      // DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
+      //     seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+      //         .toInt()));
+              // DateTime _newTravelDuration = DateFormat.Hm().parse(model.travelDuration!);
+      var schedule = json.decode(model.schedule!);
+// ${_newTravelDuration.hour.toString().length == 1 ? '0${_newTravelDuration.hour}' : _newTravelDuration.hour}:${_newTravelDuration.minute.toString().length == 1 ? '0${_newTravelDuration.minute}' : _newTravelDuration.minute}
+      print("""
+  mutation{
+  createPlan(dto: {
+    departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
+    departure:[${model.longitude},${model.latitude}]
+    destinationId:${model.locationId}
+    gcoinBudgetPerCapita:${model.gcoinBudget}
+    memberLimit:${model.memberLimit}
+    name:"${model.name}"
+    note:""
+    periodCount:${model.numOfExpPeriod}
+    savedContacts:${model.savedContacts}
+    schedule:$schedule
+    surcharges:$surcharges
+    tempOrders:${model.tempOrders}
+    travelDuration:"${model.travelDuration}"
+  }){
+    id
+  }
+}
+""");
+
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+  mutation{
+  createPlan(dto: {
+    departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
+    departure:[${model.longitude},${model.latitude}]
+    destinationId:${model.locationId}
+    gcoinBudgetPerCapita:${model.gcoinBudget}
+    memberLimit:${model.memberLimit}
+    name:"${model.name}"
+    note:""
+    periodCount:${model.numOfExpPeriod}
+    savedContacts:${json.decode(model.savedContacts!).toString()}
+    schedule:$schedule
+    surcharges:$surcharges
+    tempOrders:${model.tempOrders}
+    travelDuration:"${model.travelDuration}"
+  }){
+    id
+  }
+}
+"""),));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      } else {
+        var rstext = result.data!;
+        int planId = rstext['createPlan']['id'];
+        return planId;
+      }
+      
+    } catch (error) {
+      // ignore: use_build_context_synchronously
+      Utils().handleServerException(
+          'Đã xảy ra lỗi trong lúc tạo kế hoạch', context);
+      throw Exception(error);
+    }
+  }
 
   Future<int> createDraftPlan(PlanCreate model) async {
-    
     try {
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
@@ -52,81 +120,25 @@ mutation{
     }
   }
 
-//   Future<int> secondPhaseCreatePlan(PlanCreate model, int planId) async {
-//     try {
-//       QueryResult result = await client.mutate(MutationOptions(
-//         fetchPolicy: FetchPolicy.noCache,
-//         document: gql("""
-//   mutation{
-//   secondPhaseCreatePlan(dto: {
-//     id:$planId
-//     name:"${model.name}"
-//     savedContacts:${model.savedContacts}
-//   }){
-//     id
-//   }
-// }
-// """),
-//       ));
-
-//       if (result.hasException) {
-//         throw Exception(result.exception);
-//       } else {
-//         var rstext = result.data!;
-//         int planId = rstext['secondPhaseCreatePlan']['id'];
-//         return planId;
-//       }
-//     } catch (error) {
-//       throw Exception(error);
-//     }
-//   }
-
-// mutation{
-//   completeCreatePlan(dto: {
-//     departDate: ""
-//     gcoinBudgetPerCapita: 1
-//     id:1
-//     name:"name"
-//     savedContacts:[]
-//     schedule:[]
-//     surcharges:[]
-//     travelDuration:"04:00"
-//   }){
-//     id
-//   }
-// }
-
-Future<int> completeCreatePlan(PlanCreate model, int planId) async {
-
+  Future<int> completeCreatePlan(
+      PlanCreate model, int planId, String surcharges) async {
     try {
-      DateTime _travelDuration = DateTime(0,0,0).add(Duration(seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600).toInt()));
+      DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
+          seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+              .toInt()));
       var schedule = json.decode(model.schedule!);
-        print("""
-  mutation{
-  completeCreatePlan(dto: {
-    travelDuration:"${_travelDuration.hour.toString().length == 1 ? '0${_travelDuration.hour}':_travelDuration.hour}:${_travelDuration.minute.toString().length == 1? '0${_travelDuration.minute}' :_travelDuration.minute}"
-    gcoinBudgetPerCapita: ${model.gcoinBudget}
-    id:$planId
-    name:"${model.name}"
-    savedContacts:${model.savedContacts}
-    schedule:$schedule
-    departDate:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
-  }){
-    id
-  }
-}
-""");
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
   mutation{
   completeCreatePlan(dto: {
-    travelDuration:"${_travelDuration.hour.toString().length == 1 ? '0${_travelDuration.hour}':_travelDuration.hour}:${_travelDuration.minute.toString().length == 1? '0${_travelDuration.minute}' :_travelDuration.minute}"
+    travelDuration:"${_travelDuration.hour.toString().length == 1 ? '0${_travelDuration.hour}' : _travelDuration.hour}:${_travelDuration.minute.toString().length == 1 ? '0${_travelDuration.minute}' : _travelDuration.minute}"
     gcoinBudgetPerCapita: ${model.gcoinBudget}
     id:$planId
     name:"${model.name}"
     savedContacts:${model.savedContacts}
     schedule:$schedule
+    surcharges:$surcharges
     departDate:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
   }){
     id
@@ -147,77 +159,6 @@ Future<int> completeCreatePlan(PlanCreate model, int planId) async {
     }
   }
 
-
-
-//   Future<int> createPlan(PlanCreate model, int planId) async {
-//     print(model.schedule);
-//     try {
-//       QueryResult result = await client.mutate(MutationOptions(
-//         fetchPolicy: FetchPolicy.noCache,
-//         document: gql("""
-// mutation{
-//   completeDraftPlan(dto: {
-//     departDate:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
-//     gcoinBudgetPerCapita:${model.gcoinBudget}
-//     id:$planId
-//     name:"${model.name}"
-//     startDate:"${model.startDate!.year}-${model.startDate!.month}-${model.startDate!.day}"
-//   }){
-//     id
-//   }
-// }
-// """),
-//       ));
-//       if (result.hasException) {
-//         throw Exception(result.exception);
-//       } else {
-//         var rstext = result.data!;
-//         // bool isSuccess = rstext['createPlanDraft']['result']['success'];
-//         int planId = rstext['completeDraftPlan']['id'];
-//         sharedPreferences.setInt("planId", planId);
-//         return planId;
-//       }
-//     } catch (error) {
-//       throw Exception(error);
-//     }
-//   }
-
-//   Future<bool> createPlanDraft(PlanCreate model) async {
-//     try {
-//       var schedule = json.decode(model.schedule!);
-//       print(schedule.toString());
-//       QueryResult result = await client.mutate(MutationOptions(
-//         fetchPolicy: FetchPolicy.noCache,
-//         document: gql("""
-// mutation{
-//   createDraftPlan(dto: {
-//     departure:[${model.longitude},${model.latitude}]
-//     destinationId:${model.locationId}
-//     memberLimit:${model.memberLimit}
-//     periodCount:${model.numOfExpPeriod}
-//     proposedSchedule:$schedule
-//     savedContacts:${model.savedContacts}
-//   }){
-//     id
-//   }
-// }
-// """),
-//       ));
-
-//       if (result.hasException) {
-//         throw Exception(result.exception);
-//       } else {
-//         var rstext = result.data!;
-//         // bool isSuccess = rstext['createPlanDraft']['result']['success'];
-//         int planId = rstext['createDraftPlan']['id'];
-//         sharedPreferences.setInt("planId", planId);
-//         return true;
-//       }
-//     } catch (error) {
-//       throw Exception(error);
-//     }
-//   }
-
   Future<List<OrderViewModel>> getOrderCreatePlan(int planId) async {
     try {
       QueryResult result = await client.query(
@@ -228,12 +169,12 @@ Future<int> completeCreatePlan(PlanCreate model, int planId) async {
       orders {
         id
         planId
-        deposit
         total
         serveDateIndexes
         note
         createdAt
         period
+        type
         supplier {
           id
           phone
@@ -255,7 +196,6 @@ Future<int> completeCreatePlan(PlanCreate model, int planId) async {
     }
   }
 }
-
 """)));
 
       if (result.hasException) {
@@ -315,7 +255,7 @@ query GetPlanById(\$planId: Int){
       }
       status
       periodCount
-      departDate
+      departAt
       departure {
         coordinates
       }
@@ -358,6 +298,13 @@ query GetPlanById(\$planId: Int){
           phone
         }
         id
+      }
+      tempOrders{
+        cart
+        type
+        serveDateIndexes
+        period
+        note
       }
     }
   }
@@ -541,6 +488,10 @@ query GetPlanById(\$planId: Int){
     }
     return rs;
   }
+
+  // List<dynamic> convertSurchargeList(List<Map> list){
+  //   List<dynamic>
+  // }
 
   Future<int?> joinPlan(int planId) async {
     try {

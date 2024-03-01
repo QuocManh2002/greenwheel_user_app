@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
@@ -11,10 +10,7 @@ import 'package:sizer2/sizer2.dart';
 
 class SelectEmergencyService extends StatefulWidget {
   const SelectEmergencyService(
-      {super.key, required this.location, required this.planId});
-
-  final int planId;
-
+      {super.key, required this.location});
   final LocationViewModel location;
 
   @override
@@ -42,24 +38,6 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
       emergencyContacts = widget.location.emergencyContacts;
     });
   }
-
-  // callback() {
-  //   List<String>? serviceList = sharedPreferences.getStringList('serviceList');
-  //   final _selectedList = serviceList!
-  //       .map((e) =>
-  //           totalList.firstWhere((element) => element.id.toString() == e))
-  //       .toList();
-  //   setState(() {
-  //     listDiLai = _selectedList
-  //         .where((element) =>
-  //             element.type == "REPAIR_SHOP" ||
-  //             element.type == "TAXI" ||
-  //             element.type == "VEHICLE_SHOP")
-  //         .toList();
-  //     listTapHoa =
-  //         _selectedList.where((element) => element.type == "GROCERY").toList();
-  //   });
-  // }
 
   callback() {
     List<String>? selectedIndex =

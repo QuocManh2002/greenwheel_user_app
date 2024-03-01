@@ -1,11 +1,10 @@
-import 'package:greenwheel_user_app/view_models/order_detail_create.dart';
 
 class OrderCreateViewModel {
   final int? planId;
   final List<dynamic> servingDates;
   final String period;
   String? note;
-  final List<OrderDetailCreateViewModel> details;
+  final List<Map> details;
 
   OrderCreateViewModel({
     this.planId,

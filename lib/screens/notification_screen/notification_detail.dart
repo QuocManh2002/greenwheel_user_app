@@ -12,7 +12,6 @@ import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -63,7 +62,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
       } else {
         // listMotel.add(SupplierOrderCard(order: item));
       }
-      total += item.total;
+      total += item.total!;
     }
     _planMembers = await _planService.getPlanMember(widget.notification.targetId!);
     _joinedMember =
