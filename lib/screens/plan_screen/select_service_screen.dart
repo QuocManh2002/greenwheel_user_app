@@ -10,6 +10,7 @@ import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_note_weight_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
@@ -36,12 +37,10 @@ class SelectServiceScreen extends StatefulWidget {
       required this.memberLimit,
       required this.location,
       required this.isClone,
-      this.isOrder,
-      required this.completePlan});
+      this.isOrder,});
   final LocationViewModel location;
   final bool isClone;
   final bool? isOrder;
-  final Future<int> Function() completePlan;
   final int memberLimit;
 
   @override
@@ -73,6 +72,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   bool _isShowSchedule = false;
   int tabIndex = 0;
   PlanCreate? plan;
+  TextEditingController _noteController = TextEditingController();
 
   @override
   void initState() {
@@ -124,8 +124,10 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           supplierAddress: item['supplierAddress'],
           supplierImageUrl: item['supplierImageUrl']);
       if (item['type'] == 'FOOD') {
-        listRestaurant
-            .add(SupplierOrderCard(order: temp, startDate: startDate!, isTempOrder: false, planId: sharedPreferences.getInt('planId')!));
+        listRestaurant.add(SupplierOrderCard(
+            order: temp,
+            startDate: startDate!,
+            isTempOrder: false,));
         listRestaurantOrder!.add(temp);
         totalFood += getTotal(temp);
       } else {
@@ -133,7 +135,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           order: temp,
           startDate: startDate!,
           isTempOrder: false,
-          planId: sharedPreferences.getInt('planId')!,
+          
         ));
         listMotelOrder!.add(temp);
         totalRest += getTotal(temp);
@@ -169,6 +171,35 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           title: Text((widget.isOrder != null && widget.isOrder!)
               ? 'Thêm dịch vụ'
               : 'Tạo đơn hàng mẫu'),
+          leading: BackButton(
+            onPressed: () {
+              AwesomeDialog(
+                context: context,
+                dialogType: DialogType.warning,
+                title:
+                    'Kế hoạch cho chuyến đi này chưa được hoàn tất, bạn có chắc chắn muốn rời khỏi màn hình này không?',
+                titleTextStyle:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                padding: EdgeInsets.symmetric(horizontal: 2.h),
+                desc: 'Kế hoạch này sẽ được lưu lại trong phần bản nháp',
+                descTextStyle:
+                    const TextStyle(fontSize: 14, color: Colors.grey),
+                btnOkColor: Colors.amber,
+                btnOkText: "Rời khỏi",
+                btnCancelColor: Colors.red,
+                btnCancelText: "Hủy",
+                btnCancelOnPress: () {},
+                btnOkOnPress: () async {
+                  var rs = true;
+                  if (rs) {
+                    Utils().clearPlanSharePref();
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pop();
+                  }
+                },
+              ).show();
+            },
+          ),
           actions: [
             IconButton(
                 onPressed: () {
@@ -182,79 +213,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                             listFood: listRestaurantOrder!,
                             listRest: listMotelOrder!,
                           ));
-                  // AwesomeDialog(
-                  //         context: context,
-                  //         animType: AnimType.leftSlide,
-                  //         dialogType: DialogType.info,
-                  //         body: Padding(
-                  //           padding: const EdgeInsets.all(12),
-                  //           child: Column(
-                  //             crossAxisAlignment: CrossAxisAlignment.start,
-                  //             children: [
-                  //               Container(
-                  //                   alignment: Alignment.center,
-                  //                   child: const Text(
-                  //                     'Đơn hàng mẫu đã lên',
-                  //                     style: TextStyle(
-                  //                         fontSize: 20,
-                  //                         fontWeight: FontWeight.bold),
-                  //                   )),
-                  //               const SizedBox(
-                  //                 height: 8,
-                  //               ),
-                  //               for (final order in orderList!)
-                  //                 Padding(
-                  //                   padding: const EdgeInsets.only(left: 0),
-                  //                   child: Text(
-                  //                     '- ${order['supplierName']} - ${order['details']!.length} sản phẩm',
-                  //                     style: const TextStyle(fontSize: 16),
-                  //                   ),
-                  //                 ),
-                  //               const SizedBox(
-                  //                 height: 4,
-                  //               ),
-                  //               if (_listSurchargeObjects.isNotEmpty)
-                  //                 Container(
-                  //                     alignment: Alignment.center,
-                  //                     child: const Text(
-                  //                       'Phụ thu',
-                  //                       style: TextStyle(
-                  //                           fontSize: 20,
-                  //                           fontWeight: FontWeight.bold),
-                  //                     )),
-                  //               for (final surcharge in _listSurchargeObjects)
-                  //                 Padding(
-                  //                   padding: const EdgeInsets.only(left: 0),
-                  //                   child: Text(
-                  //                     '- ${surcharge['note']} - ${surcharge['gcoinAmount']} GCOIN',
-                  //                     style: TextStyle(fontSize: 16),
-                  //                   ),
-                  //                 ),
-                  //               const SizedBox(
-                  //                 height: 8,
-                  //               ),
-                  //               Row(
-                  //                 children: [
-                  //                   const Text(
-                  //                     'Tổng cộng: ',
-                  //                     style: TextStyle(
-                  //                         fontSize: 18,
-                  //                         fontWeight: FontWeight.bold),
-                  //                   ),
-                  //                   const Spacer(),
-                  //                   Text(
-                  //                     '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total/100)} GCOIN',
-                  //                     style:const TextStyle(fontSize: 18),
-                  //                   )
-                  //                 ],
-                  //               ),
-                  //             ],
-                  //           ),
-                  //         ),
-                  //         btnOkColor: Colors.blue,
-                  //         btnOkText: 'Tiếp tục',
-                  //         btnOkOnPress: () {})
-                  //     .show();
                 },
                 icon: const Icon(
                   Icons.attach_money_outlined,
@@ -451,187 +409,48 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                       )
                   ],
                 ),
-              ElevatedButton(
-                  style: elevatedButtonStyle,
-                  onPressed: () async {
-                    // final dateNotFullyService = checkFullyTimeService();
-                    // if (dateNotFullyService == null) {
-                    if (memberLimit == 1) {
-                      AwesomeDialog(
-                              context: context,
-                              dialogType: DialogType.info,
-                              body: Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.start,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Container(
-                                        alignment: Alignment.center,
-                                        child: const Text(
-                                          'Xác nhận thông tin dịch vụ',
-                                          style: TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ),
-                                      const SizedBox(
-                                        height: 16,
-                                      ),
-                                      if (_listRestaurant.isNotEmpty)
-                                        for (final order
-                                            in listRestaurantOrder!)
-                                          Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 16, right: 16),
-                                              child: RichText(
-                                                text: TextSpan(
-                                                    text: order.supplierName,
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    children: [
-                                                      // - ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(order.total)} VND
-                                                      TextSpan(
-                                                          text:
-                                                              ' đã đặt ${order.details!.length} đơn dịch vụ ',
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .normal))
-                                                    ]),
-                                              )),
-                                      const SizedBox(
-                                        height: 8,
-                                      ),
-                                      if (_listMotel.isNotEmpty)
-                                        for (final order in listMotelOrder!)
-                                          Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 16, right: 16),
-                                              child: RichText(
-                                                text: TextSpan(
-                                                    text: order.supplierName,
-                                                    style: const TextStyle(
-                                                        color: Colors.black,
-                                                        fontSize: 16,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                    children: [
-                                                      TextSpan(
-                                                          text:
-                                                              ': đã đặt ${order.details!.length} đơn dịch vụ',
-                                                          style: const TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .normal))
-                                                    ]),
-                                              )),
-                                      const SizedBox(
-                                        height: 16,
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.symmetric(
-                                            horizontal: 16),
-                                        child: Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            const Text(
-                                              'Tổng cộng: ',
-                                              style: TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold),
-                                            ),
-                                            Text(
-                                                '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total / 100)} GCOIN')
-                                          ],
-                                        ),
-                                      )
-                                    ]),
-                              ),
-                              btnOkColor: Colors.blue,
-                              btnOkText: 'Xác nhận',
-                              btnOkOnPress: () async {
-                                // if (widget.memberLimit == 1) {
-                                completeService(context);
-                                // } else {
-                                //   final rs = await widget.completePlan();
-                                //   if (rs != 0) {
-                                //     AwesomeDialog(
-                                //             context: context,
-                                //             animType: AnimType.bottomSlide,
-                                //             dialogType: DialogType.success,
-                                //             padding: const EdgeInsets.all(6),
-                                //             title: 'Hoàn tất kế hoạch',
-                                //             titleTextStyle: const TextStyle(
-                                //                 fontSize: 18,
-                                //                 fontWeight: FontWeight.bold))
-                                //         .show();
-
-                                //     Future.delayed(
-                                //       const Duration(milliseconds: 1500),
-                                //       () {
-                                //         Utils().clearPlanSharePref();
-
-                                //         Navigator.of(context).pop();
-
-                                //         Navigator.of(context)
-                                //             .pushAndRemoveUntil(
-                                //           MaterialPageRoute(
-                                //               builder: (ctx) => const TabScreen(
-                                //                     pageIndex: 1,
-                                //                   )),
-                                //           (route) => false,
-                                //         );
-                                //       },
-                                //     );
-                                // }
-                                // }
-                              },
-                              btnCancelColor: Colors.orange,
-                              btnCancelText: 'Chỉnh sửa',
-                              btnCancelOnPress: () {})
-                          .show();
-                    } else {
-                      // final rs = await widget.completePlan();
-                      // if (rs != 0) {
-                      //   AwesomeDialog(
-                      //           context: context,
-                      //           animType: AnimType.bottomSlide,
-                      //           dialogType: DialogType.success,
-                      //           padding: const EdgeInsets.all(6),
-                      //           title: 'Hoàn tất kế hoạch',
-                      //           titleTextStyle: const TextStyle(
-                      //               fontSize: 18, fontWeight: FontWeight.bold))
-                      //       .show();
-
-                      //   Future.delayed(
-                      //     const Duration(milliseconds: 1500),
-                      //     () {
-                      //       Utils().clearPlanSharePref();
-
-                      //       Navigator.of(context).pop();
-
-                      //       Navigator.of(context).pushAndRemoveUntil(
-                      //         MaterialPageRoute(
-                      //             builder: (ctx) => const TabScreen(
-                      //                   pageIndex: 1,
-                      //                 )),
-                      //         (route) => false,
-                      //       );
-                      //     },
-                      //   );
-                      // }
-
-                      completeService(context);
-                    }
-                  },
-                  child: const Text('Hoàn tất')),
+              Row(
+                children: [
+                  Expanded(
+                      child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    style: elevatedButtonStyle.copyWith(
+                        foregroundColor:
+                            const MaterialStatePropertyAll(primaryColor),
+                        backgroundColor:
+                            const MaterialStatePropertyAll(Colors.white),
+                        shape: const MaterialStatePropertyAll(
+                            RoundedRectangleBorder(
+                                borderRadius: BorderRadius.all(
+                                  Radius.circular(12),
+                                ),
+                                side: BorderSide(
+                                    color: primaryColor, width: 2)))),
+                    child: const Text('Quay lại'),
+                  )),
+                  SizedBox(
+                    width: 1.h,
+                  ),
+                  Expanded(
+                    child: ElevatedButton(
+                        style: elevatedButtonStyle,
+                        onPressed: () async {
+                          // completeService(context);
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (ctx) => CreateNoteWeightScreen(
+                                    locationId: widget.location.id,
+                                    locationName: widget.location.name,
+                                    listSurcharges: _listSurchargeObjects,
+                                    orders: orderList!,
+                                    total: total.f,
+                                  )));
+                        },
+                        child: const Text('Tiếp tục')),
+                  ),
+                ],
+              ),
               SizedBox(
                 height: 1.h,
               )
@@ -713,337 +532,42 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     // }
   }
 
-  completeService(BuildContext ctx) {
-    final departureDate =
-        DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-    DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
-        seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-            .toInt()));
-    plan = PlanCreate(
-        numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
-        locationId: widget.location.id,
-        name: sharedPreferences.getString('plan_name'),
-        latitude: sharedPreferences.getDouble('plan_start_lat')!,
-        longitude: sharedPreferences.getDouble('plan_start_lng')!,
-        memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
-        savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
-        
-        // json
-        //     .decode(sharedPreferences.getString('plan_saved_emergency')!)
-        //     .toString(),
-        startDate:
-            DateTime.parse(sharedPreferences.getString('plan_start_date')!),
-        departureDate: departureDate,
-        schedule: sharedPreferences.getString('plan_schedule'),
-        endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
-        travelDuration: DateFormat.Hm().format(_travelDuration),
-        tempOrders: _orderService.convertTempOrders(orderList!).toString(),
-        gcoinBudget: ((total / memberLimit) / 100).ceil());
-    // final startDate =
-    //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-    // final endDate =
-    //     DateTime.parse(sharedPreferences.getString('plan_end_date')!);
-    // final scheduleList =
-    //     json.decode(sharedPreferences.getString('plan_schedule')!);
-    // final emergencyList =
-    //     json.decode(sharedPreferences.getString('plan_saved_emergency')!);
-    showModalBottomSheet(
-        backgroundColor: Colors.white.withOpacity(0.94),
-        context: context,
-        builder: (ctx) => ConfirmPlanBottomSheet(
-              locationName: widget.location.name,
-              total: total / 100.toDouble(),
-              budgetPerCapita: ((total / memberLimit) / 100).ceil().toDouble(),
-              orderList: orderList!,
-              onCompletePlan: onCompletePlan,
-              plan: plan,
-              onJoinPlan: (){},
-              listSurcharges: _listSurchargeObjects,
-              isJoin: false,
-            ));
-
-    // AwesomeDialog(
-    //   context: ctx,
-    //   dialogType: DialogType.info,
-    //   body: Padding(
-    //     padding: const EdgeInsets.symmetric(horizontal: 16),
-    //     child: Column(
-    //       crossAxisAlignment: CrossAxisAlignment.start,
-    //       children: [
-    //         Container(
-    //           alignment: Alignment.center,
-    //           child: const Text(
-    //             'Xác nhận kế hoạch chuyến đi',
-    //             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-    //           ),
-    //         ),
-    //         const SizedBox(
-    //           height: 8,
-    //         ),
-    //         Row(
-    //           crossAxisAlignment: CrossAxisAlignment.start,
-    //           children: [
-    //             const Column(
-    //               crossAxisAlignment: CrossAxisAlignment.start,
-    //               mainAxisAlignment: MainAxisAlignment.start,
-    //               children: [
-    //                 Text(
-    //                   'Tên chuyến đi: ',
-    //                   style:
-    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //                 ),
-    //                 Text(
-    //                   'Số lượng thành viên: ',
-    //                   style:
-    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //                 ),
-    //                 Text(
-    //                   'Địa điểm: ',
-    //                   style:
-    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //                 ),
-    //                 Text(
-    //                   'Ngày bắt đầu: ',
-    //                   style:
-    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //                 ),
-    //                 Text(
-    //                   'Ngày kết thúc: ',
-    //                   style:
-    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //                 ),
-    //                 Text(
-    //                   'Thời gian di chuyển: ',
-    //                   style:
-    //                       TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //                 ),
-    //               ],
-    //             ),
-    //             const SizedBox(
-    //               width: 2,
-    //             ),
-    //             Column(
-    //               crossAxisAlignment: CrossAxisAlignment.start,
-    //               mainAxisAlignment: MainAxisAlignment.start,
-    //               children: [
-    //                 SizedBox(
-    //                   width: 30.w,
-    //                   child: Text(
-    //                     '${sharedPreferences.getString('plan_name')}',
-    //                     style: const TextStyle(
-    //                       fontSize: 16,
-    //                     ),
-    //                     overflow: TextOverflow.ellipsis,
-    //                   ),
-    //                 ),
-    //                 Text(
-    //                   '${sharedPreferences.getInt('plan_number_of_member')}',
-    //                   style: const TextStyle(fontSize: 16),
-    //                 ),
-    //                 SizedBox(
-    //                   width: 30.w,
-    //                   child: Text(
-    //                     widget.location.name,
-    //                     style: const TextStyle(fontSize: 16),
-    //                     overflow: TextOverflow.ellipsis,
-    //                   ),
-    //                 ),
-    //                 Text(
-    //                   '${startDate.day}/${startDate.month}/${startDate.year}',
-    //                   overflow: TextOverflow.ellipsis,
-    //                   style: const TextStyle(fontSize: 16),
-    //                 ),
-    //                 Text(
-    //                   '${endDate.day}/${endDate.month}/${endDate.year}',
-    //                   overflow: TextOverflow.ellipsis,
-    //                   style: const TextStyle(fontSize: 16),
-    //                 ),
-    //                 Text(
-    //                   '${sharedPreferences.getString('plan_duration_text')}',
-    //                   overflow: TextOverflow.ellipsis,
-    //                   style: const TextStyle(fontSize: 16),
-    //                 ),
-    //               ],
-    //             )
-    //           ],
-    //         ),
-    //         const Row(
-    //           children: [
-    //             Text(
-    //               'Lịch trình: ',
-    //               style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //             ),
-    //           ],
-    //         ),
-    //         for (final day in scheduleList)
-    //           Padding(
-    //             padding: const EdgeInsets.only(
-    //               left: 10,
-    //             ),
-    //             child: SizedBox(
-    //               width: 60.w,
-    //               child: Row(
-    //                 crossAxisAlignment: CrossAxisAlignment.start,
-    //                 children: [
-    //                   Text(
-    //                     '- Ngày ${scheduleList.indexOf(day) + 1}: ',
-    //                     style: const TextStyle(
-    //                         fontSize: 16, fontWeight: FontWeight.w500),
-    //                   ),
-    //                   Container(
-    //                     alignment: Alignment.topLeft,
-    //                     width: 40.w,
-    //                     child: Column(
-    //                         crossAxisAlignment: CrossAxisAlignment.start,
-    //                         children: [
-    //                           for (final event in day['events'])
-    //                             Text(
-    //                               '${json.decode(event['shortDescription'])}, ',
-    //                               style: const TextStyle(fontSize: 16),
-    //                             )
-    //                         ]),
-    //                   ),
-    //                 ],
-    //               ),
-    //             ),
-    //           ),
-    //         const Text(
-    //           'Liên lạc khẩn cấp đã lưu: ',
-    //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //         ),
-    //         for (final emer in emergencyList)
-    //           Padding(
-    //             padding: const EdgeInsets.only(left: 10),
-    //             child: Column(
-    //               crossAxisAlignment: CrossAxisAlignment.start,
-    //               children: [
-    //                 Text(
-    //                   '- ${json.decode(emer['name'])}',
-    //                   style: const TextStyle(fontSize: 16),
-    //                 )
-    //               ],
-    //             ),
-    //           ),
-    //         const Text(
-    //           'Đơn hàng mẫu đã lên: ',
-    //           style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //         ),
-    //         for (final order in orderList!)
-    //           Padding(
-    //             padding: const EdgeInsets.only(left: 10),
-    //             child: SizedBox(
-    //               width: 70.w,
-    //               child: Text(
-    //                 '- ${order.supplierName} - ${order.details!.length} đơn hàng',
-    //                 style: const TextStyle(fontSize: 16),
-    //                 overflow: TextOverflow.ellipsis,
-    //               ),
-    //             ),
-    //           ),
-    //         if (_listSurcharges.isNotEmpty)
-    //           const Text(
-    //             'Phụ thu: ',
-    //             style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-    //           ),
-    //         if (_listSurcharges.isNotEmpty)
-    //           for (final sur in _listSurchargeObjects)
-    //             Padding(
-    //               padding: const EdgeInsets.only(left: 10),
-    //               child: SizedBox(
-    //                 width: 70.w,
-    //                 child: Text(
-    //                   '- ${json.decode(sur['note'])} - ${sur['gcoinAmount']} GCOIN',
-    //                   style: const TextStyle(fontSize: 16),
-    //                   overflow: TextOverflow.ellipsis,
-    //                 ),
-    //               ),
-    //             )
-    //       ],
-    //     ),
-    //   ),
-    //   btnOkColor: Colors.blue,
-    //   btnOkOnPress: () async {
-    //     if (widget.isClone) {
-    //       AwesomeDialog(
-    //         context: context,
-    //         dialogType: DialogType.question,
-    //         animType: AnimType.leftSlide,
-    //         title: 'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
-    //         titleTextStyle:
-    //             const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    //         btnOkText: 'Có',
-    //         btnOkOnPress: () {},
-    //         btnOkColor: Colors.orange,
-    //         btnCancelColor: Colors.blue,
-    //         btnCancelText: 'Không',
-    //         btnCancelOnPress: () {
-    //           Utils().clearPlanSharePref();
-    //           Navigator.of(context).pop();
-    //           Navigator.of(context).pushAndRemoveUntil(
-    //             MaterialPageRoute(
-    //                 builder: (ctx) => const TabScreen(
-    //                       pageIndex: 1,
-    //                     )),
-    //             (route) => false,
-    //           );
-    //         },
-    //       ).show();
-    //     } else {
-    //       if (memberLimit == 1) {
-    //         Utils().clearPlanSharePref();
-    //         Navigator.of(context).pop();
-    //         Navigator.of(context).pushAndRemoveUntil(
-    //           MaterialPageRoute(
-    //               builder: (ctx) => const TabScreen(
-    //                     pageIndex: 1,
-    //                   )),
-    //           (route) => false,
-    //         );
-    //       } else {
-    //         final startTime =
-    //             DateTime.parse(sharedPreferences.getString('plan_start_time')!);
-    //         final departureDate = DateTime.parse(
-    //                 sharedPreferences.getString('plan_departureDate')!)
-    //             .add(Duration(hours: startTime.hour))
-    //             .add(Duration(minutes: startTime.minute));
-    //         final rs = await _planService.completeCreatePlan(
-    //             PlanCreate(
-    //                 locationId: widget.location.id,
-    //                 name: sharedPreferences.getString('plan_name'),
-    //                 latitude: sharedPreferences.getDouble('plan_start_lat')!,
-    //                 longitude: sharedPreferences.getDouble('plan_start_lng')!,
-    //                 memberLimit:
-    //                     sharedPreferences.getInt('plan_number_of_member') ?? 1,
-    //                 savedContacts: json
-    //                     .decode(sharedPreferences
-    //                         .getString('plan_saved_emergency')!)
-    //                     .toString(),
-    //                 startDate: DateTime.parse(
-    //                     sharedPreferences.getString('plan_start_date')!),
-    //                 departureDate: departureDate,
-    //                 schedule: sharedPreferences.getString('plan_schedule'),
-    //                 gcoinBudget: ((total / memberLimit) / 100).ceil()),
-    //             sharedPreferences.getInt('planId')!,
-    //             _listSurchargeObjects.toString()
-    //             );
-    //         if (rs != 0) {
-    //           Utils().clearPlanSharePref();
-
-    //           Navigator.of(context).pop();
-
-    //           Navigator.of(context).pushAndRemoveUntil(
-    //             MaterialPageRoute(
-    //                 builder: (ctx) => const TabScreen(
-    //                       pageIndex: 1,
-    //                     )),
-    //             (route) => false,
-    //           );
-    //         }
-    //       }
-    //     }
-    //   },
-    // ).show();
-  }
+  // completeService(BuildContext ctx) {
+  //   final departureDate =
+  //       DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+  //   DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
+  //       seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+  //           .toInt()));
+  //   plan = PlanCreate(
+  //       numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
+  //       locationId: widget.location.id,
+  //       name: sharedPreferences.getString('plan_name'),
+  //       latitude: sharedPreferences.getDouble('plan_start_lat')!,
+  //       longitude: sharedPreferences.getDouble('plan_start_lng')!,
+  //       memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
+  //       savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
+  //       startDate:
+  //           DateTime.parse(sharedPreferences.getString('plan_start_date')!),
+  //       departureDate: departureDate,
+  //       schedule: sharedPreferences.getString('plan_schedule'),
+  //       endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
+  //       travelDuration: DateFormat.Hm().format(_travelDuration),
+  //       tempOrders: _orderService.convertTempOrders(orderList!).toString(),
+  //       gcoinBudget: ((total / memberLimit) / 100).ceil());
+  //   showModalBottomSheet(
+  //       backgroundColor: Colors.white.withOpacity(0.94),
+  //       context: context,
+  //       builder: (ctx) => ConfirmPlanBottomSheet(
+  //             locationName: widget.location.name,
+  //             total: total / 100.toDouble(),
+  //             budgetPerCapita: ((total / memberLimit) / 100).ceil().toDouble(),
+  //             orderList: orderList!,
+  //             plan: plan,
+  //             onJoinPlan: () {},
+  //             listSurcharges: _listSurchargeObjects,
+  //             isJoin: false,
+  //           ));
+  // }
 
   callbackSurcharge(String amount, String note) {
     setState(() {
@@ -1056,58 +580,5 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     });
   }
 
-  onCompletePlan() async {
-    if (widget.isClone) {
-      AwesomeDialog(
-        context: context,
-        dialogType: DialogType.question,
-        animType: AnimType.leftSlide,
-        title: 'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
-        titleTextStyle:
-            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        btnOkText: 'Có',
-        btnOkOnPress: () {},
-        btnOkColor: Colors.orange,
-        btnCancelColor: Colors.blue,
-        btnCancelText: 'Không',
-        btnCancelOnPress: () {
-          Utils().clearPlanSharePref();
-          Navigator.of(context).pop();
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-                builder: (ctx) => const TabScreen(
-                      pageIndex: 1,
-                    )),
-            (route) => false,
-          );
-        },
-      ).show();
-    } else {
-      if (memberLimit == 1) {
-        Utils().clearPlanSharePref();
-        Navigator.of(context).pop();
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-              builder: (ctx) => const TabScreen(
-                    pageIndex: 1,
-                  )),
-          (route) => false,
-        );
-      } else {
-        final rs = await _planService.createNewPlan(
-            plan!, context, _listSurchargeObjects.toString());
-        if (rs != 0) {
-          Utils().clearPlanSharePref();
-          Navigator.of(context).pop();
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-                builder: (ctx) => const TabScreen(
-                      pageIndex: 1,
-                    )),
-            (route) => false,
-          );
-        }
-      }
-    }
-  }
+  
 }

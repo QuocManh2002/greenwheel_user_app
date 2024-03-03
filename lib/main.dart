@@ -68,9 +68,7 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     String? userToken = sharedPreferences.getString("userToken");
     if (userToken != null) {
-      // debugPrint(userToken, wrapWidth: 1100);
       log(userToken);
-      // debugPrint(userToken);
       //Call to refreshToken
       TokenRefresher.refreshToken();
     }

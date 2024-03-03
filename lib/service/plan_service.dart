@@ -6,6 +6,7 @@ import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -23,12 +24,7 @@ class PlanService {
   Future<int> createNewPlan(
       PlanCreate model, BuildContext context, String surcharges) async {
     try {
-      // DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
-      //     seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-      //         .toInt()));
-              // DateTime _newTravelDuration = DateFormat.Hm().parse(model.travelDuration!);
       var schedule = json.decode(model.schedule!);
-// ${_newTravelDuration.hour.toString().length == 1 ? '0${_newTravelDuration.hour}' : _newTravelDuration.hour}:${_newTravelDuration.minute.toString().length == 1 ? '0${_newTravelDuration.minute}' : _newTravelDuration.minute}
       print("""
   mutation{
   createPlan(dto: {
@@ -38,21 +34,23 @@ class PlanService {
     gcoinBudgetPerCapita:${model.gcoinBudget}
     memberLimit:${model.memberLimit}
     name:"${model.name}"
-    note:""
+    note:"${model.note}"
     periodCount:${model.numOfExpPeriod}
-    savedContacts:${model.savedContacts}
+    savedContacts:${json.decode(model.savedContacts!).toString()}
     schedule:$schedule
     surcharges:$surcharges
     tempOrders:${model.tempOrders}
     travelDuration:"${model.travelDuration}"
+    weight:${model.weight}
   }){
     id
   }
 }
 """);
 
-      QueryResult result = await client.mutate(
-          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+      QueryResult result = await client.mutate(MutationOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
   mutation{
   createPlan(dto: {
     departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
@@ -61,18 +59,20 @@ class PlanService {
     gcoinBudgetPerCapita:${model.gcoinBudget}
     memberLimit:${model.memberLimit}
     name:"${model.name}"
-    note:""
+    note:"${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedContacts:${json.decode(model.savedContacts!).toString()}
     schedule:$schedule
     surcharges:$surcharges
     tempOrders:${model.tempOrders}
     travelDuration:"${model.travelDuration}"
+    weight:${model.weight}
   }){
     id
   }
 }
-"""),));
+"""),
+      ));
       if (result.hasException) {
         throw Exception(result.exception);
       } else {
@@ -80,7 +80,6 @@ class PlanService {
         int planId = rstext['createPlan']['id'];
         return planId;
       }
-      
     } catch (error) {
       // ignore: use_build_context_synchronously
       Utils().handleServerException(
@@ -323,8 +322,6 @@ query GetPlanById(\$planId: Int){
       List<PlanDetail> plan =
           res.map((plan) => PlanDetail.fromJson(plan)).toList();
       var rs = plan[0];
-      // rs.orders = res[0]["orders"];
-      // List<OrderViewModel>? orders = res[0]["orders"].map((order) => OrderViewModel.fromJson(order)).toList();
       List<OrderViewModel>? orders = [];
       for (final item in res[0]["orders"]) {
         List<OrderDetailViewModel>? details = [];
@@ -430,6 +427,30 @@ query GetPlanById(\$planId: Int){
     return schedules;
   }
 
+  List<PlanSchedule> ConvertPLanJsonToObject(
+      DateTime startDate, String scheduleText) {
+    List<PlanSchedule> list = [];
+    List<dynamic> _scheduleList = json.decode(scheduleText);
+
+    for (final sche in _scheduleList) {
+      List<PlanScheduleItem> eventList = [];
+      for (final event in sche['events']) {
+        eventList.add(PlanScheduleItem(
+            activityTime: int.parse(
+                json.decode(event['duration']).toString().split(':')[0]),
+            description: json.decode(event['description']),
+            shortDescription: json.decode(event['shortDescription']),
+            type: schedule_item_types_vn[
+                schedule_item_types.indexOf(event['type'])],
+            date: startDate.add(Duration(days: _scheduleList.indexOf(sche)))));
+      }
+      list.add(PlanSchedule(
+          date: startDate.add(Duration(days: _scheduleList.indexOf(sche))),
+          items: eventList));
+    }
+    return list;
+  }
+
   List<PlanSchedule> GetPlanScheduleFromJsonNew(
       List<dynamic> schedules, DateTime startDate, int duration) {
     List<PlanSchedule> schedule = [];
@@ -489,10 +510,6 @@ query GetPlanById(\$planId: Int){
     return rs;
   }
 
-  // List<dynamic> convertSurchargeList(List<Map> list){
-  //   List<dynamic>
-  // }
-
   Future<int?> joinPlan(int planId) async {
     try {
       QueryResult result = await client.mutate(
@@ -526,13 +543,11 @@ mutation{
     nodes {
       members {
         status
-        traveler {
-          account {
-            name
-          }
+        account {
+          name
           phone
         }
-        travelerId
+        id
       }
     }
   }
@@ -733,4 +748,31 @@ mutation{
       throw Exception(error);
     }
   }
+
+
+  Future<int> removeMember(int memberId, bool isBlock) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql("""
+mutation{
+  removeMember(dto: {
+    planMemberId:$memberId
+    shouldBeBlocked:$isBlock
+  }){
+    id
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      int? res = result.data!['removeMember']['id'];
+      if (res == null) {
+        return 0;
+      }
+      return res;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
 }

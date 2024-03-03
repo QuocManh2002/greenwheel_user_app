@@ -35,13 +35,6 @@ class PlanScheduleItem {
       type: json['type']);
 
   Map<String, dynamic> toJson() => {
-        // "time": json.encode(DateFormat.Hms()
-        //     .format(DateTime(0, 0, 0, model.time.hour, model.time.minute))
-        //     .toString()),
-        // "orderGuid": model.orderId == null ? null : json.encode(model.orderId),
-        // "description": json.encode(model.title),
-        // "type": "GATHER"
-
         "time": json.encode(DateFormat.Hms()
             .format(DateTime(0, 0, 0, time!.hour, time!.minute))
             .toString()),

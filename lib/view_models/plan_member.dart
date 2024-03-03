@@ -10,27 +10,27 @@ String planMemberToJson(PlanMemberViewModel data) => json.encode(data.toJson());
 
 class PlanMemberViewModel {
     String name;
-    int travelerId;
+    int memberId;
     String phone;
     String status;
 
     PlanMemberViewModel({
         required this.name,
-        required this.travelerId,
+        required this.memberId,
         required this.phone,
         required this.status,
     });
 
     factory PlanMemberViewModel.fromJson(Map<String, dynamic> json) => PlanMemberViewModel(
         name: json["account"]["name"],
-        travelerId: json["id"],
+        memberId: json["id"],
         phone: json["account"]["phone"],
         status: json["status"],
     );
 
     Map<String, dynamic> toJson() => {
         "name": name,
-        "travelerId": travelerId,
+        "travelerId": memberId,
         "phone": phone,
         "status": status,
     };

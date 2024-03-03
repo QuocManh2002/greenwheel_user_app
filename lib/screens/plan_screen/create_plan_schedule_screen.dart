@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
@@ -10,11 +9,12 @@ import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_service_infor.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
-import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 // ignore: must_be_immutable
@@ -43,19 +43,18 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   List<PlanSchedule> testList = [];
   final PlanService _planService = PlanService();
   PlanScheduleItem? _selectedItem;
-  DateTime? _startDate;
   DateTime? departureDate;
   DateTime startDate = DateTime.now();
   int _numberOfDay = 0;
-  List<OrderViewModel> _orderList = [];
-
-  // String startTime = sharedPreferences.getString('plan_start_time')!;
-
-  // final duration = sharedPreferences.getDouble('plan_duration_value');
-  // final DateTime _departureDate =
-  //     DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-
   bool _isNotOverDay = false;
+
+  getTotal(OrderViewModel order) {
+    var total = 0.0;
+    for (final detail in order.details!) {
+      total += detail.price! * detail.quantity;
+    }
+    return total;
+  }
 
   @override
   void initState() {
@@ -72,13 +71,17 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   setUpData() async {
     _numberOfDay = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
     final DateTime _endDate = startDate.add(Duration(days: _numberOfDay));
-
-    // _isNotOverDay = startDate.day == _departureDate.day;
+    String? _scheduleText = sharedPreferences.getString('plan_schedule');
+    DateTime _startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     if (widget.isCreate) {
       if (!widget.isClone) {
-        testList = _planService.generateEmptySchedule(startDate, _endDate);
-        var finalList = _planService.convertPlanScheduleToJson(testList);
-        sharedPreferences.setString('plan_schedule', json.encode(finalList));
+        if (_scheduleText == null) {
+          testList = _planService.generateEmptySchedule(startDate, _endDate);
+          var finalList = _planService.convertPlanScheduleToJson(testList);
+          sharedPreferences.setString('plan_schedule', json.encode(finalList));
+        }else{
+testList = _planService.ConvertPLanJsonToObject(_startDate, _scheduleText);
+        }
       } else {
         var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
             startDate, _endDate.difference(startDate).inDays + 1);
@@ -108,16 +111,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             .firstWhere((element) => element.date == item.date)
             .items
             .add(item);
-        // testList
-        //     .firstWhere((element) => element.date == item.date)
-        //     .items
-        //     .sort((a, b) {
-        //   var adate = DateTime(0, 0, 0, a.time!.hour, a.time!.minute);
-        //   var bdate = DateTime(0, 0, 0, b.time!.hour, b.time!.minute);
-        //   return adate.compareTo(bdate);
-        // });
       });
-
       var finalList = _planService.convertPlanScheduleToJson(testList);
       print(finalList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
@@ -214,63 +208,59 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
     return Container(
       color: Colors.white,
       width: 100.w,
-      child:
-          testList[_index].items.isEmpty
-              ? Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Image.asset(
-                      'assets/images/anhnen2.png',
-                      width: 70.w,
-                    ),
-                    const SizedBox(
-                      height: 12,
-                    ),
-                    const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 18),
-                      child: Text(
-                        // _isNotOverDay || _currentPage != 0
-                        //     ?
-                        'Bạn không có lịch trình nào trong ngày này',
-                        // : 'Đây là ngày dành cho di chuyển, bạn không thể thêm hoạt động vào ngày này',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: Colors.black54,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold),
-                      ),
-                    )
-                  ],
-                )
-              : SizedBox(
-                  height: 50.h,
-                  child: ReorderableListView(
-                    children: List.generate(
-                      testList[_index].items.length,
-                      (index) => PlanScheduleActivity(
-                          isCreate: widget.isCreate,
-                          key: UniqueKey(),
-                          item: testList[_index].items[index],
-                          showBottomSheet: _showBottomSheet,
-                          isSelected:
-                              _selectedItem == testList[_index].items[index]),
-                    ),
-                    onReorder: (oldIndex, newIndex) {
-                      setState(() {
-                        if (oldIndex < newIndex) {
-                          newIndex -= 1;
-                        }
-                        final PlanScheduleItem item =
-                            testList[_index].items.removeAt(oldIndex);
-                        testList[_index].items.insert(newIndex, item);
-                      });
-                      var finalList =
-                          _planService.convertPlanScheduleToJson(testList);
-                      sharedPreferences.setString(
-                          'plan_schedule', json.encode(finalList));
-                    },
-                  ),
+      child: testList[_index].items.isEmpty
+          ? Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset(
+                  'assets/images/anhnen2.png',
+                  width: 70.w,
                 ),
+                const SizedBox(
+                  height: 12,
+                ),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 18),
+                  child: Text(
+                    'Bạn không có lịch trình nào trong ngày này',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.black54,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold),
+                  ),
+                )
+              ],
+            )
+          : SizedBox(
+              height: 50.h,
+              child: ReorderableListView(
+                children: List.generate(
+                  testList[_index].items.length,
+                  (index) => PlanScheduleActivity(
+                      isCreate: widget.isCreate,
+                      key: UniqueKey(),
+                      item: testList[_index].items[index],
+                      showBottomSheet: _showBottomSheet,
+                      isSelected:
+                          _selectedItem == testList[_index].items[index]),
+                ),
+                onReorder: (oldIndex, newIndex) {
+                  setState(() {
+                    if (oldIndex < newIndex) {
+                      newIndex -= 1;
+                    }
+                    final PlanScheduleItem item =
+                        testList[_index].items.removeAt(oldIndex);
+                    testList[_index].items.insert(newIndex, item);
+                  });
+                  var finalList =
+                      _planService.convertPlanScheduleToJson(testList);
+                  sharedPreferences.setString(
+                      'plan_schedule', json.encode(finalList));
+                },
+              ),
+            ),
     );
   }
 
@@ -284,7 +274,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             item: item,
             // initialTime: const TimeOfDay(hour: 0, minute: 0),
             isNotOverDay: _isNotOverDay,
-            startDate: testList.first.date)));
+            startDate: testList.first.date!)));
   }
 
   _deleteItem(PlanScheduleItem item) {
@@ -316,8 +306,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                   showDatePicker(
                       context: context,
                       initialDate: testList.first.date,
-                      firstDate: testList.first.date,
-                      lastDate: testList.last.date,
+                      firstDate: testList.first.date!,
+                      lastDate: testList.last.date!,
                       builder: (context, child) {
                         return Theme(
                           data: ThemeData().copyWith(
@@ -326,8 +316,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                                   onPrimary: Colors.white)),
                           child: DatePickerDialog(
                             initialDate: testList[_currentPage.toInt()].date,
-                            firstDate: testList.first.date,
-                            lastDate: testList.last.date,
+                            firstDate: testList.first.date!,
+                            lastDate: testList.last.date!,
                           ),
                         );
                       }).then((value) {
@@ -367,6 +357,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               SizedBox(
                 width: 2.h,
               ),
+              if(sharedPreferences.getString('plan_temp_order') != null)
               IconButton(
                   style: ButtonStyle(
                       shape: const MaterialStatePropertyAll(CircleBorder(
@@ -374,69 +365,54 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                       backgroundColor: MaterialStatePropertyAll(
                           Colors.white.withOpacity(0.7))),
                   onPressed: () async {
-                    _orderList = await _planService.getOrderCreatePlan(
-                        sharedPreferences.getInt('planId')!);
+                    final orderList = json.decode(
+                        sharedPreferences.getString('plan_temp_order')!);
+                    List<OrderViewModel> listMotelOrder = [];
+                    List<OrderViewModel> listRestaurantOrder = [];
                     var total = 0.0;
-                    for (final order in _orderList) {
-                      for (final detail in order.details!) {
-                        total += detail.quantity * detail.unitPrice!;
+                    for (var item in orderList!) {
+                      List<OrderDetailViewModel> details = [];
+                      for (final detail in item['details']) {
+                        details.add(OrderDetailViewModel(
+                            price: detail['unitPrice'],
+                            productName: detail['productName'],
+                            unitPrice: detail['unitPrice'],
+                            quantity: detail['quantity']));
                       }
+                      final temp = OrderViewModel(
+                          note: item['note'],
+                          details: details,
+                          type: item['type'],
+                          period: item['period'],
+                          serveDateIndexes: item['servingDates'],
+                          total: double.parse(item['total'].toString()),
+                          createdAt: DateTime.parse(item['createdAt']),
+                          supplierId: item['supplierId'],
+                          supplierName: item['supplierName'],
+                          supplierPhone: item['supplierPhone'],
+                          supplierAddress: item['supplierAddress'],
+                          supplierImageUrl: item['supplierImageUrl']);
+                      if (item['type'] == 'FOOD') {
+                        listRestaurantOrder.add(temp);
+                      } else {
+                        listMotelOrder.add(temp);
+                      }
+                      total += getTotal(temp);
                     }
-
-                    // ignore: use_build_context_synchronously
-                    AwesomeDialog(
-                            context: context,
-                            animType: AnimType.leftSlide,
-                            dialogType: DialogType.info,
-                            body: Padding(
-                              padding: const EdgeInsets.all(12),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                      alignment: Alignment.center,
-                                      child: const Text(
-                                        'Đơn hàng mẫu đã lên',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontWeight: FontWeight.bold),
-                                      )),
-                                  SizedBox(
-                                    height: 8,
-                                  ),
-                                  for (final order in _orderList)
-                                    Padding(
-                                      padding: const EdgeInsets.only(left: 0),
-                                      child: Text(
-                                        '- ${order.supplierName} - ${order.details!.length} sản phẩm',
-                                        style: TextStyle(fontSize: 16),
-                                      ),
-                                    ),
-                                  const SizedBox(
-                                    height: 8,
-                                  ),
-                                  Row(
-                                    children: [
-                                      const Text(
-                                        'Tổng cộng: ',
-                                        style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      Spacer(),
-                                      Text(
-                                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
-                                        style: TextStyle(fontSize: 18),
-                                      )
-                                    ],
-                                  )
-                                ],
-                              ),
-                            ),
-                            btnOkColor: Colors.blue,
-                            btnOkText: 'Tiếp tục',
-                            btnOkOnPress: () {})
-                        .show();
+                    showModalBottomSheet(
+                        context: context,
+                        builder: (ctx) => ConfirmServiceInfor(
+                              listSurcharges: [],
+                              total: total / 100.toDouble(),
+                              budgetPerCapita: ((total /
+                                          sharedPreferences.getInt(
+                                              'plan_number_of_member')!) /
+                                      100)
+                                  .ceil()
+                                  .toDouble(),
+                              listFood: listRestaurantOrder,
+                              listRest: listMotelOrder,
+                            ));
                   },
                   icon: const Icon(
                     Icons.attach_money_rounded,
@@ -462,7 +438,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                       var _currentSchedule = testList.firstWhere((element) =>
                           element.date ==
                           testList[0]
-                              .date
+                              .date!
                               .add(Duration(days: _currentPage.toInt())));
                       var consumedTime = 0;
                       // _currentSchedule.items
@@ -478,7 +454,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                                   callback: callback,
                                   location: widget.location,
                                   maxActivityTime: 12 - consumedTime,
-                                  startDate: testList[0].date,
+                                  startDate: testList[0].date!,
                                   selectedIndex: _currentPage.toInt(),
                                   // initialTime: _currentSchedule.items.isEmpty
                                   //     ? TimeOfDay.now()
@@ -529,7 +505,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                     },
                     child: PlanScheduleTitle(
                       index: index,
-                      date: testList[index].date,
+                      date: testList[index].date!,
                       isSelected: _currentPage == index.toDouble(),
                     )),
               ),

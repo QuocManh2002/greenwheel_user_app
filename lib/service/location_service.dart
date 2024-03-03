@@ -170,51 +170,6 @@ class LocationService extends Iterable {
 ''';
       }
 
-      print("""
-query search(\$search: String!) {
-    searchLocations
-    (
-      first: 100, 
-      searchTerm: $search,
-      where: {
-        $seasons
-        $activities
-        $topographic
-        $provinces
-      }
-      )
-        {
-        nodes{
-          id
-          description
-          imageUrls
-          name
-          activities
-          seasons
-          topographic
-          coordinate{coordinates}
-          address
-          province{
-            id
-            name
-            imageUrl
-          }
-          emergencyContacts{
-            name
-            phone
-            address
-            type
-          }
-            templateEvents{
-            type
-            shortDescription
-            description
-          }
-        }
-    }
-}
-""");
-
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query search(\$search: String!) {
@@ -251,10 +206,14 @@ query search(\$search: String!) {
             address
             type
           }
-            templateEvents{
-            type
-            shortDescription
-            description
+          comments{
+            id
+            comment
+            createdAt
+            account{
+              avatarUrl
+              name
+            }
           }
         }
     }
@@ -346,10 +305,14 @@ query getById(\$id: Int) {
             address
             type
           }
-            templateEvents{
-            type
-            shortDescription
-            description
+          comments{
+            id
+            comment
+            createdAt
+            account{
+              avatarUrl
+              name
+            }
           }
         }
   }
@@ -378,7 +341,7 @@ query getById(\$id: Int) {
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 query getByLocationId(\$id: Int) {
   destinations(where: { id: { eq: \$id } }) {
-    nodes{
+nodes{
           id
           description
           imageUrls
@@ -399,10 +362,14 @@ query getByLocationId(\$id: Int) {
             address
             type
           }
-            templateEvents{
-            type
-            shortDescription
-            description
+          comments{
+            id
+            comment
+            createdAt
+            account{
+              avatarUrl
+              name
+            }
           }
         }
   }

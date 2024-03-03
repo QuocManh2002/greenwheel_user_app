@@ -14,21 +14,25 @@ class PlanCreate {
   int? gcoinBudget;
   String? travelDuration;
   String? tempOrders;
+  String? note;
+  int? weight;
 
   PlanCreate(
-      { this.locationId,
-       this.startDate,
-       this.endDate,
-       this.latitude,
+      {this.locationId,
+      this.startDate,
+      this.endDate,
+      this.latitude,
       this.closeRegDate,
-       this.longitude,
-       this.memberLimit,
-       this.name,
-       this.schedule,
+      this.longitude,
+      this.memberLimit,
+      this.name,
+      this.schedule,
       this.numOfExpPeriod,
-       this.departureDate,
+      this.departureDate,
       this.gcoinBudget,
       this.travelDuration,
       this.tempOrders,
+      this.note,
+      this.weight,
       this.savedContacts});
 }

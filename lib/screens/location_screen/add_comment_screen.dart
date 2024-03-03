@@ -140,12 +140,14 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                       )),
                       const Spacer(),
                       IconButton(onPressed: ()async{
-                        final rs = await _locationService.commentOnDestination(_commentController.text, widget.destinationId);
+                        if(_formKey.currentState!.validate()){
+                          final rs = await _locationService.commentOnDestination(_commentController.text, widget.destinationId);
                         if(rs){
                           widget.callback();
                         }
                         // ignore: use_build_context_synchronously
                         Navigator.of(context).pop();
+                        }
                       }, icon:const Icon(Icons.send, color: primaryColor,size: 30,))
 
               ],

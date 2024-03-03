@@ -69,7 +69,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
       });
     } else {
       var rs = customer[0];
-      if (_planMembers.any((member) => member.travelerId == rs.id)) {
+      if (_planMembers.any((member) => member.memberId == rs.id)) {
         setState(() {
           _isEnableToInvite = false;
         });
@@ -172,7 +172,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                   _isSearch = false;
                   _planMembers.add(PlanMemberViewModel(
                       name: _customer!.name,
-                      travelerId: _customer!.id,
+                      memberId: _customer!.id,
                       phone: _customer!.phone,
                       status: "INVITED"));
                 });

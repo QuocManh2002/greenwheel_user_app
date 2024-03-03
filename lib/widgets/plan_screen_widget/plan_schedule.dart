@@ -47,10 +47,10 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
           widget.startDate,
           widget.endDate.difference(widget.startDate).inDays + 1);
     });
-    PlanSchedule? todaySchedule = _scheduleList.firstWhereOrNull((element) =>element.date.isBefore(DateTime.now()) && element.date.difference(DateTime.now()).inDays == 0);
+    PlanSchedule? todaySchedule = _scheduleList.firstWhereOrNull((element) =>element.date!.isBefore(DateTime.now()) && element.date!.difference(DateTime.now()).inDays == 0);
     if(todaySchedule != null){
       setState(() {
-      _currentPage = DateTime.now().difference(_scheduleList.first.date).inDays + 1;
+      _currentPage = DateTime.now().difference(_scheduleList.first.date!).inDays + 1;
       });
     }
 
@@ -108,8 +108,8 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                 showDatePicker(
                     context: context,
                     initialDate: _scheduleList.first.date,
-                    firstDate: _scheduleList.first.date,
-                    lastDate: _scheduleList.last.date,
+                    firstDate: _scheduleList.first.date!,
+                    lastDate: _scheduleList.last.date!,
                     builder: (context, child) {
                       return Theme(
                         data: ThemeData().copyWith(
@@ -118,21 +118,21 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                                 onPrimary: Colors.white)),
                         child: DatePickerDialog(
                           initialDate: _scheduleList[_currentPage.toInt()].date,
-                          firstDate: _scheduleList.first.date,
-                          lastDate: _scheduleList.last.date,
+                          firstDate: _scheduleList.first.date!,
+                          lastDate: _scheduleList.last.date!,
                         ),
                       );
                     }).then((value) {
                   if (value != null) {
                     _scheduleList.map((e) {
-                      print(e.date.difference(value).inDays);
+                      print(e.date!.difference(value).inDays);
                     });
                     setState(() {
                       _currentPage = _scheduleList
                           .indexOf(_scheduleList.firstWhere((element) =>
                               DateTime(value.year, value.month, value.day)
-                                  .difference(DateTime(element.date.year,
-                                      element.date.month, element.date.day))
+                                  .difference(DateTime(element.date!.year,
+                                      element.date!.month, element.date!.day))
                                   .inDays ==
                               0))
                           .toDouble();
@@ -187,7 +187,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                   },
                   child: PlanScheduleTitle(
                     index: index,
-                    date: _scheduleList[index].date,
+                    date: _scheduleList[index].date!,
                     isSelected: _currentPage == index.toDouble(),
                   )),
             ),

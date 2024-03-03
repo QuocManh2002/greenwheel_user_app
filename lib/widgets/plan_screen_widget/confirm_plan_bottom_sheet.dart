@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/bottom_sheet_container_widget.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -105,25 +106,31 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                 SizedBox(
                   height: 2.h,
                 ),
-                buildInfoWidget('Tên chuyến đi', widget.plan!.name!),
+                BottomSheetContainerWidget(title: 'Tên chuyến đi',content: widget.plan!.name!),
                 SizedBox(
                   height: 1.h,
                 ),
-                buildInfoWidget('Số lượng thành viên',
+                BottomSheetContainerWidget(title: 'Số lượng thành viên', content:
                     widget.plan!.memberLimit! < 10 ? '0${widget.plan!.memberLimit!}' :widget.plan!.memberLimit!.toString() ),
+               
+               if(widget.plan!.weight! != 1)
+                SizedBox(height: 1.h,),
+                if(widget.plan!.weight! != 1)
+                BottomSheetContainerWidget(content: widget.plan!.weight! < 10 ? '0${widget.plan!.weight}':widget.plan!.weight!.toString(), title: 'Số lượng thành viên của nhóm bạn'),
                 SizedBox(
                   height: 1.h,
                 ),
-                buildInfoWidget('Địa điểm', widget.locationName),
+                
+                BottomSheetContainerWidget(title: 'Địa điểm', content: widget.locationName),
                 SizedBox(
                   height: 1.h,
                 ),
-                buildInfoWidget('Thời gian chuyến đi',
+                BottomSheetContainerWidget(title: 'Thời gian chuyến đi', content:
                     '${DateFormat('dd/MM/yyyy').format(widget.plan!.departureDate!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan!.endDate!)}'),
                 SizedBox(
                   height: 1.h,
                 ),
-                buildInfoWidget('Thời gian di chuyển', travelDurationText),
+                BottomSheetContainerWidget(title: 'Thời gian di chuyển',content: travelDurationText),
                 SizedBox(
                   height: 1.h,
                 ),
@@ -190,6 +197,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             ),
                       ]),
                 ),
+                if(widget.plan!.note!.isNotEmpty)
+                SizedBox(height: 1.h,),
+                if(widget.plan!.note!.isNotEmpty)
+                BottomSheetContainerWidget(content: widget.plan!.note!, title: 'Ghi chú'),
+                
                 SizedBox(
                   height: 1.h,
                 ),
@@ -409,32 +421,5 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     );
   }
 
-  buildInfoWidget(String title, String content) => Container(
-        width: 100.w,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-        decoration: BoxDecoration(
-            boxShadow: const [
-              BoxShadow(
-                blurRadius: 3,
-                color: Colors.black12,
-                offset: Offset(1, 3),
-              )
-            ],
-            color: Colors.white.withOpacity(0.97),
-            borderRadius: const BorderRadius.all(Radius.circular(8))),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 16),
-            ),
-            Text(
-              content,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              overflow: TextOverflow.clip,
-            )
-          ],
-        ),
-      );
+  
 }

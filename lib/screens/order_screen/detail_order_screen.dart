@@ -15,12 +15,12 @@ class OrderDetailScreen extends StatefulWidget {
       {super.key,
       required this.order,
       required this.startDate,
-      required this.planId,
+      this.planId,
       required this.isTempOrder});
   final OrderViewModel order;
   final DateTime startDate;
   final bool isTempOrder;
-  final int planId;
+  final int? planId;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -438,20 +438,20 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                 style: elevatedButtonStyle,
                 onPressed: () async {
                   final rs = await _orderService.createOrder(
-                      widget.order, widget.planId);
+                      widget.order, widget.planId!);
                   if (rs != 0) {
                     // ignore: use_build_context_synchronously
                     AwesomeDialog(
-                      context: context,
-                      animType: AnimType.leftSlide,
-                      dialogType: DialogType.success,
-                      title: 'Tạo đơn hàng thành công',
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                      titleTextStyle:const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold
-                      )
-                    ).show();
-                    Future.delayed(const Duration(seconds: 2),(){
+                            context: context,
+                            animType: AnimType.leftSlide,
+                            dialogType: DialogType.success,
+                            title: 'Tạo đơn hàng thành công',
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 6),
+                            titleTextStyle: const TextStyle(
+                                fontSize: 20, fontWeight: FontWeight.bold))
+                        .show();
+                    Future.delayed(const Duration(seconds: 2), () {
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();
                     });

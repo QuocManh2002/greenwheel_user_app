@@ -84,17 +84,6 @@ mutation{
     }
   }
 
-//   {
-//   "info":{
-//     "name": "Cong test",
-//     "defaultAddress": "401/39 Pham Van Dong to 7 Thong Nhat Pleiku Gia Lai",
-//     "isMale": true,
-//     "defaultCoordinate": [106.82413962142736, 10.83305498937203],
-//     "avatarUrl": null,
-//     "deviceToken": null
-//   }
-// }
-
   Future<int?> registerTraveler(RegisterViewModel model) async {
     print(sharedPreferences.getString('userToken'));
     try {
@@ -142,8 +131,8 @@ mutation{
         }
         bool? res = result.data!['startReceiveNotification'];
         if (res == null) {
-        return null;
-      }
+          return null;
+        }
         print("Devicetoken sended!");
         return res;
       }

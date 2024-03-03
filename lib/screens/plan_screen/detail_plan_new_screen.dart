@@ -1,7 +1,5 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:convert';
-
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,11 +17,9 @@ import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
@@ -101,47 +97,47 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       });
     }
   }
-  
-  getTempOrder() => _planDetail!.tempOrders!.map((e) {
-      var orderTotal = 0.0;
-      final Map<String, dynamic> cart = e['cart'];
-      for (final cart in cart.entries) {
-        orderTotal += products
-                .firstWhere((element) => element.id.toString() == cart.key)
-                .price *
-            cart.value;
-      }
-      ProductViewModel sampleProduct = products.firstWhere(
-          (element) => element.id.toString() == cart.entries.first.key);
-      return OrderViewModel(
-          id: e['id'],
-          details: cart.entries.map((e) {
-            final product = products
-                .firstWhere((element) => element.id.toString() == e.key);
-            return OrderDetailViewModel(
-                id: product.id,
-                productName: product.name,
-                price: product.price.toDouble(),
-                unitPrice: product.price.toDouble(),
-                quantity: e.value);
-          }).toList(),
-          note: e['note'],
-          serveDateIndexes: e["serveDateIndexes"],
-          total: orderTotal,
-          createdAt: DateTime.now(),
-          supplierName: sampleProduct.supplierName,
-          type: e['type'],
-          supplierPhone: sampleProduct.supplierPhone,
-          supplierAddress: sampleProduct.supplierAddress,
-          supplierImageUrl: sampleProduct.supplierThumbnailUrl,
-          period: e['period']);
-    }).toList();
 
-  getOrderList()async {
+  getTempOrder() => _planDetail!.tempOrders!.map((e) {
+        var orderTotal = 0.0;
+        final Map<String, dynamic> cart = e['cart'];
+        for (final cart in cart.entries) {
+          orderTotal += products
+                  .firstWhere((element) => element.id.toString() == cart.key)
+                  .price *
+              cart.value;
+        }
+        ProductViewModel sampleProduct = products.firstWhere(
+            (element) => element.id.toString() == cart.entries.first.key);
+        return OrderViewModel(
+            id: e['id'],
+            details: cart.entries.map((e) {
+              final product = products
+                  .firstWhere((element) => element.id.toString() == e.key);
+              return OrderDetailViewModel(
+                  id: product.id,
+                  productName: product.name,
+                  price: product.price.toDouble(),
+                  unitPrice: product.price.toDouble(),
+                  quantity: e.value);
+            }).toList(),
+            note: e['note'],
+            serveDateIndexes: e["serveDateIndexes"],
+            total: orderTotal,
+            createdAt: DateTime.now(),
+            supplierName: sampleProduct.supplierName,
+            type: e['type'],
+            supplierPhone: sampleProduct.supplierPhone,
+            supplierAddress: sampleProduct.supplierAddress,
+            supplierImageUrl: sampleProduct.supplierThumbnailUrl,
+            period: e['period']);
+      }).toList();
+
+  getOrderList() async {
     total = 0;
-    if(_isShowRealOrder){
-      orderList =  await _planService.getOrderCreatePlan(widget.planId);
-    }else{
+    if (_isShowRealOrder) {
+      orderList = await _planService.getOrderCreatePlan(widget.planId);
+    } else {
       orderList = tempOrders;
     }
     List<Widget> listRestaurant = [];
@@ -519,35 +515,157 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
-                                                const Text(
-                                                  "Thành viên đã tham gia: ",
-                                                  style: TextStyle(
-                                                      fontSize: 18,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      color: Colors.black),
+                                                Row(
+                                                  children: [
+                                                    const Text(
+                                                      "Thành viên đã tham gia: ",
+                                                      style: TextStyle(
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          color: Colors.black),
+                                                    ),
+                                                    const Spacer(),
+                                                    TextButton(
+                                                        style: const ButtonStyle(
+                                                            foregroundColor:
+                                                                MaterialStatePropertyAll(
+                                                                    primaryColor)),
+                                                        onPressed: () {
+                                                          showModalBottomSheet(
+                                                              context: context,
+                                                              builder:
+                                                                  (ctx) =>
+                                                                      Padding(
+                                                                        padding: const EdgeInsets
+                                                                            .all(
+                                                                            12),
+                                                                        child:
+                                                                            SizedBox(
+                                                                          width:
+                                                                              100.w,
+                                                                          child: Column(
+                                                                              mainAxisSize: MainAxisSize.min,
+                                                                              children: [
+                                                                                Container(
+                                                                                  decoration: BoxDecoration(
+                                                                                    color: primaryColor.withOpacity(0.5),
+                                                                                    borderRadius: const BorderRadius.all(Radius.circular(12)),
+                                                                                  ),
+                                                                                  width: 10.h,
+                                                                                  height: 6,
+                                                                                ),
+                                                                                SizedBox(
+                                                                                  height: 1.h,
+                                                                                ),
+                                                                                for (final mem in _planMembers)
+                                                                                  Padding(
+                                                                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                                                                                    child: Container(
+                                                                                      padding: const EdgeInsets.all(12),
+                                                                                      width: 100.w,
+                                                                                      decoration: const BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(12)), color: Colors.white),
+                                                                                      child: Row(
+                                                                                        children: [
+                                                                                          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                                                                                            Text(
+                                                                                              mem.name,
+                                                                                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                                                                            ),
+                                                                                            Text(
+                                                                                              '0${mem.phone.substring(3)}',
+                                                                                              style: const TextStyle(fontSize: 19),
+                                                                                            )
+                                                                                          ]),
+                                                                                          const Spacer(),
+                                                                                          PopupMenuButton(
+                                                                                            itemBuilder: (ctx) => [
+                                                                                              const PopupMenuItem(
+                                                                                                value: 0,
+                                                                                                child: Row(
+                                                                                                  children: [
+                                                                                                    Icon(
+                                                                                                      Icons.close,
+                                                                                                      color: primaryColor,
+                                                                                                      size: 32,
+                                                                                                    ),
+                                                                                                    SizedBox(
+                                                                                                      width: 8,
+                                                                                                    ),
+                                                                                                    Text(
+                                                                                                      'Xoá',
+                                                                                                      style: TextStyle(color: primaryColor, fontSize: 18),
+                                                                                                    )
+                                                                                                  ],
+                                                                                                ),
+                                                                                              ),
+                                                                                              const PopupMenuItem(
+                                                                                                value: 1,
+                                                                                                child: Row(
+                                                                                                  children: [
+                                                                                                    Icon(
+                                                                                                      Icons.block,
+                                                                                                      color: redColor,
+                                                                                                      size: 32,
+                                                                                                    ),
+                                                                                                    SizedBox(
+                                                                                                      width: 8,
+                                                                                                    ),
+                                                                                                    Text(
+                                                                                                      'Chặn',
+                                                                                                      style: TextStyle(color: redColor, fontSize: 18),
+                                                                                                    )
+                                                                                                  ],
+                                                                                                ),
+                                                                                              )
+                                                                                            ],
+                                                                                            onSelected: (value) {
+                                                                                              if (value == 0) {
+                                                                                                AwesomeDialog(context: context, animType: AnimType.bottomSlide, dialogType: DialogType.question, title: 'Bạn có chắc chắn muốn xoá tài khoản này khỏi chuyến đi không ?', titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), btnOkColor: Colors.blue, btnOkText: 'Có', padding: const EdgeInsets.all(12), btnOkOnPress: () {
+                                                                                                  onRemoveMember(mem.memberId, false);
+                                                                                                }, btnCancelColor: Colors.orange, btnCancelText: 'Không', btnCancelOnPress: () {}).show();
+                                                                                              } else {
+                                                                                                AwesomeDialog(context: context, animType: AnimType.bottomSlide, dialogType: DialogType.question, title: 'Bạn có chắc chắn muốn chặn tài khoản này hay không ?', titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), btnOkColor: Colors.blue, padding: const EdgeInsets.all(12), btnOkText: 'Có', btnOkOnPress: () {
+                                                                                                  onRemoveMember(mem.memberId, true);
+                                                                                                }, btnCancelColor: Colors.orange, btnCancelText: 'Không', btnCancelOnPress: () {}).show();
+                                                                                              }
+                                                                                            },
+                                                                                          )
+                                                                                        ],
+                                                                                      ),
+                                                                                    ),
+                                                                                  )
+                                                                              ]),
+                                                                        ),
+                                                                      ));
+                                                        },
+                                                        child: const Row(
+                                                          children: [
+                                                            Text(
+                                                              'Xem tất cả',
+                                                              style: TextStyle(
+                                                                  fontSize: 16),
+                                                            ),
+                                                            Icon(
+                                                              Icons
+                                                                  .keyboard_arrow_right,
+                                                              color:
+                                                                  primaryColor,
+                                                              size: 23,
+                                                            )
+                                                          ],
+                                                        ))
+                                                  ],
                                                 ),
                                                 for (final member
-                                                    in _planDetail!.members!)
+                                                    in _planMembers)
                                                   Padding(
                                                     padding: const EdgeInsets
                                                         .symmetric(
                                                         vertical: 6,
                                                         horizontal: 12),
                                                     child: Text(
-                                                      member.status == "LEADING"
-                                                          ? member.travelerId ==
-                                                                  int.parse(sharedPreferences
-                                                                      .getString(
-                                                                          'userId')!)
-                                                              ? "- ${member.name} (Bạn)"
-                                                              : "- ${member.name} - LEADING - 0${member.phone.substring(3)}"
-                                                          : member.travelerId ==
-                                                                  int.parse(sharedPreferences
-                                                                      .getString(
-                                                                          'userId')!)
-                                                              ? "- ${member.name} (Bạn)"
-                                                              : "- ${member.name} - 0${member.phone.substring(3)}",
+                                                      "- ${member.name} - 0${member.phone.substring(3)}",
                                                       style: const TextStyle(
                                                           fontSize: 18),
                                                     ),
@@ -631,9 +749,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                             : 'Đơn hàng mẫu',
                                                         style: TextStyle(
                                                             fontSize: 13,
-                                                            color: _isShowRealOrder
-                                                                ? primaryColor
-                                                                : Colors.grey),
+                                                            color:
+                                                                _isShowRealOrder
+                                                                    ? primaryColor
+                                                                    : Colors
+                                                                        .grey),
                                                       )
                                                     ],
                                                   ),
@@ -794,8 +914,34 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     }
   }
 
-  onJoinPlan() async {
+  onRemoveMember(int memberId, bool isBlock) async {
+    final rs = await _planService.removeMember(memberId, isBlock);
+    if (rs != 0) {
       AwesomeDialog(
+        context: context,
+        animType: AnimType.leftSlide,
+        dialogType: DialogType.success,
+        title: 'Đã ${isBlock ? 'chặn' : 'xoá'} người dùng khỏi chuyến đi',
+        titleTextStyle:
+            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        padding: const EdgeInsets.all(12),
+      ).show();
+      Future.delayed(const Duration(seconds: 1), () async {
+        final planMembers = await _planService.getPlanMember(widget.planId);
+
+        if (planMembers.isNotEmpty) {
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+          setState(() {
+            _planMembers = planMembers;
+          });
+        }
+      });
+    }
+  }
+
+  onJoinPlan() async {
+    AwesomeDialog(
         context: context,
         dialogType: DialogType.question,
         animType: AnimType.topSlide,
@@ -852,10 +998,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     //     budgetPerCapita: _planDetail!.gcoinBudgetPerCapita!.toDouble(),
     //     isJoin: true,
     //     onJoinPlan: (){
-            
+
     //     },
     //     total: total));
-
   }
 
   Widget buildNewFooter() => Padding(

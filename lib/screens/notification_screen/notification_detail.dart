@@ -219,14 +219,14 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
                                                 vertical: 6, horizontal: 12),
                                             child: Text(
                                               member.status == "LEADING"
-                                                  ? member.travelerId ==
+                                                  ? member.memberId ==
                                                           int.parse(
                                                               sharedPreferences
                                                                   .getString(
                                                                       'userId')!)
                                                       ? "- ${member.name} (Bạn)"
                                                       : "- ${member.name} - LEADING - 0${member.phone.substring(3)}"
-                                                  : member.travelerId ==
+                                                  : member.memberId ==
                                                           int.parse(
                                                               sharedPreferences
                                                                   .getString(

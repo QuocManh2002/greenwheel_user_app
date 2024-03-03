@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_detail_service.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:sizer2/sizer2.dart';
@@ -32,15 +33,20 @@ class EmergencyContactCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (ctx) => SelectEmergencyDetailService(
-                        emergency: emergency,
-                        index: index,
-                        isView: false,
-                        callback: () {
-                          callback();
-                        },
-                      )));
+              List<String>? selectedIndex =
+                  sharedPreferences.getStringList('selectedIndex');
+              if (selectedIndex != null) {
+                if (selectedIndex
+                    .any((element) => element == index.toString())) {
+                  selectedIndex.remove(index.toString());
+                } else {
+                  selectedIndex.add(index.toString());
+                }
+              sharedPreferences.setStringList('selectedIndex', selectedIndex);
+              }else{
+              sharedPreferences.setStringList('selectedIndex', [index.toString()]);
+              }
+              callback();
             },
             child: Row(
               children: [

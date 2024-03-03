@@ -269,8 +269,6 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     final arrivedTime = startTime.add(Duration(
         seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
             .ceil()));
-    // final startDate =
-    //     DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     final departureDate =
         DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
     if (arrivedTime.isAfter(DateTime(0, 0, 0, 16, 0)) &&
@@ -301,8 +299,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                 .toString()
                 .split(' ')[0]);
       }
-    }
-    else {
+    } else {
       setState(() {
         _rangeEnd =
             departureDate.add(Duration(days: _initComboDate.numberOfDay - 1));
@@ -316,8 +313,9 @@ class _SelectPlanNameState extends State<SelectPlanName> {
               .split(' ')[0]);
     }
     sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id);
-    if(isOverDate){
-    sharedPreferences.setInt('numOfExpPeriod', _selectedComboDate.duration.toInt());
+    if (isOverDate) {
+      sharedPreferences.setInt(
+          'numOfExpPeriod', _selectedComboDate.duration.toInt());
     }
   }
 
@@ -325,17 +323,21 @@ class _SelectPlanNameState extends State<SelectPlanName> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // String endDate = sharedPreferences.getString('plan_end_date')!;
-    // print(
-    //     DateTime.parse(endDate).isAfter(DateTime.now().add(Duration(days: 2))));
+    setUpData();
+  }
 
+  setUpData() {
+    final name = sharedPreferences.getString('plan_name');
+    if(name != null){
+      _nameController.text = name;
+    }
     var _numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod');
     _selectedComboDate = listComboDate.firstWhere((element) =>
         element.numberOfDay + element.numberOfNight == _numOfExpPeriod);
     _initComboDate = _selectedComboDate;
     final _duration = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
-    final initDate = DateTime.now().add(Duration(days: 7));
-    _dateController.text = '${initDate.day}/${initDate.month}/${initDate.year}';
+    final initDate = DateTime.now().add(const Duration(days: 7));
+    _dateController.text = DateFormat('dd/MM/yyyy').format(initDate);
     _timeController.text =
         DateFormat.Hm().format(DateTime.now().add(const Duration(hours: 1)));
     _rangeEnd = initDate.add(Duration(days: _duration - 1));
@@ -348,18 +350,6 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     sharedPreferences.setString('plan_end_date',
         initDate.add(Duration(days: _duration - 1)).toString());
     handleChangeComboDate();
-
-    // if (startDate != null) {
-    //   setState(() {
-    //     handleChangeComboDate();
-    //     _selectedDate = DateTime.parse(startDate);
-    //     _rangeStart = _selectedDate;
-    //     _rangeEnd = _selectedDate!
-    //         .add(Duration(days: _selectedComboDate.numberOfDay - 1));
-    //     _focusedDay = _rangeStart;
-    //     sharedPreferences.setString('plan_end_date', _rangeEnd.toString());
-    //   });
-    // }
   }
 
   @override
@@ -424,9 +414,9 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                                   cancelText: 'HỦY',
                                   confirmText: 'LƯU',
                                   initialDate:
-                                      DateTime.now().add(Duration(days: 4)),
+                                      DateTime.now().add(Duration(days: 7)),
                                   firstDate:
-                                      DateTime.now().add(Duration(days: 4)),
+                                      DateTime.now().add(Duration(days: 7)),
                                   lastDate: _selectedDate!
                                       .add(const Duration(days: 830)),
                                 ),
@@ -574,9 +564,9 @@ class _SelectPlanNameState extends State<SelectPlanName> {
               style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             Text(
-              isOverDate ? 
-               '${_selectedComboDate.numberOfNight} ngày ${_selectedComboDate.numberOfDay} đêm':
-              '${_initComboDate.numberOfDay} ngày, ${_initComboDate.numberOfNight} đêm',
+              isOverDate
+                  ? '${_selectedComboDate.numberOfNight} ngày ${_selectedComboDate.numberOfDay} đêm'
+                  : '${_initComboDate.numberOfDay} ngày, ${_initComboDate.numberOfNight} đêm',
               style: const TextStyle(color: Colors.grey, fontSize: 16),
             ),
             SizedBox(
