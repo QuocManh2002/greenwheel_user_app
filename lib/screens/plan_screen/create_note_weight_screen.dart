@@ -50,49 +50,49 @@ class _CreateNoteWeightScreenState extends State<CreateNoteWeightScreen> {
     setUpData();
   }
 
-  completeService(BuildContext ctx) {
-    final departureDate =
-        DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-    DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
-        seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-            .toInt()));
-    plan = PlanCreate(
-        numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
-        locationId: widget.locationId,
-        name: sharedPreferences.getString('plan_name'),
-        latitude: sharedPreferences.getDouble('plan_start_lat')!,
-        longitude: sharedPreferences.getDouble('plan_start_lng')!,
-        memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
-        savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
-        startDate:
-            DateTime.parse(sharedPreferences.getString('plan_start_date')!),
-        departureDate: departureDate,
-        schedule: sharedPreferences.getString('plan_schedule'),
-        endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
-        travelDuration: DateFormat.Hm().format(_travelDuration),
-        tempOrders: _orderService.convertTempOrders(widget.orders).toString(),
-        note: _noteController.text,
-        weight: _selectedWeight,
-        gcoinBudget: ((widget.total / memberLimit!) / 100).ceil());
-    showModalBottomSheet(
-        backgroundColor: Colors.white.withOpacity(0.94),
-        context: context,
-        builder: (ctx) => SizedBox(
-          height: 75.h,
-          child: ConfirmPlanBottomSheet(
-                locationName: widget.locationName,
-                total: widget.total / 100.toDouble(),
-                budgetPerCapita:
-                    ((widget.total / memberLimit!) / 100).ceil().toDouble(),
-                orderList: widget.orders,
-                onCompletePlan: onCompletePlan,
-                plan: plan,
-                onJoinPlan: () {},
-                listSurcharges: widget.listSurcharges,
-                isJoin: false,
-              ),
-        ));
-  }
+  // completeService(BuildContext ctx) {
+  //   final departureDate =
+  //       DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+  //   DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
+  //       seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+  //           .toInt()));
+  //   plan = PlanCreate(
+  //       numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
+  //       locationId: widget.locationId,
+  //       name: sharedPreferences.getString('plan_name'),
+  //       latitude: sharedPreferences.getDouble('plan_start_lat')!,
+  //       longitude: sharedPreferences.getDouble('plan_start_lng')!,
+  //       memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
+  //       savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
+  //       startDate:
+  //           DateTime.parse(sharedPreferences.getString('plan_start_date')!),
+  //       departureDate: departureDate,
+  //       schedule: sharedPreferences.getString('plan_schedule'),
+  //       endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
+  //       travelDuration: DateFormat.Hm().format(_travelDuration),
+  //       tempOrders: _orderService.convertTempOrders(widget.orders).toString(),
+  //       note: _noteController.text,
+  //       weight: _selectedWeight,
+  //       gcoinBudget: ((widget.total / memberLimit!) / 100).ceil());
+  //   showModalBottomSheet(
+  //       backgroundColor: Colors.white.withOpacity(0.94),
+  //       context: context,
+  //       builder: (ctx) => SizedBox(
+  //             height: 75.h,
+  //             child: ConfirmPlanBottomSheet(
+  //               locationName: widget.locationName,
+  //               total: widget.total / 100).toDouble(),
+  //               budgetPerCapita:
+  //                   ((widget.total / memberLimit!) / 100).ceil().toDouble(),
+  //               orderList: widget.orders,
+  //               onCompletePlan: onCompletePlan,
+  //               plan: plan,
+  //               onJoinPlan: () {},
+  //               listSurcharges: widget.listSurcharges,
+  //               isJoin: false,
+  //             ),
+  //           ));
+  // }
 
   setUpData() {
     final memberLimit = sharedPreferences.getInt('plan_number_of_member');
@@ -162,7 +162,8 @@ class _CreateNoteWeightScreenState extends State<CreateNoteWeightScreen> {
               maxLength: 110,
               maxline: 3,
               minline: 3,
-              hinttext: 'Bạn có muốn thêm ghi chú cho chuyến đi này hay không ?',
+              hinttext:
+                  'Bạn có muốn thêm ghi chú cho chuyến đi này hay không ?',
               text: 'Ghi chú',
               isAutoFocus: true,
               onChange: (value) {
@@ -213,7 +214,7 @@ class _CreateNoteWeightScreenState extends State<CreateNoteWeightScreen> {
                                   child: Text(
                                     _listAvailableWeight[index].toString(),
                                     style: TextStyle(
-                                      fontSize: 20,
+                                        fontSize: 20,
                                         fontWeight: _selectedWeight == index + 1
                                             ? FontWeight.bold
                                             : FontWeight.normal,
@@ -250,25 +251,25 @@ class _CreateNoteWeightScreenState extends State<CreateNoteWeightScreen> {
             const Spacer(),
             Row(
               children: [
-               Expanded(
-                      child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: elevatedButtonStyle.copyWith(
-                        foregroundColor:
-                            const MaterialStatePropertyAll(primaryColor),
-                        backgroundColor:
-                            const MaterialStatePropertyAll(Colors.white),
-                        shape: const MaterialStatePropertyAll(
-                            RoundedRectangleBorder(
-                                borderRadius: BorderRadius.all(
-                                  Radius.circular(12),
-                                ),
-                                side: BorderSide(
-                                    color: primaryColor, width: 2)))),
-                    child: const Text('Quay lại'),
-                  )),
+                Expanded(
+                    child: ElevatedButton(
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                  style: elevatedButtonStyle.copyWith(
+                      foregroundColor:
+                          const MaterialStatePropertyAll(primaryColor),
+                      backgroundColor:
+                          const MaterialStatePropertyAll(Colors.white),
+                      shape: const MaterialStatePropertyAll(
+                          RoundedRectangleBorder(
+                              borderRadius: BorderRadius.all(
+                                Radius.circular(12),
+                              ),
+                              side:
+                                  BorderSide(color: primaryColor, width: 2)))),
+                  child: const Text('Quay lại'),
+                )),
                 SizedBox(
                   width: 2.h,
                 ),
@@ -276,7 +277,7 @@ class _CreateNoteWeightScreenState extends State<CreateNoteWeightScreen> {
                   child: ElevatedButton(
                       style: elevatedButtonStyle,
                       onPressed: () {
-                        completeService(context);
+                        // completeService(context);
                       },
                       child: const Text('Hoàn tất')),
                 ),
@@ -332,17 +333,33 @@ class _CreateNoteWeightScreenState extends State<CreateNoteWeightScreen> {
       final rs = await _planService.createNewPlan(
           plan!, context, widget.listSurcharges.toString());
       if (rs != 0) {
-        Utils().clearPlanSharePref();
         // ignore: use_build_context_synchronously
-        Navigator.of(context).pop();
-        // ignore: use_build_context_synchronously
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(
-              builder: (ctx) => const TabScreen(
-                    pageIndex: 1,
-                  )),
-          (route) => false,
-        );
+        AwesomeDialog(
+          context: context,
+          animType: AnimType.leftSlide,
+          dialogType: DialogType.success,
+          title: 'Tạo kế hoạch thành công',
+          titleTextStyle:
+              const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          padding: const EdgeInsets.all(12),
+        ).show;
+        Future.delayed(
+            const Duration(
+              seconds: 2,
+            ), () {
+          Utils().clearPlanSharePref();
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+          // ignore: use_build_context_synchronously
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+                builder: (ctx) => const TabScreen(
+                      pageIndex: 1,
+                    )),
+            (route) => false,
+          );
+        });
       }
     }
     // }

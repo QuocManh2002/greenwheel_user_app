@@ -174,6 +174,8 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                       name: _customer!.name,
                       memberId: _customer!.id,
                       phone: _customer!.phone,
+                      accountId: 1,
+                      weight: 1,
                       status: "INVITED"));
                 });
               },

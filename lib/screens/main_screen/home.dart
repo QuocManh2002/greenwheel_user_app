@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/activities.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/home_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
@@ -62,6 +63,15 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // FloatingActionButton(onPressed: (){
+                //   Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => 
+                //   const DetailPlanNewScreen(planId: 24, isEnableToJoin: true,
+                  
+                //   )
+                //   ));
+                // },
+                  
+                // ),
                 SizedBox(
                   height: 35.h,
                   child: Stack(

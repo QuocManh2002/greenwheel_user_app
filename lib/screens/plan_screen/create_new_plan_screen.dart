@@ -490,9 +490,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         btnOkText: 'Xác nhận',
         btnOkColor: Colors.blue,
         btnOkOnPress: () {
-          if (sharedPreferences.getInt('plan_number_of_member')! == 1) {
-            completePlan();
-          }
           Navigator.of(context).push(MaterialPageRoute(
               builder: (ctx) => SelectServiceScreen(
                     isOrder:

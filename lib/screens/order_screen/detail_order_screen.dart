@@ -1,4 +1,4 @@
-import 'dart:convert';
+
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
@@ -16,11 +16,13 @@ class OrderDetailScreen extends StatefulWidget {
       required this.order,
       required this.startDate,
       this.planId,
+      required this.callback,
       required this.isTempOrder});
   final OrderViewModel order;
   final DateTime startDate;
   final bool isTempOrder;
   final int? planId;
+  final void Function() callback;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -452,6 +454,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 fontSize: 20, fontWeight: FontWeight.bold))
                         .show();
                     Future.delayed(const Duration(seconds: 2), () {
+                      widget.callback();
+                      Navigator.of(context).pop();
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();
                     });

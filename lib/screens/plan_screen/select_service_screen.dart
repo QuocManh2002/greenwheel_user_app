@@ -28,16 +28,18 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_ca
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectServiceScreen extends StatefulWidget {
-  const SelectServiceScreen(
-      {super.key,
-      required this.memberLimit,
-      required this.location,
-      required this.isClone,
-      this.isOrder,});
+  const SelectServiceScreen({
+    super.key,
+    required this.memberLimit,
+    required this.location,
+    required this.isClone,
+    this.isOrder,
+  });
   final LocationViewModel location;
   final bool isClone;
   final bool? isOrder;
@@ -72,6 +74,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   bool _isShowSchedule = false;
   int tabIndex = 0;
   PlanCreate? plan;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _noteController = TextEditingController();
 
   @override
@@ -84,7 +87,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   }
 
   setUpData() async {
-    final duration = sharedPreferences.getInt('numOfExpPeriod');
     startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
@@ -125,9 +127,11 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           supplierImageUrl: item['supplierImageUrl']);
       if (item['type'] == 'FOOD') {
         listRestaurant.add(SupplierOrderCard(
-            order: temp,
-            startDate: startDate!,
-            isTempOrder: false,));
+          order: temp,
+          startDate: startDate!,
+          isTempOrder: false,
+          callback: (){},
+        ));
         listRestaurantOrder!.add(temp);
         totalFood += getTotal(temp);
       } else {
@@ -135,7 +139,9 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           order: temp,
           startDate: startDate!,
           isTempOrder: false,
-          
+          callback: () {
+            
+          },
         ));
         listMotelOrder!.add(temp);
         totalRest += getTotal(temp);
@@ -155,11 +161,11 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   }
 
   getTotal(OrderViewModel order) {
-    var total = 0.0;
+    var _total = 0.0;
     for (final detail in order.details!) {
-      total += detail.price! * detail.quantity;
+      _total += detail.price! * detail.quantity;
     }
-    return total;
+    return _total;
   }
 
   @override
@@ -437,15 +443,100 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                     child: ElevatedButton(
                         style: elevatedButtonStyle,
                         onPressed: () async {
+                          AwesomeDialog(
+                              context: context,
+                              animType: AnimType.bottomSlide,
+                              dialogType: DialogType.question,
+                              title:
+                                  'Bạn có muốn thêm ghi chú cho chuyến đi hay không ?',
+                              titleTextStyle: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 12),
+                              btnOkColor: Colors.blue,
+                              btnOkOnPress: () {
+                                showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                          content: SizedBox(
+                                            width: 100.w,
+                                            child: Column(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  const Text(
+                                                    'Ghi chú cho chuyến đi',
+                                                    style: TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ),
+                                                  SizedBox(
+                                                    height: 2.h,
+                                                  ),
+                                                  TextFormFieldWithLength(
+                                                      controller:
+                                                          _noteController,
+                                                      inputType:
+                                                          TextInputType.text,
+                                                      hinttext:
+                                                          'Đi đường cẩn thận, chuẩn bị sẵn đồ dùng,...',
+                                                      maxLength: 110,
+                                                      maxline: 4,
+                                                      minline: 4,
+                                                      isAutoFocus: true,
+                                                      onChange: (value) {},
+                                                      text: 'Ghi chú'),
+                                                ]),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                                style: const ButtonStyle(
+                                                    foregroundColor:
+                                                        MaterialStatePropertyAll(
+                                                            primaryColor)),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text(
+                                                  'HUỶ',
+                                                  style:
+                                                      TextStyle(fontSize: 18),
+                                                )),
+                                            TextButton(
+                                                style: const ButtonStyle(
+                                                    foregroundColor:
+                                                        MaterialStatePropertyAll(
+                                                            primaryColor)),
+                                                onPressed: () {
+                                                  sharedPreferences.setString(
+                                                      'plan_note',
+                                                      _noteController.text);
+                                                  Navigator.of(context).pop();
+                                                  completeService(context);
+                                                },
+                                                child: const Text(
+                                                  'OK',
+                                                  style:
+                                                      TextStyle(fontSize: 18),
+                                                ))
+                                          ],
+                                        ));
+                              },
+                              btnOkText: 'Có',
+                              btnCancelText: 'Không',
+                              btnCancelColor: Colors.orangeAccent,
+                              btnCancelOnPress: () {
+                                completeService(context);
+                              }).show();
                           // completeService(context);
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (ctx) => CreateNoteWeightScreen(
-                                    locationId: widget.location.id,
-                                    locationName: widget.location.name,
-                                    listSurcharges: _listSurchargeObjects,
-                                    orders: orderList!,
-                                    total: total.f,
-                                  )));
+                          // Navigator.of(context).push(MaterialPageRoute(
+                          //     builder: (ctx) => CreateNoteWeightScreen(
+                          //           locationId: widget.location.id,
+                          //           locationName: widget.location.name,
+                          //           listSurcharges: _listSurchargeObjects,
+                          //           orders: orderList!,
+                          //           total: total.toDouble(),
+                          //         )));
                         },
                         child: const Text('Tiếp tục')),
                   ),
@@ -532,42 +623,49 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     // }
   }
 
-  // completeService(BuildContext ctx) {
-  //   final departureDate =
-  //       DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-  //   DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
-  //       seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-  //           .toInt()));
-  //   plan = PlanCreate(
-  //       numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
-  //       locationId: widget.location.id,
-  //       name: sharedPreferences.getString('plan_name'),
-  //       latitude: sharedPreferences.getDouble('plan_start_lat')!,
-  //       longitude: sharedPreferences.getDouble('plan_start_lng')!,
-  //       memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
-  //       savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
-  //       startDate:
-  //           DateTime.parse(sharedPreferences.getString('plan_start_date')!),
-  //       departureDate: departureDate,
-  //       schedule: sharedPreferences.getString('plan_schedule'),
-  //       endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
-  //       travelDuration: DateFormat.Hm().format(_travelDuration),
-  //       tempOrders: _orderService.convertTempOrders(orderList!).toString(),
-  //       gcoinBudget: ((total / memberLimit) / 100).ceil());
-  //   showModalBottomSheet(
-  //       backgroundColor: Colors.white.withOpacity(0.94),
-  //       context: context,
-  //       builder: (ctx) => ConfirmPlanBottomSheet(
-  //             locationName: widget.location.name,
-  //             total: total / 100.toDouble(),
-  //             budgetPerCapita: ((total / memberLimit) / 100).ceil().toDouble(),
-  //             orderList: orderList!,
-  //             plan: plan,
-  //             onJoinPlan: () {},
-  //             listSurcharges: _listSurchargeObjects,
-  //             isJoin: false,
-  //           ));
-  // }
+  completeService(BuildContext ctx) {
+    final departureDate =
+        DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+    DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
+        seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+            .toInt()));
+    plan = PlanCreate(
+        numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
+        locationId: widget.location.id,
+        name: sharedPreferences.getString('plan_name'),
+        latitude: sharedPreferences.getDouble('plan_start_lat')!,
+        longitude: sharedPreferences.getDouble('plan_start_lng')!,
+        memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
+        savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
+        startDate:
+            DateTime.parse(sharedPreferences.getString('plan_start_date')!),
+        departureDate: departureDate,
+        schedule: sharedPreferences.getString('plan_schedule'),
+        endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
+        travelDuration: DateFormat.Hm().format(_travelDuration),
+        tempOrders: _orderService.convertTempOrders(orderList!).toString(),
+        note: _noteController.text,
+        weight: sharedPreferences.getInt('plan_weight'),
+        gcoinBudget: ((total / memberLimit) / 100).ceil());
+    showModalBottomSheet(
+        backgroundColor: Colors.white.withOpacity(0.94),
+        context: context,
+        builder: (ctx) => SizedBox(
+              height: 75.h,
+              child: ConfirmPlanBottomSheet(
+                locationName: widget.location.name,
+                total: (total / 100).toDouble(),
+                budgetPerCapita:
+                    ((total / memberLimit) / 100).ceil().toDouble(),
+                orderList: orderList!,
+                onCompletePlan: onCompletePlan,
+                plan: plan,
+                onJoinPlan: () {},
+                listSurcharges: _listSurchargeObjects,
+                isJoin: false,
+              ),
+            ));
+  }
 
   callbackSurcharge(String amount, String note) {
     setState(() {
@@ -580,5 +678,73 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     });
   }
 
-  
+  onCompletePlan() async {
+    // if (widget.isClone) {
+    //   AwesomeDialog(
+    //     context: context,
+    //     dialogType: DialogType.question,
+    //     animType: AnimType.leftSlide,
+    //     title: 'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
+    //     titleTextStyle:
+    //         const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    //     btnOkText: 'Có',
+    //     btnOkOnPress: () {},
+    //     btnOkColor: Colors.orange,
+    //     btnCancelColor: Colors.blue,
+    //     btnCancelText: 'Không',
+    //     btnCancelOnPress: () {
+    //       Utils().clearPlanSharePref();
+    //       Navigator.of(context).pop();
+    //       Navigator.of(context).pushAndRemoveUntil(
+    //         MaterialPageRoute(
+    //             builder: (ctx) => const TabScreen(
+    //                   pageIndex: 1,
+    //                 )),
+    //         (route) => false,
+    //       );
+    //     },
+    //   ).show();
+    // } else {
+    if (memberLimit == 1) {
+      Utils().clearPlanSharePref();
+      Navigator.of(context).pop();
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(
+            builder: (ctx) => const TabScreen(
+                  pageIndex: 1,
+                )),
+        (route) => false,
+      );
+    } else {
+      final rs = await _planService.createNewPlan(
+          plan!, context, _listSurchargeObjects.toString());
+      if (rs != 0) {
+        AwesomeDialog(
+          context: context,
+          animType: AnimType.leftSlide,
+          dialogType: DialogType.success,
+          title: 'Tạo kế hoạch thành công',
+          titleTextStyle:
+              const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          padding: const EdgeInsets.all(12),
+        ).show;
+        Future.delayed(
+            const Duration(
+              seconds: 2,
+            ), () {
+          Utils().clearPlanSharePref();
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+          Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(
+                builder: (ctx) => const TabScreen(
+                      pageIndex: 1,
+                    )),
+            (route) => false,
+          );
+        });
+      }
+    }
+    // }
+  }
 }

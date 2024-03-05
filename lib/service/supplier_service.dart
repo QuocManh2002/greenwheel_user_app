@@ -9,13 +9,13 @@ class SupplierService extends Iterable {
   Future<List<SupplierViewModel>> getSuppliers(
       double longitude, double latitude, List<String> types) async {
     try {
-      List<Map<String, dynamic>> typeConditions = [
-        {
-          "type": {
-            "in": types.map((type) => type).toList(),
-          },
-        },
-      ];
+      // List<Map<String, dynamic>> typeConditions = [
+      //   {
+      //     "type": {
+      //       "in": types.map((type) => type).toList(),
+      //     },
+      //   },
+      // ];
       List<Map<String, dynamic>> typeConditions1 = [
         {
           "products": {

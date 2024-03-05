@@ -13,12 +13,18 @@ class PlanMemberViewModel {
     int memberId;
     String phone;
     String status;
+    int accountId;
+    int? accountType;
+    int weight;
 
     PlanMemberViewModel({
         required this.name,
         required this.memberId,
         required this.phone,
         required this.status,
+        required this.accountId,
+        this.accountType,
+        required this.weight,
     });
 
     factory PlanMemberViewModel.fromJson(Map<String, dynamic> json) => PlanMemberViewModel(
@@ -26,6 +32,8 @@ class PlanMemberViewModel {
         memberId: json["id"],
         phone: json["account"]["phone"],
         status: json["status"],
+        accountId: json['account']['id'],
+        weight: json['weight']
     );
 
     Map<String, dynamic> toJson() => {

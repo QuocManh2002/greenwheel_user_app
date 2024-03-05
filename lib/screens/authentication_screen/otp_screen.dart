@@ -200,6 +200,7 @@ class _OTPScreenState extends State<OTPScreen> {
           String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
           if(deviceToken != ''){
             sharedPreferences.setString('deviceToken', deviceToken);
+            customerService.travelerSignIn(deviceToken);
           }
           // Utils().SaveDefaultAddressToSharedPref(customer[0].defaultAddress!, customer[0].defaultCoordinate!);
           sharedPreferences.setString("userPhone", payload['phone_number']);

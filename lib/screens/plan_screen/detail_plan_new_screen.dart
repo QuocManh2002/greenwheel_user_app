@@ -1,5 +1,7 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:convert';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,6 +12,7 @@ import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/list_order_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -17,9 +20,11 @@ import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
@@ -63,12 +68,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   List<OrderViewModel> tempOrders = [];
   bool _isShowRealOrder = false;
   List<OrderViewModel> orderList = [];
+  bool isLeader = false;
+  Widget? activeWidget;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+
     newItemController = TextEditingController();
     setupData();
   }
@@ -85,16 +92,42 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         }
       }
     }
+    isLeader = sharedPreferences.getString('userId') ==
+        _planDetail!.leaderId.toString();
+    tabController = TabController(length: 2, vsync: this, initialIndex: 0);
     _isPublic = _planDetail!.isPublic;
     _isEnableToShare = _isPublic && _planDetail!.status != 'READY';
     products = await _productService.getListProduct(productIds);
     tempOrders = getTempOrder();
-    _planMembers = _planDetail!.members!;
     getOrderList();
+    getPlanMember();
     if (_planDetail != null) {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  getPlanMember() {
+    for (final mem in _planDetail!.members!) {
+      // _planMembers = _planDetail!.members!;
+      int type = 0;
+      if (mem.accountId == _planDetail!.leaderId) {
+        type = 1;
+      } else if (mem.accountId.toString() ==
+          sharedPreferences.getString('userId')) {
+        type = 2;
+      } else {
+        type = 3;
+      }
+      _planMembers.add(PlanMemberViewModel(
+          name: mem.name,
+          memberId: mem.memberId,
+          phone: mem.phone,
+          status: mem.status,
+          accountId: mem.accountId,
+          accountType: type,
+          weight: mem.weight));
     }
   }
 
@@ -135,11 +168,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
 
   getOrderList() async {
     total = 0;
-    if (_isShowRealOrder) {
-      orderList = await _planService.getOrderCreatePlan(widget.planId);
-    } else {
-      orderList = tempOrders;
-    }
+    orderList = await _planService.getOrderCreatePlan(widget.planId);
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
     for (var item in orderList) {
@@ -147,15 +176,17 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         listRestaurant.add(SupplierOrderCard(
           order: item,
           startDate: _planDetail!.startDate!,
-          isTempOrder: true,
+          isTempOrder: false,
           planId: widget.planId,
+          callback: () {},
         ));
       } else {
         listMotel.add(SupplierOrderCard(
           order: item,
           startDate: _planDetail!.startDate!,
-          isTempOrder: true,
+          isTempOrder: false,
           planId: widget.planId,
+          callback: () {},
         ));
       }
       total += item.total!;
@@ -225,17 +256,18 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     foregroundColor: MaterialStatePropertyAll(Colors.white)),
               ),
               actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 12),
-                  child: IconButton(
-                    onPressed: updatePlan,
-                    icon: const Icon(
-                      Icons.edit_square,
-                      size: 32,
-                      color: Colors.white,
+                if (isLeader)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 12),
+                    child: IconButton(
+                      onPressed: updatePlan,
+                      icon: const Icon(
+                        Icons.edit_square,
+                        size: 32,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                )
+                  )
               ],
             ),
             body: isLoading
@@ -287,7 +319,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   ),
                                   Column(
                                     children: [
-                                      if (!widget.isEnableToJoin)
+                                      if (!widget.isEnableToJoin && isLeader)
                                         CupertinoSwitch(
                                           value: _isPublic,
                                           activeColor: primaryColor,
@@ -381,478 +413,40 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                         ),
                                       ),
                                     ),
-                                    const SizedBox(
-                                      width: 16,
-                                    ),
-                                    Expanded(
-                                      child: InkWell(
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(12)),
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedTab = 2;
-                                          });
-                                        },
-                                        child: TabIconButton(
-                                          iconDefaultUrl: service_green,
-                                          iconSelectedUrl: service_white,
-                                          text: 'Dịch vụ',
-                                          isSelected: _selectedTab == 2,
-                                          index: 2,
+                                    if (isLeader)
+                                      const SizedBox(
+                                        width: 16,
+                                      ),
+                                    if (isLeader)
+                                      Expanded(
+                                        child: InkWell(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(12)),
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedTab = 2;
+                                            });
+                                          },
+                                          child: TabIconButton(
+                                            iconDefaultUrl: service_green,
+                                            iconSelectedUrl: service_white,
+                                            text: 'Dịch vụ',
+                                            isSelected: _selectedTab == 2,
+                                            index: 2,
+                                          ),
                                         ),
                                       ),
-                                    ),
                                   ]),
                             ),
                             const SizedBox(
                               height: 16,
                             ),
                             Container(
-                              child: _selectedTab == 0
-                                  ? Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                              horizontal: 24),
-                                          child: Text(
-                                            'Thông tin cơ bản',
-                                            style: TextStyle(
-                                                fontSize: 20,
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                        const SizedBox(
-                                          height: 16,
-                                        ),
-                                        BaseInformationWidget(
-                                            plan: _planDetail!),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 24),
-                                          child: Column(
-                                            children: [
-                                              Container(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: const Text(
-                                                    'Dịch vụ khẩn cấp đã lưu: ',
-                                                    style: TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  )),
-                                              SizedBox(
-                                                height: 1.h,
-                                              ),
-                                              SizedBox(
-                                                height: 13.h,
-                                                width: double.infinity,
-                                                child: PageView.builder(
-                                                  scrollDirection:
-                                                      Axis.horizontal,
-                                                  itemCount: _planDetail!
-                                                      .savedContacts!.length,
-                                                  onPageChanged: (value) {
-                                                    setState(() {
-                                                      _currentIndexEmergencyCard =
-                                                          value;
-                                                    });
-                                                  },
-                                                  itemBuilder:
-                                                      (context, index) {
-                                                    return EmergencyContactView(
-                                                      emergency: _planDetail!
-                                                              .savedContacts![
-                                                          index],
-                                                    );
-                                                  },
-                                                ),
-                                              ),
-                                              const SizedBox(
-                                                height: 4,
-                                              ),
-                                              if (_planDetail!
-                                                      .savedContacts!.length >
-                                                  1)
-                                                Row(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.center,
-                                                  children: [
-                                                    for (int i = 0;
-                                                        i <
-                                                            _planDetail!
-                                                                .savedContacts!
-                                                                .length;
-                                                        i++)
-                                                      Container(
-                                                          height: 1.5.h,
-                                                          child: buildIndicator(
-                                                              i)),
-                                                  ],
-                                                ),
-                                              const SizedBox(
-                                                height: 8,
-                                              ),
-                                              Container(
-                                                height: 1.8,
-                                                color: Colors.grey
-                                                    .withOpacity(0.4),
-                                              ),
-                                              const SizedBox(
-                                                height: 16,
-                                              ),
-                                            ],
-                                          ),
-                                        ),
-                                        Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 24),
-                                          child: Container(
-                                            alignment: Alignment.topLeft,
-                                            child: Column(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Row(
-                                                  children: [
-                                                    const Text(
-                                                      "Thành viên đã tham gia: ",
-                                                      style: TextStyle(
-                                                          fontSize: 18,
-                                                          fontWeight:
-                                                              FontWeight.bold,
-                                                          color: Colors.black),
-                                                    ),
-                                                    const Spacer(),
-                                                    TextButton(
-                                                        style: const ButtonStyle(
-                                                            foregroundColor:
-                                                                MaterialStatePropertyAll(
-                                                                    primaryColor)),
-                                                        onPressed: () {
-                                                          showModalBottomSheet(
-                                                              context: context,
-                                                              builder:
-                                                                  (ctx) =>
-                                                                      Padding(
-                                                                        padding: const EdgeInsets
-                                                                            .all(
-                                                                            12),
-                                                                        child:
-                                                                            SizedBox(
-                                                                          width:
-                                                                              100.w,
-                                                                          child: Column(
-                                                                              mainAxisSize: MainAxisSize.min,
-                                                                              children: [
-                                                                                Container(
-                                                                                  decoration: BoxDecoration(
-                                                                                    color: primaryColor.withOpacity(0.5),
-                                                                                    borderRadius: const BorderRadius.all(Radius.circular(12)),
-                                                                                  ),
-                                                                                  width: 10.h,
-                                                                                  height: 6,
-                                                                                ),
-                                                                                SizedBox(
-                                                                                  height: 1.h,
-                                                                                ),
-                                                                                for (final mem in _planMembers)
-                                                                                  Padding(
-                                                                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                                                                    child: Container(
-                                                                                      padding: const EdgeInsets.all(12),
-                                                                                      width: 100.w,
-                                                                                      decoration: const BoxDecoration(borderRadius: BorderRadius.all(Radius.circular(12)), color: Colors.white),
-                                                                                      child: Row(
-                                                                                        children: [
-                                                                                          Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                                                                                            Text(
-                                                                                              mem.name,
-                                                                                              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                                                                                            ),
-                                                                                            Text(
-                                                                                              '0${mem.phone.substring(3)}',
-                                                                                              style: const TextStyle(fontSize: 19),
-                                                                                            )
-                                                                                          ]),
-                                                                                          const Spacer(),
-                                                                                          PopupMenuButton(
-                                                                                            itemBuilder: (ctx) => [
-                                                                                              const PopupMenuItem(
-                                                                                                value: 0,
-                                                                                                child: Row(
-                                                                                                  children: [
-                                                                                                    Icon(
-                                                                                                      Icons.close,
-                                                                                                      color: primaryColor,
-                                                                                                      size: 32,
-                                                                                                    ),
-                                                                                                    SizedBox(
-                                                                                                      width: 8,
-                                                                                                    ),
-                                                                                                    Text(
-                                                                                                      'Xoá',
-                                                                                                      style: TextStyle(color: primaryColor, fontSize: 18),
-                                                                                                    )
-                                                                                                  ],
-                                                                                                ),
-                                                                                              ),
-                                                                                              const PopupMenuItem(
-                                                                                                value: 1,
-                                                                                                child: Row(
-                                                                                                  children: [
-                                                                                                    Icon(
-                                                                                                      Icons.block,
-                                                                                                      color: redColor,
-                                                                                                      size: 32,
-                                                                                                    ),
-                                                                                                    SizedBox(
-                                                                                                      width: 8,
-                                                                                                    ),
-                                                                                                    Text(
-                                                                                                      'Chặn',
-                                                                                                      style: TextStyle(color: redColor, fontSize: 18),
-                                                                                                    )
-                                                                                                  ],
-                                                                                                ),
-                                                                                              )
-                                                                                            ],
-                                                                                            onSelected: (value) {
-                                                                                              if (value == 0) {
-                                                                                                AwesomeDialog(context: context, animType: AnimType.bottomSlide, dialogType: DialogType.question, title: 'Bạn có chắc chắn muốn xoá tài khoản này khỏi chuyến đi không ?', titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), btnOkColor: Colors.blue, btnOkText: 'Có', padding: const EdgeInsets.all(12), btnOkOnPress: () {
-                                                                                                  onRemoveMember(mem.memberId, false);
-                                                                                                }, btnCancelColor: Colors.orange, btnCancelText: 'Không', btnCancelOnPress: () {}).show();
-                                                                                              } else {
-                                                                                                AwesomeDialog(context: context, animType: AnimType.bottomSlide, dialogType: DialogType.question, title: 'Bạn có chắc chắn muốn chặn tài khoản này hay không ?', titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold), btnOkColor: Colors.blue, padding: const EdgeInsets.all(12), btnOkText: 'Có', btnOkOnPress: () {
-                                                                                                  onRemoveMember(mem.memberId, true);
-                                                                                                }, btnCancelColor: Colors.orange, btnCancelText: 'Không', btnCancelOnPress: () {}).show();
-                                                                                              }
-                                                                                            },
-                                                                                          )
-                                                                                        ],
-                                                                                      ),
-                                                                                    ),
-                                                                                  )
-                                                                              ]),
-                                                                        ),
-                                                                      ));
-                                                        },
-                                                        child: const Row(
-                                                          children: [
-                                                            Text(
-                                                              'Xem tất cả',
-                                                              style: TextStyle(
-                                                                  fontSize: 16),
-                                                            ),
-                                                            Icon(
-                                                              Icons
-                                                                  .keyboard_arrow_right,
-                                                              color:
-                                                                  primaryColor,
-                                                              size: 23,
-                                                            )
-                                                          ],
-                                                        ))
-                                                  ],
-                                                ),
-                                                for (final member
-                                                    in _planMembers)
-                                                  Padding(
-                                                    padding: const EdgeInsets
-                                                        .symmetric(
-                                                        vertical: 6,
-                                                        horizontal: 12),
-                                                    child: Text(
-                                                      "- ${member.name} - 0${member.phone.substring(3)}",
-                                                      style: const TextStyle(
-                                                          fontSize: 18),
-                                                    ),
-                                                  )
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    )
-                                  : _selectedTab == 1
-                                      ? Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 24),
-                                          child: Column(
-                                            children: [
-                                              Container(
-                                                  alignment:
-                                                      Alignment.centerLeft,
-                                                  child: const Text(
-                                                    "Lịch trình",
-                                                    style: TextStyle(
-                                                        fontSize: 20,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  )),
-                                              const SizedBox(
-                                                height: 16,
-                                              ),
-                                              SizedBox(
-                                                height: 60.h,
-                                                child: PLanScheduleWidget(
-                                                  schedule:
-                                                      _planDetail!.schedule,
-                                                  startDate:
-                                                      _planDetail!.startDate!,
-                                                  endDate:
-                                                      _planDetail!.endDate!,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
-                                        )
-                                      : Padding(
-                                          padding: const EdgeInsets.symmetric(
-                                              horizontal: 24),
-                                          child: Column(
-                                            children: [
-                                              Row(
-                                                children: [
-                                                  Container(
-                                                      alignment:
-                                                          Alignment.centerLeft,
-                                                      child: const Text(
-                                                        "Các loại dịch vụ",
-                                                        style: TextStyle(
-                                                            fontSize: 20,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )),
-                                                  const Spacer(),
-                                                  Column(
-                                                    children: [
-                                                      CupertinoSwitch(
-                                                        value: _isShowRealOrder,
-                                                        activeColor:
-                                                            primaryColor,
-                                                        onChanged:
-                                                            (value) async {
-                                                          setState(() {
-                                                            _isShowRealOrder =
-                                                                !_isShowRealOrder;
-                                                          });
-                                                          getOrderList();
-                                                        },
-                                                      ),
-                                                      Text(
-                                                        _isShowRealOrder
-                                                            ? 'Đơn hàng'
-                                                            : 'Đơn hàng mẫu',
-                                                        style: TextStyle(
-                                                            fontSize: 13,
-                                                            color:
-                                                                _isShowRealOrder
-                                                                    ? primaryColor
-                                                                    : Colors
-                                                                        .grey),
-                                                      )
-                                                    ],
-                                                  ),
-                                                ],
-                                              ),
-                                              const SizedBox(
-                                                height: 16,
-                                              ),
-                                              TabBar(
-                                                  controller: tabController,
-                                                  indicatorColor: primaryColor,
-                                                  labelColor: primaryColor,
-                                                  unselectedLabelColor:
-                                                      Colors.grey,
-                                                  tabs: [
-                                                    Tab(
-                                                      text:
-                                                          "(${_listMotel.length})",
-                                                      icon: const Icon(
-                                                          Icons.hotel),
-                                                    ),
-                                                    Tab(
-                                                      text:
-                                                          "(${_listRestaurant.length})",
-                                                      icon: const Icon(
-                                                          Icons.restaurant),
-                                                    )
-                                                  ]),
-                                              Container(
-                                                margin: const EdgeInsets.only(
-                                                    top: 8),
-                                                height:
-                                                    _listRestaurant.isEmpty &&
-                                                            _listMotel.isEmpty
-                                                        ? 0.h
-                                                        : 35.h,
-                                                child: TabBarView(
-                                                    controller: tabController,
-                                                    children: [
-                                                      ListView.builder(
-                                                        physics:
-                                                            const BouncingScrollPhysics(),
-                                                        shrinkWrap: true,
-                                                        itemCount:
-                                                            _listMotel.length,
-                                                        itemBuilder:
-                                                            (context, index) {
-                                                          return _listMotel[
-                                                              index];
-                                                        },
-                                                      ),
-                                                      ListView.builder(
-                                                        physics:
-                                                            const BouncingScrollPhysics(),
-                                                        shrinkWrap: true,
-                                                        itemCount:
-                                                            _listRestaurant
-                                                                .length,
-                                                        itemBuilder:
-                                                            (context, index) {
-                                                          return _listRestaurant[
-                                                              index];
-                                                        },
-                                                      ),
-                                                    ]),
-                                              ),
-                                              const SizedBox(
-                                                height: 16,
-                                              ),
-                                              if (total != 0)
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 12),
-                                                  child: Row(
-                                                    mainAxisAlignment:
-                                                        MainAxisAlignment
-                                                            .spaceBetween,
-                                                    children: [
-                                                      const Text(
-                                                        'Tổng cộng: ',
-                                                        style: TextStyle(
-                                                            fontSize: 18,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      ),
-                                                      Text(
-                                                        '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
-                                                        style: const TextStyle(
-                                                            fontSize: 18),
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                            )
+                                child: _selectedTab == 2
+                                    ? buildServiceWidget()
+                                    : _selectedTab == 1
+                                        ? buildScheduleWidget()
+                                        : buildInforWidget())
                           ],
                         )),
                       ),
@@ -861,6 +455,430 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   )));
   }
 
+  buildServiceWidget() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Container(
+                    alignment: Alignment.centerLeft,
+                    child: const Text(
+                      "Các đơn dịch vụ",
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    )),
+                const Spacer(),
+                TextButton(
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (ctx) => ListOrderScreen(
+                                planId: widget.planId,
+                                orders: tempOrders,
+                                startDate: _planDetail!.startDate!,
+                                callback: getOrderList,
+                              )));
+                    },
+                    child: const Text(
+                      'Đi đặt hàng',
+                      style: TextStyle(color: primaryColor),
+                    ))
+              ],
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            TabBar(
+                controller: tabController,
+                indicatorColor: primaryColor,
+                labelColor: primaryColor,
+                unselectedLabelColor: Colors.grey,
+                tabs: [
+                  Tab(
+                    text: "(${_listMotel.length})",
+                    icon: const Icon(Icons.hotel),
+                  ),
+                  Tab(
+                    text: "(${_listRestaurant.length})",
+                    icon: const Icon(Icons.restaurant),
+                  )
+                ]),
+            Container(
+              margin: const EdgeInsets.only(top: 8),
+              height:
+                  _listRestaurant.isEmpty && _listMotel.isEmpty ? 0.h : 35.h,
+              child: TabBarView(controller: tabController, children: [
+                ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: _listMotel.length,
+                  itemBuilder: (context, index) {
+                    return _listMotel[index];
+                  },
+                ),
+                ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: _listRestaurant.length,
+                  itemBuilder: (context, index) {
+                    return _listRestaurant[index];
+                  },
+                ),
+              ]),
+            ),
+            const SizedBox(
+              height: 16,
+            ),
+            if (total != 0)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Tổng cộng: ',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
+                      style: const TextStyle(fontSize: 18),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      );
+
+  buildInforWidget() => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24),
+            child: Text(
+              'Thông tin cơ bản',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+          const SizedBox(
+            height: 16,
+          ),
+          BaseInformationWidget(plan: _planDetail!),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Column(
+              children: [
+                Container(
+                    alignment: Alignment.centerLeft,
+                    child: const Text(
+                      'Dịch vụ khẩn cấp đã lưu: ',
+                      style:
+                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    )),
+                SizedBox(
+                  height: 1.h,
+                ),
+                SizedBox(
+                  height: 13.h,
+                  width: double.infinity,
+                  child: PageView.builder(
+                    scrollDirection: Axis.horizontal,
+                    itemCount: _planDetail!.savedContacts!.length,
+                    onPageChanged: (value) {
+                      setState(() {
+                        _currentIndexEmergencyCard = value;
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      return EmergencyContactView(
+                        emergency: _planDetail!.savedContacts![index],
+                      );
+                    },
+                  ),
+                ),
+                const SizedBox(
+                  height: 4,
+                ),
+                if (_planDetail!.savedContacts!.length > 1)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      for (int i = 0;
+                          i < _planDetail!.savedContacts!.length;
+                          i++)
+                        Container(height: 1.5.h, child: buildIndicator(i)),
+                    ],
+                  ),
+                const SizedBox(
+                  height: 8,
+                ),
+                Container(
+                  height: 1.8,
+                  color: Colors.grey.withOpacity(0.4),
+                ),
+                const SizedBox(
+                  height: 16,
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: Container(
+              alignment: Alignment.topLeft,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        "Thành viên đã tham gia: ",
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black),
+                      ),
+                      const Spacer(),
+                      TextButton(
+                          style: const ButtonStyle(
+                              foregroundColor:
+                                  MaterialStatePropertyAll(primaryColor)),
+                          onPressed: () {
+                            showModalBottomSheet(
+                                context: context,
+                                builder: (ctx) => Padding(
+                                      padding: const EdgeInsets.all(12),
+                                      child: SizedBox(
+                                        width: 100.w,
+                                        child: Column(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Container(
+                                                decoration: BoxDecoration(
+                                                  color: primaryColor
+                                                      .withOpacity(0.5),
+                                                  borderRadius:
+                                                      const BorderRadius.all(
+                                                          Radius.circular(12)),
+                                                ),
+                                                width: 10.h,
+                                                height: 6,
+                                              ),
+                                              SizedBox(
+                                                height: 1.h,
+                                              ),
+                                              for (final mem in _planMembers)
+                                                Padding(
+                                                  padding: const EdgeInsets
+                                                      .symmetric(
+                                                      horizontal: 12,
+                                                      vertical: 6),
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.all(
+                                                            12),
+                                                    width: 100.w,
+                                                    decoration:
+                                                        const BoxDecoration(
+                                                            borderRadius:
+                                                                BorderRadius
+                                                                    .all(Radius
+                                                                        .circular(
+                                                                            12)),
+                                                            color:
+                                                                Colors.white),
+                                                    child: Row(
+                                                      children: [
+                                                        Column(
+                                                            crossAxisAlignment:
+                                                                CrossAxisAlignment
+                                                                    .start,
+                                                            children: [
+                                                              Text(
+                                                                mem.name,
+                                                                style: const TextStyle(
+                                                                    fontSize:
+                                                                        20,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold),
+                                                              ),
+                                                              Text(
+                                                                '0${mem.phone.substring(3)}',
+                                                                style:
+                                                                    const TextStyle(
+                                                                        fontSize:
+                                                                            19),
+                                                              )
+                                                            ]),
+                                                        const Spacer(),
+                                                        mem.accountType == 2
+                                                            ? Container()
+                                                            : mem.accountType ==
+                                                                    3
+                                                                ? PopupMenuButton(
+                                                                    itemBuilder:
+                                                                        (ctx) =>
+                                                                            [
+                                                                      const PopupMenuItem(
+                                                                        value:
+                                                                            0,
+                                                                        child:
+                                                                            Row(
+                                                                          children: [
+                                                                            Icon(
+                                                                              Icons.close,
+                                                                              color: primaryColor,
+                                                                              size: 32,
+                                                                            ),
+                                                                            SizedBox(
+                                                                              width: 8,
+                                                                            ),
+                                                                            Text(
+                                                                              'Xoá',
+                                                                              style: TextStyle(color: primaryColor, fontSize: 18),
+                                                                            )
+                                                                          ],
+                                                                        ),
+                                                                      ),
+                                                                      const PopupMenuItem(
+                                                                        value:
+                                                                            1,
+                                                                        child:
+                                                                            Row(
+                                                                          children: [
+                                                                            Icon(
+                                                                              Icons.block,
+                                                                              color: redColor,
+                                                                              size: 32,
+                                                                            ),
+                                                                            SizedBox(
+                                                                              width: 8,
+                                                                            ),
+                                                                            Text(
+                                                                              'Chặn',
+                                                                              style: TextStyle(color: redColor, fontSize: 18),
+                                                                            )
+                                                                          ],
+                                                                        ),
+                                                                      )
+                                                                    ],
+                                                                    onSelected:
+                                                                        (value) {
+                                                                      if (value ==
+                                                                          0) {
+                                                                        AwesomeDialog(
+                                                                                context: context,
+                                                                                animType: AnimType.bottomSlide,
+                                                                                dialogType: DialogType.question,
+                                                                                title: 'Bạn có chắc chắn muốn xoá tài khoản này khỏi chuyến đi không ?',
+                                                                                titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                                                                btnOkColor: Colors.blue,
+                                                                                btnOkText: 'Có',
+                                                                                padding: const EdgeInsets.all(12),
+                                                                                btnOkOnPress: () {
+                                                                                  onRemoveMember(mem.memberId, false);
+                                                                                },
+                                                                                btnCancelColor: Colors.orange,
+                                                                                btnCancelText: 'Không',
+                                                                                btnCancelOnPress: () {})
+                                                                            .show();
+                                                                      } else {
+                                                                        AwesomeDialog(
+                                                                                context: context,
+                                                                                animType: AnimType.bottomSlide,
+                                                                                dialogType: DialogType.question,
+                                                                                title: 'Bạn có chắc chắn muốn chặn tài khoản này hay không ?',
+                                                                                titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                                                                                btnOkColor: Colors.blue,
+                                                                                padding: const EdgeInsets.all(12),
+                                                                                btnOkText: 'Có',
+                                                                                btnOkOnPress: () {
+                                                                                  onRemoveMember(mem.memberId, true);
+                                                                                },
+                                                                                btnCancelColor: Colors.orange,
+                                                                                btnCancelText: 'Không',
+                                                                                btnCancelOnPress: () {})
+                                                                            .show();
+                                                                      }
+                                                                    },
+                                                                  )
+                                                                : const Padding(
+                                                                    padding: EdgeInsets
+                                                                        .only(
+                                                                            right:
+                                                                                8),
+                                                                    child: Icon(
+                                                                      Icons
+                                                                          .star,
+                                                                      color:
+                                                                          yellowColor,
+                                                                      size: 30,
+                                                                    ),
+                                                                  )
+                                                      ],
+                                                    ),
+                                                  ),
+                                                )
+                                            ]),
+                                      ),
+                                    ));
+                          },
+                          child: const Row(
+                            children: [
+                              Text(
+                                'Xem tất cả',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              Icon(
+                                Icons.keyboard_arrow_right,
+                                color: primaryColor,
+                                size: 23,
+                              )
+                            ],
+                          ))
+                    ],
+                  ),
+                  for (final member in _planMembers)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(
+                          vertical: 6, horizontal: 12),
+                      child: Text(
+                        "- ${member.name} - 0${member.phone.substring(3)}",
+                        style: const TextStyle(fontSize: 18),
+                      ),
+                    )
+                ],
+              ),
+            ),
+          ),
+        ],
+      );
+  buildScheduleWidget() => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24),
+        child: Column(
+          children: [
+            Container(
+                alignment: Alignment.centerLeft,
+                child: const Text(
+                  "Lịch trình",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                )),
+            const SizedBox(
+              height: 16,
+            ),
+            SizedBox(
+              height: 60.h,
+              child: PLanScheduleWidget(
+                schedule: _planDetail!.schedule,
+                startDate: _planDetail!.startDate!,
+                endDate: _planDetail!.endDate!,
+              ),
+            ),
+          ],
+        ),
+      );
   onShare() async {
     var enableToShare = checkEnableToShare();
     if (enableToShare['status']) {
@@ -941,6 +959,60 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onJoinPlan() async {
+    var emerList = [];
+    if (_planDetail!.memberCount == _planDetail!.memberLimit) {
+      AwesomeDialog(
+              context: context,
+              animType: AnimType.bottomSlide,
+              dialogType: DialogType.error,
+              title: 'Không thể gia nhập chuyến đi',
+              titleTextStyle:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              desc: 'Chuyến đi đã đủ số lượng thành viên tham gia',
+              descTextStyle: const TextStyle(
+                fontSize: 16,
+                color: Colors.grey,
+              ),
+              btnOkColor: redColor,
+              btnOkOnPress: () {},
+              btnOkText: 'OK')
+          .show();
+    } else {
+      for (final emer in _planDetail!.savedContacts!) {
+        emerList.add({
+          "name": emer.name,
+          "phone": emer.phone,
+          "address": emer.address,
+          "imageUrl": emer.imageUrl,
+          "type": emer.type
+        });
+      }
+      showModalBottomSheet(
+          context: context,
+          builder: (ctx) => ConfirmPlanBottomSheet(
+              plan: PlanCreate(
+                schedule: json.encode(_planDetail!.schedule),
+                savedContacts: json.encode(emerList),
+                name: _planDetail!.name,
+                memberLimit: _planDetail!.memberLimit,
+                startDate: _planDetail!.startDate,
+                endDate: _planDetail!.endDate,
+                travelDuration: _planDetail!.travelDuration,
+                departureDate: _planDetail!.departureDate,
+                note: _planDetail!.note,
+              ),
+              locationName: _planDetail!.locationName,
+              orderList: orderList,
+              onCompletePlan: () {},
+              listSurcharges: [],
+              budgetPerCapita: _planDetail!.gcoinBudgetPerCapita!.toDouble(),
+              isJoin: true,
+              onJoinPlan: confirmJoin,
+              total: total / 100));
+    }
+  }
+
+  confirmJoin() {
     AwesomeDialog(
         context: context,
         dialogType: DialogType.question,
@@ -964,43 +1036,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                 Navigator.of(context).pop();
                 Navigator.of(context).pushAndRemoveUntil(
                     MaterialPageRoute(
-                        builder: (ctx) => const TabScreen(pageIndex: 0)),
+                        builder: (ctx) => const TabScreen(pageIndex: 1)),
                     (route) => false);
               },
             ).show();
           }
         }).show();
-    // var emerList = [];
-    // for(final emer in _planDetail!.savedContacts!){
-    //   emerList.add({
-    //     "name":emer.name,
-    //     "phone":emer.phone,
-    //     "address":emer.address,
-    //     "imageUrl":emer.imageUrl,
-    //     "type":emer.type
-    //   });
-    // }
-    // showModalBottomSheet(
-    //   context: context,
-    //   builder: (ctx) => ConfirmPlanBottomSheet(
-    //     plan: PlanCreate(
-    //       schedule: json.encode(_planDetail!.schedule),
-    //       savedContacts: json.encode(emerList),
-    //       name: _planDetail!.name,
-    //       memberLimit: _planDetail!.memberLimit,
-    //       startDate: _planDetail!.startDate,
-    //       endDate: _planDetail!.endDate,
-    //     ),
-    //     locationName: _planDetail!.locationName,
-    //     orderList: orderList,
-    //     onCompletePlan: (){},
-    //     listSurcharges: [],
-    //     budgetPerCapita: _planDetail!.gcoinBudgetPerCapita!.toDouble(),
-    //     isJoin: true,
-    //     onJoinPlan: (){
-
-    //     },
-    //     total: total));
   }
 
   Widget buildNewFooter() => Padding(
@@ -1023,24 +1064,19 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   children: [
                     Expanded(
                       child: ElevatedButton.icon(
-                        icon: Icon(_isEnableToOrder
-                            ? Icons.room_service_outlined
-                            : Icons.share),
+                        icon: const Icon(Icons.share),
                         onPressed: _isEnableToShare ? onShare : () {},
-                        style: _isEnableToOrder
+                        style: _isEnableToShare
                             ? elevatedButtonStyle
-                            : _isEnableToShare
-                                ? elevatedButtonStyle
-                                : elevatedButtonStyle.copyWith(
-                                    backgroundColor: MaterialStatePropertyAll(
-                                      Colors.grey.withOpacity(0.5),
-                                    ),
-                                    foregroundColor:
-                                        const MaterialStatePropertyAll(
-                                            Colors.grey)),
-                        label: Text(
-                          _isEnableToOrder ? "Xác nhận đơn hàng mẫu" : "Mời",
-                          style: const TextStyle(
+                            : elevatedButtonStyle.copyWith(
+                                backgroundColor: MaterialStatePropertyAll(
+                                  Colors.grey.withOpacity(0.5),
+                                ),
+                                foregroundColor: const MaterialStatePropertyAll(
+                                    Colors.grey)),
+                        label: const Text(
+                          "Mời",
+                          style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),
                         ),
                       ),
@@ -1049,7 +1085,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                       SizedBox(
                         width: 1.h,
                       ),
-                    if (_isEnableToShare)
+                    if (_isEnableToShare && isLeader)
                       Expanded(
                         child: ElevatedButton.icon(
                           icon: const Icon(

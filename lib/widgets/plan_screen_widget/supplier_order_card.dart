@@ -7,11 +7,12 @@ import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierOrderCard extends StatelessWidget {
-  const SupplierOrderCard({super.key, required this.order, required this.startDate, required this.isTempOrder, this.planId});
+  const SupplierOrderCard({super.key,required this.callback, required this.order, required this.startDate, required this.isTempOrder, this.planId});
   final OrderViewModel order;
   final DateTime startDate;
   final bool isTempOrder;
   final int? planId;
+  final void Function() callback;
 
   @override
   Widget build(BuildContext context) {
@@ -27,6 +28,8 @@ class SupplierOrderCard extends StatelessWidget {
                   order: order,
                   startDate: startDate,
                   isTempOrder: isTempOrder,
+                  planId: planId,
+                  callback: callback,
                 )));
       },
       child: Container(

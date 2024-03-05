@@ -6,7 +6,6 @@ import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -235,7 +234,11 @@ query GetPlanById(\$planId: Int){
       startDate
       endDate
       isPublic
+      accountId
       gcoinBudgetPerCapita
+      travelDuration
+      note
+      memberCount
       schedule {
         events {
           shortDescription
@@ -292,7 +295,9 @@ query GetPlanById(\$planId: Int){
       }
       members {
         status
+        weight
         account {
+          id
           name
           phone
         }
@@ -515,7 +520,10 @@ query GetPlanById(\$planId: Int){
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
-  joinPlan(planId: $planId){
+  joinPlan(dto: {
+    planId: $planId
+    weight: 1
+  }){
     id
   }
 }
@@ -543,9 +551,11 @@ mutation{
     nodes {
       members {
         status
+        weight
         account {
           name
           phone
+          id
         }
         id
       }

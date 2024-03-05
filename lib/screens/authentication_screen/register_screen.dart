@@ -268,6 +268,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         if (id != null || id != 0) {
           await TokenRefresher.refreshToken();
           print("2: ${sharedPreferences.getString('userToken')}");
+          await _customerService.travelerSignIn(sharedPreferences.getString('deviceToken')!);
           // ignore: use_build_context_synchronously
           Restart.restartApp(); // ignore: use_build_context_synchronously
           // Navigator.of(context).pushAndRemoveUntil(

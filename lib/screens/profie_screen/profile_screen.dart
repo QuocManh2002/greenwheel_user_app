@@ -12,6 +12,7 @@ import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/service/device_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:intl/intl.dart';
+import 'package:restart_app/restart_app.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -336,16 +337,22 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       btnCancelText: "Đóng",
                                       desc:
                                           "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
-                                      btnOkOnPress: () {
+                                      btnOkOnPress: () async {
                                         // _deviceService.stopNotification();
-                                        sharedPreferences.clear();
-                                        Navigator.pushAndRemoveUntil(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (_) =>
-                                                  const LoginScreen()),
-                                          (route) => false,
-                                        );
+                                        final rs = await _customerService
+                                            .travelerSignOut();
+                                        if (rs != 0) {
+                                          sharedPreferences.clear();
+                                          // ignore: use_build_context_synchronously
+                                          // Navigator.pushAndRemoveUntil(
+                                          //   context,
+                                          //   MaterialPageRoute(
+                                          //       builder: (_) =>
+                                          //           const LoginScreen()),
+                                          //   (route) => false,
+                                          // );
+                                          Restart.restartApp();
+                                        }
                                       },
                                       btnCancelOnPress: () {})
                                   .show();

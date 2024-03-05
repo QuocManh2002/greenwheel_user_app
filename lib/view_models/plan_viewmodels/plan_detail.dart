@@ -3,8 +3,6 @@
 //     final planDetail = planDetailFromJson(jsonString);
 
 import 'dart:convert';
-
-import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -37,6 +35,9 @@ class PlanDetail {
   bool isPublic;
   String? travelDuration;
   List<dynamic>? tempOrders;
+  int? leaderId;
+  String? note;
+  int? memberCount;
 
   PlanDetail(
       {required this.id,
@@ -60,6 +61,9 @@ class PlanDetail {
       required this.isPublic,
       this.travelDuration,
       this.tempOrders,
+      this.leaderId,
+      this.memberCount,
+      this.note,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -72,6 +76,7 @@ class PlanDetail {
         schedule: json["schedule"],
         memberLimit: json["memberLimit"],
         status: json["status"],
+        leaderId: json['accountId'],
         travelDuration: json['travelDuration'],
         locationName: json["destination"]["name"],
         locationId: json["destination"]["id"],
@@ -79,6 +84,8 @@ class PlanDetail {
         joinMethod: json["joinMethod"],
         numOfExpPeriod: json['periodCount'],
         isPublic: json['isPublic'],
+        note: json['note'],
+        memberCount: json['memberCount'],
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'],
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
         startLocationLng: json["departure"]["coordinates"][0].toDouble(),

@@ -141,4 +141,53 @@ mutation{
       throw Exception(error);
     }
   }
+
+  Future<int> travelerSignIn(String deviceToken) async {
+    try {
+      
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+mutation{
+  travelerSignIn(deviceToken: "$deviceToken"){
+    id
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      final int? rs = result.data!['travelerSignIn']['id'];
+      if (rs == null) {
+        return 0;
+      } else {
+        return rs;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int> travelerSignOut() async {
+    try {
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+mutation{
+  travelerSignOut{
+    id
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      final int? rs = result.data!['travelerSignOut']['id'];
+      if (rs == null) {
+        return 0;
+      } else {
+        return rs;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
 }
