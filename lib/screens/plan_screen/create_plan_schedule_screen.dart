@@ -397,7 +397,7 @@ testList = _planService.ConvertPLanJsonToObject(_startDate, _scheduleText);
                       } else {
                         listMotelOrder.add(temp);
                       }
-                      total += getTotal(temp);
+                      total += double.parse(item['total'].toString());
                     }
                     showModalBottomSheet(
                         context: context,

@@ -12,6 +12,7 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/select_default_address.dart';
 import 'package:greenwheel_user_app/screens/location_screen/add_comment_screen.dart';
+import 'package:greenwheel_user_app/screens/location_screen/all_comment_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_by_location.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
@@ -75,6 +76,7 @@ class _LocationScreenState extends State<LocationScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
+          resizeToAvoidBottomInset: false,
             body: isLoading
                 ? const Center(
                     child: Text("Loading..."),
@@ -400,7 +402,14 @@ class _LocationScreenState extends State<LocationScreen> {
                                           ),
                                         ]),
                                     TextButton(
-                                        onPressed: () {},
+                                        onPressed: () {
+                                          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => AllCommentScreen(
+                                            destinationId: widget.location.id,
+                                            destinationDescription: widget.location.description,
+                                            destinationImageUrl: widget.location.imageUrls[0],
+                                            destinationName: widget.location.name,
+                                            )));
+                                        },
                                         child: const Row(
                                           children: [
                                             Text(
@@ -455,8 +464,10 @@ class _LocationScreenState extends State<LocationScreen> {
                                             MaterialPageRoute(
                                                 builder: (ctx) =>
                                                     AddCommentScreen(
-                                                      location: widget.location,
+                                                      destinationDescription: widget.location.description,
+                                                      destinationImageUrl: widget.location.imageUrls[0],
                                                       destinationId: widget.location.id,
+                                                      destinationName: widget.location.name,
                                                       callback:
                                                           callbackAddComment,
                                                       comments: _comments,

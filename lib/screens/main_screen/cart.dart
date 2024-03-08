@@ -13,6 +13,7 @@ import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
@@ -598,7 +599,7 @@ class _CartScreenState extends State<CartScreen> {
                                   ],
                                 ),
                                 Text(
-                                  currencyFormat.format((finalTotal / 1000) *
+                                  currencyFormat.format((finalTotal / 100) *
                                       (_servingDates.isEmpty
                                           ? 1
                                           : _servingDates
@@ -793,7 +794,7 @@ class _CartScreenState extends State<CartScreen> {
     var total = 0;
     var order = convertCart();
     var startDate =
-        DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+        DateTime.parse(sharedPreferences.getString('plan_start_date') ?? widget.startDate.toString());
     print(sharedPreferences.getString('plan_start_date'));
     // int rs = 0;
     List<int> servingDateIndexs = [
@@ -821,7 +822,7 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     final tempOrder = {
-      'total': total,
+      'total': total*servingDateIndexs.length,
       'servingDates': servingDateIndexs,
       'period': order.period,
       'details': detailsMap,
@@ -858,6 +859,32 @@ class _CartScreenState extends State<CartScreen> {
           Navigator.of(context).pop();
         },
       ).show();
+    }else{
+      final rs = await orderService.createOrder(OrderViewModel(
+        createdAt: DateTime.now(),
+        details: details,
+        note: noteController.text,
+        type: widget.serviceType.name,
+        period: order.period,
+        serveDateIndexes: servingDateIndexs,
+        supplierImageUrl: widget.supplier.thumbnailUrl), sharedPreferences.getInt('planId')!);
+      if(rs != 0){
+        // ignore: use_build_context_synchronously
+        AwesomeDialog(
+        context: context,
+        dialogType: DialogType.success,
+        animType: AnimType.topSlide,
+        showCloseIcon: true,
+        title: widget.isOrder!= null && widget.isOrder! ?  "Thanh toán thành công" :"Thêm đơn hàng mẫu thành công",
+        desc: "Ấn tiếp tục để trở về",
+        btnOkText: "Tiếp tục",
+        btnOkOnPress: () {
+          widget.callbackFunction();
+          Navigator.of(context).pop();
+          Navigator.of(context).pop();
+        },
+      ).show();
+      }
     }
 //      rs = await orderService.addOrder(
 //       OrderCreateViewModel(

@@ -20,7 +20,7 @@ class NotificationViewModel {
       NotificationViewModel(
           body: json['body'],
           id: json['id'],
-          travelerId: json['travelerId'],
+          travelerId: json['accountId'],
           title: json['title'],
           type: json['type'],
           targetId: json['targetId'],

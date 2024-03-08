@@ -26,7 +26,7 @@ class _MenuItemCardState extends State<MenuItemCard>
   bool get wantKeepAlive => true;
 
   // Create a NumberFormat instance for currency formatting
-  var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
+  var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
   bool isQuantity = false;
 
   @override
@@ -109,7 +109,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                               padding: const EdgeInsets.only(left: 8),
                               child: Text(
                                 currencyFormat
-                                    .format(widget.product.price / 1000),
+                                    .format(widget.product.price),
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   color: Colors.grey,

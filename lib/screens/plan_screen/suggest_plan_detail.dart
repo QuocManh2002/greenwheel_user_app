@@ -66,11 +66,11 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
 
     for (var item in _planDetail!.orders!) {
       if (item.type! == 'FOOD') {
-        listRestaurant.add(SupplierOrderCard(callback: () {
+        listRestaurant.add(SupplierOrderCard(callback: (String? guid) {
           
         }, order: item, startDate: _planDetail!.startDate!, isTempOrder: false, planId: sharedPreferences.getInt('planId')!));
       } else {
-        listMotel.add(SupplierOrderCard(callback: (){}, order: item, startDate: _planDetail!.startDate!, isTempOrder: false, planId: sharedPreferences.getInt('planId')!));
+        listMotel.add(SupplierOrderCard(callback: (String? guid){}, order: item, startDate: _planDetail!.startDate!, isTempOrder: false, planId: sharedPreferences.getInt('planId')!));
       }
       total += item.total!;
     }

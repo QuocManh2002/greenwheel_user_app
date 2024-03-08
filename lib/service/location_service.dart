@@ -423,7 +423,7 @@ mutation {
 {
   destinations(where: {
     id:{
-      eq: 1
+      eq: $destinationId
     }
   }){
     nodes{

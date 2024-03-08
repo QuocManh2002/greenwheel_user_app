@@ -138,13 +138,13 @@ class NotificationService {
         document: gql("""
 {
   notifications(where: {
-    travelerId:{
+    accountId:{
       eq : $travelerId
     }
   }){
     nodes{
       id
-      travelerId
+      accountId
       title
       body
       imageUrl

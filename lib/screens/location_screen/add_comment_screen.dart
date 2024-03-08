@@ -11,11 +11,14 @@ import 'package:sizer2/sizer2.dart';
 import 'package:vn_badwords_filter/vn_badwords_filter.dart';
 
 class AddCommentScreen extends StatefulWidget {
-  const AddCommentScreen({super.key, required this.callback, this.comments, required this.destinationId, required this.location});
+  const AddCommentScreen({super.key, required this.callback, this.comments, required this.destinationId,required this.destinationImageUrl,required this.destinationName, required this.destinationDescription});
   final List<CommentViewModel>? comments;
   final int destinationId;
   final void Function() callback;
-  final LocationViewModel location;
+  final String destinationDescription;
+  final String destinationImageUrl;
+  final String destinationName;
+
 
   @override
   State<AddCommentScreen> createState() => _AddCommentScreenState();
@@ -55,7 +58,7 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
 
                         ),
                         child: Image.network(
-                          widget.location.imageUrls[0],
+                          widget.destinationImageUrl,
                           fit: BoxFit.cover,
                         ),
                       ),
@@ -67,7 +70,7 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              widget.location.name,
+                              widget.destinationName,
                               overflow: TextOverflow.clip,
                               style:const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold,
@@ -75,7 +78,7 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                             ),
                             RatingBar(rating: 4),
                             ReadMoreText(
-                                    widget.location.description,
+                                    widget.destinationDescription,
                                     trimLines: 3,
                                     textAlign: TextAlign.justify,
                                     trimMode: TrimMode.Line,
@@ -93,23 +96,6 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                       )
                     ],
                   )
-
-                  // SizedBox(height: 2.h,),
-                  
-                  // SizedBox(
-                  //   height: 2.h,
-                  // ),
-                  // ElevatedButton.icon(
-                  //   icon:const Icon(Icons.send),
-                  //     style: elevatedButtonStyle,
-                  //     onPressed: () {
-                  //       if (_formKey.currentState!.validate()) {
-                  //         callback(_commentController.text);
-                  //         _commentController.clear();
-                  //         Navigator.of(context).pop();
-                  //       }
-                  //     },
-                  //     label: const Text('Bình luận'))
                 ]),
               ),
             ),

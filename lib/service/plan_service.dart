@@ -5,7 +5,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -40,7 +39,6 @@ class PlanService {
     surcharges:$surcharges
     tempOrders:${model.tempOrders}
     travelDuration:"${model.travelDuration}"
-    weight:${model.weight}
   }){
     id
   }
@@ -65,7 +63,6 @@ class PlanService {
     surcharges:$surcharges
     tempOrders:${model.tempOrders}
     travelDuration:"${model.travelDuration}"
-    weight:${model.weight}
   }){
     id
   }
@@ -83,76 +80,6 @@ class PlanService {
       // ignore: use_build_context_synchronously
       Utils().handleServerException(
           'Đã xảy ra lỗi trong lúc tạo kế hoạch', context);
-      throw Exception(error);
-    }
-  }
-
-  Future<int> createDraftPlan(PlanCreate model) async {
-    try {
-      QueryResult result = await client.mutate(MutationOptions(
-        fetchPolicy: FetchPolicy.noCache,
-        document: gql("""
-mutation{
-  createDraftPlan(dto: {
-    departure:[${model.longitude},${model.latitude}]
-    destinationId:${model.locationId}
-    memberLimit:${model.memberLimit}
-    periodCount:${model.numOfExpPeriod}
-  }){
-    id
-  }
-}
-"""),
-      ));
-
-      if (result.hasException) {
-        throw Exception(result.exception);
-      } else {
-        var rstext = result.data!;
-        int planId = rstext['createDraftPlan']['id'];
-        sharedPreferences.setInt("planId", planId);
-        return planId;
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<int> completeCreatePlan(
-      PlanCreate model, int planId, String surcharges) async {
-    try {
-      DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
-          seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-              .toInt()));
-      var schedule = json.decode(model.schedule!);
-      QueryResult result = await client.mutate(MutationOptions(
-        fetchPolicy: FetchPolicy.noCache,
-        document: gql("""
-  mutation{
-  completeCreatePlan(dto: {
-    travelDuration:"${_travelDuration.hour.toString().length == 1 ? '0${_travelDuration.hour}' : _travelDuration.hour}:${_travelDuration.minute.toString().length == 1 ? '0${_travelDuration.minute}' : _travelDuration.minute}"
-    gcoinBudgetPerCapita: ${model.gcoinBudget}
-    id:$planId
-    name:"${model.name}"
-    savedContacts:${model.savedContacts}
-    schedule:$schedule
-    surcharges:$surcharges
-    departDate:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
-  }){
-    id
-  }
-}
-"""),
-      ));
-
-      if (result.hasException) {
-        throw Exception(result.exception);
-      } else {
-        var rstext = result.data!;
-        int planId = rstext['completeCreatePlan']['id'];
-        return planId;
-      }
-    } catch (error) {
       throw Exception(error);
     }
   }
@@ -233,9 +160,9 @@ query GetPlanById(\$planId: Int){
       id
       startDate
       endDate
-      isPublic
       accountId
       gcoinBudgetPerCapita
+      currentGcoinBudget
       travelDuration
       note
       memberCount
@@ -304,12 +231,17 @@ query GetPlanById(\$planId: Int){
         id
       }
       tempOrders{
+        guid
         cart
         type
         serveDateIndexes
         period
         note
       }
+      surcharges{
+          gcoinAmount
+          note
+        }
     }
   }
 }
@@ -421,7 +353,6 @@ query GetPlanById(\$planId: Int){
   }
 
   List<PlanSchedule> GetPlanScheduleClone(List<PlanSchedule> schedules) {
-    // var _schedule = schedules;
     for (final schedule in schedules) {
       if (schedule.items.isNotEmpty) {
         for (int i = 0; i < schedule.items.length; i++) {
@@ -464,12 +395,10 @@ query GetPlanById(\$planId: Int){
       final date = startDate.add(Duration(days: i));
       if (i < schedules.length) {
         for (final planItem in schedules[i]['events']) {
-          // print(planItem['time']);
           item.add(PlanScheduleItem(
               activityTime:
                   int.parse(planItem['duration'].toString().substring(0, 2)),
               shortDescription: planItem['shortDescription'],
-              // orderId: planItem['orderGuid'],
               type: schedule_item_types_vn[
                   schedule_item_types.indexOf(planItem['type'].toString())],
               time: TimeOfDay.fromDateTime(DateTime.parse(
@@ -499,11 +428,7 @@ query GetPlanById(\$planId: Int){
             .firstWhere((element) => element == item.type);
         items.add({
           'duration':
-              // json.encode(DateFormat.Hms()
-              //     .format(DateTime(0, 0, 0, item.time.hour, item.time.minute))
-              //     .toString()),
               json.encode("${item.activityTime}:00:00"),
-          // 'orderGuid': item.orderId == null ? null: json.encode(item.orderId),
           'description': json.encode(item.description),
           'shortDescription': json.encode(item.shortDescription),
           'type': schedule_item_types[schedule_item_types_vn.indexOf(type)]
@@ -515,14 +440,14 @@ query GetPlanById(\$planId: Int){
     return rs;
   }
 
-  Future<int?> joinPlan(int planId) async {
+  Future<int?> joinPlan(int planId, int weight) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
   joinPlan(dto: {
     planId: $planId
-    weight: 1
+    weight: $weight
   }){
     id
   }
@@ -607,47 +532,14 @@ mutation{
     }
   }
 
-  Future<int> updateEmergencyService(
-      PlanCreate model, String serviceList, int planId) async {
-    try {
-      QueryResult result = await client.mutate(
-          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-mutation{
-  updatePlan(dto: {
-    id: $planId
-    latitude: ${model.latitude}
-    longitude: ${model.longitude} 
-    startDate:"${model.startDate!.year}-${model.startDate!.month}-${model.startDate!.day} ${model.startDate!.hour}:${model.startDate!.minute}:00.000Z"
-    endDate:"${model.endDate!.year}-${model.endDate!.month}-${model.endDate!.day} 22:00:00.000Z"
-    memberLimit:${model.memberLimit}
-    name: ${json.encode(model.name)}
-    schedule:${model.schedule}
-    savedContacts: $serviceList
-  }){
-    id
-  }
-}
-""")));
-      if (result.hasException) {
-        throw Exception(result.exception);
-      } else {
-        var rstext = result.data!;
-        int planId = rstext['updatePlan']['id'];
-        return planId;
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
   Future<int> inviteToPlan(int planId, int travelerId) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
   inviteToPlan(dto: {
-    id:$planId
-    travelerId:$travelerId
+    planId:$planId
+    accountId:$travelerId
   }){
     id
   }
@@ -715,14 +607,14 @@ mutation{
     }
   }
 
-  Future<bool> publicizePlan(int planId) async {
+  Future<String> publicizePlan(int planId) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
   publicizePlan(planId: $planId){
     id
-    isPublic
+    status
   }
 }
 """)));
@@ -730,7 +622,7 @@ mutation{
         throw Exception(result.exception);
       }
 
-      bool? res = result.data!['publicizePlan']['isPublic'];
+      String? res = result.data!['publicizePlan']['status'];
       return res!;
     } catch (error) {
       throw Exception(error);
@@ -744,7 +636,7 @@ mutation{
 mutation{
   confirmMembers(planId: $planId){
     id
-    isPublic
+    status
   }
 }
 """)));

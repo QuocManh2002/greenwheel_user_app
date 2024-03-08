@@ -74,7 +74,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   bool _isShowSchedule = false;
   int tabIndex = 0;
   PlanCreate? plan;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _noteController = TextEditingController();
 
   @override
@@ -90,77 +89,74 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
-    await callback();
+    callback();
+    callbackSurcharge();
   }
 
-  callback() async {
-    orderList = json.decode(sharedPreferences.getString('plan_temp_order')!);
-    List<Widget> listRestaurant = [];
-    List<Widget> listMotel = [];
-    listMotelOrder = [];
-    listRestaurantOrder = [];
-    // totalSurcharge = 0;
-    totalFood = 0;
-    totalRest = 0;
-    total = 0;
-    for (var item in orderList!) {
-      List<OrderDetailViewModel> details = [];
-      for (final detail in item['details']) {
-        details.add(OrderDetailViewModel(
-            price: detail['unitPrice'],
-            productName: detail['productName'],
-            unitPrice: detail['unitPrice'],
-            quantity: detail['quantity']));
+  callback() {
+    final orderText = sharedPreferences.getString('plan_temp_order');
+    if (orderText != null) {
+      orderList = json.decode(orderText);
+      List<Widget> listRestaurant = [];
+      List<Widget> listMotel = [];
+      listMotelOrder = [];
+      listRestaurantOrder = [];
+      totalFood = 0;
+      totalRest = 0;
+      for (var item in orderList!) {
+        List<OrderDetailViewModel> details = [];
+        for (final detail in item['details']) {
+          details.add(OrderDetailViewModel(
+              price: detail['unitPrice'],
+              productName: detail['productName'],
+              unitPrice: detail['unitPrice'],
+              quantity: detail['quantity']));
+        }
+        final temp = OrderViewModel(
+            note: item['note'],
+            details: details,
+            type: item['type'],
+            period: item['period'],
+            serveDateIndexes: item['servingDates'],
+            total: double.parse(item['total'].toString()),
+            createdAt: DateTime.parse(item['createdAt']),
+            supplierId: item['supplierId'],
+            supplierName: item['supplierName'],
+            supplierPhone: item['supplierPhone'],
+            supplierAddress: item['supplierAddress'],
+            supplierImageUrl: item['supplierImageUrl']);
+        if (item['type'] == 'FOOD') {
+          listRestaurant.add(SupplierOrderCard(
+            order: temp,
+            startDate: startDate!,
+            isTempOrder: false,
+            callback: (String? guid) {},
+          ));
+          listRestaurantOrder!.add(temp);
+          totalFood += double.parse(item['total'].toString());
+        } else {
+          listMotel.add(SupplierOrderCard(
+            order: temp,
+            startDate: startDate!,
+            isTempOrder: false,
+            callback: (String? guid) {},
+          ));
+          listMotelOrder!.add(temp);
+          totalRest += double.parse(item['total'].toString());
+        }
       }
-      final temp = OrderViewModel(
-          note: item['note'],
-          details: details,
-          type: item['type'],
-          period: item['period'],
-          serveDateIndexes: item['servingDates'],
-          total: double.parse(item['total'].toString()),
-          createdAt: DateTime.parse(item['createdAt']),
-          supplierId: item['supplierId'],
-          supplierName: item['supplierName'],
-          supplierPhone: item['supplierPhone'],
-          supplierAddress: item['supplierAddress'],
-          supplierImageUrl: item['supplierImageUrl']);
-      if (item['type'] == 'FOOD') {
-        listRestaurant.add(SupplierOrderCard(
-          order: temp,
-          startDate: startDate!,
-          isTempOrder: false,
-          callback: (){},
-        ));
-        listRestaurantOrder!.add(temp);
-        totalFood += getTotal(temp);
-      } else {
-        listMotel.add(SupplierOrderCard(
-          order: temp,
-          startDate: startDate!,
-          isTempOrder: false,
-          callback: () {
-            
-          },
-        ));
-        listMotelOrder!.add(temp);
-        totalRest += getTotal(temp);
+      if (orderList!.isNotEmpty) {
+        setState(() {
+          _listMotel = listMotel;
+          _listRestaurant = listRestaurant;
+        });
       }
-      total += getTotal(temp);
-    }
-    if (orderList!.isNotEmpty) {
-      setState(() {
-        _listMotel = listMotel;
-        _listRestaurant = listRestaurant;
-      });
-    }
-    final budget = ((total / memberLimit) / 100).ceil();
-    if (sharedPreferences.getInt('plan_number_of_member')! != 1) {
-      sharedPreferences.setInt('plan_budget', budget);
+
+      getTotal();
     }
   }
 
-  getTotal(OrderViewModel order) {
+  getOrderTotal(OrderViewModel order) {
     var _total = 0.0;
     for (final detail in order.details!) {
       _total += detail.price! * detail.quantity;
@@ -528,15 +524,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                               btnCancelOnPress: () {
                                 completeService(context);
                               }).show();
-                          // completeService(context);
-                          // Navigator.of(context).push(MaterialPageRoute(
-                          //     builder: (ctx) => CreateNoteWeightScreen(
-                          //           locationId: widget.location.id,
-                          //           locationName: widget.location.name,
-                          //           listSurcharges: _listSurchargeObjects,
-                          //           orders: orderList!,
-                          //           total: total.toDouble(),
-                          //         )));
                         },
                         child: const Text('Tiếp tục')),
                   ),
@@ -645,13 +632,13 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         travelDuration: DateFormat.Hm().format(_travelDuration),
         tempOrders: _orderService.convertTempOrders(orderList!).toString(),
         note: _noteController.text,
-        weight: sharedPreferences.getInt('plan_weight'),
         gcoinBudget: ((total / memberLimit) / 100).ceil());
     showModalBottomSheet(
         backgroundColor: Colors.white.withOpacity(0.94),
         context: context,
+        isScrollControlled: true,
         builder: (ctx) => SizedBox(
-              height: 75.h,
+              height: 90.h,
               child: ConfirmPlanBottomSheet(
                 locationName: widget.location.name,
                 total: (total / 100).toDouble(),
@@ -667,15 +654,26 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             ));
   }
 
-  callbackSurcharge(String amount, String note) {
+  callbackSurcharge() {
+    String? surchargeText = sharedPreferences.getString('plan_surcharge');
+    List<Widget> listSurcharges = [];
+    _listSurchargeObjects = [];
+    if (surchargeText != null) {
+      final surcharges = json.decode(surchargeText);
+      for (final sur in surcharges) {
+          listSurcharges
+            .add(SurchargeCard(amount: sur['gcoinAmount'], note: json.decode(sur['note'])));
+        totalSurcharge += int.parse(sur['gcoinAmount']) * 100;
+        total += int.parse(sur['gcoinAmount'].toString()) * 100;
+        _listSurchargeObjects.add(sur);
+      }
+    }
     setState(() {
-      _listSurcharges.add(SurchargeCard(amount: amount, note: note));
-      totalSurcharge += int.parse(amount) * 100;
-      total += int.parse(amount) * 100;
-      _listSurchargeObjects
-          .add({'note': json.encode(note), 'gcoinAmount': amount});
-      print(_listSurchargeObjects.toString());
+      _listSurcharges = listSurcharges;
     });
+      sharedPreferences.setString(
+          'plan_surcharge', json.encode(_listSurchargeObjects));
+      getTotal();
   }
 
   onCompletePlan() async {
@@ -746,5 +744,25 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       }
     }
     // }
+  }
+
+  getTotal() {
+    total = 0;
+    for (final order in listMotelOrder!) {
+      // total += getOrderTotal(order);
+      total += order.total!;
+    }
+    for (final order in listRestaurantOrder!) {
+      // total += getOrderTotal(order);
+      total += order.total!;
+    }
+    for (final sur in _listSurchargeObjects) {
+      total += double.parse(sur['gcoinAmount'].toString()) *100;
+    }
+
+    final budget = ((total / memberLimit) / 100).ceil();
+    if (sharedPreferences.getInt('plan_number_of_member')! != 1) {
+      sharedPreferences.setInt('plan_budget', budget);
+    }
   }
 }

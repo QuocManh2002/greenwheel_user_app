@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
 
 PlanDetail planDetailFromJson(String str) =>
     PlanDetail.fromJson(json.decode(str));
@@ -32,12 +33,13 @@ class PlanDetail {
   int numOfExpPeriod;
   List<PlanMemberViewModel>? members;
   int? gcoinBudgetPerCapita;
-  bool isPublic;
   String? travelDuration;
   List<dynamic>? tempOrders;
   int? leaderId;
   String? note;
   int? memberCount;
+  double? currentGcoinBudget;
+  List<SurchargeViewModel>? surcharges;
 
   PlanDetail(
       {required this.id,
@@ -58,12 +60,13 @@ class PlanDetail {
       required this.startLocationLng,
       required this.numOfExpPeriod,
       required this.departureDate,
-      required this.isPublic,
       this.travelDuration,
       this.tempOrders,
       this.leaderId,
       this.memberCount,
       this.note,
+      this.currentGcoinBudget,
+      this.surcharges,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -83,12 +86,13 @@ class PlanDetail {
         imageUrls: json["destination"]["imageUrls"],
         joinMethod: json["joinMethod"],
         numOfExpPeriod: json['periodCount'],
-        isPublic: json['isPublic'],
         note: json['note'],
+        currentGcoinBudget: json['currentGcoinBudget'].toDouble(),
         memberCount: json['memberCount'],
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'],
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
         startLocationLng: json["departure"]["coordinates"][0].toDouble(),
+        surcharges: List<SurchargeViewModel>.from(json['surcharges'].map((e) => SurchargeViewModel.fromJson(e))).toList(),
         members: List<PlanMemberViewModel>.from(json['members'].map((e) => PlanMemberViewModel.fromJson(e))).toList(),
         savedContacts: List<EmergencyContactViewModel>.from(json['savedContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
       );

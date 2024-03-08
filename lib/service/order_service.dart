@@ -175,8 +175,9 @@ mutation{
           'value': detail.quantity
         };
       }).toList();
-      print(details);
-      print("""mutation{
+
+String mutationText = order.guid != null && order.guid!.isNotEmpty? """
+mutation{
   createOrder(dto: {
     cart:$details
     note:"${order.note}"
@@ -184,15 +185,12 @@ mutation{
     planId:$planId
     serveDateIndexes:${order.serveDateIndexes}
     type:${order.type}
+    tempOrderGUID:"${order.guid}"
   }){
     id
   }
-}""");
-      
-      final QueryResult result = await client.mutate(
-        MutationOptions(
-          fetchPolicy: FetchPolicy.noCache,
-          document: gql("""
+}
+""" : """
 mutation{
   createOrder(dto: {
     cart:$details
@@ -205,7 +203,12 @@ mutation{
     id
   }
 }
-"""))
+""" ;
+      
+      final QueryResult result = await client.mutate(
+        MutationOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql(mutationText))
       );
       if (result.hasException) {
         throw Exception(result.exception);

@@ -26,6 +26,7 @@ import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/member_list_widget.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_icon_button.dart';
@@ -59,25 +60,27 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   List<PlanMemberViewModel> _planMembers = [];
   List<PlanMemberViewModel> _joinedMember = [];
   double total = 0;
+  double totalTempOrders = 0;
   int _currentIndexEmergencyCard = 0;
   int _selectedTab = 0;
-  bool _isPublic = true;
+  bool _isPublic = false;
   bool _isEnableToShare = false;
   bool _isEnableToOrder = false;
   List<ProductViewModel> products = [];
   List<OrderViewModel> tempOrders = [];
-  bool _isShowRealOrder = false;
   List<OrderViewModel> orderList = [];
   bool isLeader = false;
   Widget? activeWidget;
+  int _selectedWeight = 1;
+  List<int> availableWeight = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-
     newItemController = TextEditingController();
     setupData();
+    sharedPreferences.setInt('planId', widget.planId);
   }
 
   setupData() async {
@@ -95,11 +98,17 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     isLeader = sharedPreferences.getString('userId') ==
         _planDetail!.leaderId.toString();
     tabController = TabController(length: 2, vsync: this, initialIndex: 0);
-    _isPublic = _planDetail!.isPublic;
-    _isEnableToShare = _isPublic && _planDetail!.status != 'READY';
+    for (int i = 0;
+        i < _planDetail!.memberLimit - _planDetail!.memberCount!;
+        i++) {
+      availableWeight.add(i + 1);
+    }
     products = await _productService.getListProduct(productIds);
     tempOrders = getTempOrder();
-    getOrderList();
+    _isPublic = _planDetail!.status != 'PRIVATE';
+    _isEnableToShare = _isPublic && _planDetail!.status != 'READY';
+
+    getOrderList(null);
     getPlanMember();
     if (_planDetail != null) {
       setState(() {
@@ -110,7 +119,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
 
   getPlanMember() {
     for (final mem in _planDetail!.members!) {
-      // _planMembers = _planDetail!.members!;
       int type = 0;
       if (mem.accountId == _planDetail!.leaderId) {
         type = 1;
@@ -142,6 +150,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         }
         ProductViewModel sampleProduct = products.firstWhere(
             (element) => element.id.toString() == cart.entries.first.key);
+        totalTempOrders += orderTotal * e['serveDateIndexes'].length;
         return OrderViewModel(
             id: e['id'],
             details: cart.entries.map((e) {
@@ -155,8 +164,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   quantity: e.value);
             }).toList(),
             note: e['note'],
+            guid: e['guid'],
             serveDateIndexes: e["serveDateIndexes"],
-            total: orderTotal,
+            total: orderTotal * e['serveDateIndexes'].length,
             createdAt: DateTime.now(),
             supplierName: sampleProduct.supplierName,
             type: e['type'],
@@ -166,7 +176,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             period: e['period']);
       }).toList();
 
-  getOrderList() async {
+  getOrderList(String? tempOrderGuid) async {
     total = 0;
     orderList = await _planService.getOrderCreatePlan(widget.planId);
     List<Widget> listRestaurant = [];
@@ -178,7 +188,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           startDate: _planDetail!.startDate!,
           isTempOrder: false,
           planId: widget.planId,
-          callback: () {},
+          callback: (String? guid) {},
         ));
       } else {
         listMotel.add(SupplierOrderCard(
@@ -186,15 +196,28 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           startDate: _planDetail!.startDate!,
           isTempOrder: false,
           planId: widget.planId,
-          callback: () {},
+          callback: (String? guid) {},
         ));
       }
       total += item.total!;
     }
-    setState(() {
-      _listMotel = listMotel;
-      _listRestaurant = listRestaurant;
-    });
+    if (tempOrderGuid != null) {
+      final tempOrder = tempOrders.firstWhere(
+        (element) => element.guid == tempOrderGuid,
+      );
+      setState(() {
+        tempOrders.remove(tempOrder);
+        _planDetail!.currentGcoinBudget = _planDetail!.currentGcoinBudget! -
+            tempOrder.total! / 100.toDouble();
+        _listMotel = listMotel;
+        _listRestaurant = listRestaurant;
+      });
+    } else {
+      setState(() {
+        _listMotel = listMotel;
+        _listRestaurant = listRestaurant;
+      });
+    }
   }
 
   updatePlan() async {
@@ -282,9 +305,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             child: Column(
                           children: [
                             CachedNetworkImage(
-                              height: 35.h,
+                              height: 25.h,
                               width: double.infinity,
-                              fit: BoxFit.cover,
+                              fit: BoxFit.fill,
                               imageUrl: _planDetail!.imageUrls[0],
                               placeholder: (context, url) =>
                                   Image.memory(kTransparentImage),
@@ -327,15 +350,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                             setState(() {
                                               _isPublic = !_isPublic;
                                             });
-                                            // final planStatus =
-                                            await _planService
-                                                .publicizePlan(widget.planId);
-                                            setState(() {
-                                              // _isPublic = planStatus;
-                                              _isEnableToShare = _isPublic &&
-                                                  _planDetail!.status !=
-                                                      'READY';
-                                            });
+                                            onPublicizePlan();
                                           },
                                         ),
                                       Text(
@@ -470,18 +485,31 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     )),
                 const Spacer(),
                 TextButton(
-                    onPressed: () {
-                      Navigator.of(context).push(MaterialPageRoute(
-                          builder: (ctx) => ListOrderScreen(
-                                planId: widget.planId,
-                                orders: tempOrders,
-                                startDate: _planDetail!.startDate!,
-                                callback: getOrderList,
-                              )));
+                    onPressed: () async {
+                      if (_planDetail!.status == 'READY') {
+                        final rs = await _locationService.GetLocationById(
+                            _planDetail!.locationId);
+                        if (rs != null) {
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (ctx) => ListOrderScreen(
+                                    planId: widget.planId,
+                                    orders: tempOrders,
+                                    startDate: _planDetail!.startDate!,
+                                    callback: getOrderList,
+                                    endDate: _planDetail!.endDate!,
+                                    memberLimit: _planDetail!.memberLimit,
+                                    location: rs,
+                                  )));
+                        }
+                      }
                     },
-                    child: const Text(
+                    child: Text(
                       'Đi đặt hàng',
-                      style: TextStyle(color: primaryColor),
+                      style: TextStyle(
+                        color: _planDetail!.status == 'READY'
+                            ? primaryColor
+                            : Colors.grey,
+                      ),
                     ))
               ],
             ),
@@ -527,7 +555,26 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               ]),
             ),
             const SizedBox(
-              height: 16,
+              height: 8,
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text(
+                    'Ngân sách chuyến đi: ',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(_planDetail!.currentGcoinBudget! * 100)} VND',
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(
+              height: 8,
             ),
             if (total != 0)
               Padding(
@@ -641,189 +688,20 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                       ),
                       const Spacer(),
                       TextButton(
-                          style: const ButtonStyle(
-                              foregroundColor:
-                                  MaterialStatePropertyAll(primaryColor)),
+                          style: ButtonStyle(
+                              foregroundColor: MaterialStatePropertyAll(
+                                  _planDetail!.memberCount! != 0
+                                      ? primaryColor
+                                      : Colors.grey)),
                           onPressed: () {
-                            showModalBottomSheet(
-                                context: context,
-                                builder: (ctx) => Padding(
-                                      padding: const EdgeInsets.all(12),
-                                      child: SizedBox(
-                                        width: 100.w,
-                                        child: Column(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Container(
-                                                decoration: BoxDecoration(
-                                                  color: primaryColor
-                                                      .withOpacity(0.5),
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                          Radius.circular(12)),
-                                                ),
-                                                width: 10.h,
-                                                height: 6,
-                                              ),
-                                              SizedBox(
-                                                height: 1.h,
-                                              ),
-                                              for (final mem in _planMembers)
-                                                Padding(
-                                                  padding: const EdgeInsets
-                                                      .symmetric(
-                                                      horizontal: 12,
-                                                      vertical: 6),
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.all(
-                                                            12),
-                                                    width: 100.w,
-                                                    decoration:
-                                                        const BoxDecoration(
-                                                            borderRadius:
-                                                                BorderRadius
-                                                                    .all(Radius
-                                                                        .circular(
-                                                                            12)),
-                                                            color:
-                                                                Colors.white),
-                                                    child: Row(
-                                                      children: [
-                                                        Column(
-                                                            crossAxisAlignment:
-                                                                CrossAxisAlignment
-                                                                    .start,
-                                                            children: [
-                                                              Text(
-                                                                mem.name,
-                                                                style: const TextStyle(
-                                                                    fontSize:
-                                                                        20,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .bold),
-                                                              ),
-                                                              Text(
-                                                                '0${mem.phone.substring(3)}',
-                                                                style:
-                                                                    const TextStyle(
-                                                                        fontSize:
-                                                                            19),
-                                                              )
-                                                            ]),
-                                                        const Spacer(),
-                                                        mem.accountType == 2
-                                                            ? Container()
-                                                            : mem.accountType ==
-                                                                    3
-                                                                ? PopupMenuButton(
-                                                                    itemBuilder:
-                                                                        (ctx) =>
-                                                                            [
-                                                                      const PopupMenuItem(
-                                                                        value:
-                                                                            0,
-                                                                        child:
-                                                                            Row(
-                                                                          children: [
-                                                                            Icon(
-                                                                              Icons.close,
-                                                                              color: primaryColor,
-                                                                              size: 32,
-                                                                            ),
-                                                                            SizedBox(
-                                                                              width: 8,
-                                                                            ),
-                                                                            Text(
-                                                                              'Xoá',
-                                                                              style: TextStyle(color: primaryColor, fontSize: 18),
-                                                                            )
-                                                                          ],
-                                                                        ),
-                                                                      ),
-                                                                      const PopupMenuItem(
-                                                                        value:
-                                                                            1,
-                                                                        child:
-                                                                            Row(
-                                                                          children: [
-                                                                            Icon(
-                                                                              Icons.block,
-                                                                              color: redColor,
-                                                                              size: 32,
-                                                                            ),
-                                                                            SizedBox(
-                                                                              width: 8,
-                                                                            ),
-                                                                            Text(
-                                                                              'Chặn',
-                                                                              style: TextStyle(color: redColor, fontSize: 18),
-                                                                            )
-                                                                          ],
-                                                                        ),
-                                                                      )
-                                                                    ],
-                                                                    onSelected:
-                                                                        (value) {
-                                                                      if (value ==
-                                                                          0) {
-                                                                        AwesomeDialog(
-                                                                                context: context,
-                                                                                animType: AnimType.bottomSlide,
-                                                                                dialogType: DialogType.question,
-                                                                                title: 'Bạn có chắc chắn muốn xoá tài khoản này khỏi chuyến đi không ?',
-                                                                                titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                                                                btnOkColor: Colors.blue,
-                                                                                btnOkText: 'Có',
-                                                                                padding: const EdgeInsets.all(12),
-                                                                                btnOkOnPress: () {
-                                                                                  onRemoveMember(mem.memberId, false);
-                                                                                },
-                                                                                btnCancelColor: Colors.orange,
-                                                                                btnCancelText: 'Không',
-                                                                                btnCancelOnPress: () {})
-                                                                            .show();
-                                                                      } else {
-                                                                        AwesomeDialog(
-                                                                                context: context,
-                                                                                animType: AnimType.bottomSlide,
-                                                                                dialogType: DialogType.question,
-                                                                                title: 'Bạn có chắc chắn muốn chặn tài khoản này hay không ?',
-                                                                                titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                                                                                btnOkColor: Colors.blue,
-                                                                                padding: const EdgeInsets.all(12),
-                                                                                btnOkText: 'Có',
-                                                                                btnOkOnPress: () {
-                                                                                  onRemoveMember(mem.memberId, true);
-                                                                                },
-                                                                                btnCancelColor: Colors.orange,
-                                                                                btnCancelText: 'Không',
-                                                                                btnCancelOnPress: () {})
-                                                                            .show();
-                                                                      }
-                                                                    },
-                                                                  )
-                                                                : const Padding(
-                                                                    padding: EdgeInsets
-                                                                        .only(
-                                                                            right:
-                                                                                8),
-                                                                    child: Icon(
-                                                                      Icons
-                                                                          .star,
-                                                                      color:
-                                                                          yellowColor,
-                                                                      size: 30,
-                                                                    ),
-                                                                  )
-                                                      ],
-                                                    ),
-                                                  ),
-                                                )
-                                            ]),
-                                      ),
-                                    ));
+                            if (_planDetail!.memberCount != 0) {
+                              showModalBottomSheet(
+                                  context: context,
+                                  builder: (ctx) => MemberListWidget(
+                                        members: _planMembers,
+                                        onRemoveMember: onRemoveMember,
+                                      ));
+                            }
                           },
                           child: const Row(
                             children: [
@@ -833,7 +711,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               ),
                               Icon(
                                 Icons.keyboard_arrow_right,
-                                color: primaryColor,
                                 size: 23,
                               )
                             ],
@@ -987,61 +864,157 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           "type": emer.type
         });
       }
-      showModalBottomSheet(
+      final rs = await showModalBottomSheet(
           context: context,
-          builder: (ctx) => ConfirmPlanBottomSheet(
-              plan: PlanCreate(
-                schedule: json.encode(_planDetail!.schedule),
-                savedContacts: json.encode(emerList),
-                name: _planDetail!.name,
-                memberLimit: _planDetail!.memberLimit,
-                startDate: _planDetail!.startDate,
-                endDate: _planDetail!.endDate,
-                travelDuration: _planDetail!.travelDuration,
-                departureDate: _planDetail!.departureDate,
-                note: _planDetail!.note,
-              ),
-              locationName: _planDetail!.locationName,
-              orderList: orderList,
-              onCompletePlan: () {},
-              listSurcharges: [],
-              budgetPerCapita: _planDetail!.gcoinBudgetPerCapita!.toDouble(),
-              isJoin: true,
-              onJoinPlan: confirmJoin,
-              total: total / 100));
+          isScrollControlled: true,
+          builder: (BuildContext context) => SizedBox(
+                height: 90.h,
+                child: ConfirmPlanBottomSheet(
+                    plan: PlanCreate(
+                      schedule: json.encode(_planDetail!.schedule),
+                      savedContacts: json.encode(emerList),
+                      name: _planDetail!.name,
+                      memberLimit: _planDetail!.memberLimit,
+                      startDate: _planDetail!.startDate,
+                      endDate: _planDetail!.endDate,
+                      travelDuration: _planDetail!.travelDuration,
+                      departureDate: _planDetail!.departureDate,
+                      note: _planDetail!.note,
+                    ),
+                    locationName: _planDetail!.locationName,
+                    orderList: tempOrders,
+                    onCompletePlan: () {},
+                    listSurcharges: _planDetail!.surcharges!
+                        .map((e) => {
+                              "gcoinAmount": e.gcoinAmount,
+                              "note": json.encode(e.note)
+                            })
+                        .toList(),
+                    budgetPerCapita:
+                        _planDetail!.gcoinBudgetPerCapita!.toDouble(),
+                    isJoin: true,
+                    onJoinPlan: confirmJoin,
+                    onCancel: () {
+                      Navigator.of(context).pop();
+                      setState(() {
+                        _isPublic = false;
+                      });
+                    },
+                    total: totalTempOrders / 100),
+              ));
+      if (rs == null) {
+        setState(() {
+          _isPublic = false;
+        });
+      }
     }
   }
 
   confirmJoin() {
-    AwesomeDialog(
-        context: context,
-        dialogType: DialogType.question,
-        animType: AnimType.topSlide,
-        title: "Xác nhận tham gia",
-        desc:
-            "Kinh phí cho chuyến đi này là ${_planDetail!.gcoinBudgetPerCapita} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
-        btnOkText: "Xác nhận",
-        btnOkOnPress: () async {
-          int? rs = await _planService.joinPlan(widget.planId);
-          if (rs != null) {
-            AwesomeDialog(
-              context: context,
-              dialogType: DialogType.success,
-              animType: AnimType.topSlide,
-              showCloseIcon: true,
-              title: "Tham gia kế hoạch thành công",
-              desc: "Ấn tiếp tục để trở về",
-              btnOkText: "Tiếp tục",
-              btnOkOnPress: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pushAndRemoveUntil(
-                    MaterialPageRoute(
-                        builder: (ctx) => const TabScreen(pageIndex: 1)),
-                    (route) => false);
-              },
-            ).show();
-          }
-        }).show();
+    Navigator.of(context).pop();
+    showModalBottomSheet(
+      context: context,
+      builder: ((context) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 12),
+          child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Số lượng thành viên bạn đăng kí',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Container(
+                  alignment: Alignment.center,
+                  height: 150,
+                  child: _planDetail!.memberLimit - _planDetail!.memberCount! ==
+                          1
+                      ? Container(
+                          height: 50,
+                          width: 150,
+                          decoration: BoxDecoration(
+                              border: Border.all(color: Colors.grey, width: 2),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(12))),
+                          child: const Text(
+                            '1',
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey),
+                          ),
+                        )
+                      : CupertinoPicker(
+                          itemExtent: 64,
+                          diameterRatio: 0.7,
+                          looping: true,
+                          onSelectedItemChanged: (value) {
+                            setState(() {
+                              _selectedWeight = value + 1;
+                            });
+                          },
+                          selectionOverlay:
+                              CupertinoPickerDefaultSelectionOverlay(
+                                  background: primaryColor.withOpacity(0.12)),
+                          children: availableWeight
+                              .map((e) => Container(
+                                  alignment: Alignment.center,
+                                  child: Text(
+                                    '$e',
+                                    style: const TextStyle(
+                                        color: Colors.black54,
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                  )))
+                              .toList()),
+                ),
+                Container(
+                  alignment: Alignment.center,
+                  child: ElevatedButton(
+                      style: elevatedButtonStyle,
+                      onPressed: () {
+                        AwesomeDialog(
+                            context: context,
+                            dialogType: DialogType.question,
+                            animType: AnimType.topSlide,
+                            title: "Xác nhận tham gia",
+                            desc:
+                                "Kinh phí cho chuyến đi này là ${_planDetail!.gcoinBudgetPerCapita! * _selectedWeight} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
+                            btnOkText: "Chơi",
+                            btnCancelColor: Colors.blue,
+                            btnCancelOnPress: (){},
+                            btnCancelText: 'Không',
+                            btnOkOnPress: () async {
+                              int? rs = await _planService.joinPlan(
+                                  widget.planId, _selectedWeight);
+                              if (rs != null) {
+                                AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.success,
+                                  animType: AnimType.topSlide,
+                                  showCloseIcon: true,
+                                  title: "Tham gia kế hoạch thành công",
+                                  desc: "Ấn tiếp tục để trở về",
+                                  btnOkText: "Tiếp tục",
+                                  btnOkOnPress: () {
+                                    Navigator.of(context).pop();
+                                    Navigator.of(context).pushAndRemoveUntil(
+                                        MaterialPageRoute(
+                                            builder: (ctx) =>
+                                                const TabScreen(pageIndex: 1)),
+                                        (route) => false);
+                                  },
+                                ).show();
+                              }
+                            }).show();
+                      },
+                      child: const Text('Xác nhận')),
+                )
+              ]),
+        );
+      }),
+    );
   }
 
   Widget buildNewFooter() => Padding(
@@ -1049,7 +1022,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         child: Container(
           alignment: Alignment.center,
           height: 6.h,
-          child: widget.isEnableToJoin
+          child: widget.isEnableToJoin || _planDetail!.memberCount! == 0
               ? ElevatedButton(
                   onPressed: () {
                     onJoinPlan();
@@ -1142,6 +1115,58 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onConfirmMember() async {
+    if (_planDetail!.memberCount! < _planDetail!.memberLimit) {
+      AwesomeDialog(
+              context: context,
+              animType: AnimType.bottomSlide,
+              dialogType: DialogType.warning,
+              body: const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 12),
+                child: Column(
+                  children: [
+                    Text(
+                      'Chuyến đi chưa đủ thành viên',
+                      style:
+                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Text(
+                      'Bạn sẽ phải trả thêm phí nếu như chuyến đi vượt quá ngân sách',
+                      style: TextStyle(
+                        fontSize: 16,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    SizedBox(
+                      height: 8,
+                    ),
+                    Text(
+                      'Bạn có chắc chắn muốn chốt số lượng thành viên ?',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.black45,
+                      ),
+                      textAlign: TextAlign.center,
+                    )
+                  ],
+                ),
+              ),
+              btnOkColor: Colors.blue,
+              btnOkOnPress: confirmMember,
+              btnOkText: 'Có',
+              btnCancelColor: Colors.amber,
+              btnCancelOnPress: () {},
+              btnCancelText: 'Không')
+          .show();
+    } else if (_planDetail!.memberCount == _planDetail!.memberLimit) {
+      confirmMember();
+    }
+  }
+
+  confirmMember() async {
     final rs = await _planService.confirmMember(widget.planId);
     if (rs != 0) {
       AwesomeDialog(
@@ -1156,9 +1181,44 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       Future.delayed(const Duration(milliseconds: 1500), () {
         Navigator.of(context).pop();
         setState(() {
+          _planDetail!.status = 'READY';
           _isEnableToShare = false;
           _isEnableToOrder = true;
         });
+      });
+    }
+  }
+
+  onPublicizePlan() async {
+    if (_planDetail!.memberCount! == 0) {
+      final rs = await AwesomeDialog(
+          context: context,
+          animType: AnimType.bottomSlide,
+          dialogType: DialogType.info,
+          title:
+              'Bạn phải đóng tiền cho chuyến đi này để có thể công khai chuyến đi',
+          titleTextStyle:
+              const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          btnOkColor: Colors.blue,
+          btnOkOnPress: onJoinPlan,
+          btnOkText: 'Tham gia',
+          btnCancelColor: Colors.orange,
+          btnCancelText: 'Huỷ',
+          btnCancelOnPress: () {
+            setState(() {
+              _isPublic = false;
+            });
+          }).show();
+      if (rs == null) {
+        setState(() {
+          _isPublic = false;
+        });
+      }
+    } else {
+      await _planService.publicizePlan(widget.planId);
+      setState(() {
+        _isEnableToShare = _isPublic && _planDetail!.status != 'READY';
       });
     }
   }

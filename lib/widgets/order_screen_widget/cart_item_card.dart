@@ -28,7 +28,7 @@ class _CartItemCardState extends State<CartItemCard>
   bool get wantKeepAlive => true;
 
   // Create a NumberFormat instance for currency formatting
-  var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
+  var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +67,7 @@ class _CartItemCardState extends State<CartItemCard>
                         child: Padding(
                           padding: const EdgeInsets.only(left: 8),
                           child: Text(
-                            "${currencyFormat.format((widget.cartItem.product.price * widget.cartItem.qty) / 1000)} * ${(widget.days != 1) ? "${widget.days} ngày" : ""}",
+                            "${currencyFormat.format((widget.cartItem.product.price * widget.cartItem.qty))} * ${(widget.days != 1) ? "${widget.days} ngày" : ""}",
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Colors.grey,

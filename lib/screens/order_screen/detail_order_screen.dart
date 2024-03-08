@@ -22,7 +22,7 @@ class OrderDetailScreen extends StatefulWidget {
   final DateTime startDate;
   final bool isTempOrder;
   final int? planId;
-  final void Function() callback;
+  final void Function(String? tempOrderGuid)callback;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -454,7 +454,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 fontSize: 20, fontWeight: FontWeight.bold))
                         .show();
                     Future.delayed(const Duration(seconds: 2), () {
-                      widget.callback();
+                      widget.callback(widget.order.guid);
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();
                       Navigator.of(context).pop();

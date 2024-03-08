@@ -51,6 +51,7 @@ class Utils {
     sharedPreferences.remove('selectedIndex');
     sharedPreferences.remove('plan_weight');
     sharedPreferences.remove('plan_note');
+    sharedPreferences.remove('plan_surcharge');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {

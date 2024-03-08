@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class BaseInformationWidget extends StatelessWidget {
@@ -13,49 +14,50 @@ class BaseInformationWidget extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          
-          // const SizedBox(
-          //   height: 16,
-          // ),
-          // Container(
-          //   height: 1.8,
-          //   color: Colors.grey.withOpacity(0.4),
-          // ),
-          // const SizedBox(
-          //   height: 16,
-          // ),
           Row(
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
+                  const Text(
                     "Ngày khởi hành:",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(
-                    height: 16,
+                  const SizedBox(
+                    height: 12,
                   ),
-                  Text(
+                  const Text(
                     "Ngày kết thúc:",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  SizedBox(
-                    height: 16,
+                  const SizedBox(
+                    height: 12,
                   ),
-                  Text(
-                    "Số lượng thành viên:",
+                  const Text(
+                    "Số người tối đa:",
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  if (plan.memberCount! > 0)
+                    const SizedBox(
+                      height: 12,
+                    ),
+                  if (plan.memberCount! > 0)
+                    const Text(
+                      "Số người đã tham gia:",
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
                 ],
               ),
               SizedBox(
@@ -65,23 +67,32 @@ class BaseInformationWidget extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${plan.departureDate!.day}/${plan.departureDate!.month}/${plan.departureDate!.year}',
+                    DateFormat('dd/MM/yyyy').format(plan.departureDate!),
                     style: const TextStyle(fontSize: 18),
                   ),
                   const SizedBox(
-                    height: 16,
+                    height: 12,
                   ),
                   Text(
-                    '${plan.endDate!.day}/${plan.endDate!.month}/${plan.endDate!.year}',
+                    DateFormat('dd/MM/yyyy').format(plan.endDate!),
                     style: const TextStyle(fontSize: 18),
                   ),
                   const SizedBox(
-                    height: 16,
+                    height: 12,
                   ),
                   Text(
-                    '${plan.memberLimit} người',
+                    '${plan.memberLimit < 10 ? '0${plan.memberLimit}' : plan.memberLimit} người',
                     style: const TextStyle(fontSize: 18),
                   ),
+                  if (plan.memberCount! > 0)
+                    const SizedBox(
+                      height: 12,
+                    ),
+                  if (plan.memberCount! > 0)
+                    Text(
+                      '${plan.memberCount! > 0 && plan.memberCount! < 10 ? '0${plan.memberCount}' : plan.memberCount} người',
+                      style: const TextStyle(fontSize: 18),
+                    ),
                 ],
               )
             ],

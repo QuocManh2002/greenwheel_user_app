@@ -524,27 +524,4 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         )).show();
   }
 
-  Future<int> completePlan() async {
-    var rs = await _planService.completeCreatePlan(
-        PlanCreate(
-          locationId: widget.location.id,
-          name: sharedPreferences.getString('plan_name'),
-          latitude: sharedPreferences.getDouble('plan_start_lat')!,
-          longitude: sharedPreferences.getDouble('plan_start_lng')!,
-          memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
-          savedContacts: json
-              .decode(sharedPreferences.getString('plan_saved_emergency')!)
-              .toString(),
-          startDate:
-              DateTime.parse(sharedPreferences.getString('plan_start_date')!),
-          departureDate: DateTime.parse(
-              sharedPreferences.getString('plan_departureDate')!),
-          schedule:
-              sharedPreferences.getString('plan_schedule') ?? [].toString(),
-          gcoinBudget: sharedPreferences.getInt('plan_budget') ?? 0,
-        ),
-        sharedPreferences.getInt('planId')!,
-        "[]");
-    return rs;
-  }
 }

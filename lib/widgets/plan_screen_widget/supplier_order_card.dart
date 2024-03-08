@@ -12,7 +12,7 @@ class SupplierOrderCard extends StatelessWidget {
   final DateTime startDate;
   final bool isTempOrder;
   final int? planId;
-  final void Function() callback;
+  final void Function(String? tempOrderGuid) callback;
 
   @override
   Widget build(BuildContext context) {
@@ -100,7 +100,7 @@ class SupplierOrderCard extends StatelessWidget {
                     height: 8,
                   ),
                   Text(
-                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND",
+                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total * order.serveDateIndexes!.length)} VND",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )
                 ],

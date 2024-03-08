@@ -97,7 +97,7 @@ class ConfirmServiceInfor extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Nghỉ ngơi',
+                        'Lưu trú',
                         style: TextStyle(fontSize: 16),
                       ),
                       for (final order in listRest)

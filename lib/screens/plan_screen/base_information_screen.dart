@@ -22,15 +22,12 @@ class BaseInformationScreen extends StatefulWidget {
 class _BaseInformationState extends State<BaseInformationScreen> {
   int _selectedCombo = 0;
   late FixedExtentScrollController _scrollController;
-  TextEditingController _weightController = TextEditingController();
   bool isWarning = false;
   ComboDate? _suggestComboDate;
   DateTime? _focusedDay;
   DateTime? _selectedDate;
   bool _isSelecting = false;
   TextEditingController _memberController = TextEditingController();
-  int _selectedWeight = 1;
-  List<int> _listAvailableWeight = [];
 
   onChangeQuantity(String type) {
     if (type == "add") {
@@ -48,22 +45,6 @@ class _BaseInformationState extends State<BaseInformationScreen> {
         'plan_number_of_member', int.parse(_memberController.text));
   }
 
-  onChangeWeight(String type) {
-    if (type == "add") {
-      setState(() {
-        _weightController.text =
-            (int.parse(_weightController.text) + 1).toString();
-      });
-    } else {
-      setState(() {
-        _weightController.text =
-            (int.parse(_weightController.text) - 1).toString();
-      });
-    }
-    sharedPreferences.setInt(
-        'plan_weight', int.parse(_weightController.text));
-  }
-
   @override
   void initState() {
     // TODO: implement initState
@@ -74,7 +55,6 @@ class _BaseInformationState extends State<BaseInformationScreen> {
   setUpData() {
     int? member = sharedPreferences.getInt('plan_number_of_member');
     int? numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod');
-    final planWeight = sharedPreferences.getInt('plan_weight');
     ComboDate _selectedComboDate;
     _memberController.text = '1';
     _focusedDay = DateTime.now().add(const Duration(days: 4));
@@ -112,11 +92,6 @@ class _BaseInformationState extends State<BaseInformationScreen> {
     }
     _suggestComboDate = listComboDate.firstWhere((element) =>
         element.duration == widget.location.suggestedTripLength! * 2);
-    if (planWeight != null) {
-      _weightController.text = planWeight.toString();
-    } else {
-      _weightController.text = '1';
-    }
   }
 
   @override
@@ -322,161 +297,6 @@ class _BaseInformationState extends State<BaseInformationScreen> {
           ),
           SizedBox(
             height: 2.h,
-          ),
-          const Text(
-            'Số lượng thành viên của nhóm bạn',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          SizedBox(
-            height: 2.h,
-          ),
-          // _isSelecting
-          //     ? SizedBox(
-          //         height: 320,
-          //         child: CupertinoPicker(
-          //             itemExtent: 64,
-          //             diameterRatio: 0.7,
-          //             looping: true,
-          //             scrollController: _scrollController,
-          //             selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
-          //                 background: primaryColor.withOpacity(0.12)),
-          //             onSelectedItemChanged: (value) {
-          //               setState(() {
-          //                 _selectedWeight = value + 1;
-          //               });
-          //               sharedPreferences.setInt(
-          //                   'plan_weight', _selectedWeight);
-          //               Future.delayed(
-          //                 const Duration(seconds: 2),
-          //                 () {
-          //                   setState(() {
-          //                     _isSelecting = false;
-          //                   });
-          //                 },
-          //               );
-          //             },
-          //             children: Utils.modelBuilder(
-          //                 _listAvailableWeight,
-          //                 (index, model) => Center(
-          //                       child: Text(
-          //                         _listAvailableWeight[index].toString(),
-          //                         style: TextStyle(
-          //                             fontSize: 20,
-          //                             fontWeight: _selectedWeight == index + 1
-          //                                 ? FontWeight.bold
-          //                                 : FontWeight.normal,
-          //                             color: _selectedWeight == index + 1
-          //                                 ? primaryColor
-          //                                 : Colors.black),
-          //                       ),
-          //                     ))),
-          //       )
-          //     : InkWell(
-          //         onTap: () {
-          //           setState(() {
-          //             _isSelecting = true;
-          //           });
-          //           _scrollController = FixedExtentScrollController(
-          //               initialItem: _selectedWeight - 1);
-          //         },
-          //         child: Container(
-          //             width: 20.w,
-          //             height: 13.w,
-          //             padding: const EdgeInsets.all(12),
-          //             decoration: BoxDecoration(
-          //                 border: Border.all(color: Colors.black38, width: 2),
-          //                 borderRadius:
-          //                     const BorderRadius.all(Radius.circular(12))),
-          //             child: Text(
-          //               _selectedWeight.toString(),
-          //               textAlign: TextAlign.center,
-          //               style: const TextStyle(
-          //                   color: primaryColor,
-          //                   fontSize: 20,
-          //                   fontWeight: FontWeight.bold),
-          //             )),
-          //       ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                  color: primaryColor,
-                  iconSize: 30,
-                  onPressed: () {
-                    if (int.parse(_weightController.text) > 1) {
-                      onChangeWeight("subtract");
-                    }
-                  },
-                  icon: const Icon(Icons.remove)),
-              SizedBox(
-                  width: 10.h,
-                  height: 5.h,
-                  child: defaultTextFormField(
-                      maxLength: 2,
-                      padding: const EdgeInsets.all(16),
-                      onTap: () {
-                        setState(() {
-                          _isSelecting = false;
-                        });
-                      },
-                      onChange: (value) {
-                        if (value == null || value.isEmpty) {
-                          sharedPreferences.setInt('plan_weight', 0);
-                          Fluttertoast.showToast(
-                              msg: "Số lượng thành viên không được để trống",
-                              toastLength: Toast.LENGTH_SHORT,
-                              gravity: ToastGravity.CENTER,
-                              timeInSecForIosWeb: 1,
-                              backgroundColor: Colors.white,
-                              textColor: Colors.black,
-                              fontSize: 18.0);
-                        } else {
-                          var selectedNumber =
-                              int.tryParse(_weightController.text);
-                          if (selectedNumber == null) {
-                            sharedPreferences.setInt(
-                                'plan_weight', 0);
-                            Fluttertoast.showToast(
-                                msg: "Số lượng thành viên không hợp lệ",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.white,
-                                textColor: Colors.black,
-                                fontSize: 18.0);
-                          } else {
-                            if (selectedNumber < 0) {
-                              sharedPreferences.setInt(
-                                  'plan_weight', 0);
-                              Fluttertoast.showToast(
-                                  msg: "Số lượng thành viên không hợp lệ",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.white,
-                                  textColor: Colors.black,
-                                  fontSize: 18.0);
-                            } else {
-                              sharedPreferences.setInt(
-                                  'plan_weight', int.parse(value));
-                            }
-                          }
-                        }
-                      },
-                      borderSize: 2,
-                      textAlign: TextAlign.center,
-                      controller: _weightController,
-                      inputType: TextInputType.number)),
-              IconButton(
-                  color: primaryColor,
-                  iconSize: 30,
-                  onPressed: () {
-                    if (int.parse(_weightController.text) < int.parse(_memberController.text)) {
-                      onChangeWeight('add');
-                    }
-                  },
-                  icon: const Icon(Icons.add)),
-            ],
           ),
         ],
       ),

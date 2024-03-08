@@ -401,7 +401,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
             "Kinh phí cho chuyến đi này là ${(total / _targetViewModel!.memberLimit).ceil()} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
         btnOkText: "Xác nhận",
         btnOkOnPress: () async {
-          int? rs = await _planService.joinPlan(widget.notification.targetId!);
+          int? rs = await _planService.joinPlan(widget.notification.targetId!,1);
           if (rs != null) {
             // ignore: use_build_context_synchronously
             AwesomeDialog(
