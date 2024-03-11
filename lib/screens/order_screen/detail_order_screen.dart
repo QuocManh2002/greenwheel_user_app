@@ -1,11 +1,13 @@
-
-
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/sessions.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/menu_item_cart.dart';
+import 'package:greenwheel_user_app/models/session.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -15,14 +17,20 @@ class OrderDetailScreen extends StatefulWidget {
       {super.key,
       required this.order,
       required this.startDate,
+      this.endDate,
+      this.memberLimit,
       this.planId,
       required this.callback,
+      this.isFromTempOrder,
       required this.isTempOrder});
   final OrderViewModel order;
   final DateTime startDate;
   final bool isTempOrder;
   final int? planId;
-  final void Function(String? tempOrderGuid)callback;
+  final int? memberLimit;
+  final DateTime? endDate;
+  final bool? isFromTempOrder;
+  final void Function(String? tempOrderGuid) callback;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -33,7 +41,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool isExpanded = false;
   List<DateTime> _servingDates = [];
   String _servingTime = '';
-  OrderService _orderService = OrderService();
+  // OrderService _orderService = OrderService();
 
   @override
   void initState() {
@@ -72,7 +80,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         height: 30.h,
                         width: double.infinity,
                         child: Image.network(
-                          widget.order.supplierImageUrl!,
+                          widget.order.supplier!.thumbnailUrl!,
                           fit: BoxFit.fitWidth,
                           height: 30.h,
                         ),
@@ -102,7 +110,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     left: 2.h,
                                     bottom: 1.h),
                                 child: Text(
-                                  widget.order.supplierName!,
+                                  widget.order.supplier!.name!,
                                   style: const TextStyle(
                                       fontSize: 23,
                                       fontWeight: FontWeight.bold),
@@ -124,7 +132,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 2.h, vertical: 1.5.h),
                                 child: Text(
-                                  '0${widget.order.supplierPhone!.substring(3)}',
+                                  '0${widget.order.supplier!.phone!.substring(3)}',
                                   style: const TextStyle(
                                       fontSize: 20, color: Colors.black54),
                                 ),
@@ -148,7 +156,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     top: 1.5.h,
                                     bottom: 2.h),
                                 child: Text(
-                                  widget.order.supplierAddress!,
+                                  widget.order.supplier!.address!,
                                   style: const TextStyle(
                                       fontSize: 15, color: Colors.black54),
                                 ),
@@ -439,27 +447,76 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ElevatedButton(
                 style: elevatedButtonStyle,
                 onPressed: () async {
-                  final rs = await _orderService.createOrder(
-                      widget.order, widget.planId!);
-                  if (rs != 0) {
-                    // ignore: use_build_context_synchronously
-                    AwesomeDialog(
-                            context: context,
-                            animType: AnimType.leftSlide,
-                            dialogType: DialogType.success,
-                            title: 'Tạo đơn hàng thành công',
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            titleTextStyle: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold))
-                        .show();
-                    Future.delayed(const Duration(seconds: 2), () {
-                      widget.callback(widget.order.guid);
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pop();
-                    });
+                  // final rs = await _orderService.createOrder(
+                  //     widget.order, widget.planId!);
+                  // if (rs != 0) {
+                  //   // ignore: use_build_context_synchronously
+                  //   AwesomeDialog(
+                  //           context: context,
+                  //           animType: AnimType.leftSlide,
+                  //           dialogType: DialogType.success,
+                  //           title: 'Tạo đơn hàng thành công',
+                  //           padding: const EdgeInsets.symmetric(
+                  //               horizontal: 12, vertical: 6),
+                  //           titleTextStyle: const TextStyle(
+                  //               fontSize: 20, fontWeight: FontWeight.bold))
+                  //       .show();
+                  //   Future.delayed(const Duration(seconds: 2), () {
+                  //     widget.callback(widget.order.guid);
+                  //     Navigator.of(context).pop();
+                  //     Navigator.of(context).pop();
+                  //     Navigator.of(context).pop();
+                  //   });
+                  // }
+                  Session? session;
+                  switch (widget.order.period) {
+                    case 'MORNING':
+                      session = sessions[0];
+                      break;
+                    case 'NOON':
+                      session = sessions[1];
+                      break;
+                    case 'AFTERNOON':
+                      session = sessions[2];
+                      break;
+                    case 'EVENING':
+                      session = sessions[3];
+                      break;
                   }
+                  List<ItemCart> cart = [];
+                  for (final detail in widget.order.details!) {
+                    cart.add(ItemCart(
+                        product: ProductViewModel(
+                          id: detail.productId,
+                          name: detail.productName,
+                          price: detail.price!.toInt(),
+                        ),
+                        qty: detail.quantity));
+                  }
+                  List<String> ids = [];
+                  for (final item in cart) {
+                    if(!ids.contains(item.product.id.toString())){
+                      ids.add(item.product.id.toString());
+                    }
+                  }
+                  sharedPreferences.setStringList('initCartIds', ids);
+
+                  Navigator.of(context).push(MaterialPageRoute(
+                      builder: (ctx) => ServiceMenuScreen(
+                          initCart: cart,
+                          session: session,
+                          orderGuid: widget.order.guid,
+                          isFromTempOrder: widget.isFromTempOrder,
+                          currentCart: cart,
+                          supplier: widget.order.supplier!,
+                          serviceType: services.firstWhere(
+                              (element) => element.name == widget.order.type),
+                          numberOfMember: widget.memberLimit!,
+                          endDate: widget.endDate!,
+                          period: widget.order.period,
+                          startDate: widget.startDate,
+                          isOrder: true,
+                          callbackFunction: widget.callback)));
                 },
                 child: const Text('Xác nhận đơn hàng mẫu')),
           if (widget.isTempOrder)
@@ -470,4 +527,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       ),
     ));
   }
+
+  getInitIds() {}
 }

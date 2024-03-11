@@ -1,7 +1,7 @@
 import 'package:greenwheel_user_app/models/service_type.dart';
 
 const List<ServiceType> services = [
-  ServiceType(id: 1, name: "FOOD"),
+  ServiceType(id: 1, name: "MEAL"),
   ServiceType(id: 2, name: "BEVERAGE"),
   ServiceType(id: 3, name: "CAMP"),
   ServiceType(id: 4, name: "OTHER"),

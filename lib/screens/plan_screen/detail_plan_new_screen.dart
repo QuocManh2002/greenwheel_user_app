@@ -10,8 +10,8 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/join_confirm_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/list_order_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
@@ -23,6 +23,7 @@ import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
@@ -71,7 +72,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   List<OrderViewModel> orderList = [];
   bool isLeader = false;
   Widget? activeWidget;
-  int _selectedWeight = 1;
   List<int> availableWeight = [];
 
   @override
@@ -158,6 +158,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   .firstWhere((element) => element.id.toString() == e.key);
               return OrderDetailViewModel(
                   id: product.id,
+                  productId: product.id,
                   productName: product.name,
                   price: product.price.toDouble(),
                   unitPrice: product.price.toDouble(),
@@ -168,17 +169,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             serveDateIndexes: e["serveDateIndexes"],
             total: orderTotal * e['serveDateIndexes'].length,
             createdAt: DateTime.now(),
-            supplierName: sampleProduct.supplierName,
+            supplier: SupplierViewModel(id: sampleProduct.supplierId!, name: sampleProduct.supplierName, phone: sampleProduct.supplierPhone, thumbnailUrl: sampleProduct.supplierThumbnailUrl, address: sampleProduct.supplierAddress),
             type: e['type'],
-            supplierPhone: sampleProduct.supplierPhone,
-            supplierAddress: sampleProduct.supplierAddress,
-            supplierImageUrl: sampleProduct.supplierThumbnailUrl,
             period: e['period']);
       }).toList();
 
   getOrderList(String? tempOrderGuid) async {
     total = 0;
-    orderList = await _planService.getOrderCreatePlan(widget.planId);
+    final rs = await _planService.getOrderCreatePlan(widget.planId);
+    orderList = rs!['orders'];
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
     for (var item in orderList) {
@@ -211,11 +210,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             tempOrder.total! / 100.toDouble();
         _listMotel = listMotel;
         _listRestaurant = listRestaurant;
+        _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
       });
     } else {
       setState(() {
         _listMotel = listMotel;
         _listRestaurant = listRestaurant;
+        _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
       });
     }
   }
@@ -654,7 +655,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                       for (int i = 0;
                           i < _planDetail!.savedContacts!.length;
                           i++)
-                        Container(height: 1.5.h, child: buildIndicator(i)),
+                        SizedBox(height: 1.5.h, child: buildIndicator(i)),
                     ],
                   ),
                 const SizedBox(
@@ -698,7 +699,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               showModalBottomSheet(
                                   context: context,
                                   builder: (ctx) => MemberListWidget(
-                                        members: _planMembers,
+                                        members: _planMembers.where((element) => element.weight != 0).toList(),
                                         onRemoveMember: onRemoveMember,
                                       ));
                             }
@@ -718,12 +719,43 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     ],
                   ),
                   for (final member in _planMembers)
+                    if(member.weight != 0)
                     Padding(
-                      padding: const EdgeInsets.symmetric(
-                          vertical: 6, horizontal: 12),
-                      child: Text(
-                        "- ${member.name} - 0${member.phone.substring(3)}",
-                        style: const TextStyle(fontSize: 18),
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        children: [
+                          Container(
+                              height: 25,
+                              width: 25,
+                              decoration:
+                                  const BoxDecoration(shape: BoxShape.circle),
+                              clipBehavior: Clip.hardEdge,
+                              child: CachedNetworkImage(
+                                key: UniqueKey(),
+                                height: 25,
+                                width: double.infinity,
+                                fit: BoxFit.cover,
+                                imageUrl:
+                                    member.imageUrl ?? defaultUserAvatarLink,
+                                placeholder: (context, url) =>
+                                    Image.memory(kTransparentImage),
+                                errorWidget: (context, url, error) =>
+                                    FadeInImage.assetNetwork(
+                                  height: 25,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  placeholder: '',
+                                  image: empty_plan,
+                                ),
+                              )),
+                          const SizedBox(
+                            width: 4,
+                          ),
+                          Text(
+                            " ${member.name} (${member.weight})",
+                            style: const TextStyle(fontSize: 18),
+                          ),
+                        ],
                       ),
                     )
                 ],
@@ -835,7 +867,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     }
   }
 
-  onJoinPlan() async {
+  onJoinPlan(bool isPublic) async {
     var emerList = [];
     if (_planDetail!.memberCount == _planDetail!.memberLimit) {
       AwesomeDialog(
@@ -870,6 +902,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           builder: (BuildContext context) => SizedBox(
                 height: 90.h,
                 child: ConfirmPlanBottomSheet(
+                    isInfo: false,
                     plan: PlanCreate(
                       schedule: json.encode(_planDetail!.schedule),
                       savedContacts: json.encode(emerList),
@@ -893,7 +926,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     budgetPerCapita:
                         _planDetail!.gcoinBudgetPerCapita!.toDouble(),
                     isJoin: true,
-                    onJoinPlan: confirmJoin,
+                    onJoinPlan: () {
+                      confirmJoin(isPublic);
+                    },
                     onCancel: () {
                       Navigator.of(context).pop();
                       setState(() {
@@ -910,111 +945,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     }
   }
 
-  confirmJoin() {
+  confirmJoin(bool isPublic) {
     Navigator.of(context).pop();
-    showModalBottomSheet(
-      context: context,
-      builder: ((context) {
-        return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 12),
-          child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text(
-                  'Số lượng thành viên bạn đăng kí',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                Container(
-                  alignment: Alignment.center,
-                  height: 150,
-                  child: _planDetail!.memberLimit - _planDetail!.memberCount! ==
-                          1
-                      ? Container(
-                          height: 50,
-                          width: 150,
-                          decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey, width: 2),
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12))),
-                          child: const Text(
-                            '1',
-                            style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey),
-                          ),
-                        )
-                      : CupertinoPicker(
-                          itemExtent: 64,
-                          diameterRatio: 0.7,
-                          looping: true,
-                          onSelectedItemChanged: (value) {
-                            setState(() {
-                              _selectedWeight = value + 1;
-                            });
-                          },
-                          selectionOverlay:
-                              CupertinoPickerDefaultSelectionOverlay(
-                                  background: primaryColor.withOpacity(0.12)),
-                          children: availableWeight
-                              .map((e) => Container(
-                                  alignment: Alignment.center,
-                                  child: Text(
-                                    '$e',
-                                    style: const TextStyle(
-                                        color: Colors.black54,
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                  )))
-                              .toList()),
-                ),
-                Container(
-                  alignment: Alignment.center,
-                  child: ElevatedButton(
-                      style: elevatedButtonStyle,
-                      onPressed: () {
-                        AwesomeDialog(
-                            context: context,
-                            dialogType: DialogType.question,
-                            animType: AnimType.topSlide,
-                            title: "Xác nhận tham gia",
-                            desc:
-                                "Kinh phí cho chuyến đi này là ${_planDetail!.gcoinBudgetPerCapita! * _selectedWeight} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
-                            btnOkText: "Chơi",
-                            btnCancelColor: Colors.blue,
-                            btnCancelOnPress: (){},
-                            btnCancelText: 'Không',
-                            btnOkOnPress: () async {
-                              int? rs = await _planService.joinPlan(
-                                  widget.planId, _selectedWeight);
-                              if (rs != null) {
-                                AwesomeDialog(
-                                  context: context,
-                                  dialogType: DialogType.success,
-                                  animType: AnimType.topSlide,
-                                  showCloseIcon: true,
-                                  title: "Tham gia kế hoạch thành công",
-                                  desc: "Ấn tiếp tục để trở về",
-                                  btnOkText: "Tiếp tục",
-                                  btnOkOnPress: () {
-                                    Navigator.of(context).pop();
-                                    Navigator.of(context).pushAndRemoveUntil(
-                                        MaterialPageRoute(
-                                            builder: (ctx) =>
-                                                const TabScreen(pageIndex: 1)),
-                                        (route) => false);
-                                  },
-                                ).show();
-                              }
-                            }).show();
-                      },
-                      child: const Text('Xác nhận')),
-                )
-              ]),
-        );
-      }),
-    );
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (ctx) => JoinConfirmPlanScreen(
+              plan: _planDetail!,
+              isPublic: isPublic,
+              isConfirm: false,
+            )));
   }
 
   Widget buildNewFooter() => Padding(
@@ -1025,7 +963,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           child: widget.isEnableToJoin || _planDetail!.memberCount! == 0
               ? ElevatedButton(
                   onPressed: () {
-                    onJoinPlan();
+                    onJoinPlan(false);
                   },
                   style: elevatedButtonStyle,
                   child: const Text(
@@ -1120,46 +1058,92 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               context: context,
               animType: AnimType.bottomSlide,
               dialogType: DialogType.warning,
-              body: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
+              body: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20),
                 child: Column(
                   children: [
-                    Text(
+                    const Text(
                       'Chuyến đi chưa đủ thành viên',
                       style:
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(
+                    const SizedBox(
                       height: 8,
                     ),
+                    Row(
+                      children: [
+                        const Text(
+                          'Số lượng thành viên',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${_planDetail!.memberCount! < 10 ? '0${_planDetail!.memberCount}' : _planDetail!.memberCount}/${_planDetail!.memberLimit < 10 ? '0${_planDetail!.memberLimit}' : _planDetail!.memberLimit}',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Text(
+                          'Thời gian',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${DateFormat('dd/MM/yyyy').format(_planDetail!.departureDate!)} - ${DateFormat('dd/MM/yyyy').format(_planDetail!.endDate!)}',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      ],
+                    ),
+                    Row(
+                      children: [
+                        const Text(
+                          'Chi phí tham gia',
+                          style: TextStyle(fontSize: 16, color: Colors.grey),
+                        ),
+                        const Spacer(),
+                        Text(
+                          '${_planDetail!.gcoinBudgetPerCapita} GCOIN',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        )
+                      ],
+                    ),
+                    const SizedBox(
+                      height: 20,
+                    ),
                     Text(
-                      'Bạn sẽ phải trả thêm phí nếu như chuyến đi vượt quá ngân sách',
-                      style: TextStyle(
-                        fontSize: 16,
-                      ),
+                      'Thanh toán thêm ${_planDetail!.gcoinBudgetPerCapita}${_planDetail!.memberLimit - _planDetail!.memberCount! > 1 ? ' x ${_planDetail!.memberLimit - _planDetail!.memberCount!} = ${_planDetail!.gcoinBudgetPerCapita! * (_planDetail!.memberLimit - _planDetail!.memberCount!)}' : ''} GCOIN để chốt số lượng thành viên cho chuyến đi',
+                      style: const TextStyle(
+                          fontSize: 17, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.center,
                     ),
-                    SizedBox(
-                      height: 8,
-                    ),
-                    Text(
-                      'Bạn có chắc chắn muốn chốt số lượng thành viên ?',
-                      style: TextStyle(
-                        fontSize: 15,
-                        color: Colors.black45,
-                      ),
-                      textAlign: TextAlign.center,
-                    )
                   ],
                 ),
               ),
               btnOkColor: Colors.blue,
-              btnOkOnPress: confirmMember,
-              btnOkText: 'Có',
+              btnOkOnPress: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (ctx) => JoinConfirmPlanScreen(
+                        callback: callbackConfirmMember,
+                        plan: _planDetail!,
+                        isPublic: false,
+                        isConfirm: true)));
+              },
+              btnOkText: 'Chơi',
               btnCancelColor: Colors.amber,
               btnCancelOnPress: () {},
-              btnCancelText: 'Không')
+              btnCancelText: 'Huỷ')
           .show();
     } else if (_planDetail!.memberCount == _planDetail!.memberLimit) {
       confirmMember();
@@ -1189,6 +1173,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     }
   }
 
+  callbackConfirmMember() {
+    setState(() {
+      _planDetail!.status = 'READY';
+      _isEnableToShare = false;
+      _isEnableToOrder = true;
+      _planDetail!.memberCount = _planDetail!.memberLimit;
+    });
+  }
+
   onPublicizePlan() async {
     if (_planDetail!.memberCount! == 0) {
       final rs = await AwesomeDialog(
@@ -1201,7 +1194,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           padding: const EdgeInsets.symmetric(horizontal: 12),
           btnOkColor: Colors.blue,
-          btnOkOnPress: onJoinPlan,
+          btnOkOnPress: () {
+            onJoinPlan(true);
+          },
           btnOkText: 'Tham gia',
           btnCancelColor: Colors.orange,
           btnCancelText: 'Huỷ',

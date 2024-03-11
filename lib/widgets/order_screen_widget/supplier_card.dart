@@ -26,7 +26,7 @@ class SupplierCard extends StatelessWidget {
   final LocationViewModel location;
   final int numberOfMember;
   final bool? isOrder;
-  final void Function() callbackFunction;
+  final void Function(String? orderGuid) callbackFunction;
 
   @override
   Widget build(BuildContext context) {
@@ -75,7 +75,6 @@ class SupplierCard extends StatelessWidget {
                       numberOfMember: numberOfMember,
                       supplier: supplier,
                       serviceType:serviceType,
-                      location: location,
                       isOrder: isOrder,
                       session: sessions[1],
                       callbackFunction: callbackFunction,
@@ -104,7 +103,7 @@ class SupplierCard extends StatelessWidget {
                     child: FadeInImage(
                       height: 15.h,
                       placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage(supplier.thumbnailUrl),
+                      image: NetworkImage(supplier.thumbnailUrl!),
                       fit: BoxFit.cover,
                       width: 15.h,
                       filterQuality: FilterQuality.high,
@@ -122,7 +121,7 @@ class SupplierCard extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(left: 8, top: 10),
                         child: Text(
-                          supplier.name,
+                          supplier.name!,
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 16,
@@ -152,7 +151,7 @@ class SupplierCard extends StatelessWidget {
                           Padding(
                             padding: EdgeInsets.only(left: 8, top: 0.5.h),
                             child: Text(
-                              '0${supplier.phone.substring(3)}',
+                              '0${supplier.phone!.substring(3)}',
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.black54,
@@ -170,7 +169,7 @@ class SupplierCard extends StatelessWidget {
                         child: Padding(
                           padding: EdgeInsets.only(left: 8, top: 0.5.h),
                           child: Text(
-                            supplier.address,
+                            supplier.address!,
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Colors.grey,

@@ -5,7 +5,6 @@ import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/notification_screen/notificationscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
-import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
 
 class TabScreen extends StatefulWidget {

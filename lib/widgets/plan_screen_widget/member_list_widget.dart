@@ -1,14 +1,17 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:sizer2/sizer2.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class MemberListWidget extends StatelessWidget {
-  const MemberListWidget({super.key, required this.members, required this.onRemoveMember});
+  const MemberListWidget(
+      {super.key, required this.members, required this.onRemoveMember});
   final List<PlanMemberViewModel> members;
   final void Function(int memberId, bool isBlock) onRemoveMember;
-
 
   @override
   Widget build(BuildContext context) {
@@ -39,13 +42,41 @@ class MemberListWidget extends StatelessWidget {
                     color: Colors.white),
                 child: Row(
                   children: [
+                    Container(
+                        height: 6.h,
+                        width: 6.h,
+                        decoration: const BoxDecoration(shape: BoxShape.circle),
+                        clipBehavior: Clip.hardEdge,
+                        child: CachedNetworkImage(
+                          key: UniqueKey(),
+                          height: 6.h,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          imageUrl: mem.imageUrl ?? defaultUserAvatarLink,
+                          placeholder: (context, url) =>
+                              Image.memory(kTransparentImage),
+                          errorWidget: (context, url, error) =>
+                              FadeInImage.assetNetwork(
+                            height: 6.h,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: '',
+                            image: empty_plan,
+                          ),
+                        )),
+                    SizedBox(
+                      width: 1.h,
+                    ),
                     Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            mem.name,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
+                          SizedBox(
+                            width: 50.w,
+                            child: Text(
+                              '${mem.name} (${mem.weight})',
+                              style: const TextStyle(
+                                  fontSize: 20, fontWeight: FontWeight.bold),
+                            ),
                           ),
                           Text(
                             '0${mem.phone.substring(3)}',

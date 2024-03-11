@@ -25,7 +25,7 @@ class ServiceMainScreen extends StatefulWidget {
   final DateTime startDate;
   final DateTime endDate;
   final bool? isOrder;
-  final void Function() callbackFunction;
+  final void Function(String? orderGuid) callbackFunction;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();

@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/location_screen/location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
@@ -49,7 +50,7 @@ class LocationCard extends StatelessWidget {
                     fit: BoxFit.cover,
                     placeholder: '',
                     image:
-                        'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                        defaultHomeImage,
                   ),
                 )),
             const Spacer(),

@@ -4,6 +4,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/base_information_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
@@ -14,6 +15,7 @@ import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_sc
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:intl/intl.dart';
@@ -154,6 +156,59 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
           style: const ButtonStyle(
               foregroundColor: MaterialStatePropertyAll(Colors.white)),
         ),
+        actions: [
+          InkWell(
+            onTap: () {
+              DateTime? _travelDuration =
+                  sharedPreferences.getDouble('plan_duration_value') != null
+                      ? DateTime(0, 0, 0).add(Duration(
+                          seconds: (sharedPreferences
+                                      .getDouble('plan_duration_value')! * 3600)
+                              .toInt()))
+                      : null;
+              showModalBottomSheet(
+                  context: context,
+                  builder: (ctx) => ConfirmPlanBottomSheet(
+                        isJoin: false,
+                        locationName: widget.location.name,
+                        isInfo: true,
+                        plan: PlanCreate(
+                            endDate:
+                                sharedPreferences.getString('plan_end_date') == null
+                                    ? null
+                                    : DateTime.parse(sharedPreferences
+                                        .getString('plan_end_date')!),
+                            memberLimit: sharedPreferences
+                                .getInt('plan_number_of_member'),
+                            departureDate: sharedPreferences
+                                        .getString('plan_departureDate') ==
+                                    null
+                                ? null
+                                : DateTime.parse(sharedPreferences
+                                    .getString('plan_departureDate')!),
+                            name: sharedPreferences.getString('plan_name'),
+                            schedule:
+                                sharedPreferences.getString('plan_schedule'),
+                            note: sharedPreferences.getString('plan_note'),
+                            savedContacts: sharedPreferences
+                                .getString('plan_saved_emergency'),
+                            travelDuration: _travelDuration ==
+                                    null
+                                ? null
+                                : DateFormat.Hm().format(_travelDuration)),
+                      ));
+            },
+            overlayColor: const MaterialStatePropertyAll(Colors.transparent),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8.0),
+              child: Image.asset(
+                backpack,
+                fit: BoxFit.fill,
+                height: 32,
+              ),
+            ),
+          ),
+        ],
       ),
       body: Container(
         color: Colors.white,
@@ -523,5 +578,4 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
           ),
         )).show();
   }
-
 }

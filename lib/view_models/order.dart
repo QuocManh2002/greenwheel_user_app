@@ -1,4 +1,6 @@
+
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 
 class OrderViewModel {
   int? id;
@@ -7,15 +9,11 @@ class OrderViewModel {
   String? note;
   List<dynamic>? serveDateIndexes;
   int? rating;
-  int? supplierId;
   DateTime? createdAt;
-  String? supplierName;
-  String? supplierPhone;
-  String? supplierImageUrl;
-  String? supplierAddress;
   List<OrderDetailViewModel>? details;
   String? period;
   String? type;
+  SupplierViewModel? supplier;
 
   OrderViewModel(
       {this.id,
@@ -25,13 +23,10 @@ class OrderViewModel {
       this.total,
       this.details,
       this.createdAt,
-      this.supplierId,
-      this.supplierName,
-      this.supplierPhone,
-      this.supplierAddress,
       this.type,
       this.guid,
-      required this.supplierImageUrl});
+      this.supplier,
+      });
 
   factory OrderViewModel.fromJson(Map<String, dynamic> json) => OrderViewModel(
       id: json["id"],
@@ -40,12 +35,8 @@ class OrderViewModel {
       serveDateIndexes: json["serveDateIndexes"],
       total: double.parse(json["total"].toString()),
       createdAt: DateTime.parse(json["createdAt"]),
-      supplierId: json["supplier"]["id"],
-      supplierName: json["supplier"]["name"],
       type: json['type'],
-      supplierPhone: json["supplier"]["phone"],
-      supplierAddress: json["supplier"]["address"],
-      supplierImageUrl: json["supplier"]["imageUrl"],
+      supplier: SupplierViewModel(id: json["supplier"]["id"], name: json["supplier"]["name"], phone: json["supplier"]["phone"], thumbnailUrl: json["supplier"]["imageUrl"], address:  json["supplier"]["address"]),
       period: json['period']);
 
   List<OrderDetailViewModel> getDetails(dynamic details) {

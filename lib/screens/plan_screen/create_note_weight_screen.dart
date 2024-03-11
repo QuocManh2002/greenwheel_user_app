@@ -50,50 +50,6 @@ class _CreateNoteWeightScreenState extends State<CreateNoteWeightScreen> {
     setUpData();
   }
 
-  // completeService(BuildContext ctx) {
-  //   final departureDate =
-  //       DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-  //   DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
-  //       seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-  //           .toInt()));
-  //   plan = PlanCreate(
-  //       numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
-  //       locationId: widget.locationId,
-  //       name: sharedPreferences.getString('plan_name'),
-  //       latitude: sharedPreferences.getDouble('plan_start_lat')!,
-  //       longitude: sharedPreferences.getDouble('plan_start_lng')!,
-  //       memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
-  //       savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
-  //       startDate:
-  //           DateTime.parse(sharedPreferences.getString('plan_start_date')!),
-  //       departureDate: departureDate,
-  //       schedule: sharedPreferences.getString('plan_schedule'),
-  //       endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
-  //       travelDuration: DateFormat.Hm().format(_travelDuration),
-  //       tempOrders: _orderService.convertTempOrders(widget.orders).toString(),
-  //       note: _noteController.text,
-  //       weight: _selectedWeight,
-  //       gcoinBudget: ((widget.total / memberLimit!) / 100).ceil());
-  //   showModalBottomSheet(
-  //       backgroundColor: Colors.white.withOpacity(0.94),
-  //       context: context,
-  //       builder: (ctx) => SizedBox(
-  //             height: 75.h,
-  //             child: ConfirmPlanBottomSheet(
-  //               locationName: widget.locationName,
-  //               total: widget.total / 100).toDouble(),
-  //               budgetPerCapita:
-  //                   ((widget.total / memberLimit!) / 100).ceil().toDouble(),
-  //               orderList: widget.orders,
-  //               onCompletePlan: onCompletePlan,
-  //               plan: plan,
-  //               onJoinPlan: () {},
-  //               listSurcharges: widget.listSurcharges,
-  //               isJoin: false,
-  //             ),
-  //           ));
-  // }
-
   setUpData() {
     final memberLimit = sharedPreferences.getInt('plan_number_of_member');
     final planWeight = sharedPreferences.getInt('plan_weight');

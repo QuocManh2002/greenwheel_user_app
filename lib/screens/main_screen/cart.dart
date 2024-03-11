@@ -4,15 +4,14 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
@@ -24,7 +23,6 @@ import 'package:sizer2/sizer2.dart';
 class CartScreen extends StatefulWidget {
   const CartScreen(
       {super.key,
-      required this.location,
       required this.supplier,
       required this.list,
       required this.total,
@@ -35,10 +33,14 @@ class CartScreen extends StatefulWidget {
       required this.numberOfMember,
       required this.session,
       this.isOrder,
+      this.isFromTempOrder,
+      this.initCart,
+      this.isChangeCart,
+      this.orderGuid,
       required this.callbackFunction});
-  final LocationViewModel location;
   final SupplierViewModel supplier;
   final List<ItemCart> list;
+  final List<ItemCart>? initCart;
   final double total;
   final ServiceType serviceType;
   final DateTime startDate;
@@ -47,7 +49,10 @@ class CartScreen extends StatefulWidget {
   final int numberOfMember;
   final Session session;
   final bool? isOrder;
-  final void Function() callbackFunction;
+  final bool? isFromTempOrder;
+  final void Function(String? orderGuid) callbackFunction;
+  final bool? isChangeCart;
+  final String? orderGuid;
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -91,15 +96,6 @@ class _CartScreenState extends State<CartScreen> {
     if (planId == null) {
       isIndividual = true;
     }
-    // widget.startDate
-    //                                                   .difference(
-    //                                                       DateTime.now())
-    //                                                   .inDays +
-    //                                               1 <=
-    //                                           3
-    //                                       ? '${DateTime.now().add(const Duration(days: 3)).day}/${DateTime.now().add(const Duration(days: 3)).month}/${DateTime.now().add(const Duration(days: 3)).year}'
-    //                                       : '${widget.startDate.day}/${widget.startDate.month}/${widget.startDate.year}',
-
     if (widget.startDate.difference(DateTime.now()).inDays + 1 < 3) {
       _servingDates = [DateTime.now().add(const Duration(days: 3))];
     } else {
@@ -131,24 +127,6 @@ class _CartScreenState extends State<CartScreen> {
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (ctx) => ServiceMenuScreen(
-                          startDate: widget.startDate,
-                          endDate: widget.endDate,
-                          supplier: widget.supplier,
-                          currentCart: list,
-                          serviceType: widget.serviceType,
-                          iniPickupDate: widget.startDate,
-                          iniReturnDate: widget.endDate,
-                          iniNote: noteController.text,
-                          location: widget.location,
-                          numberOfMember: widget.numberOfMember,
-                          session: widget.session,
-                          callbackFunction: widget.callbackFunction,
-                        ),
-                      ),
-                    );
                   },
                 ),
                 const Padding(
@@ -192,7 +170,7 @@ class _CartScreenState extends State<CartScreen> {
                           child: Row(
                             children: [
                               Text(
-                                supplier!.name,
+                                supplier!.name!,
                                 style: const TextStyle(
                                   fontSize: 17,
                                   fontFamily: 'NotoSans',
@@ -203,22 +181,6 @@ class _CartScreenState extends State<CartScreen> {
                               TextButton(
                                 onPressed: () {
                                   Navigator.of(context).pop();
-                                  // Navigator.of(context).push(
-                                  //   MaterialPageRoute(
-                                  //     builder: (ctx) => ServiceMenuScreen(
-                                  //       startDate: widget.startDate,
-                                  //       endDate: widget.endDate,
-                                  //       numberOfMember: widget.numberOfMember,
-                                  //       location: widget.location,
-                                  //       supplier: widget.supplier,
-                                  //       currentCart: list,
-                                  //       serviceType: widget.serviceType,
-                                  //       iniPickupDate: widget.startDate,
-                                  //       iniReturnDate: widget.endDate,
-                                  //       iniNote: noteController.text,
-                                  //     ),
-                                  //   ),
-                                  // );
                                 },
                                 child: const Text(
                                   '+  Thêm món',
@@ -397,7 +359,6 @@ class _CartScreenState extends State<CartScreen> {
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                              // const Spacer(), // Add space between the two elements
                               TextButton(
                                 onPressed: pickDateRange,
                                 child: const Text(
@@ -527,7 +488,7 @@ class _CartScreenState extends State<CartScreen> {
                               width: 22,
                             ),
                             SvgPicture.asset(
-                              "assets/images/gcoin_logo.svg",
+                              gcoin_logo,
                               height: 32,
                             ),
                             const Padding(
@@ -617,36 +578,6 @@ class _CartScreenState extends State<CartScreen> {
                           const SizedBox(
                             height: 10,
                           ),
-                          // Container(
-                          //   width: 90.w,
-                          //   child: Row(
-                          //     mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          //     children: [
-                          //       const Text(
-                          //         'Đặt cọc (30%)', // Replace with your first text
-                          //         style: TextStyle(
-                          //             fontSize: 16,
-                          //             fontFamily: 'NotoSans',
-                          //             color: Colors.black),
-                          //       ),
-                          //       Text(
-                          //         currencyFormat.format(((finalTotal *
-                          //                     30 /
-                          //                     100) /
-                          //                 1000) *
-                          //             (_servingDates.isEmpty
-                          //                 ? 1
-                          //                 : _servingDates
-                          //                     .length)), // Replace with your second text
-                          //         style: const TextStyle(
-                          //           fontSize: 17,
-                          //           fontWeight: FontWeight.bold,
-                          //           fontFamily: 'NotoSans',
-                          //         ),
-                          //       ),
-                          //     ],
-                          //   ),
-                          // ),
                           const SizedBox(
                             height: 20,
                           ),
@@ -655,23 +586,7 @@ class _CartScreenState extends State<CartScreen> {
                             height: 6.h,
                             child: ElevatedButton(
                               onPressed: () async {
-                                // if (isIndividual) {
-                                //   AwesomeDialog(
-                                //     context: context,
-                                //     dialogType: DialogType.warning,
-                                //     animType: AnimType.topSlide,
-                                //     showCloseIcon: true,
-                                //     title: "Xác nhận thanh toán",
-                                //     desc: "Bạn sẽ thanh toán theo cá nhân",
-                                //     btnOkText: "OK",
-                                //     btnOkOnPress: () async {
-                                //       await paymentStart();
-                                //     },
-                                //   ).show();
-                                // } else {
                                 addOrder();
-                                // }
-                                // }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
@@ -732,11 +647,6 @@ class _CartScreenState extends State<CartScreen> {
 
   OrderCreateViewModel convertCart() {
     List<Map> details = list.map((itemCart) {
-      // return OrderDetailCreateViewModel(
-      //   productId: itemCart.product
-      //       .id, // Replace with the actual property from ProductViewModel
-      //   quantity: quantity,
-      // );
       return {
         'productId': itemCart.product.id,
         'quantity': itemCart.product.price
@@ -758,45 +668,12 @@ class _CartScreenState extends State<CartScreen> {
     return order;
   }
 
-  // paymentStart() async {
-  //   int check = await orderService.addOrder(convertCart());
-  //   if (check != 0) {
-  //     // ignore: use_build_context_synchronously
-  //     AwesomeDialog(
-  //       context: context,
-  //       dialogType: DialogType.success,
-  //       animType: AnimType.topSlide,
-  //       showCloseIcon: true,
-  //       title: "Thanh toán thành công",
-  //       desc: "Ấn tiếp tục để trở về",
-  //       btnOkText: "Tiếp tục",
-  //       btnOkOnPress: () {
-  //         // widget.callbackFunction();
-  //         Navigator.of(context).pop();
-  //         Navigator.of(context).pop();
-  //       },
-  //     ).show();
-  //   } else {
-  //     // ignore: use_build_context_synchronously
-  //     AwesomeDialog(
-  //       context: context,
-  //       dialogType: DialogType.error,
-  //       animType: AnimType.topSlide,
-  //       title: "Thanh toán thất bại",
-  //       desc: "Xuất hiện lỗi trong quá trình thanh toán",
-  //       btnOkText: "OK",
-  //       btnOkOnPress: () {},
-  //     ).show();
-  //   }
-  // }
-
   addOrder() async {
     var total = 0;
     var order = convertCart();
-    var startDate =
-        DateTime.parse(sharedPreferences.getString('plan_start_date') ?? widget.startDate.toString());
-    print(sharedPreferences.getString('plan_start_date'));
-    // int rs = 0;
+    var startDate = DateTime.parse(
+        sharedPreferences.getString('plan_start_date') ??
+            widget.startDate.toString());
     List<int> servingDateIndexs = [
       for (final date in _servingDates) date.difference(startDate).inDays
     ];
@@ -808,21 +685,20 @@ class _CartScreenState extends State<CartScreen> {
           id: item.product.id,
           productName: item.product.name,
           quantity: item.qty,
+          productId: item.product.id,
           unitPrice: item.product.price.toDouble(),
           price: item.product.price.toDouble()));
-          detailsMap.add(
-            {
-              'productId':item.product.id,
-              'productName': item.product.name,
-              'quantity': item.qty,
-              'unitPrice': item.product.price.toDouble(),
-              'price':item.product.price.toDouble()
-            }
-          );
+      detailsMap.add({
+        'productId': item.product.id,
+        'productName': item.product.name,
+        'quantity': item.qty,
+        'unitPrice': item.product.price.toDouble(),
+        'price': item.product.price.toDouble()
+      });
     }
 
     final tempOrder = {
-      'total': total*servingDateIndexs.length,
+      'total': total * servingDateIndexs.length,
       'servingDates': servingDateIndexs,
       'period': order.period,
       'details': detailsMap,
@@ -845,78 +721,96 @@ class _CartScreenState extends State<CartScreen> {
         tempDecode.add(tempOrder);
         sharedPreferences.setString('plan_temp_order', json.encode(tempDecode));
       }
-        AwesomeDialog(
+      AwesomeDialog(
         context: context,
         dialogType: DialogType.success,
         animType: AnimType.topSlide,
         showCloseIcon: true,
-        title: widget.isOrder!= null && widget.isOrder! ?  "Thanh toán thành công" :"Thêm đơn hàng mẫu thành công",
+        title: widget.isOrder != null && widget.isOrder!
+            ? "Thanh toán thành công"
+            : "Thêm đơn hàng mẫu thành công",
         desc: "Ấn tiếp tục để trở về",
         btnOkText: "Tiếp tục",
         btnOkOnPress: () {
-          widget.callbackFunction();
+          widget.callbackFunction(null);
           Navigator.of(context).pop();
           Navigator.of(context).pop();
         },
       ).show();
-    }else{
-      final rs = await orderService.createOrder(OrderViewModel(
-        createdAt: DateTime.now(),
-        details: details,
-        note: noteController.text,
-        type: widget.serviceType.name,
-        period: order.period,
-        serveDateIndexes: servingDateIndexs,
-        supplierImageUrl: widget.supplier.thumbnailUrl), sharedPreferences.getInt('planId')!);
-      if(rs != 0){
-        // ignore: use_build_context_synchronously
-        AwesomeDialog(
-        context: context,
-        dialogType: DialogType.success,
-        animType: AnimType.topSlide,
-        showCloseIcon: true,
-        title: widget.isOrder!= null && widget.isOrder! ?  "Thanh toán thành công" :"Thêm đơn hàng mẫu thành công",
-        desc: "Ấn tiếp tục để trở về",
-        btnOkText: "Tiếp tục",
-        btnOkOnPress: () {
-          widget.callbackFunction();
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-        },
-      ).show();
-      }
+    } else {
+      if (widget.isFromTempOrder != null && widget.isFromTempOrder!) {
+        bool? isDeleteGuid;
+        if (widget.isChangeCart!) {
+          await AwesomeDialog(
+                  context: context,
+                  animType: AnimType.bottomSlide,
+                  dialogType: DialogType.info,
+                  title: 'Đơn hàng mẫu bị thay đổi',
+                  titleTextStyle: const TextStyle(
+                      fontSize: 20, fontWeight: FontWeight.bold),
+                  desc: 'Bạn có muốn xoá đơn hàng mẫu này không?',
+                  descTextStyle:
+                      const TextStyle(fontSize: 16, color: Colors.grey),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  btnOkColor: Colors.blue,
+                  btnOkOnPress: () {
+                    isDeleteGuid = true;
+                  },
+                  btnOkText: 'Có',
+                  btnCancelColor: Colors.orange,
+                  btnCancelOnPress: () {
+                    isDeleteGuid = false;
+                  },
+                  btnCancelText: 'Không')
+              .show();
+        } else {
+          isDeleteGuid = true;
+        }
+        if (isDeleteGuid != null) {
+          final rs = await orderService.createOrder(
+              OrderViewModel(
+                  guid: isDeleteGuid! ? widget.orderGuid : null,
+                  createdAt: DateTime.now(),
+                  details: details,
+                  note: noteController.text,
+                  type: widget.serviceType.name,
+                  period: order.period,
+                  serveDateIndexes: servingDateIndexs,
+                  supplier: widget.supplier),
+              sharedPreferences.getInt('planId')!);
+          if (rs != 0) {
+            // ignore: use_build_context_synchronously
+            AwesomeDialog(
+              context: context,
+              dialogType: DialogType.success,
+              animType: AnimType.topSlide,
+              showCloseIcon: true,
+              title: widget.isOrder != null && widget.isOrder!
+                  ? "Thanh toán thành công"
+                  : "Thêm đơn hàng mẫu thành công",
+              desc: "Ấn tiếp tục để trở về",
+              btnOkText: "Tiếp tục",
+              btnOkOnPress: () {
+                widget
+                    .callbackFunction(isDeleteGuid! ? widget.orderGuid : null);
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+            ).show();
+          }
+        }
+      } else {}
     }
-//      rs = await orderService.addOrder(
-//       OrderCreateViewModel(
-//         servingDates: servingDateIndexs,
-//         period: order.period,
-//         details:orderDetails,
-//         ));
-
-//     if (rs != 0) {
-// // ignore: use_build_context_synchronously
-//       AwesomeDialog(
-//         context: context,
-//         dialogType: DialogType.success,
-//         animType: AnimType.topSlide,
-//         showCloseIcon: true,
-//         title: widget.isOrder!= null && widget.isOrder! ?  "Thanh toán thành công" :"Thêm đơn hàng mẫu thành công",
-//         desc: "Ấn tiếp tục để trở về",
-//         btnOkText: "Tiếp tục",
-//         btnOkOnPress: () {
-//           widget.callbackFunction();
-//           Navigator.of(context).pop();
-//           Navigator.of(context).pop();
-//         },
-//       ).show();
-//     }
   }
+
+  onAddOrder() {}
 
   Future pickDateRange() async {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (ctx) => SelectOrderDateScreen(
             callbackFunction: callback,
-            location: widget.location,
             supplier: widget.supplier,
             list: list,
             total: widget.total,

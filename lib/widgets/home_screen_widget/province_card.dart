@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/filter_location_screen.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:sizer2/sizer2.dart';
@@ -18,7 +19,7 @@ class ProvinceCard extends StatelessWidget {
                   province: province,
                 )));
       },
-      child: Container(
+      child: SizedBox(
         height: 25.h,
         width: 25.h,
         child: Card(
@@ -37,8 +38,8 @@ class ProvinceCard extends StatelessWidget {
                 fit: BoxFit.cover,placeholder: (context, url) =>
                       Image.memory(kTransparentImage),
                   errorWidget: (context, url, error) =>
-                  Image.network('https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0', height: 25.h, fit: BoxFit.cover,),
-                imageUrl: province.thumbnailUrl,)
+                  Image.network(defaultHomeImage, height: 25.h, fit: BoxFit.cover,),
+                imageUrl:'$baseBucketImage/${25.h.ceil()}x${25.h.ceil()}${province.thumbnailUrl}',)
             ),
             Positioned(
                 left: 0,

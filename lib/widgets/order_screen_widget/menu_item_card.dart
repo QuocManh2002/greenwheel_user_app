@@ -20,10 +20,8 @@ class MenuItemCard extends StatefulWidget {
   State<MenuItemCard> createState() => _MenuItemCardState();
 }
 
-class _MenuItemCardState extends State<MenuItemCard>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
+class _MenuItemCardState extends State<MenuItemCard> {
+
 
   // Create a NumberFormat instance for currency formatting
   var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
@@ -42,7 +40,6 @@ class _MenuItemCardState extends State<MenuItemCard>
 
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Column(
       children: [
         Padding(
@@ -72,7 +69,7 @@ class _MenuItemCardState extends State<MenuItemCard>
                     child: FadeInImage(
                       height: 15.h,
                       placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage(widget.product.thumbnailUrl),
+                      image: NetworkImage(widget.product.thumbnailUrl!),
                       fit: BoxFit.cover,
                       width: 15.h,
                       filterQuality: FilterQuality.high,

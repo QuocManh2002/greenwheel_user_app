@@ -9,32 +9,36 @@ class ProductService extends Iterable {
   Future<List<ProductViewModel>> getProductsBySupplierId(
       int supplierId, String session) async {
     try {
-      String sessionEnum = "";
+      // String sessionEnum = "";
 
       switch (session) {
         case "Buổi sáng":
-          sessionEnum = "MORNING";
+          session = "MORNING";
           break;
         case "Buổi trưa":
-          sessionEnum = "NOON";
+          session = "NOON";
           break;
         case "Buổi chiều":
-          sessionEnum = "AFTERNOON";
+          session = "AFTERNOON";
           break;
         case "Buổi tối":
-          sessionEnum = "EVENING";
+          session = "EVENING";
           break;
       }
+          // variables: {
+          //   "id": supplierId,
+          //   "period": [sessionEnum],
+          // },
 
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
-          query getSupplierById(\$id: Int!, \$period: [Period!]) {
+          {
             products(
               where: {
-                supplierId: { eq: \$id },
-                periods: { some: {in: \$period} }
+                supplierId: { eq: $supplierId },
+                periods: { some: {in: [$session]} }
               },
               order: {
                 id: ASC
@@ -55,10 +59,6 @@ class ProductService extends Iterable {
             }
           }
         '''),
-          variables: {
-            "id": supplierId,
-            "period": [sessionEnum],
-          },
         ),
       );
 

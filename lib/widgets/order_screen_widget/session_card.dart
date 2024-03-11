@@ -26,7 +26,7 @@ class SessionCard extends StatelessWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
-  final void Function() callbackFunction;
+  final void Function(String? orderGuid) callbackFunction;
   final bool? isOrder;
 
   @override
@@ -55,7 +55,6 @@ class SessionCard extends StatelessWidget {
                     numberOfMember: 0,
                     supplier: supplier,
                     serviceType: serviceType,
-                    location: location,
                     session: session,
                     callbackFunction: callbackFunction,
                   ),

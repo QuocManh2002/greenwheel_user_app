@@ -35,6 +35,11 @@ const String up_coming_green = '${baseImage}up_coming_green.svg';
 const String up_coming_white = '${baseImage}up_coming_white.svg';
 const String rating_white = '${baseImage}rating_white.svg';
 const String rating_green = '${baseImage}rating_green.svg';
+const String backpack = '${baseImage}backpack.png';
+
+const String baseBucketImage = 'https://d38ozmgi8b70tu.cloudfront.net';
+
+const String defaultHomeImage = "https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0";
 
 const String defaultUserAvatarLink =
     "https://media.altchar.com/prod/images/gm_article_promo_image/23364b481aa9-edg-viper.jpg";

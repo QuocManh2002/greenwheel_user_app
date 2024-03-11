@@ -46,7 +46,7 @@ class _EmergencySupplierState extends State<EmergencySupplier> {
               height: 30.h,
               width: double.infinity,
               child: Image.network(
-                widget.supplier.thumbnailUrl,
+                widget.supplier.thumbnailUrl!,
                 fit: BoxFit.fitWidth,
                 height: 30.h,
               ),
@@ -73,7 +73,7 @@ class _EmergencySupplierState extends State<EmergencySupplier> {
                       padding: EdgeInsets.only(
                           top: 2.h, right: 2.h, left: 2.h, bottom: 1.h),
                       child: Text(
-                        widget.supplier.name,
+                        widget.supplier.name!,
                         style: const TextStyle(
                             fontSize: 23, fontWeight: FontWeight.bold),
                       ),
@@ -85,7 +85,7 @@ class _EmergencySupplierState extends State<EmergencySupplier> {
                       child: Row(
                         children: [
                           Text(
-                            widget.supplier.phone,
+                            widget.supplier.phone!,
                             style: const TextStyle(
                                 fontSize: 20, color: Colors.black54),
                           ),
@@ -97,7 +97,7 @@ class _EmergencySupplierState extends State<EmergencySupplier> {
                       padding: EdgeInsets.only(
                           left: 2.h, right: 2.h, top: 1.5.h, bottom: 2.h),
                       child: Text(
-                        widget.supplier.address,
+                        widget.supplier.address!,
                         style: const TextStyle(
                             fontSize: 15, color: Colors.black54),
                       ),

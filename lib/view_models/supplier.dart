@@ -1,21 +1,21 @@
 class SupplierViewModel {
   int id;
-  String name;
-  String phone;
-  String thumbnailUrl;
-  String address;
-  double longitude;
-  double latitude;
+  String? name;
+  String? phone;
+  String? thumbnailUrl;
+  String? address;
+  double? longitude;
+  double? latitude;
 
-  SupplierViewModel(
-      {required this.id,
-      required this.name,
-      required this.phone,
-      required this.thumbnailUrl,
-      required this.address,
-      required this.longitude,
-      required this.latitude,
-});
+  SupplierViewModel({
+    required this.id,
+    required this.name,
+    required this.phone,
+    required this.thumbnailUrl,
+    required this.address,
+    this.longitude,
+    this.latitude,
+  });
 
   factory SupplierViewModel.fromJson(Map<String, dynamic> json) =>
       SupplierViewModel(

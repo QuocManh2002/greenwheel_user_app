@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/activities.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/home_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
@@ -63,15 +63,6 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // FloatingActionButton(onPressed: (){
-                //   Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => 
-                //   const DetailPlanNewScreen(planId: 24, isEnableToJoin: true,
-                  
-                //   )
-                //   ));
-                // },
-                  
-                // ),
                 SizedBox(
                   height: 35.h,
                   child: Stack(
@@ -80,8 +71,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 35.h,
                         width: double.infinity,
                         fit: BoxFit.cover,
-                        imageUrl:
-                            "https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0",
+                        imageUrl: defaultHomeImage,
                         placeholder: (context, url) =>
                             Image.memory(kTransparentImage),
                         errorWidget: (context, url, error) =>
@@ -91,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           fit: BoxFit.cover,
                           placeholder: 'No Image',
                           image:
-                              'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                              empty_plan,
                         ),
                       ),
                       Padding(

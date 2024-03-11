@@ -27,39 +27,49 @@ class PlanScheduleTitle extends StatelessWidget {
             )
           ],
           borderRadius: const BorderRadius.all(Radius.circular(12))),
-      child: Column(children: [
-        const Spacer(),
-        // Text(
-        //   DateFormat.MMMM('vi_VN').format(date),
-        //   style: TextStyle(
-        //       fontSize: 15,
-        //       color: isSelected ? Colors.white : Colors.grey,
-        //       fontWeight: FontWeight.w500),
-        // ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+        children: [
+        // const Spacer(),
         Text(
-          'Ngày',
+          DateFormat.MMMM('vi_VN').format(date),
           style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isSelected ? Colors.white : Colors.grey),
+              fontSize: 14,
+              color: isSelected ? Colors.white : Colors.grey,
+              fontWeight: FontWeight.w500),
         ),
-        // const SizedBox(height: 8,),
         // Text(
-        //   DateFormat.d().format(date),
+        //   'Ngày',
         //   style: TextStyle(
-        //       fontSize: 18,
+        //       fontSize: 20,
         //       fontWeight: FontWeight.bold,
         //       color: isSelected ? Colors.white : Colors.grey),
         // ),
-        
+        // const SizedBox(height: 8,),
         Text(
-          (index + 1).toString(),
+          DateFormat.d().format(date),
           style: TextStyle(
-              fontSize: 24,
-              color: isSelected ? Colors.white : Colors.grey,
-              fontWeight: FontWeight.bold),
+              fontSize: 26,
+              fontWeight: FontWeight.bold,
+              color: isSelected ? Colors.white : Colors.grey),
         ),
-        const Spacer(),
+
+        Text(
+          DateFormat.EEEE('vi_VN').format(date),
+          style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              color: isSelected ? Colors.white : Colors.grey),
+        ),
+
+        // Text(
+        //   (index + 1).toString(),
+        //   style: TextStyle(
+        //       fontSize: 24,
+        //       color: isSelected ? Colors.white : Colors.grey,
+        //       fontWeight: FontWeight.bold),
+        // ),
+        // const Spacer(),
       ]),
     );
   }

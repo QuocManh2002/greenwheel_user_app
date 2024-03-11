@@ -1,4 +1,3 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/service_types.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
@@ -39,7 +38,7 @@ class ListOrderScreen extends StatelessWidget {
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           const Text(
             'Các đơn hàng mẫu',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
           ),
           SizedBox(
             height: 1.h,
@@ -54,26 +53,32 @@ class ListOrderScreen extends StatelessWidget {
                             callback: callback,
                             order: orders[index],
                             startDate: startDate,
+                            isFromTempOrder: true,
                             isTempOrder: true,
+                            memberLimit: memberLimit,
+                            endDate: endDate,
                             planId: planId,
                           )),
                 )
-              : Column(
-                  children: [
-                    Image.asset(
-                      empty_plan,
-                      height: 30.h,
-                    ),
-                    SizedBox(
-                      height: 1.h,
-                    ),
-                    const Text(
-                      'Bạn không cos đơn hàng mẫu nào',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    )
-                  ],
-                ),
+              : Center(
+                child: Column(
+                    children: [
+                      SizedBox(height: 15.h,),
+                      Image.asset(
+                        empty_plan,
+                        height: 30.h,
+                      ),
+                      SizedBox(
+                        height: 1.h,
+                      ),
+                      const Text(
+                        'Bạn không có đơn hàng mẫu nào',
+                        style:
+                            TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.grey),
+                      ),
+                    ],
+                  ),
+              ),
           const Spacer(),
           Container(
             alignment: Alignment.center,
@@ -89,34 +94,38 @@ class ListOrderScreen extends StatelessWidget {
                               children: [
                                 Expanded(
                                     child: InkWell(
-                                      onTap: (){
-                                        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => 
-                                        ServiceMainScreen(serviceType: services[4], 
-                                        location: location, 
-                                        isOrder: true,
-                                        numberOfMember: memberLimit, 
-                                        startDate: startDate, 
-                                        endDate: endDate, 
-                                        callbackFunction: (){
-                                          callback(null);
-                                        } )
-                                        ));
-                                      },
-                                      child: Container(
-                                                                        height: 12.h,
-                                                                        decoration: const BoxDecoration(
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (ctx) => ServiceMainScreen(
+                                                serviceType: services[4],
+                                                location: location,
+                                                isOrder: true,
+                                                numberOfMember: memberLimit,
+                                                startDate: startDate,
+                                                endDate: endDate,
+                                                callbackFunction:callback)));
+                                  },
+                                  child: Container(
+                                    height: 12.h,
+                                    decoration: const BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(12))),
-                                                                        child: Row(
+                                    child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceAround,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        SizedBox(width: 0.5.h,),
+                                        SizedBox(
+                                          width: 0.5.h,
+                                        ),
                                         Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
                                           children: [
                                             Container(
                                               decoration: BoxDecoration(
@@ -139,7 +148,8 @@ class ListOrderScreen extends StatelessWidget {
                                           ],
                                         ),
                                         Padding(
-                                          padding:  EdgeInsets.only(right: 2.h, top:2.h),
+                                          padding: EdgeInsets.only(
+                                              right: 2.h, top: 2.h),
                                           child: const Icon(
                                             Icons.add,
                                             color: Colors.grey,
@@ -147,30 +157,35 @@ class ListOrderScreen extends StatelessWidget {
                                           ),
                                         )
                                       ],
-                                                                        ),
-                                                                      ),
-                                    )),
+                                    ),
+                                  ),
+                                )),
                                 SizedBox(
                                   width: 2.h,
                                 ),
                                 Expanded(
                                     child: InkWell(
-                                      onTap: (){},
-                                      child: Container(
-                                                                        height: 12.h,
-                                                                        decoration: const BoxDecoration(
+                                  onTap: () {},
+                                  child: Container(
+                                    height: 12.h,
+                                    decoration: const BoxDecoration(
                                         color: Colors.white,
                                         borderRadius: BorderRadius.all(
                                             Radius.circular(12))),
-                                                                        child: Row(
+                                    child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.spaceAround,
-                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       children: [
-                                        SizedBox(width: 0.5.h,),
+                                        SizedBox(
+                                          width: 0.5.h,
+                                        ),
                                         Column(
-                                              crossAxisAlignment: CrossAxisAlignment.start,
-                                              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceEvenly,
                                           children: [
                                             Container(
                                               decoration: BoxDecoration(
@@ -193,7 +208,8 @@ class ListOrderScreen extends StatelessWidget {
                                           ],
                                         ),
                                         Padding(
-                                          padding:  EdgeInsets.only(right: 2.h, top:2.h),
+                                          padding: EdgeInsets.only(
+                                              right: 2.h, top: 2.h),
                                           child: const Icon(
                                             Icons.add,
                                             color: Colors.grey,
@@ -201,9 +217,9 @@ class ListOrderScreen extends StatelessWidget {
                                           ),
                                         )
                                       ],
-                                                                        ),
-                                                                      ),
-                                    )),
+                                    ),
+                                  ),
+                                )),
                               ],
                             ),
                           ));

@@ -12,6 +12,7 @@ import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_service_infor.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
@@ -374,6 +375,7 @@ testList = _planService.ConvertPLanJsonToObject(_startDate, _scheduleText);
                       List<OrderDetailViewModel> details = [];
                       for (final detail in item['details']) {
                         details.add(OrderDetailViewModel(
+                            productId: detail['productId'],
                             price: detail['unitPrice'],
                             productName: detail['productName'],
                             unitPrice: detail['unitPrice'],
@@ -387,11 +389,7 @@ testList = _planService.ConvertPLanJsonToObject(_startDate, _scheduleText);
                           serveDateIndexes: item['servingDates'],
                           total: double.parse(item['total'].toString()),
                           createdAt: DateTime.parse(item['createdAt']),
-                          supplierId: item['supplierId'],
-                          supplierName: item['supplierName'],
-                          supplierPhone: item['supplierPhone'],
-                          supplierAddress: item['supplierAddress'],
-                          supplierImageUrl: item['supplierImageUrl']);
+                          supplier: SupplierViewModel(id: item['supplierId'], name: item['supplierName'], phone: item['supplierPhone'], thumbnailUrl: item['supplierImageUrl'], address: item['supplierAddress']), );
                       if (item['type'] == 'FOOD') {
                         listRestaurantOrder.add(temp);
                       } else {

@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/bottom_sheet_container_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -24,97 +25,37 @@ class PlanScheduleActivity extends StatelessWidget {
       children: [
         InkWell(
           onTap: () {
-            AwesomeDialog(
-                    context: context,
-                    dialogType: DialogType.info,
-                    btnOkColor: Colors.blue,
-                    body: Padding(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Container(
-                            alignment: Alignment.center,
-                            child: const Text(
-                              'Chi tiết hoạt động',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(
-                            height: 12,
-                          ),
-                          Row(
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    alignment: Alignment.topLeft,
-                                    child: const Text(
-                                      'Mô tả:',
-                                      style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ),
-                                  const Text(
-                                    'Mô tả chi tiết:',
-                                    overflow: TextOverflow.clip,
-                                    style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold),
-                                  ),
-            
-                                ],
-                              ),
-                              const SizedBox(
-                                width: 2,
-                              ),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  SizedBox(
-                                    width: 40.w,
-                                    child: Text(
-                                      item.shortDescription!,
-                                      style: const TextStyle(fontSize: 16),
-                                      overflow: TextOverflow.clip,
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    height: 6,
-                                  ),
-                                  SizedBox(
-                                    width: 40.w,
-                                    child: Text(
-                                      item.description!,
-                                      style: const TextStyle(fontSize: 16),
-                                      overflow: TextOverflow.clip,
-                                    ),
-                                  ),
-                                ],
-                              )
-                            ],
-                          ),
-                          const SizedBox(
-                            height: 6,
-                          ),
-                          Text(
-                            DateFormat.yMMMMEEEEd('vi_VN')
-                                .format(item.date!),
-                            style: const TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                          )
-                        ],
+            showModalBottomSheet(
+            context: context, 
+            builder: (ctx) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 8),
+              
+              child: SizedBox(
+                width: 100.w,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizedBox(height: 2.h,),
+                    Container(
+                      decoration: BoxDecoration(
+                        color: primaryColor.withOpacity(0.6),
+                        borderRadius: const BorderRadius.all(Radius.circular(12))
                       ),
+                      height: 6,
+                      width: 10.h,
                     ),
-                    btnOkOnPress: () {},
-                    btnOkText: 'OK')
-                .show();
+                    SizedBox(height: 2.h,),
+                    BottomSheetContainerWidget(content: item.shortDescription!, title: 'Mô tả'),
+                    SizedBox(height: 1.h,),
+                    BottomSheetContainerWidget(content: item.description!, title: 'Mô tả chi tiết'),
+                    SizedBox(height: 1.h,),
+                    BottomSheetContainerWidget(content: DateFormat.yMMMMEEEEd('vi_VN')
+                                    .format(item.date!), title: 'Thời gian'),
+                                    SizedBox(height: 2.h,)
+                  ],
+                ),
+              ),
+            ));
           },
           child: Padding(
             padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
@@ -151,7 +92,7 @@ class PlanScheduleActivity extends StatelessWidget {
                             overflow: TextOverflow.clip,
                           ),
                         ),
-                        item.orderId == null
+                        item.type != 'Ăn uống'
                             ? IconButton(
                                 highlightColor: Colors.transparent,
                                 splashColor: Colors.transparent,

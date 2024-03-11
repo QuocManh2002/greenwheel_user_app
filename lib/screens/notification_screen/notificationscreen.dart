@@ -1,9 +1,9 @@
-
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/notification_screen/notification_detail.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 import 'package:sizer2/sizer2.dart';
@@ -79,9 +79,17 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         for (final noti in _notiList!)
                           InkWell(
                             onTap: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (ctx) => NotificationDetailScreen(
-                                      notification: noti)));
+                              if (noti.type == 'INVITATION') {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (ctx) => DetailPlanNewScreen(
+                                          isEnableToJoin: true,
+                                          planId: noti.targetId!,
+                                        )));
+                              } else {
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (ctx) => NotificationDetailScreen(
+                                        notification: noti)));
+                              }
                             },
                             child: Padding(
                               padding: const EdgeInsets.only(
@@ -96,10 +104,12 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                         clipBehavior: Clip.hardEdge,
                                         decoration: const BoxDecoration(
                                             shape: BoxShape.circle),
-                                        child: Image.network(noti.imageUrl ==
-                                                null
-                                            ? 'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0'
-                                            : noti.imageUrl!, fit: BoxFit.cover,),
+                                        child: Image.network(
+                                          noti.imageUrl == null
+                                              ? 'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0'
+                                              : noti.imageUrl!,
+                                          fit: BoxFit.cover,
+                                        ),
                                       ),
                                       SizedBox(
                                         width: 2.w,

@@ -67,7 +67,7 @@ class ConfirmServiceInfor extends StatelessWidget {
                         SizedBox(
                             width: 80.w,
                             child: Text(
-                              '${order.supplierName} - ${order.details!.length} sản phẩm',
+                              '${order.supplier!.name} - ${order.details!.length} sản phẩm',
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,
@@ -104,7 +104,7 @@ class ConfirmServiceInfor extends StatelessWidget {
                         SizedBox(
                             width: 80.w,
                             child: Text(
-                              '${order.supplierName} - ${order.details!.length} sản phẩm',
+                              '${order.supplier!.name} - ${order.details!.length} sản phẩm',
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                               overflow: TextOverflow.ellipsis,

@@ -7,11 +7,14 @@ import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierOrderCard extends StatelessWidget {
-  const SupplierOrderCard({super.key,required this.callback, required this.order, required this.startDate, required this.isTempOrder, this.planId});
+  const SupplierOrderCard({super.key,this.isFromTempOrder, this.memberLimit, this.endDate, required this.callback, required this.order, required this.startDate, required this.isTempOrder, this.planId});
   final OrderViewModel order;
   final DateTime startDate;
   final bool isTempOrder;
   final int? planId;
+  final int? memberLimit;
+  final DateTime? endDate;
+  final bool? isFromTempOrder;
   final void Function(String? tempOrderGuid) callback;
 
   @override
@@ -25,8 +28,11 @@ class SupplierOrderCard extends StatelessWidget {
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (ctx) => OrderDetailScreen(
+                  memberLimit: memberLimit,
+                  endDate: endDate,
                   order: order,
                   startDate: startDate,
+                  isFromTempOrder: isFromTempOrder,
                   isTempOrder: isTempOrder,
                   planId: planId,
                   callback: callback,
@@ -59,7 +65,7 @@ class SupplierOrderCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 15.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(order.supplierImageUrl!),
+                    image: NetworkImage(order.supplier!.thumbnailUrl!),
                     fit: BoxFit.cover,
                     width: 15.h,
                     filterQuality: FilterQuality.high,
@@ -81,7 +87,7 @@ class SupplierOrderCard extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: 45.w,
-                        child: Text(order.supplierName!,
+                        child: Text(order.supplier!.name!,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
                             style: const TextStyle(

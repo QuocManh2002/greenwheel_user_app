@@ -84,13 +84,14 @@ class PlanService {
     }
   }
 
-  Future<List<OrderViewModel>> getOrderCreatePlan(int planId) async {
+  Future<Map?> getOrderCreatePlan(int planId) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
   plans(where: { id: { eq: $planId } }) {
     nodes {
+      currentGcoinBudget
       orders {
         id
         planId
@@ -112,6 +113,7 @@ class PlanService {
           price
           quantity
           product {
+            id
             name
             type
             price
@@ -129,11 +131,9 @@ class PlanService {
 
       List? res = result.data!['plans']['nodes'][0]['orders'];
       if (res == null || res.isEmpty) {
-        return [];
+        return null;
       }
       List<OrderViewModel>? orders = [];
-      // List<OrderViewModel> orders =
-      //     res.map((order) => OrderViewModel.fromJson(order)).toList();
       for (final item in res) {
         OrderViewModel order = OrderViewModel.fromJson(item);
         List<OrderDetailViewModel>? details = [];
@@ -143,7 +143,10 @@ class PlanService {
         order.details = details;
         orders.add(order);
       }
-      return orders;
+      return {
+        'orders':orders,
+        'currentBudget': result.data!['plans']['nodes'][0]['currentGcoinBudget']
+      };
     } catch (error) {
       throw Exception(error);
     }
@@ -209,6 +212,7 @@ query GetPlanById(\$planId: Int){
           price
           quantity
           product {
+            id
             name
             type
             price
@@ -224,6 +228,7 @@ query GetPlanById(\$planId: Int){
         status
         weight
         account {
+          avatarUrl
           id
           name
           phone
@@ -427,6 +432,7 @@ query GetPlanById(\$planId: Int){
         final type = schedule_item_types_vn
             .firstWhere((element) => element == item.type);
         items.add({
+          'isStarred':false,
           'duration':
               json.encode("${item.activityTime}:00:00"),
           'description': json.encode(item.description),

@@ -69,7 +69,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
       });
     } else {
       var rs = customer[0];
-      if (_planMembers.any((member) => member.memberId == rs.id)) {
+      if (_planMembers.any((member) => member.accountId == rs.id)) {
         setState(() {
           _isEnableToInvite = false;
         });

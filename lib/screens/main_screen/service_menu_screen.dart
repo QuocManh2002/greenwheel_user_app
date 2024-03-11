@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
@@ -7,9 +8,6 @@ import 'package:greenwheel_user_app/screens/loading_screen/service_menu_loading_
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
@@ -18,35 +16,40 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ServiceMenuScreen extends StatefulWidget {
-  const ServiceMenuScreen({
-    super.key,
-    required this.supplier,
-    required this.serviceType,
-    this.currentCart = const [],
-    this.iniPickupDate,
-    this.iniReturnDate,
-    this.iniNote = "",
-    required this.location,
-    required this.numberOfMember,
-    required this.endDate,
-    required this.startDate,
-    this.session,
-    this.isOrder,
-    required this.callbackFunction
-  });
+  const ServiceMenuScreen(
+      {super.key,
+      required this.supplier,
+      required this.serviceType,
+      this.currentCart = const [],
+      this.iniPickupDate,
+      this.iniReturnDate,
+      this.iniNote = "",
+      required this.numberOfMember,
+      required this.endDate,
+      required this.startDate,
+      this.session,
+      this.period,
+      this.isOrder,
+      this.isFromTempOrder,
+      this.initCart,
+      this.orderGuid,
+      required this.callbackFunction});
   final Session? session;
   final DateTime startDate;
   final DateTime endDate;
   final SupplierViewModel supplier;
   final ServiceType serviceType;
   final List<ItemCart> currentCart;
+  final List<ItemCart>? initCart;
   final DateTime? iniPickupDate;
   final DateTime? iniReturnDate;
   final String iniNote;
-  final LocationViewModel location;
   final int numberOfMember;
   final bool? isOrder;
-  final void Function() callbackFunction;
+  final String? period;
+  final bool? isFromTempOrder;
+  final void Function(String? orderGuid) callbackFunction;
+  final String? orderGuid;
 
   @override
   State<ServiceMenuScreen> createState() => _ServiceMenuScreenState();
@@ -55,7 +58,6 @@ class ServiceMenuScreen extends StatefulWidget {
 class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   ProductService productService = ProductService();
   PlanService planService = PlanService();
-
   PlanDetail? plan;
   List<ProductViewModel> list = [];
   List<ItemCart> items = [];
@@ -66,6 +68,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   bool isLoading = true;
   double total = 0;
   List<List<ProductViewModel>> _listResult = [];
+  List<ItemCart> _initCart = [];
 
   var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
 
@@ -117,8 +120,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   }
 
   setUpData() async {
-    list = await productService.getProductsBySupplierId(
-        widget.supplier.id, widget.session!.name);
+    list = await productService.getProductsBySupplierId(widget.supplier.id,
+        widget.session == null ? widget.period! : widget.session!.name);
 
     if (list.isNotEmpty) {
       setState(() {
@@ -137,26 +140,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
         total = tmp;
       });
     }
-    // int? id = sharedPreferences.getInt("planId");
-    // List<ItemCart> tmpList = [];
-    // if (id != null) {
-    //   plan = await planService.GetPlanById(id);
-    //   for (var item in list) {
-    //     if (item.partySize == plan!.memberLimit) {
-    //       setState(() {
-    //         tmpList.add(ItemCart(product: item, qty: 1));
-    //         total += item.originalPrice;
-    //       });
-    //       break;
-    //     }
-    //   }
-    //   setState(() {
-    //     items = tmpList;
-    //     print(items[0].product.name);
-    //     print(items[0].qty);
-    //     total;
-    //   });
-    // }
     pickupDate = widget.iniPickupDate;
     returnDate = widget.iniReturnDate;
     note = widget.iniNote;
@@ -208,26 +191,13 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                         color: Colors.black,
                       ),
                       onPressed: () {
-                        Navigator.of(context).pop(); // Close the current page
-                        // Navigator.of(context).push(
-                        //   MaterialPageRoute(
-                        //     builder: (ctx) => ServiceMainScreen(
-                        //       startDate: widget.startDate,
-                        //       endDate: widget.endDate,
-                        //       serviceType: widget.serviceType,
-                        //       location: widget.location,
-                        //       numberOfMember: widget.numberOfMember,
-                        //       callbackFunction:
-                        //           (List<OrderCreatePlan> orderList) {},
-                        //     ),
-                        //   ),
-                        // );
+                        Navigator.of(context).pop();
                       },
                     ),
                     Padding(
                       padding: const EdgeInsets.only(left: 14),
                       child: Text(
-                        widget.supplier.name,
+                        widget.supplier.name!,
                         style: const TextStyle(
                             fontSize: 16,
                             fontFamily: 'NotoSans',
@@ -282,71 +252,81 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Stack(
-        alignment: Alignment.topCenter,
-        children: [
-          SizedBox(
-            height: 30.h,
-            width: double.infinity,
-            child: Image.network(
-              widget.supplier.thumbnailUrl,
-              fit: BoxFit.fitWidth,
-              height: 30.h,
-            ),
-          ),
-          Container(
-              margin: EdgeInsets.only(top: 20.h),
-              width: 90.w,
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.all(Radius.circular(12)),
-                boxShadow: [
-                  BoxShadow(
-                    blurRadius: 3,
-                    color: Colors.black12,
-                    offset: Offset(2, 4),
-                  )
-                ],
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    padding:
-                        EdgeInsets.only(top: 2.h, right: 2.h, left: 2.h, bottom: 1.h),
-                    child: Text(
-                      widget.supplier.name,
-                      style:
-                         const TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    padding:
-                        EdgeInsets.symmetric(horizontal: 2.h, vertical: 1.5.h),
-                    child: Row(
+                      alignment: Alignment.topCenter,
                       children: [
-                        
-                        Text(
-                          '0${widget.supplier.phone.substring(3)}',
-                          style:const TextStyle(fontSize: 20, color: Colors.black54),
+                        SizedBox(
+                          height: 30.h,
+                          width: double.infinity,
+                          child: Image.network(
+                            widget.supplier.thumbnailUrl!,
+                            fit: BoxFit.fitWidth,
+                            height: 30.h,
+                          ),
                         ),
+                        Container(
+                            margin: EdgeInsets.only(top: 20.h),
+                            width: 90.w,
+                            decoration: const BoxDecoration(
+                              color: Colors.white,
+                              borderRadius:
+                                  BorderRadius.all(Radius.circular(12)),
+                              boxShadow: [
+                                BoxShadow(
+                                  blurRadius: 3,
+                                  color: Colors.black12,
+                                  offset: Offset(2, 4),
+                                )
+                              ],
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.only(
+                                      top: 2.h,
+                                      right: 2.h,
+                                      left: 2.h,
+                                      bottom: 1.h),
+                                  child: Text(
+                                    widget.supplier.name!,
+                                    style: const TextStyle(
+                                        fontSize: 23,
+                                        fontWeight: FontWeight.bold),
+                                  ),
+                                ),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 2.h, vertical: 1.5.h),
+                                  child: Row(
+                                    children: [
+                                      Text(
+                                        '0${widget.supplier.phone!.substring(3)}',
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.black54),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding: EdgeInsets.only(
+                                      left: 2.h,
+                                      right: 2.h,
+                                      top: 1.5.h,
+                                      bottom: 2.h),
+                                  child: Text(
+                                    widget.supplier.address!,
+                                    style: const TextStyle(
+                                        fontSize: 15, color: Colors.black54),
+                                  ),
+                                ),
+                              ],
+                            )),
                       ],
                     ),
-                  ),
-                  Container(
-                    alignment: Alignment.centerLeft,
-                    padding:
-                        EdgeInsets.only(left: 2.h, right: 2.h, top: 1.5.h, bottom: 2.h),
-                    child: Text(
-                      widget.supplier.address,
-                      style:const TextStyle(fontSize: 15, color: Colors.black54),
-                    ),
-                  ),
-                ],
-              )),
-        ],
-      ),
                     Padding(
                       padding: const EdgeInsets.only(left: 14, top: 14),
                       child: Text(
@@ -437,22 +417,24 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                   height: 6.h,
                   child: ElevatedButton(
                     onPressed: () async {
-                      Navigator.of(context).pop();
+                      // Navigator.of(context).pop();
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (ctx) => CartScreen(
+                            isFromTempOrder: widget.isFromTempOrder,
                             startDate: widget.startDate,
                             endDate: widget.endDate,
                             numberOfMember: widget.numberOfMember,
-                            location: widget.location,
                             supplier: widget.supplier,
                             list: items,
                             total: total,
                             serviceType: widget.serviceType,
                             note: note,
+                            orderGuid: widget.orderGuid,
                             isOrder: widget.isOrder,
                             session: widget.session!,
                             callbackFunction: widget.callbackFunction,
+                            isChangeCart: !compareTwoCart(),
                           ),
                         ),
                       );
@@ -538,5 +520,19 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
         note = "";
       }
     });
+  }
+
+  compareTwoCart() {
+    List<int> currentIds = [];
+    List<String> ids = sharedPreferences.getStringList('initCartIds')!;
+    for (final curItem in items) {
+      if(!currentIds.contains(curItem.product.id)){
+      currentIds.add(curItem.product.id);
+      }
+    }
+    currentIds.sort();
+    bool isEqual = ids.length == currentIds.length &&
+        ids.every((String element) => currentIds.contains(int.parse(element)));
+    return isEqual;
   }
 }

@@ -10,7 +10,6 @@ import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 class SelectOrderDateScreen extends StatefulWidget {
   const SelectOrderDateScreen(
       {super.key,
-      required this.location,
       required this.supplier,
       required this.list,
       required this.total,
@@ -23,7 +22,6 @@ class SelectOrderDateScreen extends StatefulWidget {
       required this.callbackFunction});
   final DateTime startDate;
   final DateTime endDate;
-  final LocationViewModel location;
   final SupplierViewModel supplier;
   final List<ItemCart> list;
   final double total;

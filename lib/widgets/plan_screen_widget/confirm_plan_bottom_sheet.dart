@@ -14,25 +14,27 @@ class ConfirmPlanBottomSheet extends StatefulWidget {
   const ConfirmPlanBottomSheet(
       {super.key,
       required this.locationName,
-      required this.orderList,
-      required this.onCompletePlan,
-      required this.listSurcharges,
-      required this.budgetPerCapita,
-      required this.total,
+      this.orderList,
+      this.onCompletePlan,
+      this.listSurcharges,
+      this.budgetPerCapita,
+      this.total,
       this.plan,
       required this.isJoin,
       this.onCancel,
-      required this.onJoinPlan});
+      required this.isInfo,
+      this.onJoinPlan});
   final String locationName;
-  final List<dynamic> orderList;
-  final void Function() onCompletePlan;
-  final List<Map> listSurcharges;
-  final double total;
-  final double budgetPerCapita;
+  final List<dynamic>? orderList;
+  final void Function()? onCompletePlan;
+  final List<Map>? listSurcharges;
+  final double? total;
+  final double? budgetPerCapita;
   final PlanCreate? plan;
   final bool isJoin;
-  final void Function() onJoinPlan;
+  final void Function()? onJoinPlan;
   final void Function()? onCancel;
+  final bool isInfo;
 
   @override
   State<ConfirmPlanBottomSheet> createState() => _ConfirmPlanBottomSheetState();
@@ -75,22 +77,30 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   }
 
   setUpData() {
-    emergencyList = json.decode(widget.plan!.savedContacts!);
-    var tempDuration = DateFormat.Hm().parse(widget.plan!.travelDuration!);
-    if (tempDuration.hour != 0) {
-      travelDurationText += '${tempDuration.hour} giờ ';
+    if (widget.plan!.savedContacts != null) {
+      emergencyList = json.decode(widget.plan!.savedContacts!);
     }
-    if (tempDuration.minute != 0) {
-      travelDurationText += '${tempDuration.minute} phút';
-    }
-    for (final order in widget.orderList) {
-      if (widget.isJoin ? order.type == 'MEAL' : order['type'] == 'FOOD') {
-        foodOrderList.add(order);
-      } else {
-        roomOrderList.add(order);
+    if (widget.plan!.travelDuration != null) {
+      var tempDuration = DateFormat.Hm().parse(widget.plan!.travelDuration!);
+      if (tempDuration.hour != 0) {
+        travelDurationText += '${tempDuration.hour} giờ ';
+      }
+      if (tempDuration.minute != 0) {
+        travelDurationText += '${tempDuration.minute} phút';
       }
     }
+    if (widget.orderList != null) {
+      for (final order in widget.orderList!) {
+        if (widget.isJoin ? order.type == 'MEAL' : order['type'] == 'FOOD') {
+          foodOrderList.add(order);
+        } else {
+          roomOrderList.add(order);
+        }
+      }
+    }
+    if(widget.plan!.schedule != null){
     buildListScheduleText();
+    }
     if (widget.isJoin) {
       buildNewServiceInfo();
     }
@@ -162,112 +172,50 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                     color: primaryColor.withOpacity(0.5),
                     borderRadius: const BorderRadius.all(Radius.circular(12))),
               ),
-              SizedBox(
-                height: 2.h,
-              ),
-              BottomSheetContainerWidget(
-                  title: 'Tên chuyến đi', content: widget.plan!.name!),
-              SizedBox(
-                height: 1.h,
-              ),
-              BottomSheetContainerWidget(
-                  title: 'Số lượng thành viên',
-                  content: widget.plan!.memberLimit! < 10
-                      ? '0${widget.plan!.memberLimit!}'
-                      : widget.plan!.memberLimit!.toString()),
+              if (widget.plan!.name != null)
+                SizedBox(
+                  height: 2.h,
+                ),
+              if (widget.plan!.name != null)
+                BottomSheetContainerWidget(
+                    title: 'Tên chuyến đi', content: widget.plan!.name!),
+              if (widget.plan!.memberLimit != null)
+                SizedBox(
+                  height: 1.h,
+                ),
+              if (widget.plan!.memberLimit != null)
+                BottomSheetContainerWidget(
+                    title: 'Số lượng thành viên',
+                    content: widget.plan!.memberLimit! < 10
+                        ? '0${widget.plan!.memberLimit!}'
+                        : widget.plan!.memberLimit!.toString()),
               SizedBox(
                 height: 1.h,
               ),
               BottomSheetContainerWidget(
                   title: 'Địa điểm', content: widget.locationName),
-              SizedBox(
-                height: 1.h,
-              ),
-              BottomSheetContainerWidget(
-                  title: 'Thời gian chuyến đi',
-                  content:
-                      '${DateFormat('dd/MM/yyyy').format(widget.plan!.departureDate!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan!.endDate!)}'),
-              SizedBox(
-                height: 1.h,
-              ),
-              BottomSheetContainerWidget(
-                  title: 'Thời gian di chuyển', content: travelDurationText),
-              SizedBox(
-                height: 1.h,
-              ),
-              Container(
-                width: 100.w,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                    boxShadow: const [
-                      BoxShadow(
-                        blurRadius: 3,
-                        color: Colors.black12,
-                        offset: Offset(1, 3),
-                      )
-                    ],
-                    color: Colors.white.withOpacity(0.97),
-                    borderRadius: const BorderRadius.all(Radius.circular(8))),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      InkWell(
-                        onTap: () {
-                          setState(() {
-                            _isShowSchedule = !_isShowSchedule;
-                          });
-                        },
-                        child: Row(
-                          children: [
-                            const Text(
-                              'Lịch trình',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                            const Spacer(),
-                            Icon(
-                              _isShowSchedule
-                                  ? Icons.arrow_drop_up
-                                  : Icons.arrow_drop_down,
-                              color: primaryColor,
-                              size: 30,
-                            ),
-                          ],
-                        ),
-                      ),
-                      if (_isShowSchedule)
-                        for (final day in scheduleList)
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '- Ngày ${scheduleList.indexOf(day) + 1}: ',
-                                style: const TextStyle(
-                                    fontSize: 17, fontWeight: FontWeight.w500),
-                              ),
-                              Container(
-                                alignment: Alignment.topLeft,
-                                width: 60.w,
-                                child: Text(
-                                  _scheduleText[scheduleList.indexOf(day)],
-                                  style: const TextStyle(fontSize: 17),
-                                ),
-                              ),
-                            ],
-                          ),
-                    ]),
-              ),
-              if (widget.plan!.note!.isNotEmpty)
+              if (widget.plan!.travelDuration != null)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.note!.isNotEmpty)
+              if (widget.plan!.departureDate != null)
                 BottomSheetContainerWidget(
-                    content: widget.plan!.note!, title: 'Ghi chú'),
-              SizedBox(
-                height: 1.h,
-              ),
-              Container(
+                    title: 'Thời gian chuyến đi',
+                    content:
+                        '${DateFormat('dd/MM/yyyy').format(widget.plan!.departureDate!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan!.endDate!)}'),
+              if (widget.plan!.travelDuration != null)
+                SizedBox(
+                  height: 1.h,
+                ),
+              if (widget.plan!.travelDuration != null)
+                BottomSheetContainerWidget(
+                    title: 'Thời gian di chuyển', content: travelDurationText),
+              if (widget.plan!.schedule != null)
+                SizedBox(
+                  height: 1.h,
+                ),
+              if (widget.plan!.schedule != null)
+                Container(
                   width: 100.w,
                   padding:
                       const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
@@ -282,31 +230,107 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                       color: Colors.white.withOpacity(0.97),
                       borderRadius: const BorderRadius.all(Radius.circular(8))),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Dịch vụ khẩn cấp đã lưu: ',
-                        style: TextStyle(fontSize: 16),
-                      ),
-                      for (final emer in emergencyList)
-                        SizedBox(
-                          width: 80.w,
-                          child: Text(
-                            emer['name'].toString().substring(0, 1) == '\"'
-                                ? json.decode(emer['name'])
-                                : emer['name'],
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                            overflow: TextOverflow.clip,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isShowSchedule = !_isShowSchedule;
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              const Text(
+                                'Lịch trình',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              const Spacer(),
+                              Icon(
+                                _isShowSchedule
+                                    ? Icons.arrow_drop_up
+                                    : Icons.arrow_drop_down,
+                                color: primaryColor,
+                                size: 30,
+                              ),
+                            ],
                           ),
-                        )
-                    ],
-                  )),
-              if (!widget.isJoin)
+                        ),
+                        if (_isShowSchedule)
+                          for (final day in scheduleList)
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  '- Ngày ${scheduleList.indexOf(day) + 1}: ',
+                                  style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                                Container(
+                                  alignment: Alignment.topLeft,
+                                  width: 60.w,
+                                  child: Text(
+                                    _scheduleText[scheduleList.indexOf(day)],
+                                    style: const TextStyle(fontSize: 17),
+                                  ),
+                                ),
+                              ],
+                            ),
+                      ]),
+                ),
+              if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (!widget.isJoin)
+              if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty)
+                BottomSheetContainerWidget(
+                    content: widget.plan!.note!, title: 'Ghi chú'),
+              if (widget.plan!.savedContacts != null)
+                SizedBox(
+                  height: 1.h,
+                ),
+              if (widget.plan!.savedContacts != null)
+                Container(
+                    width: 100.w,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 3,
+                            color: Colors.black12,
+                            offset: Offset(1, 3),
+                          )
+                        ],
+                        color: Colors.white.withOpacity(0.97),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Dịch vụ khẩn cấp đã lưu: ',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        for (final emer in emergencyList)
+                          SizedBox(
+                            width: 80.w,
+                            child: Text(
+                              emer['name'].toString().substring(0, 1) == '\"'
+                                  ? json.decode(emer['name'])
+                                  : emer['name'],
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.clip,
+                            ),
+                          )
+                      ],
+                    )),
+              if (!widget.isJoin && widget.orderList != null)
+                SizedBox(
+                  height: 1.h,
+                ),
+              if (!widget.isJoin && widget.orderList != null)
                 Container(
                     width: 100.w,
                     padding:
@@ -329,7 +353,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           'Đơn hàng mẫu đã lên: ',
                           style: TextStyle(fontSize: 16),
                         ),
-                        for (final order in widget.orderList)
+                        for (final order in widget.orderList!)
                           SizedBox(
                             width: 80.w,
                             child: Text(
@@ -343,11 +367,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           ),
                       ],
                     )),
-              if (widget.listSurcharges.isNotEmpty)
+              if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.listSurcharges.isNotEmpty)
+              if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty)
                 Container(
                   width: 100.w,
                   padding:
@@ -369,7 +393,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           'Phụ thu',
                           style: TextStyle(fontSize: 16),
                         ),
-                        for (final order in widget.listSurcharges)
+                        for (final order in widget.listSurcharges!)
                           SizedBox(
                               width: 80.w,
                               child: Row(
@@ -396,11 +420,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               ))
                       ]),
                 ),
-              if (widget.orderList.isNotEmpty && widget.isJoin)
+              if (widget.orderList != null && widget.isJoin)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.orderList.isNotEmpty && widget.isJoin)
+              if (widget.orderList != null && widget.isJoin)
                 Container(
                   width: 100.w,
                   padding:
@@ -431,11 +455,12 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration:  BoxDecoration(
-                                      color: primaryColor.withOpacity(0.8),
-                                      borderRadius: const BorderRadius.all(Radius.circular(8))
-                                    ),
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                        color: primaryColor.withOpacity(0.8),
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(8))),
                                     child: const Text(
                                       'Lưu trú',
                                       style: TextStyle(
@@ -447,33 +472,38 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                 ),
                               if (listRoom.isNotEmpty)
                                 for (final day in listRoom)
-                                Padding(
-                                  padding: const EdgeInsets.only(left:10),
-                                  child: Row(
-                                    children: [
-                                      Text('Ngày ${day.dayIndex+1} - ',style:const TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.bold)),
-                                      Column(
-                                        children: [
-                                          for(final detail in day.orderList)
-                                          const Text('Nghỉ ngơi tại khách sạn',style: TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.bold),)
-                                        ],
-                                      )
-                                    ],
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Row(
+                                      children: [
+                                        Text('Ngày ${day.dayIndex + 1} - ',
+                                            style: const TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold)),
+                                        Column(
+                                          children: day.orderList
+                                              .map((e) => const Text(
+                                                    'Nghỉ ngơi tại khách sạn',
+                                                    style: TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.bold),
+                                                  ))
+                                              .toList(),
+                                        )
+                                      ],
+                                    ),
                                   ),
-                                ),
                               if (listFood.isNotEmpty)
                                 Padding(
                                   padding: const EdgeInsets.only(top: 8),
                                   child: Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration:  BoxDecoration(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
                                         color: primaryColor.withOpacity(0.8),
-                                        borderRadius:const BorderRadius.all(Radius.circular(8))
-                                      ),
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(8))),
                                     child: const Text(
                                       'Ăn uống',
                                       style: TextStyle(
@@ -485,82 +515,91 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                 ),
                               if (listFood.isNotEmpty)
                                 for (final day in listFood)
-                                Padding(
-                                  padding: const EdgeInsets.only(left: 10),
-                                  child: Row(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text('Ngày ${day.dayIndex+1} - ',style:const TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.bold)),
-                                      Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: [
-                                          for(final detail in day.orderList)
-                                           Text('${getPeriodString(detail.period)} - Nhà hàng',style:const TextStyle(
-                                            fontSize: 17,
-                                            fontWeight: FontWeight.bold),)
-                                        ],
-                                      )
-                                    ],
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 10),
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text('Ngày ${day.dayIndex + 1} - ',
+                                            style: const TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold)),
+                                        Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            for (final detail in day.orderList)
+                                              Text(
+                                                '${getPeriodString(detail.period)} - Nhà hàng',
+                                                style: const TextStyle(
+                                                    fontSize: 17,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              )
+                                          ],
+                                        )
+                                      ],
+                                    ),
                                   ),
-                                ),
                             ],
                           ),
                         ),
                       ]),
                 ),
-              SizedBox(
-                height: 1.h,
-              ),
-              Container(
-                width: 100.w,
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                    boxShadow: const [
-                      BoxShadow(
-                        blurRadius: 3,
-                        color: Colors.black12,
-                        offset: Offset(1, 3),
-                      )
-                    ],
-                    color: Colors.white.withOpacity(0.97),
-                    borderRadius: const BorderRadius.all(Radius.circular(8))),
-                child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      if (!widget.isJoin)
+              if (widget.total != null)
+                SizedBox(
+                  height: 1.h,
+                ),
+              if (widget.total != null)
+                Container(
+                  width: 100.w,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                      boxShadow: const [
+                        BoxShadow(
+                          blurRadius: 3,
+                          color: Colors.black12,
+                          offset: Offset(1, 3),
+                        )
+                      ],
+                      color: Colors.white.withOpacity(0.97),
+                      borderRadius: const BorderRadius.all(Radius.circular(8))),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (!widget.isJoin)
+                          Row(
+                            children: [
+                              const Text(
+                                'Tổng cộng',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              const Spacer(),
+                              Text(
+                                '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(widget.total ?? 0)} GCOIN',
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              )
+                            ],
+                          ),
                         Row(
                           children: [
                             const Text(
-                              'Tổng cộng',
+                              'Chi phí cho chuyến đi',
                               style: TextStyle(fontSize: 16),
                             ),
                             const Spacer(),
                             Text(
-                              '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(widget.total)} GCOIN',
+                              '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(widget.budgetPerCapita)} GCOIN',
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             )
                           ],
                         ),
-                      Row(
-                        children: [
-                          const Text(
-                            'Chi phí cho chuyến đi',
-                            style: TextStyle(fontSize: 16),
-                          ),
-                          const Spacer(),
-                          Text(
-                            '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(widget.budgetPerCapita)} GCOIN',
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold),
-                          )
-                        ],
-                      ),
-                    ]),
-              ),
+                      ]),
+                ),
               if (widget.isJoin)
                 SizedBox(
                   height: 1.h,
@@ -594,6 +633,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
               SizedBox(
                 height: 1.h,
               ),
+              if(!widget.isInfo)
               Row(
                 children: [
                   Expanded(
@@ -622,6 +662,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           color: Colors.white,
                         ),
                         style: elevatedButtonStyle.copyWith(
+                          foregroundColor: const MaterialStatePropertyAll(Colors.white),
                             backgroundColor:
                                 MaterialStatePropertyAll(widget.isJoin
                                     ? _isAceptedPolicy
@@ -631,7 +672,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                         onPressed: widget.isJoin
                             ? () {
                                 if (_isAceptedPolicy) {
-                                  widget.onJoinPlan();
+                                  widget.onJoinPlan!();
                                 }
                               }
                             : widget.onCompletePlan,

@@ -10,7 +10,6 @@ import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_note_weight_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
@@ -22,6 +21,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_service_infor.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
@@ -71,7 +71,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   num total = 0;
   String activitiesText = '';
   num memberLimit = sharedPreferences.getInt('plan_number_of_member')!;
-  bool _isShowSchedule = false;
   int tabIndex = 0;
   PlanCreate? plan;
   TextEditingController _noteController = TextEditingController();
@@ -89,11 +88,11 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
-    callback();
+    callback(null);
     callbackSurcharge();
   }
 
-  callback() {
+  callback(String? orderGuid) {
     final orderText = sharedPreferences.getString('plan_temp_order');
     if (orderText != null) {
       orderList = json.decode(orderText);
@@ -107,6 +106,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         List<OrderDetailViewModel> details = [];
         for (final detail in item['details']) {
           details.add(OrderDetailViewModel(
+              productId: detail['productId'],
               price: detail['unitPrice'],
               productName: detail['productName'],
               unitPrice: detail['unitPrice'],
@@ -120,11 +120,13 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             serveDateIndexes: item['servingDates'],
             total: double.parse(item['total'].toString()),
             createdAt: DateTime.parse(item['createdAt']),
-            supplierId: item['supplierId'],
-            supplierName: item['supplierName'],
-            supplierPhone: item['supplierPhone'],
-            supplierAddress: item['supplierAddress'],
-            supplierImageUrl: item['supplierImageUrl']);
+            supplier: SupplierViewModel(
+                id: item['supplierId'],
+                name: item['supplierName'],
+                phone: item['supplierPhone'],
+                thumbnailUrl: item['supplierImageUrl'],
+                address: item['supplierAddress']));
+
         if (item['type'] == 'FOOD') {
           listRestaurant.add(SupplierOrderCard(
             order: temp,
@@ -360,6 +362,13 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
               if (total != 0)
                 Column(
                   children: [
+                    Container(
+                      height: 2,
+                      color: Colors.grey.withOpacity(0.4),
+                    ),
+                    SizedBox(
+                      height: 1.h,
+                    ),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Row(
@@ -380,35 +389,31 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                     SizedBox(
                       height: 1.h,
                     ),
-                    Container(
-                      height: 2,
-                      color: Colors.grey.withOpacity(0.4),
-                    ),
-                    SizedBox(
-                      height: 1.h,
-                    ),
-                    if (memberLimit != 1)
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            const Text(
-                              'Khoản thu bình quân: ',
-                              style: TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                            ),
-                            Text(
-                              '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(((total / memberLimit) / 100).ceil())} GCOIN',
-                              style: const TextStyle(fontSize: 18),
-                            ),
-                          ],
-                        ),
-                      ),
-                    if (memberLimit != 1)
-                      const SizedBox(
-                        height: 16,
-                      )
+                    // SizedBox(
+                    //   height: 1.h,
+                    // ),
+                    // if (memberLimit != 1)
+                    //   Padding(
+                    //     padding: const EdgeInsets.symmetric(horizontal: 12),
+                    //     child: Row(
+                    //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    //       children: [
+                    //         const Text(
+                    //           'Khoản thu bình quân: ',
+                    //           style: TextStyle(
+                    //               fontSize: 18, fontWeight: FontWeight.bold),
+                    //         ),
+                    //         Text(
+                    //           '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(((total / memberLimit) / 100).ceil())} GCOIN',
+                    //           style: const TextStyle(fontSize: 18),
+                    //         ),
+                    //       ],
+                    //     ),
+                    //   ),
+                    // if (memberLimit != 1)
+                    //   const SizedBox(
+                    //     height: 16,
+                    //   )
                   ],
                 ),
               Row(
@@ -640,6 +645,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         builder: (ctx) => SizedBox(
               height: 90.h,
               child: ConfirmPlanBottomSheet(
+                isInfo: false,
                 locationName: widget.location.name,
                 total: (total / 100).toDouble(),
                 budgetPerCapita:
@@ -661,8 +667,8 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     if (surchargeText != null) {
       final surcharges = json.decode(surchargeText);
       for (final sur in surcharges) {
-          listSurcharges
-            .add(SurchargeCard(amount: sur['gcoinAmount'], note: json.decode(sur['note'])));
+        listSurcharges.add(SurchargeCard(
+            amount: sur['gcoinAmount'], note: json.decode(sur['note'])));
         totalSurcharge += int.parse(sur['gcoinAmount']) * 100;
         total += int.parse(sur['gcoinAmount'].toString()) * 100;
         _listSurchargeObjects.add(sur);
@@ -671,9 +677,9 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     setState(() {
       _listSurcharges = listSurcharges;
     });
-      sharedPreferences.setString(
-          'plan_surcharge', json.encode(_listSurchargeObjects));
-      getTotal();
+    sharedPreferences.setString(
+        'plan_surcharge', json.encode(_listSurchargeObjects));
+    getTotal();
   }
 
   onCompletePlan() async {
@@ -757,7 +763,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       total += order.total!;
     }
     for (final sur in _listSurchargeObjects) {
-      total += double.parse(sur['gcoinAmount'].toString()) *100;
+      total += double.parse(sur['gcoinAmount'].toString()) * 100;
     }
 
     final budget = ((total / memberLimit) / 100).ceil();
