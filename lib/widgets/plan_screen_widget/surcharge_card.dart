@@ -23,7 +23,7 @@ class SurchargeCard extends StatelessWidget {
                   width: 8,
                 ),
                 SizedBox(
-                  width: 60.w,
+                  width: 58.w,
                   child: Text(
                     note,
                     overflow: TextOverflow.clip,

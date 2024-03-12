@@ -22,6 +22,7 @@ class OrderDetailScreen extends StatefulWidget {
       this.planId,
       required this.callback,
       this.isFromTempOrder,
+      this.availableGcoinAmount,
       required this.isTempOrder});
   final OrderViewModel order;
   final DateTime startDate;
@@ -30,6 +31,7 @@ class OrderDetailScreen extends StatefulWidget {
   final int? memberLimit;
   final DateTime? endDate;
   final bool? isFromTempOrder;
+  final double? availableGcoinAmount;
   final void Function(String? tempOrderGuid) callback;
 
   @override
@@ -503,6 +505,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (ctx) => ServiceMenuScreen(
+                        availableGcoinAmount: widget.availableGcoinAmount,
                           initCart: cart,
                           session: session,
                           orderGuid: widget.order.guid,

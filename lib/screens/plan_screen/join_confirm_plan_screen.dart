@@ -9,6 +9,7 @@ import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 
 class JoinConfirmPlanScreen extends StatefulWidget {
@@ -30,6 +31,7 @@ class JoinConfirmPlanScreen extends StatefulWidget {
 class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   PlanService _planService = PlanService();
   int weight = 1;
+  double? newBalance;
 
   onChangeWeight(bool isAdd) {
     if (isAdd && weight < widget.plan.memberLimit - widget.plan.memberCount!) {
@@ -413,6 +415,33 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                       )
                     ],
                   ),
+                  Row(
+                    children: [
+                      const Text(
+                        'Số dư mới',
+                        style: TextStyle(fontSize: 16, color: Colors.grey),
+                      ),
+                      const Spacer(),
+                      Text(
+                        NumberFormat.simpleCurrency(
+                                locale: 'vi-VN', decimalDigits: 0, name: "")
+                            .format( sharedPreferences.getDouble('userBalance')! - (weight * widget.plan.gcoinBudgetPerCapita!)),
+                        textAlign: TextAlign.end,
+                        overflow: TextOverflow.clip,
+                        style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: Colors.black),
+                      ),
+                      SizedBox(
+                        width: 1.h,
+                      ),
+                      SvgPicture.asset(
+                        gcoin_logo,
+                        height: 30,
+                      )
+                    ],
+                  ),
                   SizedBox(
                     height: 1.h,
                   ),
@@ -484,6 +513,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                   desc: "Ấn tiếp tục để trở về",
                   btnOkText: "Tiếp tục",
                   btnOkOnPress: () {
+                    final rs = sharedPreferences.getDouble('userBalance')! - (widget.plan.gcoinBudgetPerCapita! * weight);
+                    sharedPreferences.setDouble('userBalance', rs);
                     Navigator.of(context).pop();
                     Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(
@@ -523,6 +554,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                   desc: "Ấn tiếp tục để trở về",
                   btnOkText: "Tiếp tục",
                   btnOkOnPress: () {
+                    final rs = sharedPreferences.getDouble('userBalance')! - (widget.plan.gcoinBudgetPerCapita! * (widget.plan.memberLimit - widget.plan.memberCount!));
+                    sharedPreferences.setDouble('userBalance', rs);
                     widget.callback!();
                     Navigator.of(context).pop();
                   },

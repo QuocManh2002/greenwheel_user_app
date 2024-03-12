@@ -1,5 +1,9 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_quill/flutter_quill.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 
 import 'package:greenwheel_user_app/widgets/style_widget/shimmer_widget.dart';
 import 'package:greenwheel_user_app/widgets/test_screen1.dart';
@@ -14,11 +18,16 @@ class TestScreen extends StatefulWidget {
 
 class _TestScreenState extends State<TestScreen> {
   final _controller = QuillController.basic();
-
+final jsonText = sharedPreferences.getString('plan_note_editor');
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    
+    if(jsonText !=null){
+      final json = jsonDecode(jsonText!);
+      _controller.document = Document.fromJson(json); 
+    }
   }
 
   @override
@@ -29,6 +38,7 @@ class _TestScreenState extends State<TestScreen> {
             body: Center(
               child: Column(
                 children: [
+                  // if(jsonText == null)
                   QuillToolbar.simple(
                     configurations: QuillSimpleToolbarConfigurations(
                       controller: _controller,
@@ -42,12 +52,26 @@ class _TestScreenState extends State<TestScreen> {
                       configurations: QuillEditorConfigurations(
                         controller: _controller,
                         readOnly: false,
+                        customStyles:const DefaultStyles(
+                          sizeSmall: TextStyle(fontSize: 25),
+                          italic: TextStyle(fontSize: 20),
+                          small: TextStyle(fontSize: 20)
+                        ),
                         sharedConfigurations: const QuillSharedConfigurations(
                           locale: Locale('de'),
                         ),
                       ),
                     ),
-                  )
+                  ),
+                  ElevatedButton(
+                    style: elevatedButtonStyle,
+                    onPressed: (){
+                      final json = jsonEncode(_controller.document.toDelta().toJson());
+                      sharedPreferences.setString('plan_note_editor', json);
+                      Navigator.of(context).pop();
+                    }, 
+                    child:const Text('Lưu')),
+                    const SizedBox(height: 24,)
                 ],
               ),
             )));

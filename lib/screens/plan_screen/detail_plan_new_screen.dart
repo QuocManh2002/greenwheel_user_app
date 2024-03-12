@@ -30,6 +30,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/member_list_widget.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_icon_button.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -39,9 +40,13 @@ import '../../widgets/style_widget/button_style.dart';
 
 class DetailPlanNewScreen extends StatefulWidget {
   const DetailPlanNewScreen(
-      {super.key, required this.planId, required this.isEnableToJoin});
+      {super.key,
+      required this.planId,
+      this.isFromHost,
+      required this.isEnableToJoin});
   final int planId;
   final bool isEnableToJoin;
+  final bool? isFromHost;
 
   @override
   State<DetailPlanNewScreen> createState() => _DetailPlanScreenState();
@@ -73,6 +78,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   bool isLeader = false;
   Widget? activeWidget;
   List<int> availableWeight = [];
+  bool _isAlreadyJoin = false;
 
   @override
   void initState() {
@@ -97,7 +103,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     }
     isLeader = sharedPreferences.getString('userId') ==
         _planDetail!.leaderId.toString();
-    tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     for (int i = 0;
         i < _planDetail!.memberLimit - _planDetail!.memberCount!;
         i++) {
@@ -137,6 +143,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           accountType: type,
           weight: mem.weight));
     }
+    _isAlreadyJoin = _planMembers.any((element) =>
+        element.accountId ==
+            int.parse(sharedPreferences.getString('userId')!) &&
+        element.status == 'JOINED');
   }
 
   getTempOrder() => _planDetail!.tempOrders!.map((e) {
@@ -169,7 +179,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             serveDateIndexes: e["serveDateIndexes"],
             total: orderTotal * e['serveDateIndexes'].length,
             createdAt: DateTime.now(),
-            supplier: SupplierViewModel(id: sampleProduct.supplierId!, name: sampleProduct.supplierName, phone: sampleProduct.supplierPhone, thumbnailUrl: sampleProduct.supplierThumbnailUrl, address: sampleProduct.supplierAddress),
+            supplier: SupplierViewModel(
+                id: sampleProduct.supplierId!,
+                name: sampleProduct.supplierName,
+                phone: sampleProduct.supplierPhone,
+                thumbnailUrl: sampleProduct.supplierThumbnailUrl,
+                address: sampleProduct.supplierAddress),
             type: e['type'],
             period: e['period']);
       }).toList();
@@ -177,47 +192,49 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   getOrderList(String? tempOrderGuid) async {
     total = 0;
     final rs = await _planService.getOrderCreatePlan(widget.planId);
-    orderList = rs!['orders'];
-    List<Widget> listRestaurant = [];
-    List<Widget> listMotel = [];
-    for (var item in orderList) {
-      if (item.type == 'MEAL') {
-        listRestaurant.add(SupplierOrderCard(
-          order: item,
-          startDate: _planDetail!.startDate!,
-          isTempOrder: false,
-          planId: widget.planId,
-          callback: (String? guid) {},
-        ));
-      } else {
-        listMotel.add(SupplierOrderCard(
-          order: item,
-          startDate: _planDetail!.startDate!,
-          isTempOrder: false,
-          planId: widget.planId,
-          callback: (String? guid) {},
-        ));
+    if (rs != null) {
+      orderList = rs['orders'];
+      List<Widget> listRestaurant = [];
+      List<Widget> listMotel = [];
+      for (var item in orderList) {
+        if (item.type == 'MEAL') {
+          listRestaurant.add(SupplierOrderCard(
+            order: item,
+            startDate: _planDetail!.startDate!,
+            isTempOrder: false,
+            planId: widget.planId,
+            callback: (String? guid) {},
+          ));
+        } else {
+          listMotel.add(SupplierOrderCard(
+            order: item,
+            startDate: _planDetail!.startDate!,
+            isTempOrder: false,
+            planId: widget.planId,
+            callback: (String? guid) {},
+          ));
+        }
+        total += item.total!;
       }
-      total += item.total!;
-    }
-    if (tempOrderGuid != null) {
-      final tempOrder = tempOrders.firstWhere(
-        (element) => element.guid == tempOrderGuid,
-      );
-      setState(() {
-        tempOrders.remove(tempOrder);
-        _planDetail!.currentGcoinBudget = _planDetail!.currentGcoinBudget! -
-            tempOrder.total! / 100.toDouble();
-        _listMotel = listMotel;
-        _listRestaurant = listRestaurant;
-        _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
-      });
-    } else {
-      setState(() {
-        _listMotel = listMotel;
-        _listRestaurant = listRestaurant;
-        _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
-      });
+      if (tempOrderGuid != null) {
+        final tempOrder = tempOrders.firstWhere(
+          (element) => element.guid == tempOrderGuid,
+        );
+        setState(() {
+          tempOrders.remove(tempOrder);
+          _planDetail!.currentGcoinBudget = _planDetail!.currentGcoinBudget! -
+              tempOrder.total! / 100.toDouble();
+          _listMotel = listMotel;
+          _listRestaurant = listRestaurant;
+          _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
+        });
+      } else {
+        setState(() {
+          _listMotel = listMotel;
+          _listRestaurant = listRestaurant;
+          _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
+        });
+      }
     }
   }
 
@@ -466,7 +483,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                           ],
                         )),
                       ),
-                      if (_planDetail!.memberLimit != 1) buildNewFooter()
+                      if (_planDetail!.memberLimit != 1)
+                        if (widget.isFromHost == null || widget.isFromHost!)
+                          buildNewFooter()
                     ],
                   )));
   }
@@ -493,6 +512,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         if (rs != null) {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (ctx) => ListOrderScreen(
+                                    availableGcoinAmount:
+                                        _planDetail!.currentGcoinBudget,
                                     planId: widget.planId,
                                     orders: tempOrders,
                                     startDate: _planDetail!.startDate!,
@@ -530,6 +551,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   Tab(
                     text: "(${_listRestaurant.length})",
                     icon: const Icon(Icons.restaurant),
+                  ),
+                  Tab(
+                    text: '(${_planDetail!.surcharges!.length})',
+                    icon: const Icon(Icons.account_balance_wallet),
                   )
                 ]),
             Container(
@@ -553,6 +578,17 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     return _listRestaurant[index];
                   },
                 ),
+                ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: _planDetail!.surcharges!.length,
+                  itemBuilder: (context, index) {
+                    return SurchargeCard(
+                        amount: _planDetail!.surcharges![index].gcoinAmount
+                            .toString(),
+                        note: _planDetail!.surcharges![index].note);
+                  },
+                )
               ]),
             ),
             const SizedBox(
@@ -699,7 +735,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               showModalBottomSheet(
                                   context: context,
                                   builder: (ctx) => MemberListWidget(
-                                        members: _planMembers.where((element) => element.weight != 0).toList(),
+                                        members: _planMembers
+                                            .where((element) =>
+                                                element.weight != 0)
+                                            .toList(),
                                         onRemoveMember: onRemoveMember,
                                       ));
                             }
@@ -719,45 +758,45 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     ],
                   ),
                   for (final member in _planMembers)
-                    if(member.weight != 0)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 6),
-                      child: Row(
-                        children: [
-                          Container(
-                              height: 25,
-                              width: 25,
-                              decoration:
-                                  const BoxDecoration(shape: BoxShape.circle),
-                              clipBehavior: Clip.hardEdge,
-                              child: CachedNetworkImage(
-                                key: UniqueKey(),
+                    if (member.weight != 0)
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 6),
+                        child: Row(
+                          children: [
+                            Container(
                                 height: 25,
-                                width: double.infinity,
-                                fit: BoxFit.cover,
-                                imageUrl:
-                                    member.imageUrl ?? defaultUserAvatarLink,
-                                placeholder: (context, url) =>
-                                    Image.memory(kTransparentImage),
-                                errorWidget: (context, url, error) =>
-                                    FadeInImage.assetNetwork(
+                                width: 25,
+                                decoration:
+                                    const BoxDecoration(shape: BoxShape.circle),
+                                clipBehavior: Clip.hardEdge,
+                                child: CachedNetworkImage(
+                                  key: UniqueKey(),
                                   height: 25,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
-                                  placeholder: '',
-                                  image: empty_plan,
-                                ),
-                              )),
-                          const SizedBox(
-                            width: 4,
-                          ),
-                          Text(
-                            " ${member.name} (${member.weight})",
-                            style: const TextStyle(fontSize: 18),
-                          ),
-                        ],
-                      ),
-                    )
+                                  imageUrl:
+                                      member.imageUrl ?? defaultUserAvatarLink,
+                                  placeholder: (context, url) =>
+                                      Image.memory(kTransparentImage),
+                                  errorWidget: (context, url, error) =>
+                                      FadeInImage.assetNetwork(
+                                    height: 25,
+                                    width: double.infinity,
+                                    fit: BoxFit.cover,
+                                    placeholder: '',
+                                    image: empty_plan,
+                                  ),
+                                )),
+                            const SizedBox(
+                              width: 4,
+                            ),
+                            Text(
+                              " ${member.name} (${member.weight})",
+                              style: const TextStyle(fontSize: 18),
+                            ),
+                          ],
+                        ),
+                      )
                 ],
               ),
             ),
@@ -798,6 +837,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       }
       Navigator.of(context).push(MaterialPageRoute(
           builder: (ctx) => SharePlanScreen(
+                isFromHost: _planDetail!.leaderId ==
+                    int.parse(sharedPreferences.getString('userId')!),
                 planMembers: _planMembers,
                 isEnableToJoin: widget.isEnableToJoin,
                 planId: widget.planId,
@@ -963,9 +1004,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           child: widget.isEnableToJoin || _planDetail!.memberCount! == 0
               ? ElevatedButton(
                   onPressed: () {
+                    if(!_isAlreadyJoin){
                     onJoinPlan(false);
+                    }
                   },
-                  style: elevatedButtonStyle,
+                  style: elevatedButtonStyle.copyWith(
+                    backgroundColor: MaterialStatePropertyAll(_isAlreadyJoin ? Colors.grey : primaryColor)
+                  ),
                   child: const Text(
                     "Tham gia kế hoạch",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),

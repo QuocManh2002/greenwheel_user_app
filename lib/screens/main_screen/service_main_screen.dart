@@ -18,6 +18,8 @@ class ServiceMainScreen extends StatefulWidget {
       required this.startDate,
       required this.endDate,
       this.isOrder,
+      this.availableGcoinAmount,
+      this.isFromTempOrder,
       required this.callbackFunction});
   final int numberOfMember;
   final ServiceType serviceType;
@@ -25,6 +27,8 @@ class ServiceMainScreen extends StatefulWidget {
   final DateTime startDate;
   final DateTime endDate;
   final bool? isOrder;
+  final double? availableGcoinAmount;
+  final bool? isFromTempOrder;
   final void Function(String? orderGuid) callbackFunction;
 
   @override
@@ -55,14 +59,6 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
       title = "Dịch vụ lưu trú";
       type.add("ROOM");
     }
-    //  else if (widget.serviceType.id == 3 || widget.serviceType.id == 5) {
-    //   title = "Dịch vụ đi lại";
-    //   type.addAll(["REPAIR_SHOP", "TAXI", "VEHICLE_SHOP"]);
-    // } else {
-    //   title = "Dịch vụ tiện lợi";
-    //   type.add("GROCERY");
-    // }
-
     list = await supplierService.getSuppliers(
         widget.location.longitude, widget.location.latitude, type);
 

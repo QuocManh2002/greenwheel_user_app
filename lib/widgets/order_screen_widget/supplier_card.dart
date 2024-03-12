@@ -17,7 +17,9 @@ class SupplierCard extends StatelessWidget {
       required this.numberOfMember,
       required this.startDate,
       required this.callbackFunction,
+      this.isFromTempOrder,
       this.isOrder,
+      this.availableGcoinAmount,
       required this.endDate});
   final DateTime startDate;
   final DateTime endDate;
@@ -26,6 +28,8 @@ class SupplierCard extends StatelessWidget {
   final LocationViewModel location;
   final int numberOfMember;
   final bool? isOrder;
+  final bool? isFromTempOrder;
+  final double? availableGcoinAmount;
   final void Function(String? orderGuid) callbackFunction;
 
   @override
@@ -62,6 +66,8 @@ class SupplierCard extends StatelessWidget {
                       serviceType:serviceType,
                       location: location,
                       isOrder: isOrder,
+                      availableGcoinAmount: availableGcoinAmount,
+                      isFromTempOrder: isFromTempOrder,
                       callbackFunction: callbackFunction,
                     ),
                   ),
@@ -77,6 +83,8 @@ class SupplierCard extends StatelessWidget {
                       serviceType:serviceType,
                       isOrder: isOrder,
                       session: sessions[1],
+                      isFromTempOrder: isFromTempOrder,
+                      availableGcoinAmount: availableGcoinAmount,
                       callbackFunction: callbackFunction,
                     ),
                   ),

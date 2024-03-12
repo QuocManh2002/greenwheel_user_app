@@ -161,7 +161,7 @@ mutation{
         'note': json.encode(order['note']),
         'period': order['period'],
         'serveDateIndexes': order['servingDates'],
-        'type': order['type'] == "FOOD" ? "MEAL" : "ROOM"
+        'type': order['type'] 
       });
     }
     return orders;

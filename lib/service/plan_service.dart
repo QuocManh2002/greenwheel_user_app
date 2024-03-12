@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -23,7 +24,7 @@ class PlanService {
       PlanCreate model, BuildContext context, String surcharges) async {
     try {
       var schedule = json.decode(model.schedule!);
-      print("""
+      log("""
   mutation{
   createPlan(dto: {
     departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
@@ -32,7 +33,7 @@ class PlanService {
     gcoinBudgetPerCapita:${model.gcoinBudget}
     memberLimit:${model.memberLimit}
     name:"${model.name}"
-    note:"${model.note}"
+    note: ${json.encode(model.note).toString()}
     periodCount:${model.numOfExpPeriod}
     savedContacts:${json.decode(model.savedContacts!).toString()}
     schedule:$schedule
@@ -56,7 +57,7 @@ class PlanService {
     gcoinBudgetPerCapita:${model.gcoinBudget}
     memberLimit:${model.memberLimit}
     name:"${model.name}"
-    note:"${model.note}"
+    note: ""
     periodCount:${model.numOfExpPeriod}
     savedContacts:${json.decode(model.savedContacts!).toString()}
     schedule:$schedule
@@ -144,7 +145,7 @@ class PlanService {
         orders.add(order);
       }
       return {
-        'orders':orders,
+        'orders': orders,
         'currentBudget': result.data!['plans']['nodes'][0]['currentGcoinBudget']
       };
     } catch (error) {
@@ -432,9 +433,8 @@ query GetPlanById(\$planId: Int){
         final type = schedule_item_types_vn
             .firstWhere((element) => element == item.type);
         items.add({
-          'isStarred':false,
-          'duration':
-              json.encode("${item.activityTime}:00:00"),
+          'isStarred': false,
+          'duration': json.encode("${item.activityTime}:00:00"),
           'description': json.encode(item.description),
           'shortDescription': json.encode(item.shortDescription),
           'type': schedule_item_types[schedule_item_types_vn.indexOf(type)]
@@ -657,7 +657,6 @@ mutation{
     }
   }
 
-
   Future<int> removeMember(int memberId, bool isBlock) async {
     try {
       QueryResult result = await client.mutate(MutationOptions(document: gql("""
@@ -682,5 +681,4 @@ mutation{
       throw Exception(error);
     }
   }
-
 }

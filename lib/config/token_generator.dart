@@ -12,6 +12,7 @@ class TokenGenerator {
         jwt = JWT(
           // Payload for plan
           {
+            'isFromHost':encoded.isFromHost,
             'planId': encoded.planId,
             'isEnableToJoin': encoded.isEnableToJoin,
           },

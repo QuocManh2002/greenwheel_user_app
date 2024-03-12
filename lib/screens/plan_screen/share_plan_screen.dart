@@ -30,9 +30,11 @@ class SharePlanScreen extends StatefulWidget {
       {super.key,
       required this.planId,
       required this.planMembers,
+      required this.isFromHost,
       required this.isEnableToJoin});
   final int planId;
   final bool isEnableToJoin;
+  final bool isFromHost;
   final List<PlanMemberViewModel> planMembers;
 
   @override
@@ -265,6 +267,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
               child: QrImageView(
                 data: TokenGenerator.generateToken(
                     TempPlan(
+                      isFromHost: widget.isFromHost,
                       planId: widget.planId,
                       isEnableToJoin: widget.isEnableToJoin,
                     ),

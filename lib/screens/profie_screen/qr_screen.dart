@@ -59,6 +59,7 @@ class _QRScreenState extends State<QRScreen> {
           Navigator.of(context).push(MaterialPageRoute(
               builder: (ctx) => DetailPlanNewScreen(
                     isEnableToJoin: true,
+                    isFromHost: jwt.payload['isFromHost'],
                     planId: jwt.payload["planId"],
                   )));
         } else {

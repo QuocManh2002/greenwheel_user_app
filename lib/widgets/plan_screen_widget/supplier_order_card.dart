@@ -7,7 +7,7 @@ import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierOrderCard extends StatelessWidget {
-  const SupplierOrderCard({super.key,this.isFromTempOrder, this.memberLimit, this.endDate, required this.callback, required this.order, required this.startDate, required this.isTempOrder, this.planId});
+  const SupplierOrderCard({super.key,this.isFromTempOrder,this.availableGcoinAmount, this.memberLimit, this.endDate, required this.callback, required this.order, required this.startDate, required this.isTempOrder, this.planId});
   final OrderViewModel order;
   final DateTime startDate;
   final bool isTempOrder;
@@ -15,6 +15,7 @@ class SupplierOrderCard extends StatelessWidget {
   final int? memberLimit;
   final DateTime? endDate;
   final bool? isFromTempOrder;
+  final double? availableGcoinAmount;
   final void Function(String? tempOrderGuid) callback;
 
   @override
@@ -29,6 +30,7 @@ class SupplierOrderCard extends StatelessWidget {
         Navigator.of(context).push(MaterialPageRoute(
             builder: (ctx) => OrderDetailScreen(
                   memberLimit: memberLimit,
+                  availableGcoinAmount: availableGcoinAmount,
                   endDate: endDate,
                   order: order,
                   startDate: startDate,

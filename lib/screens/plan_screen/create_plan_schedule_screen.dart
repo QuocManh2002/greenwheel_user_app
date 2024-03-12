@@ -71,13 +71,13 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
 
   setUpData() async {
     _numberOfDay = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
-    final DateTime _endDate = startDate.add(Duration(days: _numberOfDay));
     String? _scheduleText = sharedPreferences.getString('plan_schedule');
     DateTime _startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    final DateTime _endDate = _startDate.add(Duration(days: _numberOfDay));
     if (widget.isCreate) {
       if (!widget.isClone) {
         if (_scheduleText == null) {
-          testList = _planService.generateEmptySchedule(startDate, _endDate);
+          testList = _planService.generateEmptySchedule(_startDate, _endDate);
           var finalList = _planService.convertPlanScheduleToJson(testList);
           sharedPreferences.setString('plan_schedule', json.encode(finalList));
         }else{
@@ -85,7 +85,7 @@ testList = _planService.ConvertPLanJsonToObject(_startDate, _scheduleText);
         }
       } else {
         var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
-            startDate, _endDate.difference(startDate).inDays + 1);
+            _startDate, _endDate.difference(_startDate).inDays + 1);
         testList = _planService.GetPlanScheduleClone(list);
         var finalList = _planService.convertPlanScheduleToJson(testList);
         sharedPreferences.setString('plan_schedule', json.encode(finalList));

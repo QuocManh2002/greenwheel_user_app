@@ -206,8 +206,8 @@ class _OTPScreenState extends State<OTPScreen> {
           // Utils().SaveDefaultAddressToSharedPref(customer[0].defaultAddress!, customer[0].defaultCoordinate!);
           sharedPreferences.setString("userPhone", payload['phone_number']);
           // ignore: use_build_context_synchronously
-          Navigator.push(context,
-              MaterialPageRoute(builder: (_) => const TabScreen(pageIndex: 0)));
+          Navigator.pushAndRemoveUntil(context,
+              MaterialPageRoute( builder: (_) => const TabScreen(pageIndex: 0)), (route) => false,);
         } 
       }else{
           String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';

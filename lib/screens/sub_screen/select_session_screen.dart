@@ -16,6 +16,8 @@ class SelectSessionScreen extends StatefulWidget {
     required this.startDate,
     required this.endDate,
     this.isOrder,
+    this.availableGcoinAmount,
+    this.isFromTempOrder,
     required this.callbackFunction
   });
   final DateTime startDate;
@@ -25,6 +27,8 @@ class SelectSessionScreen extends StatefulWidget {
   final LocationViewModel location;
   final int numberOfMember;
   final bool? isOrder;
+  final bool? isFromTempOrder;
+  final double? availableGcoinAmount;
   final void Function(String? orderguid) callbackFunction;
 
   @override

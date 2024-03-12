@@ -33,6 +33,7 @@ class ServiceMenuScreen extends StatefulWidget {
       this.isFromTempOrder,
       this.initCart,
       this.orderGuid,
+      this.availableGcoinAmount,
       required this.callbackFunction});
   final Session? session;
   final DateTime startDate;
@@ -48,6 +49,7 @@ class ServiceMenuScreen extends StatefulWidget {
   final bool? isOrder;
   final String? period;
   final bool? isFromTempOrder;
+  final double? availableGcoinAmount;
   final void Function(String? orderGuid) callbackFunction;
   final String? orderGuid;
 
@@ -70,7 +72,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   List<List<ProductViewModel>> _listResult = [];
   List<ItemCart> _initCart = [];
 
-  var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
+  var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
 
   @override
   void initState() {
@@ -434,7 +436,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                             isOrder: widget.isOrder,
                             session: widget.session!,
                             callbackFunction: widget.callbackFunction,
-                            isChangeCart: !compareTwoCart(),
+                            availableGcoinAmount: widget.availableGcoinAmount,
+                            isChangeCart: !compareTwoCart()!,
                           ),
                         ),
                       );
@@ -465,7 +468,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                               width:
                                   10), // Add a space between the dot and the price
                           Text(
-                            currencyFormat.format(total / 1000),
+                            currencyFormat.format(total),
                             style: const TextStyle(
                               color: Colors.white, // Text color
                               fontSize: 18,
@@ -522,17 +525,22 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     });
   }
 
-  compareTwoCart() {
+  bool? compareTwoCart() {
     List<int> currentIds = [];
-    List<String> ids = sharedPreferences.getStringList('initCartIds')!;
-    for (final curItem in items) {
-      if(!currentIds.contains(curItem.product.id)){
-      currentIds.add(curItem.product.id);
+    List<String>? ids = sharedPreferences.getStringList('initCartIds');
+    if (ids != null) {
+      for (final curItem in items) {
+        if (!currentIds.contains(curItem.product.id)) {
+          currentIds.add(curItem.product.id);
+        }
       }
+      currentIds.sort();
+      bool isEqual = ids.length == currentIds.length &&
+          ids.every(
+              (String element) => currentIds.contains(int.parse(element)));
+      return isEqual;
+    } else {
+      return true;
     }
-    currentIds.sort();
-    bool isEqual = ids.length == currentIds.length &&
-        ids.every((String element) => currentIds.contains(int.parse(element)));
-    return isEqual;
   }
 }

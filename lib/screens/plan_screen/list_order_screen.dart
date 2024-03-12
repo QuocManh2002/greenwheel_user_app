@@ -17,6 +17,7 @@ class ListOrderScreen extends StatelessWidget {
       required this.endDate,
       required this.location,
       required this.memberLimit,
+      this.availableGcoinAmount,
       required this.callback});
   final List<OrderViewModel> orders;
   final DateTime startDate;
@@ -24,6 +25,7 @@ class ListOrderScreen extends StatelessWidget {
   final void Function(String? tempOrderGuid) callback;
   final LocationViewModel location;
   final int memberLimit;
+  final double? availableGcoinAmount;
   final DateTime endDate;
 
   @override
@@ -57,6 +59,7 @@ class ListOrderScreen extends StatelessWidget {
                             isTempOrder: true,
                             memberLimit: memberLimit,
                             endDate: endDate,
+                            availableGcoinAmount: availableGcoinAmount,
                             planId: planId,
                           )),
                 )
@@ -101,8 +104,10 @@ class ListOrderScreen extends StatelessWidget {
                                                 serviceType: services[4],
                                                 location: location,
                                                 isOrder: true,
+                                                availableGcoinAmount: availableGcoinAmount,
                                                 numberOfMember: memberLimit,
                                                 startDate: startDate,
+                                                isFromTempOrder: false,
                                                 endDate: endDate,
                                                 callbackFunction:callback)));
                                   },
@@ -165,7 +170,20 @@ class ListOrderScreen extends StatelessWidget {
                                 ),
                                 Expanded(
                                     child: InkWell(
-                                  onTap: () {},
+                                  onTap: () {
+                                    Navigator.of(context)
+                                        .push(MaterialPageRoute(
+                                            builder: (ctx) => ServiceMainScreen(
+                                                serviceType: services[0],
+                                                isFromTempOrder: false,
+                                                availableGcoinAmount: availableGcoinAmount,
+                                                location: location,
+                                                isOrder: true,
+                                                numberOfMember: memberLimit,
+                                                startDate: startDate,
+                                                endDate: endDate,
+                                                callbackFunction:callback)));
+                                  },
                                   child: Container(
                                     height: 12.h,
                                     decoration: const BoxDecoration(

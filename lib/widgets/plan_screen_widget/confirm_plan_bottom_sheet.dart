@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_quill/flutter_quill.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_service_infor.dart';
@@ -42,6 +43,8 @@ class ConfirmPlanBottomSheet extends StatefulWidget {
 
 class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   bool _isShowSchedule = false;
+  bool _isShowNote = false;
+  final _controller = QuillController.basic();
 
   List<String> _scheduleText = [];
   List<dynamic> emergencyList = [];
@@ -98,11 +101,18 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         }
       }
     }
-    if(widget.plan!.schedule != null){
-    buildListScheduleText();
+    if (widget.plan!.schedule != null) {
+      buildListScheduleText();
     }
     if (widget.isJoin) {
       buildNewServiceInfo();
+    }
+    if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty) {
+      _controller.document = Document.fromJson(jsonDecode(widget.plan!.note!));
+      // print(_controller.document.toPlainText());
+      // setState(() {
+      //   widget.plan!.note = _controller.document.toPlainText();
+      // });
     }
   }
 
@@ -283,8 +293,73 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                   height: 1.h,
                 ),
               if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty)
-                BottomSheetContainerWidget(
-                    content: widget.plan!.note!, title: 'Ghi chú'),
+                // BottomSheetContainerWidget(content: widget.plan!.note!, title: 'Ghi chú'),
+                Container(
+                  width: 100.w,
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                  decoration: BoxDecoration(
+                      boxShadow: const [
+                        BoxShadow(
+                          blurRadius: 3,
+                          color: Colors.black12,
+                          offset: Offset(1, 3),
+                        )
+                      ],
+                      color: Colors.white.withOpacity(0.97),
+                      borderRadius: const BorderRadius.all(Radius.circular(8))),
+                  child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              _isShowNote = !_isShowNote;
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              const Text(
+                                'Ghi chú',
+                                style: TextStyle(fontSize: 16),
+                              ),
+                              const Spacer(),
+                              Icon(
+                                _isShowNote
+                                    ? Icons.arrow_drop_up
+                                    : Icons.arrow_drop_down,
+                                color: primaryColor,
+                                size: 30,
+                              ),
+                            ],
+                          ),
+                        ),
+                        if (_isShowNote)
+                          QuillEditor.basic(
+                            configurations: QuillEditorConfigurations(
+                              controller: _controller,
+                              readOnly: true,
+                              customStyles: const DefaultStyles(
+                                  sizeSmall: TextStyle(fontSize: 25),
+                                  italic: TextStyle(fontSize: 20),
+                                  small: TextStyle(fontSize: 20)),
+                              sharedConfigurations:
+                                  const QuillSharedConfigurations(
+                                locale: Locale('vi'),
+                              ),
+                            ),
+                          ),
+                        // Text(
+                        //   widget.plan!.note!,
+                        //   style: const TextStyle(
+                        //       fontSize: 18, fontWeight: FontWeight.bold),
+                        //   overflow: TextOverflow.clip,
+                        // ),
+                      ]),
+                ),
+
+              // BottomSheetContainerWidget(
+              //     content: widget.plan!.note!, title: 'Ghi chú'),
               if (widget.plan!.savedContacts != null)
                 SizedBox(
                   height: 1.h,
@@ -367,11 +442,13 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           ),
                       ],
                     )),
-              if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty)
+              if (widget.listSurcharges != null &&
+                  widget.listSurcharges!.isNotEmpty)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty)
+              if (widget.listSurcharges != null &&
+                  widget.listSurcharges!.isNotEmpty)
                 Container(
                   width: 100.w,
                   padding:
@@ -633,53 +710,54 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
               SizedBox(
                 height: 1.h,
               ),
-              if(!widget.isInfo)
-              Row(
-                children: [
-                  Expanded(
-                    child: ElevatedButton.icon(
-                        icon: const Icon(
-                          Icons.close,
-                          color: Colors.white,
-                        ),
-                        style: elevatedButtonStyle.copyWith(
-                            backgroundColor:
-                                const MaterialStatePropertyAll(Colors.blue)),
-                        onPressed: () {
-                          widget.isJoin
-                              ? widget.onCancel!()
-                              : Navigator.of(context).pop();
-                        },
-                        label: Text(widget.isJoin ? "Huỷ" : 'Chỉnh sửa')),
-                  ),
-                  SizedBox(
-                    width: 1.h,
-                  ),
-                  Expanded(
-                    child: ElevatedButton.icon(
-                        icon: const Icon(
-                          Icons.check_circle_outline,
-                          color: Colors.white,
-                        ),
-                        style: elevatedButtonStyle.copyWith(
-                          foregroundColor: const MaterialStatePropertyAll(Colors.white),
-                            backgroundColor:
-                                MaterialStatePropertyAll(widget.isJoin
-                                    ? _isAceptedPolicy
-                                        ? primaryColor
-                                        : Colors.grey
-                                    : primaryColor)),
-                        onPressed: widget.isJoin
-                            ? () {
-                                if (_isAceptedPolicy) {
-                                  widget.onJoinPlan!();
+              if (!widget.isInfo)
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton.icon(
+                          icon: const Icon(
+                            Icons.close,
+                            color: Colors.white,
+                          ),
+                          style: elevatedButtonStyle.copyWith(
+                              backgroundColor:
+                                  const MaterialStatePropertyAll(Colors.blue)),
+                          onPressed: () {
+                            widget.isJoin
+                                ? widget.onCancel!()
+                                : Navigator.of(context).pop();
+                          },
+                          label: Text(widget.isJoin ? "Huỷ" : 'Chỉnh sửa')),
+                    ),
+                    SizedBox(
+                      width: 1.h,
+                    ),
+                    Expanded(
+                      child: ElevatedButton.icon(
+                          icon: const Icon(
+                            Icons.check_circle_outline,
+                            color: Colors.white,
+                          ),
+                          style: elevatedButtonStyle.copyWith(
+                              foregroundColor:
+                                  const MaterialStatePropertyAll(Colors.white),
+                              backgroundColor:
+                                  MaterialStatePropertyAll(widget.isJoin
+                                      ? _isAceptedPolicy
+                                          ? primaryColor
+                                          : Colors.grey
+                                      : primaryColor)),
+                          onPressed: widget.isJoin
+                              ? () {
+                                  if (_isAceptedPolicy) {
+                                    widget.onJoinPlan!();
+                                  }
                                 }
-                              }
-                            : widget.onCompletePlan,
-                        label: Text(widget.isJoin ? 'Đi thôi' : 'Xác nhận')),
-                  )
-                ],
-              )
+                              : widget.onCompletePlan,
+                          label: Text(widget.isJoin ? 'Đi thôi' : 'Xác nhận')),
+                    )
+                  ],
+                )
             ]),
       ),
     );

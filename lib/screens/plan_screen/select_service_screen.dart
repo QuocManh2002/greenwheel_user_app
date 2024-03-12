@@ -10,6 +10,7 @@ import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_note_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
@@ -29,6 +30,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.da
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
+import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -127,7 +129,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                 thumbnailUrl: item['supplierImageUrl'],
                 address: item['supplierAddress']));
 
-        if (item['type'] == 'FOOD') {
+        if (item['type'] == 'MEAL') {
           listRestaurant.add(SupplierOrderCard(
             order: temp,
             startDate: startDate!,
@@ -205,24 +207,65 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             },
           ),
           actions: [
-            IconButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                      context: context,
-                      builder: (ctx) => ConfirmServiceInfor(
-                            listSurcharges: _listSurchargeObjects,
-                            total: total / 100.toDouble(),
-                            budgetPerCapita:
-                                ((total / memberLimit) / 100).ceil().toDouble(),
-                            listFood: listRestaurantOrder!,
-                            listRest: listMotelOrder!,
-                          ));
-                },
-                icon: const Icon(
-                  Icons.attach_money_outlined,
-                  color: Colors.white,
-                  size: 35,
-                ))
+            InkWell(
+            onTap: () {
+              DateTime? _travelDuration =
+                  sharedPreferences.getDouble('plan_duration_value') != null
+                      ? DateTime(0, 0, 0).add(Duration(
+                          seconds: (sharedPreferences
+                                      .getDouble('plan_duration_value')! * 3600)
+                              .toInt()))
+                      : null;
+              showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (ctx) => SizedBox(
+                    height: 80.h,
+                    child: ConfirmPlanBottomSheet(
+                          isJoin: false,
+                          locationName: widget.location.name,
+                          isInfo: true,
+                          orderList: orderList,
+                          total: total.toDouble()/100,
+                          budgetPerCapita: (total/100)  /sharedPreferences
+                                  .getInt('plan_number_of_member')!,
+                          plan: PlanCreate(
+                              endDate:
+                                  sharedPreferences.getString('plan_end_date') == null
+                                      ? null
+                                      : DateTime.parse(sharedPreferences
+                                          .getString('plan_end_date')!),
+                              memberLimit: sharedPreferences
+                                  .getInt('plan_number_of_member'),
+                              departureDate: sharedPreferences
+                                          .getString('plan_departureDate') ==
+                                      null
+                                  ? null
+                                  : DateTime.parse(sharedPreferences
+                                      .getString('plan_departureDate')!),
+                              name: sharedPreferences.getString('plan_name'),
+                              schedule:
+                                  sharedPreferences.getString('plan_schedule'),
+                              note: sharedPreferences.getString('plan_note'),
+                              savedContacts: sharedPreferences
+                                  .getString('plan_saved_emergency'),
+                              travelDuration: _travelDuration ==
+                                      null
+                                  ? null
+                                  : DateFormat.Hm().format(_travelDuration)),
+                        ),
+                  ));
+            },
+            overlayColor: const MaterialStatePropertyAll(Colors.transparent),
+            child: Container(
+              margin: const EdgeInsets.only(right: 8.0),
+              child: Image.asset(
+                backpack,
+                fit: BoxFit.fill,
+                height: 32,
+              ),
+            ),
+          ),
           ],
         ),
         body: Padding(
@@ -456,72 +499,8 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                   const EdgeInsets.symmetric(horizontal: 12),
                               btnOkColor: Colors.blue,
                               btnOkOnPress: () {
-                                showDialog(
-                                    context: context,
-                                    builder: (context) => AlertDialog(
-                                          content: SizedBox(
-                                            width: 100.w,
-                                            child: Column(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  const Text(
-                                                    'Ghi chú cho chuyến đi',
-                                                    style: TextStyle(
-                                                        fontSize: 17,
-                                                        fontWeight:
-                                                            FontWeight.bold),
-                                                  ),
-                                                  SizedBox(
-                                                    height: 2.h,
-                                                  ),
-                                                  TextFormFieldWithLength(
-                                                      controller:
-                                                          _noteController,
-                                                      inputType:
-                                                          TextInputType.text,
-                                                      hinttext:
-                                                          'Đi đường cẩn thận, chuẩn bị sẵn đồ dùng,...',
-                                                      maxLength: 110,
-                                                      maxline: 4,
-                                                      minline: 4,
-                                                      isAutoFocus: true,
-                                                      onChange: (value) {},
-                                                      text: 'Ghi chú'),
-                                                ]),
-                                          ),
-                                          actions: [
-                                            TextButton(
-                                                style: const ButtonStyle(
-                                                    foregroundColor:
-                                                        MaterialStatePropertyAll(
-                                                            primaryColor)),
-                                                onPressed: () {
-                                                  Navigator.of(context).pop();
-                                                },
-                                                child: const Text(
-                                                  'HUỶ',
-                                                  style:
-                                                      TextStyle(fontSize: 18),
-                                                )),
-                                            TextButton(
-                                                style: const ButtonStyle(
-                                                    foregroundColor:
-                                                        MaterialStatePropertyAll(
-                                                            primaryColor)),
-                                                onPressed: () {
-                                                  sharedPreferences.setString(
-                                                      'plan_note',
-                                                      _noteController.text);
-                                                  Navigator.of(context).pop();
-                                                  completeService(context);
-                                                },
-                                                child: const Text(
-                                                  'OK',
-                                                  style:
-                                                      TextStyle(fontSize: 18),
-                                                ))
-                                          ],
-                                        ));
+                                Navigator.of(context).push(MaterialPageRoute(
+                                    builder: (ctx) => CreateNoteScreen(onCompletePlan: completeService,)));
                               },
                               btnOkText: 'Có',
                               btnCancelText: 'Không',
@@ -636,7 +615,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
         travelDuration: DateFormat.Hm().format(_travelDuration),
         tempOrders: _orderService.convertTempOrders(orderList!).toString(),
-        note: _noteController.text,
+        note: sharedPreferences.getString('plan_note'),
         gcoinBudget: ((total / memberLimit) / 100).ceil());
     showModalBottomSheet(
         backgroundColor: Colors.white.withOpacity(0.94),
@@ -723,7 +702,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       final rs = await _planService.createNewPlan(
           plan!, context, _listSurchargeObjects.toString());
       if (rs != 0) {
-        AwesomeDialog(
+        await AwesomeDialog(
           context: context,
           animType: AnimType.leftSlide,
           dialogType: DialogType.success,

@@ -37,6 +37,7 @@ class CartScreen extends StatefulWidget {
       this.initCart,
       this.isChangeCart,
       this.orderGuid,
+      this.availableGcoinAmount,
       required this.callbackFunction});
   final SupplierViewModel supplier;
   final List<ItemCart> list;
@@ -53,6 +54,7 @@ class CartScreen extends StatefulWidget {
   final void Function(String? orderGuid) callbackFunction;
   final bool? isChangeCart;
   final String? orderGuid;
+  final double? availableGcoinAmount;
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -735,73 +737,105 @@ class _CartScreenState extends State<CartScreen> {
           widget.callbackFunction(null);
           Navigator.of(context).pop();
           Navigator.of(context).pop();
+          Navigator.of(context).pop();
         },
       ).show();
     } else {
-      if (widget.isFromTempOrder != null && widget.isFromTempOrder!) {
-        bool? isDeleteGuid;
-        if (widget.isChangeCart!) {
-          await AwesomeDialog(
-                  context: context,
-                  animType: AnimType.bottomSlide,
-                  dialogType: DialogType.info,
-                  title: 'Đơn hàng mẫu bị thay đổi',
-                  titleTextStyle: const TextStyle(
-                      fontSize: 20, fontWeight: FontWeight.bold),
-                  desc: 'Bạn có muốn xoá đơn hàng mẫu này không?',
-                  descTextStyle:
-                      const TextStyle(fontSize: 16, color: Colors.grey),
+      if ((total/100 * servingDateIndexs.length) > widget.availableGcoinAmount!) {
+        AwesomeDialog(
+                context: context,
+                animType: AnimType.rightSlide,
+                dialogType: DialogType.warning,
+                body: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
-                  btnOkColor: Colors.blue,
-                  btnOkOnPress: () {
-                    isDeleteGuid = true;
-                  },
-                  btnOkText: 'Có',
-                  btnCancelColor: Colors.orange,
-                  btnCancelOnPress: () {
-                    isDeleteGuid = false;
-                  },
-                  btnCancelText: 'Không')
-              .show();
-        } else {
-          isDeleteGuid = true;
-        }
-        if (isDeleteGuid != null) {
-          final rs = await orderService.createOrder(
-              OrderViewModel(
-                  guid: isDeleteGuid! ? widget.orderGuid : null,
-                  createdAt: DateTime.now(),
-                  details: details,
-                  note: noteController.text,
-                  type: widget.serviceType.name,
-                  period: order.period,
-                  serveDateIndexes: servingDateIndexs,
-                  supplier: widget.supplier),
-              sharedPreferences.getInt('planId')!);
-          if (rs != 0) {
-            // ignore: use_build_context_synchronously
-            AwesomeDialog(
-              context: context,
-              dialogType: DialogType.success,
-              animType: AnimType.topSlide,
-              showCloseIcon: true,
-              title: widget.isOrder != null && widget.isOrder!
-                  ? "Thanh toán thành công"
-                  : "Thêm đơn hàng mẫu thành công",
-              desc: "Ấn tiếp tục để trở về",
-              btnOkText: "Tiếp tục",
-              btnOkOnPress: () {
-                widget
-                    .callbackFunction(isDeleteGuid! ? widget.orderGuid : null);
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-            ).show();
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Đơn hàng vượt quá ngân sách',
+                        style: TextStyle(
+                            fontSize: 20, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 12,),
+                      Text(
+                          'Ngân sách hiện tại: ${widget.availableGcoinAmount!.toInt()} GCOIN', style:const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      const SizedBox(height: 12,),
+                      const Text(
+                        'Hãy thay đổi đơn hàng của bạn',
+                        style: TextStyle(fontSize: 18, color: Colors.grey),
+                      )
+                    ],
+                  ),
+                ),
+                btnOkColor: Colors.amber,
+                btnOkOnPress: () {},
+                btnOkText: 'Ok')
+            .show();
+      } else {
+        if (widget.isFromTempOrder != null && widget.isFromTempOrder!) {
+          bool? isDeleteGuid;
+          if (widget.isChangeCart!) {
+            await AwesomeDialog(
+                    context: context,
+                    animType: AnimType.bottomSlide,
+                    dialogType: DialogType.info,
+                    title: 'Đơn hàng mẫu bị thay đổi',
+                    titleTextStyle: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold),
+                    desc: 'Bạn có muốn xoá đơn hàng mẫu này không?',
+                    descTextStyle:
+                        const TextStyle(fontSize: 16, color: Colors.grey),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    btnOkColor: Colors.blue,
+                    btnOkOnPress: () {
+                      isDeleteGuid = true;
+                    },
+                    btnOkText: 'Có',
+                    btnCancelColor: Colors.orange,
+                    btnCancelOnPress: () {
+                      isDeleteGuid = false;
+                    },
+                    btnCancelText: 'Không')
+                .show();
+          } else {
+            isDeleteGuid = true;
           }
-        }
-      } else {}
+          if (isDeleteGuid != null) {
+            final rs = await orderService.createOrder(
+                OrderViewModel(
+                    guid: isDeleteGuid! ? widget.orderGuid : null,
+                    createdAt: DateTime.now(),
+                    details: details,
+                    note: noteController.text,
+                    type: widget.serviceType.name,
+                    period: order.period,
+                    serveDateIndexes: servingDateIndexs,
+                    supplier: widget.supplier),
+                sharedPreferences.getInt('planId')!);
+            if (rs != 0) {
+              // ignore: use_build_context_synchronously
+              AwesomeDialog(
+                context: context,
+                dialogType: DialogType.success,
+                animType: AnimType.topSlide,
+                showCloseIcon: true,
+                title: widget.isOrder != null && widget.isOrder!
+                    ? "Thanh toán thành công"
+                    : "Thêm đơn hàng mẫu thành công",
+                desc: "Ấn tiếp tục để trở về",
+                btnOkText: "Tiếp tục",
+                btnOkOnPress: () {
+                  widget.callbackFunction(
+                      isDeleteGuid! ? widget.orderGuid : null);
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                  Navigator.of(context).pop();
+                },
+              ).show();
+            }
+          }
+        } else {}
+      }
     }
   }
 

@@ -143,7 +143,7 @@ class _MenuItemCardState extends State<MenuItemCard> {
                                     if (val == 0) {
                                       isQuantity = !isQuantity;
                                     }
-                                    widget.updateCart(widget.product, val);
+                                    widget.updateCart(widget.product, val.toInt());
                                   });
                                 },
                               ),

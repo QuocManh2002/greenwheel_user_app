@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/list_order_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
@@ -24,7 +23,6 @@ class DetailPlanServiceWidget extends StatefulWidget {
 class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget> with TickerProviderStateMixin {
   late TabController tabController;
   LocationService _locationService = LocationService();
-  PlanService _planService = PlanService();
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
   double total = 0;
@@ -37,7 +35,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget> with 
   void initState() {
     // TODO: implement initState
     super.initState();
-    tabController = TabController(length: 2, vsync: this, initialIndex: 0);
+    tabController = TabController(length: 3, vsync: this, initialIndex: 0);
   }
 
   getOrderList(String? tempOrderGuid) async {
@@ -180,6 +178,10 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget> with 
                   Tab(
                     text: "(${_listRestaurant.length})",
                     icon: const Icon(Icons.restaurant),
+                  ),
+                  Tab(
+                    text: '(${widget.plan.surcharges!.length})',
+                    icon: const Icon(Icons.account_balance_wallet),
                   )
                 ]),
             Container(
