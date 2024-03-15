@@ -47,44 +47,6 @@ class PlanScheduleActivityView extends StatelessWidget {
                 ),
               ),
             ));
-          // AwesomeDialog(context: context,
-          //   animType: AnimType.leftSlide,
-          //   dialogType: DialogType.info,
-          //   body: Padding(padding: const EdgeInsets.symmetric(horizontal: 16),
-          //   child: Column(children: [
-          //     const Text('Chi tiết hoạt động', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),),
-          //     SizedBox(height: 1.h,),
-          //     Row(
-          //       mainAxisAlignment: MainAxisAlignment.start,
-          //       children: [
-          //         const Column(
-          //           crossAxisAlignment: CrossAxisAlignment.start,
-          //           children: [
-          //             Text('Mô tả:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-          //             Text('Mô tả chi tiết:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold))
-          //           ],
-          //         ),
-          //         SizedBox(width: 1.h,),
-          //         SizedBox(
-          //           width: 40.w,
-          //           child: Column(
-          //             crossAxisAlignment: CrossAxisAlignment.start,
-          //             children: [
-          //               Text(item.shortDescription!, style:const TextStyle(fontSize: 16,), overflow: TextOverflow.clip,),
-          //               Text(item.description!, style:const TextStyle(fontSize: 16, ), overflow: TextOverflow.clip,)
-          //             ],
-          //           ),
-          //         )
-          //       ],
-          //     )
-          //   ]),
-          //   ),
-          //   btnOkText: 'Ok',
-          //   btnOkColor: Colors.blue,
-          //   btnOkOnPress: () {
-              
-          //   },
-          // ).show();
         },
         child: Container(
           width: 100.w,
@@ -98,7 +60,7 @@ class PlanScheduleActivityView extends StatelessWidget {
                   offset: Offset(2, 4),
                 )
               ],
-              border: item.type == 'Ăn uống'
+              border: item.type == 'Ăn uống'|| item.type == 'Check-in' 
                   ? Border.all(color: primaryColor, width: 2)
                   : const Border(),
               borderRadius: const BorderRadius.all(Radius.circular(12))),
@@ -115,15 +77,9 @@ class PlanScheduleActivityView extends StatelessWidget {
                   overflow: TextOverflow.clip,
                 ),
                 Container(
-                  color:item.type == 'Ăn uống' ? primaryColor : Colors.black26,
+                  color:item.type == 'Ăn uống' || item.type == 'Check-in' ? primaryColor : Colors.black26,
                   height: 1.5,
                 ),
-                // Text(
-                //   item.description ?? 'Không có mô tả',
-                //   style:
-                //       const TextStyle(fontSize: 18, color: Colors.black54),
-                //   overflow: TextOverflow.clip,
-                // ),
                 SizedBox(height: 1.h,),
                 Row(
                   children: [

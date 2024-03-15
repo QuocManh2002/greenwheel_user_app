@@ -12,7 +12,6 @@ import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service
 import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
@@ -45,11 +44,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
   }
 
   int _currentStep = 0;
-  PlanService _planService = PlanService();
   String _stepperText = '';
   int _stepperNumber = 1;
-  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _budgetController = TextEditingController();
 
   handleQuitScreen() {
     AwesomeDialog(
@@ -163,7 +159,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                   sharedPreferences.getDouble('plan_duration_value') != null
                       ? DateTime(0, 0, 0).add(Duration(
                           seconds: (sharedPreferences
-                                      .getDouble('plan_duration_value')! * 3600)
+                                      .getDouble('plan_duration_value')! *
+                                  3600)
                               .toInt()))
                       : null;
               showModalBottomSheet(
@@ -172,9 +169,12 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                         isJoin: false,
                         locationName: widget.location.name,
                         isInfo: true,
+                        orderList: json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]'),
+                        listSurcharges: json.decode(sharedPreferences.getString('plan_surcharge') ?? '[]'),
                         plan: PlanCreate(
                             endDate:
-                                sharedPreferences.getString('plan_end_date') == null
+                                sharedPreferences.getString('plan_end_date') ==
+                                        null
                                     ? null
                                     : DateTime.parse(sharedPreferences
                                         .getString('plan_end_date')!),
@@ -192,8 +192,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                             note: sharedPreferences.getString('plan_note'),
                             savedContacts: sharedPreferences
                                 .getString('plan_saved_emergency'),
-                            travelDuration: _travelDuration ==
-                                    null
+                            travelDuration: _travelDuration == null
                                 ? null
                                 : DateFormat.Hm().format(_travelDuration)),
                       ));
@@ -391,27 +390,78 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                         btnOkOnPress: () {})
                                     .show();
                               } else if (checkValidNumberOfFoodActivity()) {
-                                AwesomeDialog(
-                                    context: context,
-                                    dialogType: DialogType.warning,
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 12, vertical: 6),
-                                    title:
-                                        'Có ngày trong chuyến đi chưa đủ hoạt động ăn uống',
-                                    titleTextStyle: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                    desc: 'Bạn có muốn bổ sung thêm không?',
-                                    descTextStyle: const TextStyle(
-                                        fontSize: 16, color: Colors.grey),
-                                    btnOkColor: Colors.orange,
-                                    btnOkText: 'Có',
-                                    btnOkOnPress: () {},
-                                    btnCancelText: 'Không',
-                                    btnCancelColor: Colors.blue,
-                                    btnCancelOnPress: () {
-                                      showConfirmScheduleDialog();
-                                    }).show();
+                                bool _notAskScheduleAgain = sharedPreferences
+                                        .getBool('notAskScheduleAgain') ??
+                                    false;
+                                if (_notAskScheduleAgain) {
+                                  showConfirmScheduleDialog();
+                                } else {
+                                  AwesomeDialog(
+                                      context: context,
+                                      dialogType: DialogType.warning,
+                                      btnOkColor: Colors.amber,
+                                      btnOkText: 'Có',
+                                      btnOkOnPress: () {},
+                                      body: StatefulBuilder(
+                                        builder: (context, setState) => Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              horizontal: 10),
+                                          child: Column(
+                                            children: [
+                                              const Text(
+                                                'Có ngày trong chuyến đi chưa đủ hoạt động ăn uống',
+                                                textAlign: TextAlign.center,
+                                                style: TextStyle(
+                                                    fontFamily: 'NotoSans',
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              SizedBox(
+                                                height: 1.h,
+                                              ),
+                                              const Text(
+                                                'Bạn có muốn bổ sung không ?',
+                                                style: TextStyle(
+                                                    fontFamily: 'NotoSans',
+                                                    fontSize: 18,
+                                                    color: Colors.grey),
+                                                textAlign: TextAlign.center,
+                                              ),
+                                              Row(
+                                                children: [
+                                                  Checkbox(
+                                                    activeColor: primaryColor,
+                                                    value: _notAskScheduleAgain,
+                                                    onChanged: (value) {
+                                                      setState(() {
+                                                        _notAskScheduleAgain =
+                                                            !_notAskScheduleAgain;
+                                                      });
+                                                      sharedPreferences.setBool(
+                                                          'notAskScheduleAgain',
+                                                          _notAskScheduleAgain);
+                                                    },
+                                                  ),
+                                                  const Text(
+                                                    'Không hỏi lại',
+                                                    style: TextStyle(
+                                                        fontFamily: 'NotoSans',
+                                                        color: Colors.grey,
+                                                        fontSize: 16),
+                                                  )
+                                                ],
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      btnCancelText: 'Không',
+                                      btnCancelColor: Colors.blue,
+                                      btnCancelOnPress: () {
+                                        showConfirmScheduleDialog();
+                                      }).show();
+                                }
                               } else {
                                 showConfirmScheduleDialog();
                               }
@@ -541,7 +591,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
     AwesomeDialog(
         context: context,
         dialogType: DialogType.info,
-        title: 'Xác nhận lịch trình chuyến đi',
         btnOkText: 'Xác nhận',
         btnOkColor: Colors.blue,
         btnOkOnPress: () {

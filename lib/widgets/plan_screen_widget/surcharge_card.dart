@@ -1,10 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SurchargeCard extends StatelessWidget {
   const SurchargeCard({super.key, required this.amount, required this.note});
-  final String amount;
+  final int amount;
   final String note;
 
   @override
@@ -16,14 +17,14 @@ class SurchargeCard extends StatelessWidget {
               color: Colors.grey.withOpacity(0.1),
               borderRadius: const BorderRadius.all(Radius.circular(14))),
           child: Padding(
-            padding: const EdgeInsets.all(8.0),
+            padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
             child: Row(
               children: [
                 const SizedBox(
                   width: 8,
                 ),
                 SizedBox(
-                  width: 58.w,
+                  width: 53.w,
                   child: Text(
                     note,
                     overflow: TextOverflow.clip,
@@ -39,9 +40,13 @@ class SurchargeCard extends StatelessWidget {
                 const SizedBox(
                   width: 8,
                 ),
-                Text(
-                  '$amount GCOIN',
-                  style: const TextStyle(fontSize: 16),
+                SizedBox(
+                  width: 28.w,
+                  child: Text(
+                    NumberFormat.simpleCurrency(locale: 'vi_VN', name: 'GCOIN',decimalDigits: 0).format(amount),
+                    style: const TextStyle(fontSize: 16),
+                    overflow: TextOverflow.clip,
+                  ),
                 )
               ],
             ),

@@ -226,10 +226,9 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                           locationName: widget.location.name,
                           isInfo: true,
                           orderList: orderList,
-                          total: total.toDouble()/100,
-                          budgetPerCapita: (total/100)  /sharedPreferences
-                                  .getInt('plan_number_of_member')!,
+                          listSurcharges: json.decode(sharedPreferences.getString('plan_surcharge') ?? "[]"),
                           plan: PlanCreate(
+                            startDate: DateTime.parse(sharedPreferences.getString('plan_start_date')!),
                               endDate:
                                   sharedPreferences.getString('plan_end_date') == null
                                       ? null
@@ -626,9 +625,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
               child: ConfirmPlanBottomSheet(
                 isInfo: false,
                 locationName: widget.location.name,
-                total: (total / 100).toDouble(),
-                budgetPerCapita:
-                    ((total / memberLimit) / 100).ceil().toDouble(),
                 orderList: orderList!,
                 onCompletePlan: onCompletePlan,
                 plan: plan,
@@ -648,8 +644,8 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       for (final sur in surcharges) {
         listSurcharges.add(SurchargeCard(
             amount: sur['gcoinAmount'], note: json.decode(sur['note'])));
-        totalSurcharge += int.parse(sur['gcoinAmount']) * 100;
-        total += int.parse(sur['gcoinAmount'].toString()) * 100;
+        totalSurcharge += sur['gcoinAmount'] * 100;
+        total += sur['gcoinAmount'] * 100;
         _listSurchargeObjects.add(sur);
       }
     }

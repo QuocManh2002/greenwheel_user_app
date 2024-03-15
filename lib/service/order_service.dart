@@ -161,36 +161,19 @@ mutation{
         'note': json.encode(order['note']),
         'period': order['period'],
         'serveDateIndexes': order['servingDates'],
-        'type': order['type'] 
+        'type': order['type']
       });
     }
     return orders;
   }
 
-  Future<int> createOrder(OrderViewModel order, int planId) async{
-    try{
-            List<Map<String, dynamic>> details = order.details!.map((detail) {
-        return {
-          'key': detail.id,
-          'value': detail.quantity
-        };
+  Future<int> createOrder(OrderViewModel order, int planId) async {
+    try {
+      List<Map<String, dynamic>> details = order.details!.map((detail) {
+        return {'key': detail.id, 'value': detail.quantity};
       }).toList();
 
-String mutationText = order.guid != null && order.guid!.isNotEmpty? """
-mutation{
-  createOrder(dto: {
-    cart:$details
-    note:"${order.note}"
-    period:${order.period}
-    planId:$planId
-    serveDateIndexes:${order.serveDateIndexes}
-    type:${order.type}
-    tempOrderGUID:"${order.guid}"
-  }){
-    id
-  }
-}
-""" : """
+      String mutationText = """
 mutation{
   createOrder(dto: {
     cart:$details
@@ -203,13 +186,10 @@ mutation{
     id
   }
 }
-""" ;
-      
-      final QueryResult result = await client.mutate(
-        MutationOptions(
-          fetchPolicy: FetchPolicy.noCache,
-          document: gql(mutationText))
-      );
+""";
+
+      final QueryResult result = await client.mutate(MutationOptions(
+          fetchPolicy: FetchPolicy.noCache, document: gql(mutationText)));
       if (result.hasException) {
         throw Exception(result.exception);
       } else {
@@ -217,7 +197,7 @@ mutation{
         int orderId = rstext['createOrder']['id'];
         return orderId;
       }
-    }catch (error) {
+    } catch (error) {
       throw Exception(error);
     }
   }

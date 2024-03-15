@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
+import 'package:intl/intl.dart';
 
 class CreatePlanSurcharge extends StatefulWidget {
   const CreatePlanSurcharge({super.key, required this.callback});
@@ -17,13 +18,13 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _amountController = TextEditingController();
   TextEditingController _noteController = TextEditingController();
-
+  int amount = 0;
   onCreateSurcharge() {
     if (_formKey.currentState!.validate()) {
       String? surchargeText = sharedPreferences.getString('plan_surcharge');
       final surchargeObject = {
         'note': json.encode(_noteController.text),
-        'gcoinAmount': _amountController.text
+        'gcoinAmount': amount
       };
       if (surchargeText == null) {
         sharedPreferences.setString(
@@ -62,9 +63,18 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
                 onValidate: (value) {
                   if (value == null || value.trim() == '') {
                     return "Khoản phụ thu không được để trống";
-                  } else if (int.parse(value) < 1000 ||
-                      int.parse(value) > 10000000) {
+                  } else if (amount < 1000 ||
+                      amount > 10000000) {
                     return "Phụ thu phải trong khoản từ 1000 đến 1000000";
+                  }
+                },
+                onChange: (value) {
+                  if (value != "") {
+                    amount = NumberFormat('###,###,##0', 'vi_VN')
+                        .parse(value!)
+                        .toInt();
+                    _amountController.text =
+                        NumberFormat('###,###,##0', 'vi_VN').format(amount);
                   }
                 },
                 inputType: TextInputType.number),

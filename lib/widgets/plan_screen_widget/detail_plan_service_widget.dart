@@ -17,10 +17,12 @@ class DetailPlanServiceWidget extends StatefulWidget {
   final PlanDetail plan;
 
   @override
-  State<DetailPlanServiceWidget> createState() => _DetailPlanServiceWidgetState();
+  State<DetailPlanServiceWidget> createState() =>
+      _DetailPlanServiceWidgetState();
 }
 
-class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget> with TickerProviderStateMixin {
+class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
+    with TickerProviderStateMixin {
   late TabController tabController;
   LocationService _locationService = LocationService();
   List<Widget> _listRestaurant = [];
@@ -30,12 +32,13 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget> with 
   List<OrderViewModel> tempOrders = [];
   List<OrderViewModel> orderList = [];
   double totalTempOrders = 0;
-  
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+    getOrderList(null);
   }
 
   getOrderList(String? tempOrderGuid) async {
@@ -69,8 +72,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget> with 
       );
       setState(() {
         tempOrders.remove(tempOrder);
-        widget.plan.currentGcoinBudget = widget.plan.currentGcoinBudget! -
-            tempOrder.total! / 100.toDouble();
+        widget.plan.currentGcoinBudget =
+            widget.plan.currentGcoinBudget! - tempOrder.total! / 100.toDouble();
         _listMotel = listMotel;
         _listRestaurant = listRestaurant;
       });
@@ -112,143 +115,153 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget> with 
             serveDateIndexes: e["serveDateIndexes"],
             total: orderTotal * e['serveDateIndexes'].length,
             createdAt: DateTime.now(),
-            supplier: SupplierViewModel(id: sampleProduct.supplierId!, name: sampleProduct.supplierName, phone: sampleProduct.supplierPhone, thumbnailUrl: sampleProduct.supplierThumbnailUrl, address: sampleProduct.supplierAddress),
+            supplier: SupplierViewModel(
+                id: sampleProduct.supplierId!,
+                name: sampleProduct.supplierName,
+                phone: sampleProduct.supplierPhone,
+                thumbnailUrl: sampleProduct.supplierThumbnailUrl,
+                address: sampleProduct.supplierAddress),
             type: e['type'],
             period: e['period']);
       }).toList();
-  
+
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 24),
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Container(
-                    alignment: Alignment.centerLeft,
-                    child: const Text(
-                      "Các đơn dịch vụ",
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                    )),
-                const Spacer(),
-                TextButton(
-                    onPressed: () async {
-                      if (widget.plan.status == 'READY') {
-                        final rs = await _locationService.GetLocationById(
-                            widget.plan.locationId);
-                        if (rs != null) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (ctx) => ListOrderScreen(
-                                    planId: widget.plan.id,
-                                    orders: tempOrders,
-                                    startDate: widget.plan.startDate!,
-                                    callback: getOrderList,
-                                    endDate: widget.plan.endDate!,
-                                    memberLimit: widget.plan.memberLimit,
-                                    location: rs,
-                                  )));
-                        }
+      padding: const EdgeInsets.symmetric(horizontal: 24),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                  alignment: Alignment.centerLeft,
+                  child: const Text(
+                    "Các đơn dịch vụ",
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  )),
+              const Spacer(),
+              TextButton(
+                  onPressed: () async {
+                    if (widget.plan.status == 'READY') {
+                      final rs = await _locationService.GetLocationById(
+                          widget.plan.locationId);
+                      if (rs != null) {
+                        Navigator.of(context).push(MaterialPageRoute(
+                            builder: (ctx) => ListOrderScreen(
+                                  planId: widget.plan.id,
+                                  orders: tempOrders,
+                                  startDate: widget.plan.startDate!,
+                                  callback: getOrderList,
+                                  endDate: widget.plan.endDate!,
+                                  memberLimit: widget.plan.memberLimit,
+                                  location: rs,
+                                )));
                       }
-                    },
-                    child: Text(
-                      'Đi đặt hàng',
-                      style: TextStyle(
-                        color: widget.plan.status == 'READY'
-                            ? primaryColor
-                            : Colors.grey,
-                      ),
-                    ))
+                    }
+                  },
+                  child: Text(
+                    'Đi đặt hàng',
+                    style: TextStyle(
+                      color: widget.plan.status == 'READY'
+                          ? primaryColor
+                          : Colors.grey,
+                    ),
+                  ))
+            ],
+          ),
+          const SizedBox(
+            height: 16,
+          ),
+          TabBar(
+              controller: tabController,
+              indicatorColor: primaryColor,
+              labelColor: primaryColor,
+              unselectedLabelColor: Colors.grey,
+              tabs: [
+                Tab(
+                  text: "(${_listMotel.length})",
+                  icon: const Icon(Icons.hotel),
+                ),
+                Tab(
+                  text: "(${_listRestaurant.length})",
+                  icon: const Icon(Icons.restaurant),
+                ),
+                Tab(
+                  text: '(${widget.plan.surcharges!.length})',
+                  icon: const Icon(Icons.account_balance_wallet),
+                )
+              ]),
+          Container(
+            margin: const EdgeInsets.only(top: 8),
+            height: _listRestaurant.isEmpty && _listMotel.isEmpty ? 0.h : 35.h,
+            child: TabBarView(controller: tabController, children: [
+              ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: _listMotel.length,
+                itemBuilder: (context, index) {
+                  return _listMotel[index];
+                },
+              ),
+              ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: _listRestaurant.length,
+                itemBuilder: (context, index) {
+                  return _listRestaurant[index];
+                },
+              ),
+              ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: _listRestaurant.length,
+                itemBuilder: (context, index) {
+                  return _listRestaurant[index];
+                },
+              ),
+            ]),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'Ngân sách chuyến đi: ',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+                Text(
+                  '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(widget.plan.currentGcoinBudget! * 100)} VND',
+                  style: const TextStyle(fontSize: 18),
+                ),
               ],
             ),
-            const SizedBox(
-              height: 16,
-            ),
-            TabBar(
-                controller: tabController,
-                indicatorColor: primaryColor,
-                labelColor: primaryColor,
-                unselectedLabelColor: Colors.grey,
-                tabs: [
-                  Tab(
-                    text: "(${_listMotel.length})",
-                    icon: const Icon(Icons.hotel),
-                  ),
-                  Tab(
-                    text: "(${_listRestaurant.length})",
-                    icon: const Icon(Icons.restaurant),
-                  ),
-                  Tab(
-                    text: '(${widget.plan.surcharges!.length})',
-                    icon: const Icon(Icons.account_balance_wallet),
-                  )
-                ]),
-            Container(
-              margin: const EdgeInsets.only(top: 8),
-              height:
-                  _listRestaurant.isEmpty && _listMotel.isEmpty ? 0.h : 35.h,
-              child: TabBarView(controller: tabController, children: [
-                ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: _listMotel.length,
-                  itemBuilder: (context, index) {
-                    return _listMotel[index];
-                  },
-                ),
-                ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: _listRestaurant.length,
-                  itemBuilder: (context, index) {
-                    return _listRestaurant[index];
-                  },
-                ),
-              ]),
-            ),
-            const SizedBox(
-              height: 8,
-            ),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          if (total != 0)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Ngân sách chuyến đi: ',
+                    'Tổng cộng: ',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(widget.plan.currentGcoinBudget! * 100)} VND',
+                    '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
                     style: const TextStyle(fontSize: 18),
                   ),
                 ],
               ),
             ),
-            const SizedBox(
-              height: 8,
-            ),
-            if (total != 0)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Tổng cộng: ',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} VND',
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                  ],
-                ),
-              ),
-          ],
-        ),
-      );
+        ],
+      ),
+    );
   }
 }

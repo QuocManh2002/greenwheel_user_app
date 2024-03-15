@@ -57,7 +57,7 @@ class PlanService {
     gcoinBudgetPerCapita:${model.gcoinBudget}
     memberLimit:${model.memberLimit}
     name:"${model.name}"
-    note: ""
+    note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedContacts:${json.decode(model.savedContacts!).toString()}
     schedule:$schedule
@@ -131,7 +131,7 @@ class PlanService {
       }
 
       List? res = result.data!['plans']['nodes'][0]['orders'];
-      if (res == null || res.isEmpty) {
+      if (res == null) {
         return null;
       }
       List<OrderViewModel>? orders = [];

@@ -4,11 +4,14 @@ import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/join_confirm_plan_screen.dart';
@@ -22,16 +25,19 @@ import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_join_service_infor.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_service_widget.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/member_list_widget.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_icon_button.dart';
+import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -79,6 +85,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   Widget? activeWidget;
   List<int> availableWeight = [];
   bool _isAlreadyJoin = false;
+  List<PlanJoinServiceInfor> listRoom = [];
+  List<PlanJoinServiceInfor> listFood = [];
+  dynamic indexService;
+  HtmlEditorController controller = HtmlEditorController();
+  bool _isShowNote = false;
+  var currencyFormat =
+      NumberFormat.simpleCurrency(locale: 'vi_VN', name: '', decimalDigits: 0);
 
   @override
   void initState() {
@@ -121,6 +134,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         isLoading = false;
       });
     }
+    indexService = getIndexTempOrder();
   }
 
   getPlanMember() {
@@ -189,52 +203,103 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             period: e['period']);
       }).toList();
 
+  getIndexTempOrder() {
+    List<int> indexRoomOrder = [];
+    List<int> indexFoodOrder = [];
+    List<OrderViewModel> roomOrderList = [];
+    List<OrderViewModel> foodOrderList = [];
+    for (var item in tempOrders) {
+      if (item.type == 'MEAL') {
+        foodOrderList.add(item);
+      } else {
+        roomOrderList.add(item);
+      }
+      total += item.total!;
+    }
+
+    for (final order in roomOrderList) {
+      for (final index in order.serveDateIndexes!) {
+        if (!indexRoomOrder.contains(index)) {
+          indexRoomOrder.add(index);
+        }
+      }
+    }
+
+    for (final order in foodOrderList) {
+      for (final index in order.serveDateIndexes!) {
+        if (!indexFoodOrder.contains(index)) {
+          indexFoodOrder.add(index);
+        }
+      }
+    }
+    List<Map> periodList = [];
+    for (final index in indexFoodOrder) {
+      List<OrderViewModel> orders = [];
+      for (final order in foodOrderList) {
+        if (order.serveDateIndexes!.contains(index)) {
+          orders.add(order);
+        }
+      }
+      List<dynamic> keys = orders.groupListsBy((e) => e.period).keys.toList();
+      var periods = keys.map((e) => Utils().getPeriodString(e)).toList();
+      Utils().sortPeriodList(periods);
+      periodList.add({'periods': periods});
+    }
+    return {
+      'roomIndex': indexRoomOrder,
+      'foodIndex': indexFoodOrder,
+      'foodPeriodList': periodList
+    };
+  }
+
   getOrderList(String? tempOrderGuid) async {
     total = 0;
+    List<OrderViewModel> roomOrderList = [];
+    List<OrderViewModel> foodOrderList = [];
+    List<PlanJoinServiceInfor> _listRoom = [];
+    List<PlanJoinServiceInfor> _listFood = [];
+
     final rs = await _planService.getOrderCreatePlan(widget.planId);
     if (rs != null) {
       orderList = rs['orders'];
-      List<Widget> listRestaurant = [];
-      List<Widget> listMotel = [];
-      for (var item in orderList) {
-        if (item.type == 'MEAL') {
-          listRestaurant.add(SupplierOrderCard(
-            order: item,
-            startDate: _planDetail!.startDate!,
-            isTempOrder: false,
-            planId: widget.planId,
-            callback: (String? guid) {},
-          ));
+      for (final order in orderList) {
+        if (order.type == 'MEAL') {
+          foodOrderList.add(order);
         } else {
-          listMotel.add(SupplierOrderCard(
-            order: item,
-            startDate: _planDetail!.startDate!,
-            isTempOrder: false,
-            planId: widget.planId,
-            callback: (String? guid) {},
-          ));
+          roomOrderList.add(order);
         }
-        total += item.total!;
       }
-      if (tempOrderGuid != null) {
-        final tempOrder = tempOrders.firstWhere(
-          (element) => element.guid == tempOrderGuid,
+
+      for (final day in indexService['roomIndex']) {
+        var _orderList = [];
+        for (final order in roomOrderList) {
+          if (order.serveDateIndexes!.contains(day)) {
+            _orderList.add(order);
+          }
+        }
+        _listRoom
+            .add(PlanJoinServiceInfor(dayIndex: day, orderList: _orderList));
+      }
+      for (final day in indexService['foodIndex']) {
+        var _orderList = [];
+        List<String> _periodList = [];
+        for (final order in foodOrderList) {
+          if (order.serveDateIndexes!.contains(day)) {
+            _orderList.add(order);
+          }
+        }
+        _orderList.sort(
+          (a, b) => Utils()
+              .getPeriodString(a.period)['value']
+              .compareTo(Utils().getPeriodString(b.period)['value']),
         );
-        setState(() {
-          tempOrders.remove(tempOrder);
-          _planDetail!.currentGcoinBudget = _planDetail!.currentGcoinBudget! -
-              tempOrder.total! / 100.toDouble();
-          _listMotel = listMotel;
-          _listRestaurant = listRestaurant;
-          _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
-        });
-      } else {
-        setState(() {
-          _listMotel = listMotel;
-          _listRestaurant = listRestaurant;
-          _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
-        });
+        _listFood.add(PlanJoinServiceInfor(
+            dayIndex: day, orderList: _orderList, periodString: _periodList));
       }
+      setState(() {
+        listRoom = _listRoom;
+        listFood = _listFood;
+      });
     }
   }
 
@@ -446,29 +511,27 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                         ),
                                       ),
                                     ),
-                                    if (isLeader)
-                                      const SizedBox(
-                                        width: 16,
-                                      ),
-                                    if (isLeader)
-                                      Expanded(
-                                        child: InkWell(
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(12)),
-                                          onTap: () {
-                                            setState(() {
-                                              _selectedTab = 2;
-                                            });
-                                          },
-                                          child: TabIconButton(
-                                            iconDefaultUrl: service_green,
-                                            iconSelectedUrl: service_white,
-                                            text: 'Dịch vụ',
-                                            isSelected: _selectedTab == 2,
-                                            index: 2,
-                                          ),
+                                    const SizedBox(
+                                      width: 16,
+                                    ),
+                                    Expanded(
+                                      child: InkWell(
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(12)),
+                                        onTap: () {
+                                          setState(() {
+                                            _selectedTab = 2;
+                                          });
+                                        },
+                                        child: TabIconButton(
+                                          iconDefaultUrl: service_green,
+                                          iconSelectedUrl: service_white,
+                                          text: 'Dịch vụ',
+                                          isSelected: _selectedTab == 2,
+                                          index: 2,
                                         ),
                                       ),
+                                    ),
                                   ]),
                             ),
                             const SizedBox(
@@ -504,35 +567,36 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                           TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                     )),
                 const Spacer(),
-                TextButton(
-                    onPressed: () async {
-                      if (_planDetail!.status == 'READY') {
-                        final rs = await _locationService.GetLocationById(
-                            _planDetail!.locationId);
-                        if (rs != null) {
-                          Navigator.of(context).push(MaterialPageRoute(
-                              builder: (ctx) => ListOrderScreen(
-                                    availableGcoinAmount:
-                                        _planDetail!.currentGcoinBudget,
-                                    planId: widget.planId,
-                                    orders: tempOrders,
-                                    startDate: _planDetail!.startDate!,
-                                    callback: getOrderList,
-                                    endDate: _planDetail!.endDate!,
-                                    memberLimit: _planDetail!.memberLimit,
-                                    location: rs,
-                                  )));
+                if (isLeader)
+                  TextButton(
+                      onPressed: () async {
+                        if (_planDetail!.status == 'READY') {
+                          final rs = await _locationService.GetLocationById(
+                              _planDetail!.locationId);
+                          if (rs != null) {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (ctx) => ListOrderScreen(
+                                      availableGcoinAmount:
+                                          _planDetail!.currentGcoinBudget,
+                                      planId: widget.planId,
+                                      orders: tempOrders,
+                                      startDate: _planDetail!.startDate!,
+                                      callback: getOrderList,
+                                      endDate: _planDetail!.endDate!,
+                                      memberLimit: _planDetail!.memberLimit,
+                                      location: rs,
+                                    )));
+                          }
                         }
-                      }
-                    },
-                    child: Text(
-                      'Đi đặt hàng',
-                      style: TextStyle(
-                        color: _planDetail!.status == 'READY'
-                            ? primaryColor
-                            : Colors.grey,
-                      ),
-                    ))
+                      },
+                      child: Text(
+                        'Đi đặt hàng',
+                        style: TextStyle(
+                          color: _planDetail!.status == 'READY'
+                              ? primaryColor
+                              : Colors.grey,
+                        ),
+                      ))
               ],
             ),
             const SizedBox(
@@ -545,37 +609,277 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                 unselectedLabelColor: Colors.grey,
                 tabs: [
                   Tab(
-                    text: "(${_listMotel.length})",
                     icon: const Icon(Icons.hotel),
+                    text: '(${indexService['roomIndex'].length})',
                   ),
                   Tab(
-                    text: "(${_listRestaurant.length})",
                     icon: const Icon(Icons.restaurant),
+                    text: '(${indexService['foodIndex'].length})',
                   ),
                   Tab(
-                    text: '(${_planDetail!.surcharges!.length})',
                     icon: const Icon(Icons.account_balance_wallet),
+                    text: '(${_planDetail!.surcharges!.length})',
                   )
                 ]),
             Container(
               margin: const EdgeInsets.only(top: 8),
-              height:
-                  _listRestaurant.isEmpty && _listMotel.isEmpty ? 0.h : 35.h,
+              height: indexService['roomIndex'].isEmpty &&
+                      indexService['foodIndex'].isEmpty &&
+                      _planDetail!.surcharges!.isEmpty
+                  ? 0.h
+                  : 35.h,
               child: TabBarView(controller: tabController, children: [
                 ListView.builder(
                   physics: const BouncingScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: _listMotel.length,
+                  itemCount: indexService['roomIndex'].length,
                   itemBuilder: (context, index) {
-                    return _listMotel[index];
+                    return Container(
+                      width: 100.w,
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.1),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12))),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                    color: primaryColor.withOpacity(0.8),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8))),
+                                child: Text(
+                                  'Ngày ${indexService['roomIndex'][index] + 1}',
+                                  style: const TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500),
+                                ),
+                              ),
+                              SizedBox(
+                                width: 1.h,
+                              ),
+                              const Text(
+                                'Nghỉ ngơi tại khách sạn',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 1.h,
+                          ),
+                          if (isLeader)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: Column(
+                                children: [
+                                  for (final order in listRoom[index].orderList)
+                                    Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                                width: 43.w,
+                                                child: Text(order.supplier.name,
+                                                    overflow: TextOverflow.clip,
+                                                    style: const TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.bold))),
+                                            SizedBox(
+                                              width: 1.h,
+                                            ),
+                                            Container(
+                                              color: Colors.grey,
+                                              width: 2,
+                                              height: 40,
+                                            ),
+                                            SizedBox(
+                                              width: 1.h,
+                                            ),
+                                            SizedBox(
+                                              width: 30.w,
+                                              child: Text(
+                                                  '${(order.total / 100).toInt()} GCOIN',
+                                                  overflow: TextOverflow.clip,
+                                                  style: const TextStyle(
+                                                      fontSize: 17,
+                                                      fontWeight:
+                                                          FontWeight.bold)),
+                                            )
+                                          ],
+                                        ),
+                                        if (order !=
+                                                listRoom[index]
+                                                    .orderList
+                                                    .last &&
+                                            listRoom[index].orderList.last != 1)
+                                          Container(
+                                            color: Colors.grey,
+                                            height: 2,
+                                          )
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            )
+                        ],
+                      ),
+                    );
                   },
                 ),
                 ListView.builder(
                   physics: const BouncingScrollPhysics(),
                   shrinkWrap: true,
-                  itemCount: _listRestaurant.length,
+                  itemCount: indexService['foodIndex'].length,
                   itemBuilder: (context, index) {
-                    return _listRestaurant[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12),
+                      child: Container(
+                        width: 100.w,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                            color: Colors.grey.withOpacity(0.1),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(12))),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                      color: primaryColor.withOpacity(0.8),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(8))),
+                                  child: Text(
+                                    'Ngày ${indexService['foodIndex'][index] + 1}',
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w500),
+                                  ),
+                                ),
+                                SizedBox(
+                                  width: 1.h,
+                                ),
+                                SizedBox(
+                                  width: 60.w,
+                                  child: Text(
+                                    '(${Utils().buildTextFromListString(indexService['foodPeriodList'][index]['periods'].map((e) => e['text']).toList())}) Ăn uống tại nhà hàng',
+                                    style: const TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.clip,
+                                  ),
+                                )
+                              ],
+                            ),
+                            SizedBox(
+                              height: 1.h,
+                            ),
+                            if (isLeader)
+                              Padding(
+                                padding: const EdgeInsets.only(left: 12),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    for (final detail
+                                        in listFood[index].orderList)
+                                      Column(
+                                        children: [
+                                          Row(
+                                            children: [
+                                              SizedBox(
+                                                width: 12.w,
+                                                child: Text(
+                                                    detail ==
+                                                                listFood[index]
+                                                                    .orderList
+                                                                    .first ||
+                                                            detail.period !=
+                                                                listFood[index]
+                                                                    .orderList[listFood[index]
+                                                                            .orderList
+                                                                            .indexOf(
+                                                                                detail) +
+                                                                        -1]
+                                                                    .period
+                                                        ? Utils().getPeriodString(
+                                                            detail
+                                                                .period)['text']
+                                                        : '',
+                                                    style: const TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ),
+                                              Container(
+                                                color: Colors.grey,
+                                                width: 2,
+                                                height: 40,
+                                              ),
+                                              SizedBox(
+                                                width: 1.h,
+                                              ),
+                                              SizedBox(
+                                                width: 46.w,
+                                                child: Text(
+                                                    detail.supplier.name,
+                                                    style: const TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ),
+                                              Container(
+                                                color: Colors.grey,
+                                                width: 2,
+                                                height: 40,
+                                              ),
+                                              SizedBox(
+                                                width: 1.h,
+                                              ),
+                                              SizedBox(
+                                                width: 14.w,
+                                                child: Text(
+                                                    '${(detail.total / 100).toInt()} GCOIN',
+                                                    style: const TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                              ),
+                                            ],
+                                          ),
+                                          if (detail !=
+                                                  listFood[index]
+                                                      .orderList
+                                                      .last &&
+                                              listFood[index].orderList.last !=
+                                                  1)
+                                            Container(
+                                              color: Colors.grey,
+                                              height: 2,
+                                            )
+                                        ],
+                                      )
+                                  ],
+                                ),
+                              )
+                          ],
+                        ),
+                      ),
+                    );
                   },
                 ),
                 ListView.builder(
@@ -584,8 +888,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   itemCount: _planDetail!.surcharges!.length,
                   itemBuilder: (context, index) {
                     return SurchargeCard(
-                        amount: _planDetail!.surcharges![index].gcoinAmount
-                            .toString(),
+                        amount: _planDetail!.surcharges![index].gcoinAmount,
                         note: _planDetail!.surcharges![index].note);
                   },
                 )
@@ -604,7 +907,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Text(
-                    '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(_planDetail!.currentGcoinBudget! * 100)} VND',
+                    '${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(_planDetail!.currentGcoinBudget! * 100)} VND',
                     style: const TextStyle(fontSize: 18),
                   ),
                 ],
@@ -694,6 +997,50 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         SizedBox(height: 1.5.h, child: buildIndicator(i)),
                     ],
                   ),
+                const SizedBox(
+                  height: 8,
+                ),
+                Container(
+                  height: 1.8,
+                  color: Colors.grey.withOpacity(0.4),
+                ),
+                const SizedBox(
+                  height: 8,
+                ),
+                InkWell(
+                  onTap: () {
+                    setState(() {
+                      _isShowNote = !_isShowNote;
+                    });
+                  },
+                  child: Row(
+                    children: [
+                      const Text(
+                        'Ghi chú',
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
+                      ),
+                      const Spacer(),
+                      Icon(
+                        _isShowNote
+                            ? Icons.arrow_drop_up
+                            : Icons.arrow_drop_down,
+                        color: primaryColor,
+                        size: 40,
+                      )
+                    ],
+                  ),
+                ),
+                if (_isShowNote)
+                  HtmlWidget(_planDetail!.note ?? ''),
+                  // HtmlEditor(
+                  //   controller: controller,
+                  //   htmlEditorOptions: HtmlEditorOptions(
+                  //       disabled: true, initialText: _planDetail!.note),
+                  //   otherOptions: const OtherOptions(
+                  //     height: 200,
+                  //   ),
+                  // ),
                 const SizedBox(
                   height: 8,
                 ),
@@ -943,40 +1290,38 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           builder: (BuildContext context) => SizedBox(
                 height: 90.h,
                 child: ConfirmPlanBottomSheet(
-                    isInfo: false,
-                    plan: PlanCreate(
-                      schedule: json.encode(_planDetail!.schedule),
-                      savedContacts: json.encode(emerList),
-                      name: _planDetail!.name,
-                      memberLimit: _planDetail!.memberLimit,
-                      startDate: _planDetail!.startDate,
-                      endDate: _planDetail!.endDate,
-                      travelDuration: _planDetail!.travelDuration,
-                      departureDate: _planDetail!.departureDate,
-                      note: _planDetail!.note,
-                    ),
-                    locationName: _planDetail!.locationName,
-                    orderList: tempOrders,
-                    onCompletePlan: () {},
-                    listSurcharges: _planDetail!.surcharges!
-                        .map((e) => {
-                              "gcoinAmount": e.gcoinAmount,
-                              "note": json.encode(e.note)
-                            })
-                        .toList(),
-                    budgetPerCapita:
-                        _planDetail!.gcoinBudgetPerCapita!.toDouble(),
-                    isJoin: true,
-                    onJoinPlan: () {
-                      confirmJoin(isPublic);
-                    },
-                    onCancel: () {
-                      Navigator.of(context).pop();
-                      setState(() {
-                        _isPublic = false;
-                      });
-                    },
-                    total: totalTempOrders / 100),
+                  isInfo: false,
+                  plan: PlanCreate(
+                    schedule: json.encode(_planDetail!.schedule),
+                    savedContacts: json.encode(emerList),
+                    name: _planDetail!.name,
+                    memberLimit: _planDetail!.memberLimit,
+                    startDate: _planDetail!.startDate,
+                    endDate: _planDetail!.endDate,
+                    travelDuration: _planDetail!.travelDuration,
+                    departureDate: _planDetail!.departureDate,
+                    note: _planDetail!.note,
+                  ),
+                  locationName: _planDetail!.locationName,
+                  orderList: tempOrders,
+                  onCompletePlan: () {},
+                  listSurcharges: _planDetail!.surcharges!
+                      .map((e) => {
+                            "gcoinAmount": e.gcoinAmount,
+                            "note": json.encode(e.note)
+                          })
+                      .toList(),
+                  isJoin: true,
+                  onJoinPlan: () {
+                    confirmJoin(isPublic);
+                  },
+                  onCancel: () {
+                    Navigator.of(context).pop();
+                    setState(() {
+                      _isPublic = false;
+                    });
+                  },
+                ),
               ));
       if (rs == null) {
         setState(() {
@@ -1004,13 +1349,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           child: widget.isEnableToJoin || _planDetail!.memberCount! == 0
               ? ElevatedButton(
                   onPressed: () {
-                    if(!_isAlreadyJoin){
-                    onJoinPlan(false);
+                    if (!_isAlreadyJoin) {
+                      onJoinPlan(false);
                     }
                   },
                   style: elevatedButtonStyle.copyWith(
-                    backgroundColor: MaterialStatePropertyAll(_isAlreadyJoin ? Colors.grey : primaryColor)
-                  ),
+                      backgroundColor: MaterialStatePropertyAll(
+                          _isAlreadyJoin ? Colors.grey : primaryColor)),
                   child: const Text(
                     "Tham gia kế hoạch",
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
@@ -1156,7 +1501,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         ),
                         const Spacer(),
                         Text(
-                          '${_planDetail!.gcoinBudgetPerCapita} GCOIN',
+                          '${currencyFormat.format(_planDetail!.gcoinBudgetPerCapita)} GCOIN',
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w500,
@@ -1168,7 +1513,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                       height: 20,
                     ),
                     Text(
-                      'Thanh toán thêm ${_planDetail!.gcoinBudgetPerCapita}${_planDetail!.memberLimit - _planDetail!.memberCount! > 1 ? ' x ${_planDetail!.memberLimit - _planDetail!.memberCount!} = ${_planDetail!.gcoinBudgetPerCapita! * (_planDetail!.memberLimit - _planDetail!.memberCount!)}' : ''} GCOIN để chốt số lượng thành viên cho chuyến đi',
+                      'Thanh toán thêm ${currencyFormat.format(_planDetail!.gcoinBudgetPerCapita)}${_planDetail!.memberLimit - _planDetail!.memberCount! > 1 ? ' x ${_planDetail!.memberLimit - _planDetail!.memberCount!} = ${currencyFormat.format(_planDetail!.gcoinBudgetPerCapita! * (_planDetail!.memberLimit - _planDetail!.memberCount!))}' : ''}GCOIN để chốt số lượng thành viên cho chuyến đi',
                       style: const TextStyle(
                           fontSize: 17, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.center,

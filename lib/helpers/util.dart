@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -24,7 +25,6 @@ class Utils {
     final initialDateTime = DateFormat.Hms().parse(timeString);
     return TimeOfDay.fromDateTime(initialDateTime);
   }
-
 
   void clearPlanSharePref() {
     sharedPreferences.setInt("planId", 0);
@@ -52,6 +52,7 @@ class Utils {
     sharedPreferences.remove('plan_weight');
     sharedPreferences.remove('plan_note');
     sharedPreferences.remove('plan_surcharge');
+    sharedPreferences.remove('notAskScheduleAgain');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {
@@ -147,18 +148,52 @@ class Utils {
     return true;
   }
 
-  handleServerException(String content, BuildContext context){
-    AwesomeDialog(context: context,
-    animType: AnimType.leftSlide,
-    dialogType: DialogType.error,
-    title: content,
-    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-    titleTextStyle: const TextStyle(
-      fontSize: 18, fontWeight: FontWeight.bold
-    ),
-    btnOkColor: Colors.red,
-    btnOkText: 'Ok',
-    btnOkOnPress: (){}
-    ).show();
+  handleServerException(String content, BuildContext context) {
+    AwesomeDialog(
+            context: context,
+            animType: AnimType.leftSlide,
+            dialogType: DialogType.error,
+            title: content,
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            titleTextStyle:
+                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            btnOkColor: Colors.red,
+            btnOkText: 'Ok',
+            btnOkOnPress: () {})
+        .show();
   }
+
+  getPeriodString(String period) {
+    Map rs = {};
+    switch (period) {
+      case 'MORNING':
+        rs = {'text': 'Sáng', 'value': 1};
+        break;
+      case 'NOON':
+        rs = {'text': 'Trưa', 'value': 2};
+        break;
+      case 'AFTERNOON':
+        rs = {'text': 'Chiều', 'value': 3};
+        break;
+      case 'EVENING':
+        rs = {'text': 'Tối', 'value': 4};
+        break;
+    }
+    return rs;
+  }
+
+  buildTextFromListString(List<dynamic> list) {
+    var rs = '';
+    for (final item in list) {
+      if (item == list.last || list.length == 1) {
+        rs += item!;
+      } else {
+        rs += '$item, ';
+      }
+    }
+    return rs;
+  }
+
+  sortPeriodList(List<dynamic> list) =>
+      list.sort((a, b) => a['value'].compareTo(b['value']));
 }

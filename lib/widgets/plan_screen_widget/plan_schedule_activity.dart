@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
@@ -26,36 +25,52 @@ class PlanScheduleActivity extends StatelessWidget {
         InkWell(
           onTap: () {
             showModalBottomSheet(
-            context: context, 
-            builder: (ctx) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 8),
-              
-              child: SizedBox(
-                width: 100.w,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 2.h,),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.6),
-                        borderRadius: const BorderRadius.all(Radius.circular(12))
+                context: context,
+                builder: (ctx) => Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 23, vertical: 8),
+                      child: SizedBox(
+                        width: 100.w,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              height: 2.h,
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: primaryColor.withOpacity(0.6),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(12))),
+                              height: 6,
+                              width: 10.h,
+                            ),
+                            SizedBox(
+                              height: 2.h,
+                            ),
+                            BottomSheetContainerWidget(
+                                content: item.shortDescription!,
+                                title: 'Mô tả'),
+                            SizedBox(
+                              height: 1.h,
+                            ),
+                            BottomSheetContainerWidget(
+                                content: item.description!,
+                                title: 'Mô tả chi tiết'),
+                            SizedBox(
+                              height: 1.h,
+                            ),
+                            BottomSheetContainerWidget(
+                                content: DateFormat.yMMMMEEEEd('vi_VN')
+                                    .format(item.date!),
+                                title: 'Thời gian'),
+                            SizedBox(
+                              height: 2.h,
+                            )
+                          ],
+                        ),
                       ),
-                      height: 6,
-                      width: 10.h,
-                    ),
-                    SizedBox(height: 2.h,),
-                    BottomSheetContainerWidget(content: item.shortDescription!, title: 'Mô tả'),
-                    SizedBox(height: 1.h,),
-                    BottomSheetContainerWidget(content: item.description!, title: 'Mô tả chi tiết'),
-                    SizedBox(height: 1.h,),
-                    BottomSheetContainerWidget(content: DateFormat.yMMMMEEEEd('vi_VN')
-                                    .format(item.date!), title: 'Thời gian'),
-                                    SizedBox(height: 2.h,)
-                  ],
-                ),
-              ),
-            ));
+                    ));
           },
           child: Padding(
             padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
@@ -73,7 +88,7 @@ class PlanScheduleActivity extends StatelessWidget {
                       offset: Offset(2, 4),
                     )
                   ],
-                  border: item.type == 'Ăn uống'
+                  border: item.type == 'Ăn uống' || item.type == 'Check-in'
                       ? Border.all(color: primaryColor, width: 2)
                       : const Border(),
                   borderRadius: const BorderRadius.all(Radius.circular(12))),
@@ -92,7 +107,7 @@ class PlanScheduleActivity extends StatelessWidget {
                             overflow: TextOverflow.clip,
                           ),
                         ),
-                        item.type != 'Ăn uống'
+                        item.type != 'Ăn uống' && item.type != 'Check-in'
                             ? IconButton(
                                 highlightColor: Colors.transparent,
                                 splashColor: Colors.transparent,
@@ -104,14 +119,18 @@ class PlanScheduleActivity extends StatelessWidget {
                                 ))
                             : SizedBox(
                                 height: 4.h,
-                                child: const Icon(
-                                  Icons.restaurant,
+                                child: Icon(
+                                  item.type == 'Ăn uống'
+                                      ? Icons.restaurant
+                                      : Icons.hotel,
                                   color: primaryColor,
                                 ))
                       ],
                     ),
                     Container(
-                      color: item.type == 'Ăn uống' ? primaryColor:Colors.black54,
+                      color: item.type == 'Ăn uống'
+                          ? primaryColor
+                          : Colors.black54,
                       height: 2,
                     ),
                     SizedBox(
@@ -134,7 +153,7 @@ class PlanScheduleActivity extends StatelessWidget {
                             const Icon(
                               Icons.watch_later_outlined,
                               size: 22,
-                            ),
+                            ), 
                           ],
                         ),
                         const SizedBox(

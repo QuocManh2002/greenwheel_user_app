@@ -759,6 +759,13 @@ class _CartScreenState extends State<CartScreen> {
                       Text(
                           'Ngân sách hiện tại: ${widget.availableGcoinAmount!.toInt()} GCOIN', style:const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
                       const SizedBox(height: 12,),
+                      Text(
+                          'Giá trị đơn hàng: ${currencyFormat.format((finalTotal / 100) *
+                                      (_servingDates.isEmpty
+                                          ? 1
+                                          : _servingDates
+                                              .length))}', style:const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
+                      const SizedBox(height: 12,),
                       const Text(
                         'Hãy thay đổi đơn hàng của bạn',
                         style: TextStyle(fontSize: 18, color: Colors.grey),
@@ -772,37 +779,8 @@ class _CartScreenState extends State<CartScreen> {
             .show();
       } else {
         if (widget.isFromTempOrder != null && widget.isFromTempOrder!) {
-          bool? isDeleteGuid;
-          if (widget.isChangeCart!) {
-            await AwesomeDialog(
-                    context: context,
-                    animType: AnimType.bottomSlide,
-                    dialogType: DialogType.info,
-                    title: 'Đơn hàng mẫu bị thay đổi',
-                    titleTextStyle: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
-                    desc: 'Bạn có muốn xoá đơn hàng mẫu này không?',
-                    descTextStyle:
-                        const TextStyle(fontSize: 16, color: Colors.grey),
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    btnOkColor: Colors.blue,
-                    btnOkOnPress: () {
-                      isDeleteGuid = true;
-                    },
-                    btnOkText: 'Có',
-                    btnCancelColor: Colors.orange,
-                    btnCancelOnPress: () {
-                      isDeleteGuid = false;
-                    },
-                    btnCancelText: 'Không')
-                .show();
-          } else {
-            isDeleteGuid = true;
-          }
-          if (isDeleteGuid != null) {
             final rs = await orderService.createOrder(
                 OrderViewModel(
-                    guid: isDeleteGuid! ? widget.orderGuid : null,
                     createdAt: DateTime.now(),
                     details: details,
                     note: noteController.text,
@@ -824,8 +802,7 @@ class _CartScreenState extends State<CartScreen> {
                 desc: "Ấn tiếp tục để trở về",
                 btnOkText: "Tiếp tục",
                 btnOkOnPress: () {
-                  widget.callbackFunction(
-                      isDeleteGuid! ? widget.orderGuid : null);
+                  widget.callbackFunction(null);
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
@@ -833,7 +810,6 @@ class _CartScreenState extends State<CartScreen> {
                 },
               ).show();
             }
-          }
         } else {}
       }
     }

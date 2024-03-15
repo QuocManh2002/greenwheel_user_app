@@ -70,7 +70,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   bool isLoading = true;
   double total = 0;
   List<List<ProductViewModel>> _listResult = [];
-  List<ItemCart> _initCart = [];
 
   var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
 
@@ -148,25 +147,17 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
 
     if (widget.serviceType.id == 1) {
       title = "Món ăn";
-    } else if (widget.serviceType.id == 2) {
-      title = "Phòng nghỉ";
-      findSumCombinations(list, widget.numberOfMember);
-      List<ProductViewModel> rs = getResult(_listResult);
-      print(rs);
-      Map gr = rs.groupListsBy((element) => element.id);
-      print(gr);
-      for (final item in gr.keys) {
-        updateCart(list.firstWhere((element) => element.id == item),
-            rs.where((element) => element.id == item).toList().length);
-      }
-    } else if (widget.serviceType.id == 3) {
-      title = "Phương tiện";
-    } else if (widget.serviceType.id == 4) {
-      title = "Hàng hóa";
-    } else if (widget.serviceType.id == 5) {
-      title = "Dịch vụ";
     } else {
-      title = "Vật dụng";
+      title = "Phòng nghỉ";
+      if (widget.isFromTempOrder == null || !widget.isFromTempOrder!) {
+        findSumCombinations(list, widget.numberOfMember);
+        List<ProductViewModel> rs = getResult(_listResult);
+        Map gr = rs.groupListsBy((element) => element.id);
+        for (final item in gr.keys) {
+          updateCart(list.firstWhere((element) => element.id == item),
+              rs.where((element) => element.id == item).toList().length);
+        }
+      }
     }
   }
 
@@ -340,7 +331,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                         ),
                       ),
                     ),
-                    (widget.serviceType.id == 2)
+                    (widget.serviceType.id == 5)
                         ? Padding(
                             padding: const EdgeInsets.only(left: 14, top: 10),
                             child: Column(
@@ -357,6 +348,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                 const SizedBox(
                                   height: 8,
                                 ),
+                                if (widget.isFromTempOrder == null || !widget.isFromTempOrder!) 
                                 const Text(
                                   "Chúng tôi đã đề xuất cho bạn combo phòng có giá hợp lý nhất ứng với số lượng thành viên của chuyến đi.",
                                   style: TextStyle(color: Colors.grey),

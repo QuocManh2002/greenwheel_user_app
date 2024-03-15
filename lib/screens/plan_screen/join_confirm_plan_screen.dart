@@ -9,7 +9,6 @@ import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 
 class JoinConfirmPlanScreen extends StatefulWidget {
@@ -415,6 +414,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                       )
                     ],
                   ),
+                  SizedBox(height: 1.h,),
                   Row(
                     children: [
                       const Text(

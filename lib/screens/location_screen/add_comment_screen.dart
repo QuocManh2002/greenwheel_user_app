@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';

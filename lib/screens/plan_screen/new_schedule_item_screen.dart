@@ -50,6 +50,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   bool _isModify = false;
   TimeOfDay _startTime = TimeOfDay(hour: 12, minute: 0);
   bool _isFoodActivity = false;
+  bool _isRoomActivity = false;
   bool _isOrderedActivity = false;
 
   @override
@@ -272,10 +273,17 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                   if (value == 'Ăn uống') {
                     setState(() {
                       _isFoodActivity = true;
+                      _isRoomActivity = false;
+                    });
+                  } else if (value == 'Check-in') {
+                    setState(() {
+                      _isRoomActivity = true;
+                      _isFoodActivity = false;
                     });
                   } else {
                     setState(() {
                       _isFoodActivity = false;
+                      _isRoomActivity = false;
                     });
                   }
                 },
@@ -484,7 +492,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
             SizedBox(
               height: 2.h,
             ),
-            if (_isFoodActivity)
+            if (_isFoodActivity || _isRoomActivity)
               _isOrderedActivity
                   ? Row(
                       children: [
@@ -516,7 +524,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (ctx) => ServiceMainScreen(
                                       isOrder: false,
-                                      serviceType: services[0],
+                                      serviceType: _isFoodActivity ? services[0] :services[4],
                                       location: widget.location,
                                       numberOfMember: sharedPreferences
                                           .getInt('plan_number_of_member')!,
@@ -528,7 +536,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       callbackFunction: callback,
                                     )));
                           },
-                          icon: const Icon(Icons.restaurant),
+                          icon: Icon(_isFoodActivity ? Icons.restaurant : Icons.hotel),
                           style: elevatedButtonStyle.copyWith(
                               minimumSize:
                                   MaterialStatePropertyAll(Size(50.w, 5.h))),

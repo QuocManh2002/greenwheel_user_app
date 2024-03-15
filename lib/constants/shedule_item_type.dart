@@ -4,6 +4,8 @@ final schedule_item_types = [
   "GATHER",
   "OTHER",
   "VISIT",
+  "CHECKIN",
+  "CHECKOUT"
 ];
 
 final schedule_item_types_vn = [
@@ -12,4 +14,6 @@ final schedule_item_types_vn = [
   "Sinh hoạt chung",
   "Khác",
   "Tham quan",
+  "Check-in",
+  "Check-out"
 ];
