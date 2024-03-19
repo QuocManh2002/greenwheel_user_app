@@ -30,7 +30,7 @@ class SupplierCard extends StatelessWidget {
   final bool? isOrder;
   final bool? isFromTempOrder;
   final double? availableGcoinAmount;
-  final void Function(String? orderGuid) callbackFunction;
+  final void Function() callbackFunction;
 
   @override
   Widget build(BuildContext context) {

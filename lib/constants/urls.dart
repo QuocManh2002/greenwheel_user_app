@@ -36,6 +36,7 @@ const String up_coming_white = '${baseImage}up_coming_white.svg';
 const String rating_white = '${baseImage}rating_white.svg';
 const String rating_green = '${baseImage}rating_green.svg';
 const String backpack = '${baseImage}backpack.png';
+const String pdf_mark = '${baseImage}pdf_mark.svg';
 
 const String baseBucketImage = 'https://d38ozmgi8b70tu.cloudfront.net';
 

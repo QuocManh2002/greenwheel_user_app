@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -53,6 +52,8 @@ class Utils {
     sharedPreferences.remove('plan_note');
     sharedPreferences.remove('plan_surcharge');
     sharedPreferences.remove('notAskScheduleAgain');
+    sharedPreferences.remove('initNumOfExpPeriod');
+    sharedPreferences.remove('plan_max_member_weight');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {
@@ -196,4 +197,23 @@ class Utils {
 
   sortPeriodList(List<dynamic> list) =>
       list.sort((a, b) => a['value'].compareTo(b['value']));
+
+  Widget buildIndicator(int index, int currentIndex) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.bounceInOut,
+      height: 0.5,
+      margin: const EdgeInsets.only(left: 16),
+      width: currentIndex == index ? 35 : 12,
+      decoration: BoxDecoration(
+          color: currentIndex == index
+              ? Colors.grey
+              : Colors.grey.withOpacity(0.7),
+          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          boxShadow: const [
+            BoxShadow(
+                color: Colors.black38, offset: Offset(2, 3), blurRadius: 3)
+          ]),
+    );
+  }
 }

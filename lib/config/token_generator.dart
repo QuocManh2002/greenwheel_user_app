@@ -1,5 +1,5 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:greenwheel_user_app/models/temp_plan.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/temp_plan.dart';
 
 const secretKey = "mcghmxzqflniwfazobgkcztpfcpwfskt";
 

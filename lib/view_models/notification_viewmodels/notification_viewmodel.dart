@@ -5,7 +5,7 @@ class NotificationViewModel {
   String body;
   String? imageUrl;
   String type;
-  int? targetId;
+  int? planId;
   DateTime? createdAt;
   String? targetGuid;
 
@@ -15,7 +15,7 @@ class NotificationViewModel {
       required this.travelerId,
       required this.title,
       required this.type,
-      this.targetId,
+      this.planId,
       this.createdAt,
       this.targetGuid,
       this.imageUrl});
@@ -27,7 +27,7 @@ class NotificationViewModel {
           travelerId: json['accountId'],
           title: json['title'],
           type: json['type'],
-          targetId: json['targetId'],
+          planId: json['planId'],
           createdAt: json['createdAt'],
           targetGuid: json['targetGuid'],
           imageUrl: json['imageUrl']);

@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_localization/flutter_localization.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
@@ -12,6 +13,7 @@ import 'package:greenwheel_user_app/firebase_options.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
 import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
 import 'package:greenwheel_user_app/screens/offline_screen/offline_home_screen.dart';
+import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
@@ -19,22 +21,20 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
-
 late SharedPreferences sharedPreferences;
 late FirebaseAuth auth;
 late bool hasConnection;
+late FlutterLocalization localization;
 
 ThemeData theme = ThemeData(
     brightness: Brightness.light,
     primaryColor: primaryColor,
-    appBarTheme: const AppBarTheme(color: primaryColor, foregroundColor: Colors.white, ),
-    timePickerTheme: TimePickerThemeData(dayPeriodColor: primaryColor),
-    datePickerTheme: DatePickerThemeData(
-      headerBackgroundColor: primaryColor,
-      dayOverlayColor: MaterialStatePropertyAll(primaryColor),
-      rangeSelectionBackgroundColor: primaryColor.withOpacity(0.3),
-      // dayBackgroundColor: const MaterialStatePropertyAll(primaryColor)
-    ));
+    appBarTheme: const AppBarTheme(
+      color: primaryColor,
+      foregroundColor: Colors.white,
+    ),
+    timePickerTheme: const TimePickerThemeData(dayPeriodColor: primaryColor),
+    );
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -51,11 +51,13 @@ void main() async {
   await Hive.openBox('myPlans');
   await FlutterConfig.loadEnvVariables();
 
+  localization = FlutterLocalization.instance;
+
   // final _myPlans = Hive.box('myPlans');
   // _myPlans.clear();
   hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  initializeDateFormatting('vi_VN', null).then((_) {
+  initializeDateFormatting('vi', null).then((_) {
     runApp(const MainApp());
   });
 }
@@ -74,6 +76,11 @@ class MainApp extends StatelessWidget {
 
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
+        localizationsDelegates: localization.localizationsDelegates,
+        // supportedLocales: const [
+        //   //  Locale('vi', 'VN'), // Vietnamese
+        //   //  Locale('en', 'US'), // English (fallback)
+        // ],
         home: hasConnection
             ? userToken != null
                 ? const SplashScreen()

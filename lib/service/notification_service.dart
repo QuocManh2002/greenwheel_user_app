@@ -149,7 +149,7 @@ class NotificationService {
       body
       imageUrl
       type
-      targetId
+      planId
     }
   }
 }

@@ -5,6 +5,7 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/input_companion_name_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -31,9 +32,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   PlanService _planService = PlanService();
   int weight = 1;
   double? newBalance;
+  List<String> companionNames = [];
 
   onChangeWeight(bool isAdd) {
-    if (isAdd && weight < widget.plan.memberLimit - widget.plan.memberCount!) {
+    if (isAdd &&
+        weight < widget.plan.maxMemberWeight! &&
+        weight < widget.plan.maxMember - widget.plan.memberCount!) {
       setState(() {
         weight += 1;
       });
@@ -49,7 +53,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
     // TODO: implement initState
     super.initState();
     if (widget.isConfirm) {
-      weight = widget.plan.memberLimit - widget.plan.memberCount!;
+      weight = widget.plan.maxMember - widget.plan.memberCount!;
     }
   }
 
@@ -57,6 +61,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('Xác nhận tham gia'),
       ),
@@ -204,9 +209,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                       SizedBox(
                         width: 30.w,
                         child: Text(
-                          widget.plan.memberLimit < 10
-                              ? '0${widget.plan.memberLimit}'
-                              : widget.plan.memberLimit.toString(),
+                          widget.plan.maxMember < 10
+                              ? '0${widget.plan.maxMember}'
+                              : widget.plan.maxMember.toString(),
                           textAlign: TextAlign.end,
                           overflow: TextOverflow.clip,
                           style: const TextStyle(
@@ -384,6 +389,31 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                   ],
                 ),
               ),
+              SizedBox(
+                height: 2.h,
+              ),
+              if (weight > 1 && !widget.isConfirm)
+                Container(
+                  alignment: Alignment.centerRight,
+                  child: ElevatedButton(
+                    style: elevatedButtonStyle.copyWith(
+                      padding:const MaterialStatePropertyAll(EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
+                      minimumSize: MaterialStatePropertyAll(Size(40.w, 5.h)),
+                      maximumSize: MaterialStatePropertyAll(Size(40.w, 5.h)),
+                    ),
+                    onPressed: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (ctx) => InputCompanionNameScreen(
+                                initNames: companionNames,
+                                weight: weight - 1,
+                                callback: callback,
+                              )));
+                    },
+                    child: const Text(
+                      'Nhập thông tin',
+                    ),
+                  ),
+                ),
               const Spacer(),
               Column(
                 children: [
@@ -414,7 +444,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                       )
                     ],
                   ),
-                  SizedBox(height: 1.h,),
+                  SizedBox(
+                    height: 1.h,
+                  ),
                   Row(
                     children: [
                       const Text(
@@ -425,7 +457,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                       Text(
                         NumberFormat.simpleCurrency(
                                 locale: 'vi-VN', decimalDigits: 0, name: "")
-                            .format( sharedPreferences.getDouble('userBalance')! - (weight * widget.plan.gcoinBudgetPerCapita!)),
+                            .format(sharedPreferences
+                                    .getDouble('userBalance')! -
+                                (weight * widget.plan.gcoinBudgetPerCapita!)),
                         textAlign: TextAlign.end,
                         overflow: TextOverflow.clip,
                         style: const TextStyle(
@@ -492,36 +526,53 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             animType: AnimType.leftSlide,
             dialogType: DialogType.question,
             title:
-                'Thanh toán ${widget.plan.gcoinBudgetPerCapita}${weight != 1 ? ' x $weight = ${widget.plan.gcoinBudgetPerCapita! * weight}' : ''} GCOIN',
+                'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${weight != 1 ? 'x $weight = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * weight)}' : ''}GCOIN',
             titleTextStyle:
                 const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             btnOkColor: Colors.blue,
             btnOkText: 'Chơi',
             btnOkOnPress: () async {
-              final rs = await _planService.joinPlan(widget.plan.id, weight);
-              if (rs != null) {
-                if (widget.isPublic) {
-                  _planService.publicizePlan(widget.plan.id);
-                }
-                // ignore: use_build_context_synchronously
+              if (companionNames.length < weight - 1) {
                 AwesomeDialog(
                   context: context,
-                  dialogType: DialogType.success,
-                  animType: AnimType.topSlide,
-                  showCloseIcon: true,
-                  title: "Tham gia kế hoạch thành công",
-                  desc: "Ấn tiếp tục để trở về",
-                  btnOkText: "Tiếp tục",
-                  btnOkOnPress: () {
-                    final rs = sharedPreferences.getDouble('userBalance')! - (widget.plan.gcoinBudgetPerCapita! * weight);
-                    sharedPreferences.setDouble('userBalance', rs);
-                    Navigator.of(context).pop();
-                    Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                            builder: (ctx) => const TabScreen(pageIndex: 1)),
-                        (route) => false);
-                  },
+                  animType: AnimType.leftSlide,
+                  dialogType: DialogType.warning,
+                  title: 'Chưa đầy đủ tên thành viên của nhóm',
+                  titleTextStyle: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                  btnOkColor: Colors.amber,
+                  btnOkText: 'Ok',
+                  btnOkOnPress: () {},
                 ).show();
+              } else {
+                final rs = await _planService.joinPlan(
+                    widget.plan.id, weight, companionNames);
+                if (rs != null) {
+                  // if (widget.isPublic) {
+                  //   _planService.publicizePlan(widget.plan.id);
+                  // }
+                  // ignore: use_build_context_synchronously
+                  AwesomeDialog(
+                    // ignore: use_build_context_synchronously
+                    context: context,
+                    dialogType: DialogType.success,
+                    animType: AnimType.topSlide,
+                    showCloseIcon: true,
+                    title: "Tham gia kế hoạch thành công",
+                    desc: "Ấn tiếp tục để trở về",
+                    btnOkText: "Tiếp tục",
+                    btnOkOnPress: () {
+                      final rs = sharedPreferences.getDouble('userBalance')! -
+                          (widget.plan.gcoinBudgetPerCapita! * weight);
+                      sharedPreferences.setDouble('userBalance', rs);
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pushAndRemoveUntil(
+                          MaterialPageRoute(
+                              builder: (ctx) => const TabScreen(pageIndex: 1)),
+                          (route) => false);
+                    },
+                  ).show();
+                }
               }
             },
             btnCancelColor: Colors.deepOrangeAccent,
@@ -536,14 +587,14 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             animType: AnimType.leftSlide,
             dialogType: DialogType.question,
             title:
-                'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${widget.plan.memberLimit - widget.plan.memberCount! > 1 ? ' x ${widget.plan.memberLimit - widget.plan.memberCount!} = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * (widget.plan.memberLimit - widget.plan.memberCount!))}' : ''} GCOIN',
+                'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${widget.plan.maxMember - widget.plan.memberCount! > 1 ? ' x ${widget.plan.maxMember - widget.plan.memberCount!} = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * (widget.plan.maxMember - widget.plan.memberCount!))}' : ''} GCOIN',
             titleTextStyle:
                 const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             btnOkColor: Colors.blue,
             btnOkText: 'Chơi',
             btnOkOnPress: () async {
               final rs = await _planService.confirmMember(widget.plan.id);
-              if(rs != 0){
+              if (rs != 0) {
                 // ignore: use_build_context_synchronously
                 AwesomeDialog(
                   context: context,
@@ -554,7 +605,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                   desc: "Ấn tiếp tục để trở về",
                   btnOkText: "Tiếp tục",
                   btnOkOnPress: () {
-                    final rs = sharedPreferences.getDouble('userBalance')! - (widget.plan.gcoinBudgetPerCapita! * (widget.plan.memberLimit - widget.plan.memberCount!));
+                    final rs = sharedPreferences.getDouble('userBalance')! -
+                        (widget.plan.gcoinBudgetPerCapita! *
+                            (widget.plan.maxMember - widget.plan.memberCount!));
                     sharedPreferences.setDouble('userBalance', rs);
                     widget.callback!();
                     Navigator.of(context).pop();
@@ -566,5 +619,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             btnCancelOnPress: () {},
             btnCancelText: 'Huỷ')
         .show();
+  }
+
+  callback(List<String> names) {
+    companionNames = names;
   }
 }

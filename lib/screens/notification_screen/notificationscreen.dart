@@ -33,6 +33,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _notiList = await _notificationService.getNotificationList();
     if (_notiList != null) {
       setState(() {
+      _notiList!.reversed;
         _isLoading = false;
       });
     }
@@ -79,11 +80,11 @@ class _NotificationScreenState extends State<NotificationScreen> {
                         for (final noti in _notiList!)
                           InkWell(
                             onTap: () {
-                              if (noti.type == 'INVITATION') {
+                              if (noti.type == 'PLAN') {
                                 Navigator.of(context).push(MaterialPageRoute(
                                     builder: (ctx) => DetailPlanNewScreen(
                                           isEnableToJoin: true,
-                                          planId: noti.targetId!,
+                                          planId: noti.planId!,
                                         )));
                               } else {
                                 Navigator.of(context).push(MaterialPageRoute(

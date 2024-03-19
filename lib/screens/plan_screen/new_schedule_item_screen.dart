@@ -548,7 +548,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
     ));
   }
 
-  callback(String? orderGuid) {
+  callback() {
     setState(() {
       _isOrderedActivity = true;
     });

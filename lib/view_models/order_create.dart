@@ -13,21 +13,4 @@ class OrderCreateViewModel {
     this.note,
     required this.details,
   });
-
-//   factory OrderCreateViewModel.fromJson(Map<String, dynamic> json) =>
-//       OrderCreateViewModel(
-//         planId: json["planId"],
-        
-//         note: json["note"],
-//         details: List<OrderDetailCreateViewModel>.from(
-//             json["details"].map((x) => x)),
-//       );
-
-//   Map<String, dynamic> toJson() => {
-//         "planId": planId,
-//         "pickupDate": pickupDate,
-//         "returnDate": returnDate,
-//         "note": note,
-//         "details": List<dynamic>.from(details.map((x) => x)),
-//       };
 }

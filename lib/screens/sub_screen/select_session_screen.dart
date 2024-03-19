@@ -29,7 +29,7 @@ class SelectSessionScreen extends StatefulWidget {
   final bool? isOrder;
   final bool? isFromTempOrder;
   final double? availableGcoinAmount;
-  final void Function(String? orderguid) callbackFunction;
+  final void Function() callbackFunction;
 
   @override
   State<SelectSessionScreen> createState() => _SelectSessionScreenState();

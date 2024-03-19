@@ -1,75 +1,63 @@
-// import 'dart:convert';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/helpers/pdf_handler.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
+import 'package:pdf/widgets.dart' as pw;
 
-// import 'package:flutter/material.dart';
-// import 'package:flutter_quill/flutter_quill.dart';
-// import 'package:greenwheel_user_app/main.dart';
-// import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+class TestScreen extends StatefulWidget {
+  const TestScreen({super.key});
 
-// class TestScreen extends StatefulWidget {
-//   const TestScreen({super.key});
+  @override
+  State<TestScreen> createState() => _TestScreenState();
+}
 
-//   @override
-//   State<TestScreen> createState() => _TestScreenState();
-// }
+class _TestScreenState extends State<TestScreen> {
 
-// class _TestScreenState extends State<TestScreen> {
-//   final _controller = QuillController.basic();
-// final jsonText = sharedPreferences.getString('plan_note_editor');
-//   @override
-//   void initState() {
-//     // TODO: implement initState
-//     super.initState();
+  PrintingInfo? printingInfo;
+  PlanService _planService = PlanService();
+  PlanDetail? _planDetail ;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+   _init();
+  }
+
+  Future<void> _init() async{
+    final info = await Printing.info();
+    setState(() {
+      printingInfo = info;
+    });
+    sharedPreferences.setInt('plan_id_pdf', 71);
+  }
+
+  @override
+  Widget build(BuildContext context) {
     
-//     if(jsonText !=null){
-//       final json = jsonDecode(jsonText!);
-//       _controller.document = Document.fromJson(json); 
-//     }
-//   }
+    pw.RichText.debug = true;
+    final actions = <PdfPreviewAction>[
+      if(!kIsWeb)
+      const PdfPreviewAction(icon: Icon(Icons.save), onPressed: saveAsFile)
+    ];
 
-//   @override
-//   Widget build(BuildContext context) {
-//     return SafeArea(
-//         child: Scaffold(
-//             appBar: AppBar(),
-//             body: Center(
-//               child: Column(
-//                 children: [
-//                   // if(jsonText == null)
-//                   QuillToolbar.simple(
-//                     configurations: QuillSimpleToolbarConfigurations(
-//                       controller: _controller,
-//                       sharedConfigurations: const QuillSharedConfigurations(
-//                         locale: Locale('de'),
-//                       ),
-//                     ),
-//                   ),
-//                   Expanded(
-//                     child: QuillEditor.basic(
-//                       configurations: QuillEditorConfigurations(
-//                         controller: _controller,
-//                         readOnly: false,
-//                         customStyles:const DefaultStyles(
-//                           sizeSmall: TextStyle(fontSize: 25),
-//                           italic: TextStyle(fontSize: 20),
-//                           small: TextStyle(fontSize: 20)
-//                         ),
-//                         sharedConfigurations: const QuillSharedConfigurations(
-//                           locale: Locale('de'),
-//                         ),
-//                       ),
-//                     ),
-//                   ),
-//                   ElevatedButton(
-//                     style: elevatedButtonStyle,
-//                     onPressed: (){
-//                       final json = jsonEncode(_controller.document.toDelta().toJson());
-//                       sharedPreferences.setString('plan_note_editor', json);
-//                       Navigator.of(context).pop();
-//                     }, 
-//                     child:const Text('Lưu')),
-//                     const SizedBox(height: 24,)
-//                 ],
-//               ),
-//             )));
-//   }
-// }
+    return SafeArea(child: Scaffold(appBar: AppBar(
+
+    ),
+    body:const Center(
+      child: PdfPreview(
+        maxPageWidth: 700,
+        actions: [ ],
+        onPrinted: showPrintedToast,
+        onShared: showSharedToast,
+        build: generatePdf,
+      )
+    ),
+    ));
+  }
+}

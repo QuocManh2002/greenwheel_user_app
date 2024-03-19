@@ -32,7 +32,7 @@ class OrderDetailScreen extends StatefulWidget {
   final DateTime? endDate;
   final bool? isFromTempOrder;
   final double? availableGcoinAmount;
-  final void Function(String? tempOrderGuid) callback;
+  final void Function() callback;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -54,8 +54,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     } else {
       noteController.text = widget.order.note!;
     }
-    _servingDates = widget.order.serveDateIndexes!
-        .map((e) => widget.startDate.add(Duration(days: e)))
+    _servingDates = widget.order.serveDates!
+        .map((e) => DateTime.parse(e))
         .toList();
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
@@ -228,7 +228,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         '+${_servingDates.length - 1} ngày',
                                         style: const TextStyle(fontSize: 18),
                                       ),
-                                    if (widget.order.serveDateIndexes!.length >
+                                    if (widget.order.serveDates!.length >
                                         1)
                                       IconButton(
                                           onPressed: () {

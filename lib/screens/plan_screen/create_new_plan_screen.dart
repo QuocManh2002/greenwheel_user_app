@@ -187,6 +187,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                 : DateTime.parse(sharedPreferences
                                     .getString('plan_departureDate')!),
                             name: sharedPreferences.getString('plan_name'),
+                            startDate: DateTime.parse(sharedPreferences.getString('plan_start_date')!),
                             schedule:
                                 sharedPreferences.getString('plan_schedule'),
                             note: sharedPreferences.getString('plan_note'),

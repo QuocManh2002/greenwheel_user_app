@@ -66,11 +66,11 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
 
     for (var item in _planDetail!.orders!) {
       if (item.type! == 'FOOD') {
-        listRestaurant.add(SupplierOrderCard(callback: (String? guid) {
+        listRestaurant.add(SupplierOrderCard(callback: () {
           
         }, order: item, startDate: _planDetail!.startDate!, isTempOrder: false, planId: sharedPreferences.getInt('planId')!));
       } else {
-        listMotel.add(SupplierOrderCard(callback: (String? guid){}, order: item, startDate: _planDetail!.startDate!, isTempOrder: false, planId: sharedPreferences.getInt('planId')!));
+        listMotel.add(SupplierOrderCard(callback: (){}, order: item, startDate: _planDetail!.startDate!, isTempOrder: false, planId: sharedPreferences.getInt('planId')!));
       }
       total += item.total!;
     }
@@ -252,7 +252,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
                             child: _selectedTab == 0
                                 ? Column(
                                     children: [
-                                      BaseInformationWidget(plan: _planDetail!),
+                                      BaseInformationWidget(plan: _planDetail!, members: [],isPublic: true,),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 24),
@@ -555,7 +555,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
         .toList();
     sharedPreferences.setInt('plan_combo_date', _comboDate.id - 1);
     sharedPreferences.setInt('numOfExpPeriod', _planDetail!.numOfExpPeriod);
-    sharedPreferences.setInt('plan_number_of_member', _planDetail!.memberLimit);
+    sharedPreferences.setInt('plan_number_of_member', _planDetail!.maxMember);
     sharedPreferences.setDouble(
         'plan_start_lat', _planDetail!.startLocationLat);
     sharedPreferences.setDouble(

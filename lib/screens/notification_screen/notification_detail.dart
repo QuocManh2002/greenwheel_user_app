@@ -52,7 +52,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
 
   setUpData() async{  
     if(widget.notification.type == "INVITATION"){
-      _targetViewModel = await _planService.GetPlanById(widget.notification.targetId!);
+      _targetViewModel = await _planService.GetPlanById(widget.notification.planId!);
       List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
 
@@ -64,7 +64,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
       }
       total += item.total!;
     }
-    _planMembers = await _planService.getPlanMember(widget.notification.targetId!);
+    _planMembers = await _planService.getPlanMember(widget.notification.planId!);
     _joinedMember =
         _planMembers.where((member) => member.status == 'JOINED').toList();
             setState(() {
@@ -128,7 +128,7 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
                             const SizedBox(
                               height: 32,
                             ),
-                            BaseInformationWidget(plan: _targetViewModel!),
+                            BaseInformationWidget(plan: _targetViewModel!, members: [],isPublic: true,),
                             Padding(
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 24),
@@ -398,10 +398,10 @@ class _NotificationDetailScreenState extends State<NotificationDetailScreen>  wi
         animType: AnimType.topSlide,
         title: "Xác nhận tham gia",
         desc:
-            "Kinh phí cho chuyến đi này là ${(total / _targetViewModel!.memberLimit).ceil()} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
+            "Kinh phí cho chuyến đi này là ${(total / _targetViewModel!.maxMember).ceil()} GCOIN. Kinh phí sẽ được trừ vào số GCOIN có sẵn của bạn. Bạn có sẵn sàng tham gia không?",
         btnOkText: "Xác nhận",
         btnOkOnPress: () async {
-          int? rs = await _planService.joinPlan(widget.notification.targetId!,1);
+          int? rs = await _planService.joinPlan(widget.notification.planId!,1,[]);
           if (rs != null) {
             // ignore: use_build_context_synchronously
             AwesomeDialog(

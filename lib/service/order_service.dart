@@ -160,7 +160,7 @@ mutation{
         ],
         'note': json.encode(order['note']),
         'period': order['period'],
-        'serveDateIndexes': order['servingDates'],
+        'serveDates': order['serveDates'].map((e) => json.encode(e)).toList(),
         'type': order['type']
       });
     }
@@ -180,7 +180,7 @@ mutation{
     note:"${order.note}"
     period:${order.period}
     planId:$planId
-    serveDateIndexes:${order.serveDateIndexes}
+    serveDates:${order.serveDates}
     type:${order.type}
   }){
     id

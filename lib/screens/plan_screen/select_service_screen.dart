@@ -24,13 +24,10 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dar
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_member.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_service_infor.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
-import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -75,7 +72,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   num memberLimit = sharedPreferences.getInt('plan_number_of_member')!;
   int tabIndex = 0;
   PlanCreate? plan;
-  TextEditingController _noteController = TextEditingController();
 
   @override
   void initState() {
@@ -90,11 +86,11 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
-    callback(null);
+    callback();
     callbackSurcharge();
   }
 
-  callback(String? orderGuid) {
+  callback() {
     final orderText = sharedPreferences.getString('plan_temp_order');
     if (orderText != null) {
       orderList = json.decode(orderText);
@@ -119,7 +115,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             details: details,
             type: item['type'],
             period: item['period'],
-            serveDateIndexes: item['servingDates'],
+            serveDates: item['serveDates'],
             total: double.parse(item['total'].toString()),
             createdAt: DateTime.parse(item['createdAt']),
             supplier: SupplierViewModel(
@@ -134,7 +130,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             order: temp,
             startDate: startDate!,
             isTempOrder: false,
-            callback: (String? guid) {},
+            callback: () {},
           ));
           listRestaurantOrder!.add(temp);
           totalFood += double.parse(item['total'].toString());
@@ -143,7 +139,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             order: temp,
             startDate: startDate!,
             isTempOrder: false,
-            callback: (String? guid) {},
+            callback: () {},
           ));
           listMotelOrder!.add(temp);
           totalRest += double.parse(item['total'].toString());
@@ -532,7 +528,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           imageBase64: await Utils().getImageBase64Encoded(plan.imageUrls[0]),
           startDate: plan.startDate!,
           endDate: plan.endDate!,
-          memberLimit: plan.memberLimit,
+          memberLimit: plan.maxMember,
           schedule: plan.schedule,
           memberList: [
             PlanOfflineMember(
@@ -615,6 +611,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         travelDuration: DateFormat.Hm().format(_travelDuration),
         tempOrders: _orderService.convertTempOrders(orderList!).toString(),
         note: sharedPreferences.getString('plan_note'),
+        maxMemberWeight: sharedPreferences.getInt('plan_max_member_weight'),
         gcoinBudget: ((total / memberLimit) / 100).ceil());
     showModalBottomSheet(
         backgroundColor: Colors.white.withOpacity(0.94),

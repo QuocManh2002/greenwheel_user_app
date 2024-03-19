@@ -71,13 +71,10 @@ class _SelectPlanNameState extends State<SelectPlanName> {
       }
       setState(() {
         _rangeEnd =
-              departureDate.add(Duration(days: _initComboDate.numberOfDay));
+            departureDate.add(Duration(days: _initComboDate.numberOfDay));
       });
       sharedPreferences.setString(
-            'plan_end_date',
-            _rangeEnd
-                .toString()
-                .split(' ')[0]);
+          'plan_end_date', _rangeEnd.toString().split(' ')[0]);
     } else {
       setState(() {
         numberOfNight = _initComboDate.numberOfNight;
@@ -88,9 +85,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
       sharedPreferences.setString(
           'plan_end_date', _rangeEnd.toString().split(' ')[0]);
     }
-    if (isOverDate) {
-      sharedPreferences.setInt('numOfExpPeriod', numberOfDay + numberOfNight);
-    }
+    sharedPreferences.setInt('numOfExpPeriod', numberOfDay + numberOfNight);
   }
 
   @override
@@ -105,12 +100,12 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     if (name != null) {
       _nameController.text = name;
     }
-    var _numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod');
+    var _numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
     _initComboDate = listComboDate.firstWhere((element) =>
         element.numberOfDay + element.numberOfNight == _numOfExpPeriod);
     numberOfDay = _initComboDate.numberOfDay;
     numberOfNight = _initComboDate.numberOfNight;
-    final _duration = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
+    final _duration = (_numOfExpPeriod! / 2).ceil();
     final initDate = DateTime.now().add(const Duration(days: 7));
     _dateController.text = DateFormat('dd/MM/yyyy').format(initDate);
     _timeController.text =
@@ -174,28 +169,25 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                       onTap: () async {
                         DateTime? newDay = await showDatePicker(
                             context: context,
-                            locale: const Locale('vi_VN'),
-                            initialDate: _selectedDate,
-                            firstDate: _selectedDate!,
+                            locale: const Locale('vi', 'VN'),
+                            initialDate:
+                                DateTime.now().add(const Duration(days: 7)),
+                            firstDate:
+                                DateTime.now().add(const Duration(days: 7)),
                             lastDate:
-                                _selectedDate!.add(const Duration(days: 830)),
-                            builder: (context, child) {
+                                DateTime.now().add(const Duration(days: 30)),
+                            cancelText: 'HỦY',
+                            confirmText: 'CHỌN',
+                            builder: (
+                              context,
+                              child,
+                            ) {
                               return Theme(
-                                data: ThemeData().copyWith(
-                                    colorScheme: const ColorScheme.light(
-                                        primary: primaryColor,
-                                        onPrimary: Colors.white)),
-                                child: DatePickerDialog(
-                                  cancelText: 'HỦY',
-                                  confirmText: 'LƯU',
-                                  initialDate:
-                                      DateTime.now().add(Duration(days: 7)),
-                                  firstDate:
-                                      DateTime.now().add(Duration(days: 7)),
-                                  lastDate: _selectedDate!
-                                      .add(const Duration(days: 830)),
-                                ),
-                              );
+                                  data: ThemeData().copyWith(
+                                      colorScheme: const ColorScheme.light(
+                                          primary: primaryColor,
+                                          onPrimary: Colors.white)),
+                                  child: child!);
                             });
                         if (newDay != null) {
                           _selectedDate = newDay;
@@ -235,16 +227,25 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                         showTimePicker(
                           context: context,
                           initialTime: _selectTime,
+                          confirmText: 'CHỌN',
+                          cancelText: 'HUỶ',
+                          initialEntryMode: TimePickerEntryMode.dial,
                           builder: (context, child) {
                             return Theme(
-                              data: ThemeData().copyWith(
-                                  colorScheme: const ColorScheme.light(
-                                      primary: primaryColor,
-                                      onPrimary: Colors.white)),
-                              child: TimePickerDialog(
-                                initialTime: _selectTime,
-                              ),
-                            );
+                                data: ThemeData().copyWith(
+                                    colorScheme: const ColorScheme.light(
+                                        primary: primaryColor,
+                                        onPrimary: Colors.white)),
+                                child: MediaQuery(
+                                  data: MediaQuery.of(context)
+                                      .copyWith(alwaysUse24HourFormat: false),
+                                  child: Localizations.override(
+                                    context: context,
+                                    locale: const Locale('vi',
+                                        ''), // Set the locale to Vietnamese
+                                    child: child!,
+                                  ),
+                                ));
                           },
                         ).then((value) {
                           if (!Utils().checkTimeAfterNow1Hour(

@@ -31,7 +31,8 @@ class PlanService {
     departure:[${model.longitude},${model.latitude}]
     destinationId:${model.locationId}
     gcoinBudgetPerCapita:${model.gcoinBudget}
-    memberLimit:${model.memberLimit}
+    maxMember:${model.memberLimit}
+    maxMemberWeight:${model.maxMemberWeight}
     name:"${model.name}"
     note: ${json.encode(model.note).toString()}
     periodCount:${model.numOfExpPeriod}
@@ -55,7 +56,8 @@ class PlanService {
     departure:[${model.longitude},${model.latitude}]
     destinationId:${model.locationId}
     gcoinBudgetPerCapita:${model.gcoinBudget}
-    memberLimit:${model.memberLimit}
+    maxMember:${model.memberLimit}
+    maxMemberWeight:${model.maxMemberWeight! + 1}
     name:"${model.name}"
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
@@ -97,7 +99,7 @@ class PlanService {
         id
         planId
         total
-        serveDateIndexes
+        serveDates
         note
         createdAt
         period
@@ -165,6 +167,7 @@ query GetPlanById(\$planId: Int){
       startDate
       endDate
       accountId
+      joinMethod
       gcoinBudgetPerCapita
       currentGcoinBudget
       travelDuration
@@ -178,7 +181,8 @@ query GetPlanById(\$planId: Int){
           duration
         }
       }
-      memberLimit
+      maxMember
+      maxMemberWeight
       savedContacts {
         name
         phone
@@ -197,10 +201,11 @@ query GetPlanById(\$planId: Int){
         planId
         deposit
         total
-        serveDateIndexes
+        serveDates
         note
         createdAt
         period
+        type
         supplier {
           id
           phone
@@ -237,10 +242,9 @@ query GetPlanById(\$planId: Int){
         id
       }
       tempOrders{
-        guid
         cart
         type
-        serveDateIndexes
+        serveDates
         period
         note
       }
@@ -287,7 +291,11 @@ query GetPlanById(\$planId: Int){
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  plans(first: 50){
+  plans(first: 50
+  order: {
+  id:DESC
+}
+  ){
     nodes{
       id
       name
@@ -446,12 +454,13 @@ query GetPlanById(\$planId: Int){
     return rs;
   }
 
-  Future<int?> joinPlan(int planId, int weight) async {
+  Future<int?> joinPlan(int planId, int weight, List<String> names) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
   joinPlan(dto: {
+    companions:${names.map((e) => json.encode(e)).toList()}
     planId: $planId
     weight: $weight
   }){
@@ -511,13 +520,13 @@ mutation{
     }
   }
 
-  Future<bool> updateJoinMethod(int planId) async {
+  Future<bool> updateJoinMethod(int planId, String method) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
-  updatePlanJoinMethod(dto: {
-    joinMethod:SCAN,
+  changePlanJoinMethod(dto: {
+    joinMethod:$method,
     planId:$planId
   }){
     id
@@ -528,7 +537,7 @@ mutation{
         throw Exception(result.exception);
       }
 
-      int? res = result.data!['updatePlanJoinMethod']['id'];
+      int? res = result.data!['changePlanJoinMethod']['id'];
       if (res == null || res == 0) {
         return false;
       }

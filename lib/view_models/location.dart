@@ -15,7 +15,6 @@ class LocationViewModel {
   double longitude;
   String address;
   ProvinceViewModel province;
-  int? suggestedTripLength;
   List<EmergencyContactViewModel>? emergencyContacts;
   List<CommentViewModel>? comments;
 
@@ -32,7 +31,6 @@ class LocationViewModel {
       required this.address,
       required this.province,
       this.comments,
-      this.suggestedTripLength,
       this.emergencyContacts,});
 
   factory LocationViewModel.fromJson(Map<String, dynamic> json) =>
@@ -47,7 +45,6 @@ class LocationViewModel {
           latitude: json["coordinate"]["coordinates"][1].toDouble(),
           longitude: json["coordinate"]["coordinates"][0].toDouble(),
           address: json["address"],
-          suggestedTripLength:1,
           province: ProvinceViewModel.fromJson(json["province"]),
           comments: List<CommentViewModel>.from(json['comments'].map((e) => CommentViewModel.fromJson(e))).toList(),
           emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),);

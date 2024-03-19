@@ -164,12 +164,12 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   }
 
   buildJoinServiceInfo() {
-    List<int> indexRoomOrder = [];
-    List<int> indexFoodOrder = [];
+    List<String> indexRoomOrder = [];
+    List<String> indexFoodOrder = [];
 
     if (roomOrderList.isNotEmpty) {
       for (final order in roomOrderList) {
-        for (final index in order.serveDateIndexes) {
+        for (final index in order.serveDates) {
           if (!indexRoomOrder.contains(index)) {
             indexRoomOrder.add(index);
           }
@@ -178,7 +178,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     }
     if (foodOrderList.isNotEmpty) {
       for (final order in foodOrderList) {
-        for (final index in order.serveDateIndexes) {
+        for (final index in order.serveDates) {
           if (!indexFoodOrder.contains(index)) {
             indexFoodOrder.add(index);
           }
@@ -188,20 +188,20 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     for (final day in indexRoomOrder) {
       var orderList = [];
       for (final order in roomOrderList) {
-        if (order.serveDateIndexes.contains(day)) {
+        if (order.serveDates.contains(day)) {
           orderList.add(order);
         }
       }
-      listRoom.add(PlanJoinServiceInfor(dayIndex: day, orderList: orderList));
+      listRoom.add(PlanJoinServiceInfor(dayIndex: DateTime.parse(day).difference(widget.plan!.startDate!).inDays, orderList: orderList));
     }
     for (final day in indexFoodOrder) {
       var orderList = [];
       for (final order in foodOrderList) {
-        if (order.serveDateIndexes.contains(day)) {
+        if (order.serveDates.contains(day)) {
           orderList.add(order);
         }
       }
-      listFood.add(PlanJoinServiceInfor(dayIndex: day, orderList: orderList));
+      listFood.add(PlanJoinServiceInfor(dayIndex: DateTime.parse(day).difference(widget.plan!.startDate!).inDays, orderList: orderList));
     }
   }
 
@@ -331,11 +331,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             ),
                       ]),
                 ),
-              if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty)
+              if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty && widget.plan!.note! != 'null')
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty)
+              if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty && widget.plan!.note! != 'null')
                 Container(
                   width: 100.w,
                   padding:
@@ -377,17 +377,6 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           ),
                         ),
                         if (_isShowNote) HtmlWidget(widget.plan!.note ?? ''),
-
-                        // HtmlEditor(controller: controller,
-                        // htmlEditorOptions: HtmlEditorOptions(
-                        //   disabled: true,
-                        //   initialText: widget.plan!.note
-                        // ),
-                        // otherOptions: const OtherOptions(
-                        //   height: 200,
-                        // ),
-
-                        // )
                       ]),
                 ),
               if (widget.plan!.savedContacts != null)
@@ -465,7 +454,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               Text(
                                 widget.isJoin
                                     ? 'Dịch vụ chuyến đi'
-                                    : 'Đơn hàng mẫu đã lên',
+                                    : 'Kinh phí dự trù',
                                 style: const TextStyle(fontSize: 16),
                               ),
                               const Spacer(),
@@ -633,7 +622,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                               padding: const EdgeInsets.only(
                                                   left: 16),
                                               child: Text(
-                                                'Đơn ${sup.orderList.indexOf(order) + 1} - ${Utils().getPeriodString(order['period'])['text']} ${buildServingDatesText(order['servingDates'])} - ${(order['total'] / 100).toInt()} GCOIN',
+                                                'Đơn ${sup.orderList.indexOf(order) + 1} - ${Utils().getPeriodString(order['period'])['text']} ${buildServingDatesText(order['serveDates'])} - ${(order['total'] / 100).toInt()} GCOIN',
                                                 style: const TextStyle(
                                                     fontSize: 17,
                                                     fontWeight:
@@ -692,7 +681,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                   ),
                                   const Spacer(),
                                   Text(
-                                    '${order['gcoinAmount']} GCOIN',
+                                    '${NumberFormat.simpleCurrency(decimalDigits: 0, locale: 'vi_VN', name: '').format(order['gcoinAmount'])}GCOIN',
                                     style: const TextStyle(
                                         fontSize: 18,
                                         fontWeight: FontWeight.bold),
@@ -733,7 +722,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               ),
                               const Spacer(),
                               Text(
-                                '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} GCOIN',
+                                '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(total)}GCOIN',
                                 style: const TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
                               )
@@ -747,7 +736,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             ),
                             const Spacer(),
                             Text(
-                              '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(budgetPerCapita)} GCOIN',
+                              '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(budgetPerCapita)}GCOIN',
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
                             )
@@ -844,9 +833,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   buildServingDatesText(List<dynamic> serveDateIndexes) {
     if (serveDateIndexes.length == 1) {
       return DateFormat('dd/MM').format(
-          widget.plan!.startDate!.add(Duration(days: serveDateIndexes[0])));
+          DateTime.parse(serveDateIndexes[0]));
     } else {
-      return '${DateFormat('dd/MM').format(widget.plan!.startDate!.add(Duration(days: serveDateIndexes[0])))} (+${serveDateIndexes.length - 1} ngày)';
+      return '${DateFormat('dd/MM').format( DateTime.parse(serveDateIndexes[0]))} (+${serveDateIndexes.length - 1} ngày)';
     }
   }
 }

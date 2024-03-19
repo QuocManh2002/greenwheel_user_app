@@ -22,7 +22,7 @@ class ListOrderScreen extends StatelessWidget {
   final List<OrderViewModel> orders;
   final DateTime startDate;
   final int planId;
-  final void Function(String? tempOrderGuid) callback;
+  final void Function() callback;
   final LocationViewModel location;
   final int memberLimit;
   final double? availableGcoinAmount;

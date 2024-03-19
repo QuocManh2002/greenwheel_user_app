@@ -29,7 +29,7 @@ class ServiceMainScreen extends StatefulWidget {
   final bool? isOrder;
   final double? availableGcoinAmount;
   final bool? isFromTempOrder;
-  final void Function(String? orderGuid) callbackFunction;
+  final void Function() callbackFunction;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();

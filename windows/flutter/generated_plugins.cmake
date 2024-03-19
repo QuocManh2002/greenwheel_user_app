@@ -6,7 +6,9 @@ list(APPEND FLUTTER_PLUGIN_LIST
   connectivity_plus
   firebase_auth
   firebase_core
+  flutter_localization
   permission_handler_windows
+  printing
   rive_common
   share_plus
   smart_auth

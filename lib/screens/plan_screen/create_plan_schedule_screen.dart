@@ -386,7 +386,7 @@ testList = _planService.ConvertPLanJsonToObject(_startDate, _scheduleText);
                           details: details,
                           type: item['type'],
                           period: item['period'],
-                          serveDateIndexes: item['servingDates'],
+                          serveDates: item['servingDates'],
                           total: double.parse(item['total'].toString()),
                           createdAt: DateTime.parse(item['createdAt']),
                           supplier: SupplierViewModel(id: item['supplierId'], name: item['supplierName'], phone: item['supplierPhone'], thumbnailUrl: item['supplierImageUrl'], address: item['supplierAddress']), );

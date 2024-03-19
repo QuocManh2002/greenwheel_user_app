@@ -51,7 +51,7 @@ class CartScreen extends StatefulWidget {
   final Session session;
   final bool? isOrder;
   final bool? isFromTempOrder;
-  final void Function(String? orderGuid) callbackFunction;
+  final void Function() callbackFunction;
   final bool? isChangeCart;
   final String? orderGuid;
   final double? availableGcoinAmount;
@@ -673,14 +673,9 @@ class _CartScreenState extends State<CartScreen> {
   addOrder() async {
     var total = 0;
     var order = convertCart();
-    var startDate = DateTime.parse(
-        sharedPreferences.getString('plan_start_date') ??
-            widget.startDate.toString());
-    List<int> servingDateIndexs = [
-      for (final date in _servingDates) date.difference(startDate).inDays
-    ];
     List<OrderDetailViewModel> details = [];
     List<Map> detailsMap = [];
+    List<String> _serveDates = _servingDates.map((e) => e.toLocal().toString().split(' ')[0]).toList();
     for (final item in list) {
       total += item.product.price * item.qty;
       details.add(OrderDetailViewModel(
@@ -700,8 +695,8 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     final tempOrder = {
-      'total': total * servingDateIndexs.length,
-      'servingDates': servingDateIndexs,
+      'total': total * _servingDates.length,
+      'serveDates': _serveDates,
       'period': order.period,
       'details': detailsMap,
       'type': widget.serviceType.name,
@@ -734,14 +729,14 @@ class _CartScreenState extends State<CartScreen> {
         desc: "Ấn tiếp tục để trở về",
         btnOkText: "Tiếp tục",
         btnOkOnPress: () {
-          widget.callbackFunction(null);
+          widget.callbackFunction();
           Navigator.of(context).pop();
           Navigator.of(context).pop();
           Navigator.of(context).pop();
         },
       ).show();
     } else {
-      if ((total/100 * servingDateIndexs.length) > widget.availableGcoinAmount!) {
+      if ((total/100 * _servingDates.length) > widget.availableGcoinAmount!) {
         AwesomeDialog(
                 context: context,
                 animType: AnimType.rightSlide,
@@ -786,7 +781,7 @@ class _CartScreenState extends State<CartScreen> {
                     note: noteController.text,
                     type: widget.serviceType.name,
                     period: order.period,
-                    serveDateIndexes: servingDateIndexs,
+                    serveDates: _servingDates.map((e) => json.encode(e.toLocal().toString().split(' ')[0])).toList(),
                     supplier: widget.supplier),
                 sharedPreferences.getInt('planId')!);
             if (rs != 0) {
@@ -802,7 +797,7 @@ class _CartScreenState extends State<CartScreen> {
                 desc: "Ấn tiếp tục để trở về",
                 btnOkText: "Tiếp tục",
                 btnOkOnPress: () {
-                  widget.callbackFunction(null);
+                  widget.callbackFunction();
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();
                   Navigator.of(context).pop();

@@ -13,7 +13,7 @@ import 'package:greenwheel_user_app/config/token_generator.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/temp_plan.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/temp_plan.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
@@ -31,10 +31,12 @@ class SharePlanScreen extends StatefulWidget {
       required this.planId,
       required this.planMembers,
       required this.isFromHost,
+      required this.joinMethod,
       required this.isEnableToJoin});
   final int planId;
   final bool isEnableToJoin;
   final bool isFromHost;
+  final String joinMethod;
   final List<PlanMemberViewModel> planMembers;
 
   @override
@@ -170,15 +172,15 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                   const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               btnOkColor: primaryColor,
               btnOkOnPress: () {
+                _planMembers.add(PlanMemberViewModel(
+                    name: _customer!.name,
+                    memberId: _customer!.id,
+                    phone: _customer!.phone,
+                    accountId: 1,
+                    weight: 1,
+                    status: "INVITED"));
                 setState(() {
                   _isSearch = false;
-                  _planMembers.add(PlanMemberViewModel(
-                      name: _customer!.name,
-                      memberId: _customer!.id,
-                      phone: _customer!.phone,
-                      accountId: 1,
-                      weight: 1,
-                      status: "INVITED"));
                 });
               },
               btnOkText: 'Ok')
@@ -224,94 +226,99 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
       body: Stack(
         children: [
           Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            Padding(
-              padding: const EdgeInsets.all(32),
-              child: TextField(
-                cursorColor: primaryColor,
-                controller: phoneSearch,
-                onChanged: (value) {
-                  setState(() {
-                    _isSearch = true;
-                  });
-                  // Future.delayed(const Duration(seconds: 2), () {
-                  //   setState(() {
-                  //     _isSearchingLoading = false;
-                  //   });
-                  // });
-                  if (value.length == 10) {
-                    searchCustomer();
-                  } else {
-                    _isSearchingLoading = true;
-                  }
-                  if (value.isEmpty) {
+            if (widget.joinMethod == 'INVITE')
+              Padding(
+                padding: const EdgeInsets.all(32),
+                child: TextField(
+                  cursorColor: primaryColor,
+                  controller: phoneSearch,
+                  onChanged: (value) {
                     setState(() {
-                      _isSearch = false;
+                      _isSearch = true;
                     });
-                  }
-                },
-                style: const TextStyle(fontSize: 18),
-                keyboardType: TextInputType.phone,
-                decoration: const InputDecoration(
-                  hintText: "Tìm số điện thoại",
-                  focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(14)),
-                      borderSide: BorderSide(color: primaryColor, width: 1.8)),
-                  enabledBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(14)),
-                      borderSide: BorderSide(color: primaryColor)),
+                    if (value.length == 10) {
+                      searchCustomer();
+                    } else {
+                      _isSearchingLoading = true;
+                    }
+                    if (value.isEmpty) {
+                      setState(() {
+                        _isSearch = false;
+                      });
+                    }
+                  },
+                  style: const TextStyle(fontSize: 18),
+                  keyboardType: TextInputType.phone,
+                  decoration: const InputDecoration(
+                    hintText: "Tìm số điện thoại",
+                    focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(14)),
+                        borderSide:
+                            BorderSide(color: primaryColor, width: 1.8)),
+                    enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(14)),
+                        borderSide: BorderSide(color: primaryColor)),
+                  ),
                 ),
               ),
-            ),
-            RepaintBoundary(
-              key: _qrkey,
-              child: QrImageView(
-                data: TokenGenerator.generateToken(
-                    TempPlan(
-                      isFromHost: widget.isFromHost,
-                      planId: widget.planId,
-                      isEnableToJoin: widget.isEnableToJoin,
-                    ),
-                    "plan"),
-                version: QrVersions.auto,
-                size: 80.w,
-                gapless: true,
-                errorStateBuilder: (context, error) {
-                  return const Text(
-                    "Something went wrong! please try again!",
-                    textAlign: TextAlign.center,
-                  );
-                },
-              ),
-            ),
-            SizedBox(
-              height: 5.h,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
+            if (widget.joinMethod == 'SCAN')
+              Column(
                 children: [
-                  Expanded(
-                      child: ElevatedButton.icon(
-                          style: elevatedButtonStyle.copyWith(
-                              minimumSize:
-                                  const MaterialStatePropertyAll(Size(0, 50))),
-                          onPressed: onSave,
-                          icon: const Icon(Icons.file_download_outlined),
-                          label: const Text("Tải xuống"))),
-                  const SizedBox(
-                    width: 16,
+                  SizedBox(
+                    height: 3.h,
                   ),
-                  Expanded(
-                      child: ElevatedButton.icon(
-                          style: elevatedButtonStyleNoSize.copyWith(
-                              minimumSize:
-                                  const MaterialStatePropertyAll(Size(0, 50))),
-                          onPressed: onSend,
-                          icon: const Icon(Icons.share),
-                          label: const Text("Gửi mã")))
+                  RepaintBoundary(
+                    key: _qrkey,
+                    child: QrImageView(
+                      data: TokenGenerator.generateToken(
+                          TempPlan(
+                            isFromHost: widget.isFromHost,
+                            planId: widget.planId,
+                            isEnableToJoin: widget.isEnableToJoin,
+                          ),
+                          "plan"),
+                      version: QrVersions.auto,
+                      size: 80.w,
+                      gapless: true,
+                      errorStateBuilder: (context, error) {
+                        return const Text(
+                          "Something went wrong! please try again!",
+                          textAlign: TextAlign.center,
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(
+                    height: 5.h,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                            child: ElevatedButton.icon(
+                                style: elevatedButtonStyle.copyWith(
+                                    minimumSize: const MaterialStatePropertyAll(
+                                        Size(0, 50))),
+                                onPressed: onSave,
+                                icon: const Icon(Icons.file_download_outlined),
+                                label: const Text("Tải xuống"))),
+                        const SizedBox(
+                          width: 16,
+                        ),
+                        Expanded(
+                            child: ElevatedButton.icon(
+                                style: elevatedButtonStyleNoSize.copyWith(
+                                    minimumSize: const MaterialStatePropertyAll(
+                                        Size(0, 50))),
+                                onPressed: onSend,
+                                icon: const Icon(Icons.share),
+                                label: const Text("Gửi mã")))
+                      ],
+                    ),
+                  )
                 ],
               ),
-            )
           ]),
           if (_isSearch)
             Padding(
@@ -432,13 +439,6 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                                   )
                                 ],
                               ),
-                    // Padding(
-                    //   padding: EdgeInsets.only(left: 20.w, right: 12),
-                    //   child: Container(
-                    //     height: 1.7,
-                    //     color: Colors.black26,
-                    //   ),
-                    // )
                   ],
                 ),
               ),

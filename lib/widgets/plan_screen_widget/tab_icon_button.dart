@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:sizer2/sizer2.dart';
 class TabIconButton extends StatelessWidget {
   const TabIconButton(
       {super.key,
@@ -21,7 +22,6 @@ class TabIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      // height: hasHeight != null ? 13.h : 10.h,
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       decoration: BoxDecoration(
         color: isSelected ? primaryColor : Colors.white,
@@ -36,11 +36,13 @@ class TabIconButton extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.start,
         children: [
           const SizedBox(height: 12,),
           SvgPicture.asset(
             isSelected ? iconSelectedUrl : iconDefaultUrl,
-            height: 32,
+            height: 30,
+            fit: BoxFit.fill,
           ),
           const SizedBox(height: 4,),
           Text(
@@ -52,7 +54,8 @@ class TabIconButton extends StatelessWidget {
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected ? Colors.white : primaryColor),
           ),
-          const SizedBox(height: 12,)
+                    const SizedBox(height: 12,),
+
         ],
       ),
     );

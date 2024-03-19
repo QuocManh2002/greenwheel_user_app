@@ -190,4 +190,53 @@ mutation{
       throw Exception(error);
     }
   }
+
+  Future<List<CustomerViewModel>> GetCustomerById(int id) async {
+    try {
+      QueryResult result = await client.query(
+        QueryOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql("""
+{
+    accounts
+    (
+      where: { 
+        id: {eq: $id } 
+        }
+      )
+        {
+        nodes {
+      id
+      defaultAddress
+      defaultCoordinate {
+        coordinates
+      }
+      name
+      avatarUrl
+      isMale
+      gcoinBalance
+      phone
+    }
+    }
+}
+          """),
+        ),
+      );
+
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      List? res = result.data!['accounts']['nodes'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+      print(res);
+      List<CustomerViewModel> users =
+          res.map((users) => CustomerViewModel.fromJson(users)).toList();
+      return users;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
 }

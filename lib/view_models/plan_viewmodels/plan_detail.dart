@@ -21,7 +21,7 @@ class PlanDetail {
   DateTime? endDate;
   String? joinMethod;
   List<dynamic> schedule;
-  int memberLimit;
+  int maxMember;
   String status;
   String locationName;
   int locationId;
@@ -40,13 +40,14 @@ class PlanDetail {
   int? memberCount;
   double? currentGcoinBudget;
   List<SurchargeViewModel>? surcharges;
+  int? maxMemberWeight;
 
   PlanDetail(
       {required this.id,
       required this.startDate,
       required this.endDate,
       required this.schedule,
-      required this.memberLimit,
+      required this.maxMember,
       required this.status,
       required this.locationName,
       required this.locationId,
@@ -67,6 +68,7 @@ class PlanDetail {
       this.note,
       this.currentGcoinBudget,
       this.surcharges,
+      this.maxMemberWeight,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -77,9 +79,10 @@ class PlanDetail {
         startDate: DateTime.parse(json["startDate"]),
         endDate: DateTime.parse(json["endDate"]),
         schedule: json["schedule"],
-        memberLimit: json["memberLimit"],
+        maxMember: json["maxMember"],
         status: json["status"],
         leaderId: json['accountId'],
+        maxMemberWeight: json['maxMemberWeight'],
         travelDuration: json['travelDuration'],
         locationName: json["destination"]["name"],
         locationId: json["destination"]["id"],
@@ -102,7 +105,7 @@ class PlanDetail {
         "startDate": startDate!.toIso8601String(),
         "endDate": endDate!.toIso8601String(),
         "schedule": schedule,
-        "memberLimit": memberLimit,
+        "memberLimit": maxMember,
         "status": status,
         "locationName": locationName,
         "locationId": locationId,

@@ -23,11 +23,11 @@ class _BaseInformationState extends State<BaseInformationScreen> {
   int _selectedCombo = 0;
   late FixedExtentScrollController _scrollController;
   bool isWarning = false;
-  ComboDate? _suggestComboDate;
   DateTime? _focusedDay;
   DateTime? _selectedDate;
   bool _isSelecting = false;
   TextEditingController _memberController = TextEditingController();
+  TextEditingController _maxMemberWeightController = TextEditingController();
 
   onChangeQuantity(String type) {
     if (type == "add") {
@@ -40,9 +40,31 @@ class _BaseInformationState extends State<BaseInformationScreen> {
         _memberController.text =
             (int.parse(_memberController.text) - 1).toString();
       });
+      if (int.parse(_memberController.text) <
+          int.parse(_maxMemberWeightController.text)) {
+        setState(() {
+          _maxMemberWeightController.text = _memberController.text;
+        });
+      }
     }
     sharedPreferences.setInt(
         'plan_number_of_member', int.parse(_memberController.text));
+  }
+
+  onChangeMaxWeightMember(String type) {
+    if (type == "add") {
+      setState(() {
+        _maxMemberWeightController.text =
+            (int.parse(_maxMemberWeightController.text) + 1).toString();
+      });
+    } else {
+      setState(() {
+        _maxMemberWeightController.text =
+            (int.parse(_maxMemberWeightController.text) - 1).toString();
+      });
+    }
+    sharedPreferences.setInt(
+        'plan_max_member_weight', int.parse(_maxMemberWeightController.text));
   }
 
   @override
@@ -54,9 +76,11 @@ class _BaseInformationState extends State<BaseInformationScreen> {
 
   setUpData() {
     int? member = sharedPreferences.getInt('plan_number_of_member');
-    int? numOfExpPeriod = sharedPreferences.getInt('numOfExpPeriod');
+    int? numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
+    int? maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
     ComboDate _selectedComboDate;
     _memberController.text = '1';
+    _maxMemberWeightController.text = '0';
     _focusedDay = DateTime.now().add(const Duration(days: 4));
     sharedPreferences.setString('plan_closeRegDate', _focusedDay.toString());
     if (numOfExpPeriod != null) {
@@ -71,10 +95,9 @@ class _BaseInformationState extends State<BaseInformationScreen> {
             FixedExtentScrollController(initialItem: _selectedComboDate.id - 1);
       });
     } else {
-      _selectedComboDate = listComboDate.firstWhere((element) =>
-          element.duration == widget.location.suggestedTripLength! * 2);
+      _selectedComboDate = listComboDate.first;
       sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id - 1);
-      sharedPreferences.setInt('numOfExpPeriod',
+      sharedPreferences.setInt('initNumOfExpPeriod',
           _selectedComboDate.numberOfDay + _selectedComboDate.numberOfNight);
       setState(() {
         _selectedCombo = _selectedComboDate.id - 1;
@@ -90,8 +113,13 @@ class _BaseInformationState extends State<BaseInformationScreen> {
     } else {
       sharedPreferences.setInt('plan_number_of_member', 1);
     }
-    _suggestComboDate = listComboDate.firstWhere((element) =>
-        element.duration == widget.location.suggestedTripLength! * 2);
+    if (maxMemberWeight != null) {
+      setState(() {
+        _maxMemberWeightController.text = maxMemberWeight.toString();
+      });
+    } else {
+      sharedPreferences.setInt('plan_max_member_weight', 0);
+    }
   }
 
   @override
@@ -131,22 +159,11 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                         setState(() {
                           _selectedCombo = value;
                         });
-                        if (listComboDate[value].duration <
-                            widget.location.suggestedTripLength! * 2) {
-                          setState(() {
-                            isWarning = true;
-                          });
-                        } else {
-                          setState(() {
-                            isWarning = false;
-                          });
-                        }
                         sharedPreferences.setInt('plan_combo_date', value);
                         sharedPreferences.setInt(
-                            'numOfExpPeriod',
+                            'initNumOfExpPeriod',
                             listComboDate[value].numberOfDay +
                                 listComboDate[value].numberOfNight);
-                        sharedPreferences.setBool('plan_is_change', false);
                         Future.delayed(
                           const Duration(seconds: 2),
                           () {
@@ -198,12 +215,6 @@ class _BaseInformationState extends State<BaseInformationScreen> {
           SizedBox(
             height: 3.h,
           ),
-          if (isWarning)
-            Text(
-              'Địa điểm này thích hợp hơn với các chuyến đi có thời gian trải nghiệm từ ${_suggestComboDate!.numberOfDay} ngày, ${_suggestComboDate!.numberOfNight} đêm.',
-              style: const TextStyle(fontSize: 14, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
           const Text(
             'Số lượng thành viên tối đa',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -236,8 +247,6 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                       },
                       onChange: (value) {
                         if (value == null || value.isEmpty) {
-                          // _memberController.text = '1';
-                          // _selectedQuantity = 1;
                           sharedPreferences.setInt('plan_number_of_member', 0);
                           Fluttertoast.showToast(
                               msg: "Số lượng thành viên không được để trống",
@@ -290,6 +299,99 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                   onPressed: () {
                     if (int.parse(_memberController.text) < 20) {
                       onChangeQuantity('add');
+                    }
+                  },
+                  icon: const Icon(Icons.add)),
+            ],
+          ),
+          SizedBox(
+            height: 3.h,
+          ),
+          const Text(
+            'Số người đi cùng tối đa',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          ),
+          SizedBox(
+            height: 2.h,
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                  color: primaryColor,
+                  iconSize: 30,
+                  onPressed: () {
+                    if (int.parse(_maxMemberWeightController.text) > 0) {
+                      onChangeMaxWeightMember("subtract");
+                    }
+                  },
+                  icon: const Icon(Icons.remove)),
+              SizedBox(
+                  width: 10.h,
+                  height: 5.h,
+                  child: defaultTextFormField(
+                      maxLength: 2,
+                      padding: const EdgeInsets.all(16),
+                      onTap: () {
+                        setState(() {
+                          _isSelecting = false;
+                        });
+                      },
+                      onChange: (value) {
+                        if (value == null || value.isEmpty) {
+                          sharedPreferences.setInt('plan_max_member_weight', 0);
+                          Fluttertoast.showToast(
+                              msg: "Số lượng người đi cùng không được để trống",
+                              toastLength: Toast.LENGTH_SHORT,
+                              gravity: ToastGravity.CENTER,
+                              timeInSecForIosWeb: 1,
+                              backgroundColor: Colors.white,
+                              textColor: Colors.black,
+                              fontSize: 18.0);
+                        } else {
+                          var selectedNumber =
+                              int.tryParse(_memberController.text);
+                          if (selectedNumber == null) {
+                            sharedPreferences.setInt(
+                                'plan_max_member_weight', 0);
+                            Fluttertoast.showToast(
+                                msg: "Số lượng người đi cùng không hợp lệ",
+                                toastLength: Toast.LENGTH_SHORT,
+                                gravity: ToastGravity.CENTER,
+                                timeInSecForIosWeb: 1,
+                                backgroundColor: Colors.white,
+                                textColor: Colors.black,
+                                fontSize: 18.0);
+                          } else {
+                            if (selectedNumber < 0) {
+                              sharedPreferences.setInt(
+                                  'plan_max_member_weight', 0);
+                              Fluttertoast.showToast(
+                                  msg: "Số lượng người đi cùng không hợp lệ",
+                                  toastLength: Toast.LENGTH_SHORT,
+                                  gravity: ToastGravity.CENTER,
+                                  timeInSecForIosWeb: 1,
+                                  backgroundColor: Colors.white,
+                                  textColor: Colors.black,
+                                  fontSize: 18.0);
+                            } else {
+                              sharedPreferences.setInt(
+                                  'plan_max_member_weight', int.parse(value));
+                            }
+                          }
+                        }
+                      },
+                      borderSize: 2,
+                      textAlign: TextAlign.center,
+                      controller: _maxMemberWeightController,
+                      inputType: TextInputType.number)),
+              IconButton(
+                  color: primaryColor,
+                  iconSize: 30,
+                  onPressed: () {
+                    if (int.parse(_maxMemberWeightController.text) + 1 <
+                       ( int.parse(_memberController.text) / 3 ).ceil()) {
+                      onChangeMaxWeightMember('add');
                     }
                   },
                   icon: const Icon(Icons.add)),
