@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -11,8 +12,8 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_join_service_infor.dart';
 import 'package:intl/intl.dart';
 import 'package:open_file/open_file.dart';
 import 'package:path_provider/path_provider.dart';
@@ -71,10 +72,12 @@ buildMarkSvgImage(double size) => pw.SvgImage(
 Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   PlanService _planService = PlanService();
   CustomerService _cusomterService = CustomerService();
-  List<dynamic> roomOrderList = [];
-  List<dynamic> foodOrderList = [];
-  List<PlanJoinServiceInfor> listRoom = [];
-  List<PlanJoinServiceInfor> listFood = [];
+  // List<dynamic> roomOrderList = [];
+  // List<dynamic> foodOrderList = [];
+  // List<PlanJoinServiceInfor> listRoom = [];
+  // List<PlanJoinServiceInfor> listFood = [];
+  List<dynamic>? newRoomOrderList = [];
+  List<dynamic>? newFoodOrderList = [];
   PlanDetail? _plan =
       await _planService.GetPlanById(sharedPreferences.getInt('plan_id_pdf')!);
   final rs = await _cusomterService.GetCustomerById(_plan!.leaderId!);
@@ -83,54 +86,64 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
     title: 'Test Generate PDF',
   );
 
-  if (_plan.orders != null) {
-    for (final order in _plan.orders!) {
-      if (order.type == 'MEAL') {
-        foodOrderList.add(order);
-      } else {
-        roomOrderList.add(order);
-      }
-    }
-  }
-  List<int> indexRoomOrder = [];
-  List<int> indexFoodOrder = [];
+  // if (_plan.orders != null) {
+  //   for (final order in _plan.orders!) {
+  //     if (order.type == 'MEAL') {
+  //       foodOrderList.add(order);
+  //     } else {
+  //       roomOrderList.add(order);
+  //     }
+  //   }
+  // }
+  // List<int> indexRoomOrder = [];
+  // List<int> indexFoodOrder = [];
 
-  if (roomOrderList.isNotEmpty) {
-    for (final order in roomOrderList) {
-      for (final index in order.serveDateIndexes) {
-        if (!indexRoomOrder.contains(index)) {
-          indexRoomOrder.add(index);
-        }
-      }
-    }
-  }
-  if (foodOrderList.isNotEmpty) {
-    for (final order in foodOrderList) {
-      for (final index in order.serveDateIndexes) {
-        if (!indexFoodOrder.contains(index)) {
-          indexFoodOrder.add(index);
-        }
-      }
-    }
-  }
-  for (final day in indexRoomOrder) {
-    var orderList = [];
-    for (final order in roomOrderList) {
-      if (order.serveDateIndexes.contains(day)) {
-        orderList.add(order);
-      }
-    }
-    listRoom.add(PlanJoinServiceInfor(dayIndex: day, orderList: orderList));
-  }
-  for (final day in indexFoodOrder) {
-    var orderList = [];
-    for (final order in foodOrderList) {
-      if (order.serveDateIndexes.contains(day)) {
-        orderList.add(order);
-      }
-    }
-    listFood.add(PlanJoinServiceInfor(dayIndex: day, orderList: orderList));
-  }
+  final serviceMap = _plan.orders!.groupListsBy((e) => e.type);
+  newRoomOrderList = serviceMap.values
+      .where((e) => e.first.type == 'LODGING')
+      .toList()
+      .firstOrNull;
+  newFoodOrderList = serviceMap.values
+      .where((e) => e.first.type == 'MEAL')
+      .toList()
+      .firstOrNull;
+
+  // if (roomOrderList.isNotEmpty) {
+  //   for (final order in roomOrderList) {
+  //     for (final index in order.serveDates) {
+  //       if (!indexRoomOrder.contains(index)) {
+  //         indexRoomOrder.add(index);
+  //       }
+  //     }
+  //   }
+  // }
+  // if (foodOrderList.isNotEmpty) {
+  //   for (final order in foodOrderList) {
+  //     for (final index in order.serveDates) {
+  //       if (!indexFoodOrder.contains(index)) {
+  //         indexFoodOrder.add(index);
+  //       }
+  //     }
+  //   }
+  // }
+  // for (final day in indexRoomOrder) {
+  //   var orderList = [];
+  //   for (final order in roomOrderList) {
+  //     if (order.serveDates.contains(day)) {
+  //       orderList.add(order);
+  //     }
+  //   }
+  //   listRoom.add(PlanJoinServiceInfor(dayIndex: day, orderList: orderList));
+  // }
+  // for (final day in indexFoodOrder) {
+  //   var orderList = [];
+  //   for (final order in foodOrderList) {
+  //     if (order.serveDates.contains(day)) {
+  //       orderList.add(order);
+  //     }
+  //   }
+  //   listFood.add(PlanJoinServiceInfor(dayIndex: day, orderList: orderList));
+  // }
 
   final logoImage = pw.MemoryImage(
     (await rootBundle.load(app_logo)).buffer.asUint8List(),
@@ -161,7 +174,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                       pw.Padding(padding: const pw.EdgeInsets.only(top: 20)),
                       pw.Container(
                         alignment: pw.Alignment.center,
-                        child: pw.Text(_plan!.name!.toUpperCase(),
+                        child: pw.Text(_plan.name!.toUpperCase(),
                             style: pw.TextStyle(
                                 fontSize: 30,
                                 font: boldTtf,
@@ -230,84 +243,96 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                               fontSize: 17,
                               fontWeight: pw.FontWeight.bold)),
                       pw.SizedBox(height: 10),
-                      if (listRoom.isNotEmpty)
-                        pw.Padding(
-                            padding: const pw.EdgeInsets.only(left: 10),
-                            child: pw.Text('LƯU TRÚ',
-                                style: pw.TextStyle(
-                                    fontSize: 15,
-                                    font: ttf,
-                                    color:
-                                        const PdfColor.fromInt(0xffE4080A)))),
-                      if (listRoom.isNotEmpty)
-                        for (final day in listRoom)
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.only(left: 50),
-                            child: pw.Row(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text('- Ngày ${day.dayIndex + 1} - ',
-                                    style: pw.TextStyle(
-                                        fontSize: 14,
-                                        font: ttf,
-                                        fontWeight: pw.FontWeight.bold)),
-                                pw.Column(
-                                  children: day.orderList
-                                      .map((e) => pw.Text(
-                                            'Nghỉ ngơi tại khách sạn',
-                                            style: pw.TextStyle(
-                                                fontSize: 14,
-                                                font: ttf,
-                                                fontWeight: pw.FontWeight.bold),
-                                          ))
-                                      .toList(),
-                                )
-                              ],
-                            ),
-                          ),
-                      if (listFood.isNotEmpty)
-                        pw.Padding(
-                            padding: const pw.EdgeInsets.only(left: 10),
-                            child: pw.Text('ĂN UỐNG',
-                                style: pw.TextStyle(
-                                    fontSize: 15,
-                                    font: ttf,
-                                    color:
-                                        const PdfColor.fromInt(0xffE4080A)))),
-                      if (listFood.isNotEmpty)
-                        for (final day in listFood)
-                          pw.Padding(
-                            padding: const pw.EdgeInsets.only(left: 50),
-                            child: pw.Row(
-                              crossAxisAlignment: pw.CrossAxisAlignment.start,
-                              children: [
-                                pw.Text('- Ngày ${day.dayIndex + 1} - ',
-                                    style: pw.TextStyle(
-                                        fontSize: 14,
-                                        font: ttf,
-                                        fontWeight: pw.FontWeight.bold)),
-                                pw.Column(
-                                  children: day.orderList
-                                      .map((e) => pw.Text(
-                                            '${Utils().getPeriodString(e.period)['text']} - Nhà hàng',
-                                            style: pw.TextStyle(
-                                                fontSize: 14,
-                                                font: ttf,
-                                                fontWeight: pw.FontWeight.bold),
-                                          ))
-                                      .toList(),
-                                )
-                              ],
-                            ),
-                          ),
-                      if (listFood.isNotEmpty || listRoom.isNotEmpty)
-                        pw.SizedBox(height: 10),
-                      pw.Text('CHI PHÍ',
-                          style: pw.TextStyle(
-                              color: const PdfColor.fromInt(0xffE4080A),
-                              font: boldTtf,
-                              fontSize: 17,
-                              fontWeight: pw.FontWeight.bold)),
+                      pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          if (newRoomOrderList != null &&
+                              newRoomOrderList.isNotEmpty)
+                            buildServiceWidget(
+                                'LODGING', newRoomOrderList, ttf),
+                          if (newFoodOrderList != null &&
+                              newFoodOrderList.isNotEmpty)
+                            buildServiceWidget('MEAL', newFoodOrderList, ttf),
+                        ],
+                      ),
+                      // if (listRoom.isNotEmpty)
+                      //   pw.Padding(
+                      //       padding: const pw.EdgeInsets.only(left: 10),
+                      //       child: pw.Text('LƯU TRÚ',
+                      //           style: pw.TextStyle(
+                      //               fontSize: 15,
+                      //               font: ttf,
+                      //               color:
+                      //                   const PdfColor.fromInt(0xffE4080A)))),
+                      // if (listRoom.isNotEmpty)
+                      //   for (final day in listRoom)
+                      //     pw.Padding(
+                      //       padding: const pw.EdgeInsets.only(left: 50),
+                      //       child: pw.Row(
+                      //         crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      //         children: [
+                      //           pw.Text('- Ngày ${day.dayIndex + 1} - ',
+                      //               style: pw.TextStyle(
+                      //                   fontSize: 14,
+                      //                   font: ttf,
+                      //                   fontWeight: pw.FontWeight.bold)),
+                      //           pw.Column(
+                      //             children: day.orderList
+                      //                 .map((e) => pw.Text(
+                      //                       'Nghỉ ngơi tại khách sạn',
+                      //                       style: pw.TextStyle(
+                      //                           fontSize: 14,
+                      //                           font: ttf,
+                      //                           fontWeight: pw.FontWeight.bold),
+                      //                     ))
+                      //                 .toList(),
+                      //           )
+                      //         ],
+                      //       ),
+                      //     ),
+                      // if (listFood.isNotEmpty)
+                      //   pw.Padding(
+                      //       padding: const pw.EdgeInsets.only(left: 10),
+                      //       child: pw.Text('ĂN UỐNG',
+                      //           style: pw.TextStyle(
+                      //               fontSize: 15,
+                      //               font: ttf,
+                      //               color:
+                      //                   const PdfColor.fromInt(0xffE4080A)))),
+                      // if (listFood.isNotEmpty)
+                      //   for (final day in listFood)
+                      //     pw.Padding(
+                      //       padding: const pw.EdgeInsets.only(left: 50),
+                      //       child: pw.Row(
+                      //         crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      //         children: [
+                      //           pw.Text('- Ngày ${day.dayIndex + 1} - ',
+                      //               style: pw.TextStyle(
+                      //                   fontSize: 14,
+                      //                   font: ttf,
+                      //                   fontWeight: pw.FontWeight.bold)),
+                      //           pw.Column(
+                      //             children: day.orderList
+                      //                 .map((e) => pw.Text(
+                      //                       '${Utils().getPeriodString(e.period)['text']} - Nhà hàng',
+                      //                       style: pw.TextStyle(
+                      //                           fontSize: 14,
+                      //                           font: ttf,
+                      //                           fontWeight: pw.FontWeight.bold),
+                      //                     ))
+                      //                 .toList(),
+                      //           )
+                      //         ],
+                      //       ),
+                      //     ),
+                      // if (listFood.isNotEmpty || listRoom.isNotEmpty)
+                      //   pw.SizedBox(height: 10),
+                      // pw.Text('CHI PHÍ',
+                      //     style: pw.TextStyle(
+                      //         color: const PdfColor.fromInt(0xffE4080A),
+                      //         font: boldTtf,
+                      //         fontSize: 17,
+                      //         fontWeight: pw.FontWeight.bold)),
                       pw.SizedBox(height: 10),
                       pw.Padding(
                           padding: const pw.EdgeInsets.only(left: 10),
@@ -396,3 +421,81 @@ buildInfoRow(
             fontWeight: pw.FontWeight.bold,
           )),
     ]);
+
+buildServiceWidget(String type, List<dynamic> orders, pw.Font font) =>
+    pw.Column(
+      crossAxisAlignment: pw.CrossAxisAlignment.start,
+      children: [
+        pw.Padding(
+          padding: const pw.EdgeInsets.only(top: 4, left: 8),
+          child: pw.Container(
+            padding: const pw.EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            decoration: const pw.BoxDecoration(
+                color: PdfColor.fromInt(0xFF2ECC71),
+                borderRadius: pw.BorderRadius.all(pw.Radius.circular(8))),
+            child: pw.Text(
+              type == 'MEAL' ? 'Quán ăn/Nhà hàng' : 'Nhà nghỉ/Khách sạn',
+              style: pw.TextStyle(
+                  fontSize: 17,
+                  font: font,
+                  color: const PdfColor.fromInt(0xFFF2F2F2),
+                  fontWeight: pw.FontWeight.bold),
+            ),
+          ),
+        ),
+        for (final order in orders)
+          pw.Padding(
+            padding: const pw.EdgeInsets.only(left: 16),
+            child: pw.Row(
+              children: [
+                pw.SizedBox(
+                    width: 70,
+                    child: pw.Text(
+                      'Đơn ${orders.indexOf(order) + 1}',
+                      style: pw.TextStyle(
+                          font: font,
+                          fontSize: 17,
+                          fontWeight: pw.FontWeight.bold),
+                      overflow: pw.TextOverflow.clip,
+                    )),
+                pw.SizedBox(
+                  width: 270,
+                  child: pw.Text(
+                    '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ${buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}',
+                    style: pw.TextStyle(
+                        font: font,
+                        fontSize: 17,
+                        fontWeight: pw.FontWeight.bold),
+                    overflow: pw.TextOverflow.clip,
+                  ),
+                ),
+                pw.Spacer(),
+                pw.Text(
+                  NumberFormat.simpleCurrency(
+                          locale: 'vi_VN', decimalDigits: 0, name: 'GCOIN')
+                      .format(((order.runtimeType == OrderViewModel
+                                  ? order.total
+                                  : order['total']) /
+                              100)
+                          .toInt()),
+                  style: pw.TextStyle(
+                      font: font, fontSize: 17, fontWeight: pw.FontWeight.bold),
+                  overflow: pw.TextOverflow.clip,
+                ),
+                // pw.Text
+                // SvgPicture.asset(
+                //   gcoin_logo,
+                //   height: 23,
+                // )
+              ],
+            ),
+          ),
+      ],
+    );
+buildServingDatesText(List<dynamic> serveDateIndexes) {
+  if (serveDateIndexes.length == 1) {
+    return DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]));
+  } else {
+    return '${DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]))} (+${serveDateIndexes.length - 1} ngày)';
+  }
+}

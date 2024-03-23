@@ -53,7 +53,7 @@ dependencies:
   dart_jts: ^0.3.0+1
   cached_network_image: ^3.3.1
   flutter_polyline_points: ^2.0.0
-  mapbox_maps_flutter: ^0.5.1
+  mapbox_maps_flutter: ^1.0.0
   restart_app: ^1.2.1
   flutter_local_notifications: ^16.3.2
   vn_badwords_filter: ^1.0.2

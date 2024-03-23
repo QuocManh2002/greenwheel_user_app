@@ -18,10 +18,12 @@ class JoinConfirmPlanScreen extends StatefulWidget {
       required this.plan,
       required this.isPublic,
       this.callback,
+      this.onPublicizePlan,
       required this.isConfirm});
   final PlanDetail plan;
   final bool isPublic;
   final bool isConfirm;
+  final void Function(bool isFromJoinScreen)? onPublicizePlan;
   final void Function()? callback;
 
   @override
@@ -397,7 +399,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                   alignment: Alignment.centerRight,
                   child: ElevatedButton(
                     style: elevatedButtonStyle.copyWith(
-                      padding:const MaterialStatePropertyAll(EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
+                      padding: const MaterialStatePropertyAll(
+                          EdgeInsets.symmetric(horizontal: 8, vertical: 4)),
                       minimumSize: MaterialStatePropertyAll(Size(40.w, 5.h)),
                       maximumSize: MaterialStatePropertyAll(Size(40.w, 5.h)),
                     ),
@@ -548,10 +551,6 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                 final rs = await _planService.joinPlan(
                     widget.plan.id, weight, companionNames);
                 if (rs != null) {
-                  // if (widget.isPublic) {
-                  //   _planService.publicizePlan(widget.plan.id);
-                  // }
-                  // ignore: use_build_context_synchronously
                   AwesomeDialog(
                     // ignore: use_build_context_synchronously
                     context: context,
@@ -561,15 +560,15 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                     title: "Tham gia kế hoạch thành công",
                     desc: "Ấn tiếp tục để trở về",
                     btnOkText: "Tiếp tục",
-                    btnOkOnPress: () {
+                    btnOkOnPress: () async {
+                      if (widget.isPublic) {
+                        widget.onPublicizePlan!(true);
+                      } else {
+                        handleJoinSuccess();
+                      }
                       final rs = sharedPreferences.getDouble('userBalance')! -
                           (widget.plan.gcoinBudgetPerCapita! * weight);
                       sharedPreferences.setDouble('userBalance', rs);
-                      Navigator.of(context).pop();
-                      Navigator.of(context).pushAndRemoveUntil(
-                          MaterialPageRoute(
-                              builder: (ctx) => const TabScreen(pageIndex: 1)),
-                          (route) => false);
                     },
                   ).show();
                 }
@@ -623,5 +622,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
 
   callback(List<String> names) {
     companionNames = names;
+  }
+
+  handleJoinSuccess() {
+    Navigator.of(context).pop();
+    Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 1)),
+        (route) => false);
   }
 }

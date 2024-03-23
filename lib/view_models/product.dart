@@ -1,7 +1,6 @@
 class ProductViewModel {
   int id;
   String name;
-  String? paymentType;
   int price;
   String? thumbnailUrl;
   int? supplierId;
@@ -14,7 +13,6 @@ class ProductViewModel {
   ProductViewModel(
       {required this.id,
       required this.name,
-      this.paymentType,
       required this.price,
       this.thumbnailUrl,
       this.supplierId,
@@ -28,7 +26,6 @@ class ProductViewModel {
       ProductViewModel(
           id: json["id"],
           name: json["name"],
-          paymentType: json["paymentType"],
           price: json["price"],
           thumbnailUrl: json["imageUrl"],
           supplierId: json["supplier"]["id"],
@@ -41,7 +38,6 @@ class ProductViewModel {
   Map<String, dynamic> toJson() => {
         "id": id,
         "name": name,
-        "paymentType": paymentType,
         "originalPrice": price,
         "thumbnailUrl": thumbnailUrl,
         "supplierId": supplierId,

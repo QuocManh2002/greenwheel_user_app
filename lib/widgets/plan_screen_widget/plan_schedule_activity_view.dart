@@ -38,7 +38,7 @@ class PlanScheduleActivityView extends StatelessWidget {
                     SizedBox(height: 2.h,),
                     BottomSheetContainerWidget(content: item.shortDescription!, title: 'Mô tả'),
                     SizedBox(height: 1.h,),
-                    BottomSheetContainerWidget(content: item.description!, title: 'Mô tả chi tiết'),
+                    BottomSheetContainerWidget(content: item.description!, title: 'Chi tiết'),
                     SizedBox(height: 1.h,),
                     BottomSheetContainerWidget(content: DateFormat.yMMMMEEEEd('vi_VN')
                                     .format(item.date!), title: 'Thời gian'),
@@ -70,12 +70,23 @@ class PlanScheduleActivityView extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  item.shortDescription ?? 'Không có mô tả',
-                  style:
-                      const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  overflow: TextOverflow.clip,
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 70.w,
+                      child: Text(
+                        item.shortDescription ?? 'Không có mô tả',
+                        style:
+                            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.clip,
+                      ),
+                    ),
+                    const Spacer(),
+                  if( item.type == 'Ăn uống' || item.type == 'Check-in' )
+                    Icon(item.type == 'Ăn uống' ? Icons.restaurant : Icons.hotel, color: primaryColor,)
+                  ],
                 ),
+                SizedBox(height: 1.h,),
                 Container(
                   color:item.type == 'Ăn uống' || item.type == 'Check-in' ? primaryColor : Colors.black26,
                   height: 1.5,

@@ -27,14 +27,15 @@ class PlanService {
       log("""
   mutation{
   createPlan(dto: {
+    departureAddress:"${model.departureAddress}"
     departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
     departure:[${model.longitude},${model.latitude}]
     destinationId:${model.locationId}
     gcoinBudgetPerCapita:${model.gcoinBudget}
     maxMember:${model.memberLimit}
-    maxMemberWeight:${model.maxMemberWeight}
+    maxMemberWeight:${model.maxMemberWeight!}
     name:"${model.name}"
-    note: ${json.encode(model.note).toString()}
+    note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedContacts:${json.decode(model.savedContacts!).toString()}
     schedule:$schedule
@@ -52,12 +53,13 @@ class PlanService {
         document: gql("""
   mutation{
   createPlan(dto: {
+    departureAddress:"${model.departureAddress}"
     departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
     departure:[${model.longitude},${model.latitude}]
     destinationId:${model.locationId}
     gcoinBudgetPerCapita:${model.gcoinBudget}
     maxMember:${model.memberLimit}
-    maxMemberWeight:${model.maxMemberWeight! + 1}
+    maxMemberWeight:${model.maxMemberWeight!}
     name:"${model.name}"
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
@@ -166,6 +168,7 @@ query GetPlanById(\$planId: Int){
       id
       startDate
       endDate
+      departureAddress
       accountId
       joinMethod
       gcoinBudgetPerCapita
@@ -173,6 +176,7 @@ query GetPlanById(\$planId: Int){
       travelDuration
       note
       memberCount
+      regClosedAt
       schedule {
         events {
           shortDescription
@@ -286,7 +290,18 @@ query GetPlanById(\$planId: Int){
     }
   }
 
-  Future<List<PlanCardViewModel>?> getPlanCards() async {
+  String a = '''{
+  plans(
+    first: 50
+    where: { members: { some: { and: [{ status: { eq: INVITED } }, { accountId: { eq : 1 }}] } } }
+  ) {
+    nodes {
+      id
+    }
+  }
+}''';
+
+  Future<List<PlanCardViewModel>?> getPlanCards(int accountId) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -294,6 +309,7 @@ query GetPlanById(\$planId: Int){
   plans(first: 50
   order: {
   id:DESC
+  
 }
   ){
     nodes{
@@ -455,12 +471,13 @@ query GetPlanById(\$planId: Int){
   }
 
   Future<int?> joinPlan(int planId, int weight, List<String> names) async {
+    final listName = names.map((e) => json.encode(e)).toList();
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
   joinPlan(dto: {
-    companions:${names.map((e) => json.encode(e)).toList()}
+    companions:${listName.isEmpty ? null : listName}
     planId: $planId
     weight: $weight
   }){

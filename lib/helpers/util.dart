@@ -54,6 +54,7 @@ class Utils {
     sharedPreferences.remove('notAskScheduleAgain');
     sharedPreferences.remove('initNumOfExpPeriod');
     sharedPreferences.remove('plan_max_member_weight');
+    sharedPreferences.remove('plan_location_name');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {
@@ -215,5 +216,24 @@ class Utils {
                 color: Colors.black38, offset: Offset(2, 3), blurRadius: 3)
           ]),
     );
+  }
+
+  getSupplierType(String input) {
+    switch (input) {
+      case "FOOD_STALL":
+        return "Quán ăn";
+      case "GROCERY_STORE":
+        return "Tạp hoá";
+      case "HOTEL":
+        return 'Khách sạn';
+      case "MOTEL":
+        return 'Nhà nghỉ';
+      case "REPAIR_SHOP":
+        return 'Tiệm sửa xe';
+      case "RESTAURANT":
+        return 'Nhà hàng';
+      case "VEHICLE_RENTAL":
+        return "Cho thuê xe";
+    }
   }
 }

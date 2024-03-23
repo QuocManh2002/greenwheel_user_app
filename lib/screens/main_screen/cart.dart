@@ -725,7 +725,7 @@ class _CartScreenState extends State<CartScreen> {
         showCloseIcon: true,
         title: widget.isOrder != null && widget.isOrder!
             ? "Thanh toán thành công"
-            : "Thêm đơn hàng mẫu thành công",
+            : "Thêm thành công",
         desc: "Ấn tiếp tục để trở về",
         btnOkText: "Tiếp tục",
         btnOkOnPress: () {

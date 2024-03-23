@@ -24,8 +24,8 @@ class SelectStartLocationScreen extends StatefulWidget {
 
 class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   TextEditingController _searchController = TextEditingController();
-  var distanceText;
-  var durationText;
+  var distanceText = '';
+  var durationText = '';
   var distanceValue;
   var durationValue;
   List<SearchStartLocationResult> _resultList = [];
@@ -126,9 +126,9 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     if (startLat != null) {
       double? startLng = sharedPreferences.getDouble('plan_start_lng');
       _selectedLocation = PointLatLng(startLat, startLng!);
-      distanceText = sharedPreferences.getString('plan_distance_text');
+      distanceText = sharedPreferences.getString('plan_distance_text')!;
       distanceValue = sharedPreferences.getDouble('plan_distance_value');
-      durationText = sharedPreferences.getString('plan_duration_text');
+      durationText = sharedPreferences.getString('plan_duration_text')!;
       durationValue = sharedPreferences.getDouble('plan_duration_value');
       setState(() {
         _searchController.text = sharedPreferences.getString('plan_start_address')!;
@@ -148,7 +148,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                 SizedBox(
                   height: 1.h,
                 ),
-
                 SizedBox(
                   height: 2.h,
                 ),
@@ -397,8 +396,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           ),
                           const Spacer(),
-                          Text(
-                            '$distanceText',
+                          Text( distanceText == '' || distanceText == 'null' ? '': distanceText,
                             style: const TextStyle(fontSize: 15),
                           ),
                           SizedBox(width: 1.h,)

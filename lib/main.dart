@@ -17,6 +17,7 @@ import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:hive/hive.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
+import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -50,9 +51,8 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('myPlans');
   await FlutterConfig.loadEnvVariables();
-
+  MapboxOptions.setAccessToken('pk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xuM3AwM2hpMGlzZDJqcGFla2VlejFsOCJ9.gEsXIx57uMGskLDDQYBm4g');
   localization = FlutterLocalization.instance;
-
   // final _myPlans = Hive.box('myPlans');
   // _myPlans.clear();
   hasConnection = await InternetConnectionChecker().hasConnection;

@@ -110,17 +110,14 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                     initialDate: _scheduleList.first.date,
                     firstDate: _scheduleList.first.date!,
                     lastDate: _scheduleList.last.date!,
+                    locale: const Locale('vi', 'VN'),
                     builder: (context, child) {
                       return Theme(
                         data: ThemeData().copyWith(
                             colorScheme: const ColorScheme.light(
                                 primary: primaryColor,
                                 onPrimary: Colors.white)),
-                        child: DatePickerDialog(
-                          initialDate: _scheduleList[_currentPage.toInt()].date,
-                          firstDate: _scheduleList.first.date!,
-                          lastDate: _scheduleList.last.date!,
-                        ),
+                        child: child!
                       );
                     }).then((value) {
                   if (value != null) {

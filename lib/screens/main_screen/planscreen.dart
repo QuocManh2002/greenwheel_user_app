@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
@@ -49,7 +50,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
     List<PlanCardViewModel> historyPlans = [];
     List<PlanCardViewModel> futurePlans = [];
     List<PlanCardViewModel> draftPlans = [];
-    List<PlanCardViewModel>? totalPlans = await _planService.getPlanCards();
+    List<PlanCardViewModel>? totalPlans = await _planService.getPlanCards(int.parse(sharedPreferences.getString('userId')!));
 
     if (totalPlans != null) {
       for (final plan in totalPlans) {

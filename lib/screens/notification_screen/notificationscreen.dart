@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/notification_screen/notification_detail.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
@@ -87,9 +86,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                           planId: noti.planId!,
                                         )));
                               } else {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => NotificationDetailScreen(
-                                        notification: noti)));
                               }
                             },
                             child: Padding(
@@ -107,7 +103,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                             shape: BoxShape.circle),
                                         child: Image.network(
                                           noti.imageUrl == null
-                                              ? 'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0'
+                                              ? noti.type == 'PLAN'? defaultPlanNotiAvatar : defaultServiceNotiAvatar
                                               : noti.imageUrl!,
                                           fit: BoxFit.cover,
                                         ),
@@ -115,31 +111,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                       SizedBox(
                                         width: 2.w,
                                       ),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          SizedBox(
-                                            width: 70.w,
-                                            child: Text(
-                                              noti.title,
-                                              style: const TextStyle(
-                                                  fontSize: 18,
-                                                  fontWeight: FontWeight.bold),
-                                              overflow: TextOverflow.clip,
-                                            ),
-                                          ),
-                                          SizedBox(
-                                            width: 70.w,
-                                            child: Text(
-                                              noti.body,
-                                              style: const TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.grey),
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          )
-                                        ],
+                                      SizedBox(
+                                        width: 70.w,
+                                        child: Text(
+                                          noti.body,
+                                          style: const TextStyle(
+                                              fontSize: 18,fontWeight: FontWeight.w500,fontFamily: 'NotoSans'
+                                              ),
+                                          overflow: TextOverflow.clip,
+                                        ),
                                       )
                                     ],
                                   ),

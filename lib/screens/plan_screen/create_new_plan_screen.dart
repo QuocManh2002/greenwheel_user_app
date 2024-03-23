@@ -52,12 +52,12 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
       context: context,
       dialogType: DialogType.warning,
       title:
-          'Kế hoạch cho chuyến đi này chưa được hoàn tất, bạn có chắc chắn muốn rời khỏi màn hình này không?',
+          'Kế hoạch cho chuyến đi chưa được hoàn tất, vẫn rời khỏi màn hình này ?',
       titleTextStyle:
-          const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
       padding: EdgeInsets.symmetric(horizontal: 2.h),
-      desc: 'Kế hoạch này sẽ được lưu lại trong phần bản nháp',
-      descTextStyle: const TextStyle(fontSize: 14, color: Colors.grey),
+      desc: 'Kế hoạch sẽ được lưu lại trong bản nháp',
+      descTextStyle: const TextStyle(fontSize: 14, color: Colors.grey, fontFamily: 'NotoSans'),
       btnOkColor: Colors.amber,
       btnOkText: "Rời khỏi",
       btnCancelColor: Colors.red,
@@ -66,7 +66,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
       btnOkOnPress: () async {
         var rs = true;
         if (rs) {
-          Utils().clearPlanSharePref();
+          print(sharedPreferences.get('planId'));
+          sharedPreferences.setString('plan_location_name', widget.location.name);
+          sharedPreferences.setInt('plan_location_id', widget.location.id);
           Navigator.of(context).pop();
         }
       },
@@ -166,28 +168,30 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
               showModalBottomSheet(
                   context: context,
                   builder: (ctx) => ConfirmPlanBottomSheet(
+                        isFromHost: false,
                         isJoin: false,
                         locationName: widget.location.name,
                         isInfo: true,
-                        orderList: json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]'),
-                        listSurcharges: json.decode(sharedPreferences.getString('plan_surcharge') ?? '[]'),
+                        orderList: json.decode(
+                            sharedPreferences.getString('plan_temp_order') ??
+                                '[]'),
+                        listSurcharges: json.decode(
+                            sharedPreferences.getString('plan_surcharge') ??
+                                '[]'),
                         plan: PlanCreate(
-                            endDate:
-                                sharedPreferences.getString('plan_end_date') ==
-                                        null
-                                    ? null
-                                    : DateTime.parse(sharedPreferences
-                                        .getString('plan_end_date')!),
+                            endDate: sharedPreferences.getString('plan_end_date') == null
+                                ? null
+                                : DateTime.parse(sharedPreferences
+                                    .getString('plan_end_date')!),
                             memberLimit: sharedPreferences
                                 .getInt('plan_number_of_member'),
-                            departureDate: sharedPreferences
-                                        .getString('plan_departureDate') ==
-                                    null
+                            departureDate: sharedPreferences.getString('plan_departureDate') == null
                                 ? null
                                 : DateTime.parse(sharedPreferences
                                     .getString('plan_departureDate')!),
                             name: sharedPreferences.getString('plan_name'),
-                            startDate: DateTime.parse(sharedPreferences.getString('plan_start_date')!),
+                            startDate: DateTime.parse(sharedPreferences
+                                .getString('plan_start_date')!),
                             schedule:
                                 sharedPreferences.getString('plan_schedule'),
                             note: sharedPreferences.getString('plan_note'),

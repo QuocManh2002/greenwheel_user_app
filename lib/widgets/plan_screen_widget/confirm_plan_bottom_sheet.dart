@@ -1,14 +1,15 @@
 import 'dart:convert';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_host_service_infor.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_join_service_infor.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/bottom_sheet_container_widget.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
@@ -26,6 +27,7 @@ class ConfirmPlanBottomSheet extends StatefulWidget {
       required this.isJoin,
       this.onCancel,
       required this.isInfo,
+      required this.isFromHost,
       this.onJoinPlan});
   final String locationName;
   final List<dynamic>? orderList;
@@ -36,6 +38,7 @@ class ConfirmPlanBottomSheet extends StatefulWidget {
   final void Function()? onJoinPlan;
   final void Function()? onCancel;
   final bool isInfo;
+  final bool isFromHost;
 
   @override
   State<ConfirmPlanBottomSheet> createState() => _ConfirmPlanBottomSheetState();
@@ -49,13 +52,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
 
   List<dynamic> emergencyList = [];
   List<dynamic> scheduleList = [];
-  List<dynamic> roomOrderList = [];
-  List<dynamic> foodOrderList = [];
+  List<dynamic>? newRoomOrderList = [];
+  List<dynamic>? newFoodOrderList = [];
+
   String travelDurationText = '';
   bool _isAceptedPolicy = false;
-  List<PlanJoinServiceInfor> listRoom = [];
-  List<PlanJoinServiceInfor> listFood = [];
-  List<PlanHostServiceInfor> listHostServiceInfor = [];
   List<List<String>> scheduleTextList = [];
   double total = 0;
   int budgetPerCapita = 0;
@@ -103,28 +104,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         travelDurationText += '${tempDuration.minute} phút';
       }
     }
-    if (widget.orderList != null) {
-      for (final order in widget.orderList!) {
-        if (widget.isJoin ? order.type == 'MEAL' : order['type'] == 'FOOD') {
-          foodOrderList.add(order);
-        } else {
-          roomOrderList.add(order);
-        }
-      }
-    }
     if (widget.plan!.schedule != null) {
       buildListScheduleText();
     }
-    if (widget.isJoin) {
-      buildJoinServiceInfo();
-    } else {
-      buildHostServiceInfo();
-    }
-    if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty) {
-      // final rs = json.decode(widget.plan!.note!);
-      //  controller.setText(widget.plan!.note!);
-    }
     getTotal();
+    buildServiceInfor();
   }
 
   @override
@@ -134,76 +118,102 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     setUpData();
   }
 
-  buildHostServiceInfo() {
-    List<String> nameSupplierOrder = [];
-    if (roomOrderList.isNotEmpty) {
-      for (final order in roomOrderList) {
-        if (!nameSupplierOrder.contains(order['supplierName'])) {
-          nameSupplierOrder.add(order['supplierName']);
-        }
-      }
-    }
-    if (foodOrderList.isNotEmpty) {
-      for (final order in foodOrderList) {
-        if (!nameSupplierOrder.contains(order['supplierName'])) {
-          nameSupplierOrder.add(order['supplierName']);
-        }
-      }
-    }
-
-    for (final name in nameSupplierOrder) {
-      var orderList = [];
-      for (final order in widget.orderList!) {
-        if (order['supplierName'] == name) {
-          orderList.add(order);
-        }
-      }
-      listHostServiceInfor
-          .add(PlanHostServiceInfor(supplierName: name, orderList: orderList));
-    }
+  buildServiceInfor() {
+    final rs = widget.orderList!.groupListsBy(
+        (e) => e.runtimeType == OrderViewModel ? e.type : e['type']);
+    newRoomOrderList = rs.values
+        .where((e) => e.firstOrNull.runtimeType == OrderViewModel
+            ? e.first.type == 'LODGING'
+            : e.first['type'] == 'LODGING')
+        .toList()
+        .firstOrNull;
+    newFoodOrderList = rs.values
+        .where((e) => e.firstOrNull.runtimeType == OrderViewModel
+            ? e.first.type == 'MEAL'
+            : e.first['type'] == 'MEAL')
+        .toList()
+        .firstOrNull;
+    print(rs.values);
   }
 
-  buildJoinServiceInfo() {
-    List<String> indexRoomOrder = [];
-    List<String> indexFoodOrder = [];
+  // buildHostServiceInfo() {
+  //   List<String> nameSupplierOrder = [];
+  //   if (roomOrderList.isNotEmpty) {
+  //     for (final order in roomOrderList) {
+  //       if (!nameSupplierOrder.contains(order['supplierName'])) {
+  //         nameSupplierOrder.add(order['supplierName']);
+  //       }
+  //     }
+  //   }
+  //   if (foodOrderList.isNotEmpty) {
+  //     for (final order in foodOrderList) {
+  //       if (!nameSupplierOrder.contains(order['supplierName'])) {
+  //         nameSupplierOrder.add(order['supplierName']);
+  //       }
+  //     }
+  //   }
 
-    if (roomOrderList.isNotEmpty) {
-      for (final order in roomOrderList) {
-        for (final index in order.serveDates) {
-          if (!indexRoomOrder.contains(index)) {
-            indexRoomOrder.add(index);
-          }
-        }
-      }
-    }
-    if (foodOrderList.isNotEmpty) {
-      for (final order in foodOrderList) {
-        for (final index in order.serveDates) {
-          if (!indexFoodOrder.contains(index)) {
-            indexFoodOrder.add(index);
-          }
-        }
-      }
-    }
-    for (final day in indexRoomOrder) {
-      var orderList = [];
-      for (final order in roomOrderList) {
-        if (order.serveDates.contains(day)) {
-          orderList.add(order);
-        }
-      }
-      listRoom.add(PlanJoinServiceInfor(dayIndex: DateTime.parse(day).difference(widget.plan!.startDate!).inDays, orderList: orderList));
-    }
-    for (final day in indexFoodOrder) {
-      var orderList = [];
-      for (final order in foodOrderList) {
-        if (order.serveDates.contains(day)) {
-          orderList.add(order);
-        }
-      }
-      listFood.add(PlanJoinServiceInfor(dayIndex: DateTime.parse(day).difference(widget.plan!.startDate!).inDays, orderList: orderList));
-    }
-  }
+  //   for (final name in nameSupplierOrder) {
+  //     var orderList = [];
+  //     for (final order in widget.orderList!) {
+  //       if (order['supplierName'] == name) {
+  //         orderList.add(order);
+  //       }
+  //     }
+  //     listHostServiceInfor.add(PlanHostServiceInfor(
+  //         supplierName: name,
+  //         orderList: orderList,
+  //         type: orderList.first['type']));
+  //   }
+  // }
+
+  // buildJoinServiceInfo() {
+  //   List<String> indexRoomOrder = [];
+  //   List<String> indexFoodOrder = [];
+
+  //   if (roomOrderList.isNotEmpty) {
+  //     for (final order in roomOrderList) {
+  //       for (final index in order['serveDates']) {
+  //         if (!indexRoomOrder.contains(index)) {
+  //           indexRoomOrder.add(index);
+  //         }
+  //       }
+  //     }
+  //   }
+  //   if (foodOrderList.isNotEmpty) {
+  //     for (final order in foodOrderList) {
+  //       for (final index in order['serveDates']) {
+  //         if (!indexFoodOrder.contains(index)) {
+  //           indexFoodOrder.add(index);
+  //         }
+  //       }
+  //     }
+  //   }
+  //   for (final day in indexRoomOrder) {
+  //     var orderList = [];
+  //     for (final order in roomOrderList) {
+  //       if (order['serveDates'].contains(day)) {
+  //         orderList.add(order);
+  //       }
+  //     }
+  //     listRoom.add(PlanJoinServiceInfor(
+  //         dayIndex:
+  //             DateTime.parse(day).difference(widget.plan!.startDate!).inDays,
+  //         orderList: orderList));
+  //   }
+  //   for (final day in indexFoodOrder) {
+  //     var orderList = [];
+  //     for (final order in foodOrderList) {
+  //       if (order.serveDates.contains(day)) {
+  //         orderList.add(order);
+  //       }
+  //     }
+  //     listFood.add(PlanJoinServiceInfor(
+  //         dayIndex:
+  //             DateTime.parse(day).difference(widget.plan!.startDate!).inDays,
+  //         orderList: orderList));
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -260,6 +270,55 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
               if (widget.plan!.travelDuration != null)
                 BottomSheetContainerWidget(
                     title: 'Thời gian di chuyển', content: travelDurationText),
+              if (widget.plan!.departureAddress != null)
+                SizedBox(
+                  height: 1.h,
+                ),
+              if (widget.plan!.departureAddress != null)
+                BottomSheetContainerWidget(
+                    title: 'Địa điểm xuất phát',
+                    content: widget.plan!.departureAddress!),
+              if (widget.plan!.savedContacts != null)
+                SizedBox(
+                  height: 1.h,
+                ),
+              if (widget.plan!.savedContacts != null)
+                Container(
+                    width: 100.w,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 3,
+                            color: Colors.black12,
+                            offset: Offset(1, 3),
+                          )
+                        ],
+                        color: Colors.white.withOpacity(0.97),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Dịch vụ khẩn cấp đã lưu: ',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        for (final emer in emergencyList)
+                          SizedBox(
+                            width: 80.w,
+                            child: Text(
+                              emer['name'].toString().substring(0, 1) == '\"'
+                                  ? json.decode(emer['name'])
+                                  : emer['name'],
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.clip,
+                            ),
+                          )
+                      ],
+                    )),
               if (widget.plan!.schedule != null)
                 SizedBox(
                   height: 1.h,
@@ -307,23 +366,42 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                         ),
                         if (_isShowSchedule)
                           for (final day in scheduleList)
-                            Row(
+                            Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  '- Ngày ${scheduleList.indexOf(day) + 1}: ',
-                                  style: const TextStyle(
-                                      fontSize: 17,
-                                      fontWeight: FontWeight.w500),
+                                Padding(
+                                  padding:
+                                      const EdgeInsets.only(top: 4, left: 8),
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 6, vertical: 2),
+                                    decoration: BoxDecoration(
+                                        color: primaryColor.withOpacity(0.8),
+                                        borderRadius: const BorderRadius.all(
+                                            Radius.circular(8))),
+                                    child: Text(
+                                      'Ngày ${scheduleList.indexOf(day) + 1}',
+                                      style: const TextStyle(
+                                          fontSize: 17,
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w500),
+                                    ),
+                                  ),
                                 ),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     for (final event in scheduleTextList[
                                         scheduleList.indexOf(day)])
-                                      Text(
-                                        event,
-                                        style: const TextStyle(fontSize: 17),
+                                      Padding(
+                                        padding:
+                                            const EdgeInsets.only(left: 16),
+                                        child: Text(
+                                          event,
+                                          style: const TextStyle(
+                                              fontSize: 17,
+                                              fontWeight: FontWeight.bold),
+                                        ),
                                       ),
                                   ],
                                 )
@@ -331,11 +409,15 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             ),
                       ]),
                 ),
-              if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty && widget.plan!.note! != 'null')
+              if (widget.plan!.note != null &&
+                  widget.plan!.note!.isNotEmpty &&
+                  widget.plan!.note! != 'null')
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.note != null && widget.plan!.note!.isNotEmpty && widget.plan!.note! != 'null')
+              if (widget.plan!.note != null &&
+                  widget.plan!.note!.isNotEmpty &&
+                  widget.plan!.note! != 'null')
                 Container(
                   width: 100.w,
                   padding:
@@ -379,47 +461,6 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                         if (_isShowNote) HtmlWidget(widget.plan!.note ?? ''),
                       ]),
                 ),
-              if (widget.plan!.savedContacts != null)
-                SizedBox(
-                  height: 1.h,
-                ),
-              if (widget.plan!.savedContacts != null)
-                Container(
-                    width: 100.w,
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                    decoration: BoxDecoration(
-                        boxShadow: const [
-                          BoxShadow(
-                            blurRadius: 3,
-                            color: Colors.black12,
-                            offset: Offset(1, 3),
-                          )
-                        ],
-                        color: Colors.white.withOpacity(0.97),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(8))),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Dịch vụ khẩn cấp đã lưu: ',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        for (final emer in emergencyList)
-                          SizedBox(
-                            width: 80.w,
-                            child: Text(
-                              emer['name'].toString().substring(0, 1) == '\"'
-                                  ? json.decode(emer['name'])
-                                  : emer['name'],
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.clip,
-                            ),
-                          )
-                      ],
-                    )),
               if (widget.orderList != null && widget.orderList!.isNotEmpty)
                 SizedBox(
                   height: 1.h,
@@ -469,171 +510,18 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           ),
                         ),
                         if (_isShowOrder)
-                          widget.isJoin
-                              ? Padding(
-                                  padding: const EdgeInsets.only(left: 10),
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      if (listRoom.isNotEmpty)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 4),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                                color: primaryColor
-                                                    .withOpacity(0.8),
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                        Radius.circular(8))),
-                                            child: const Text(
-                                              'Lưu trú',
-                                              style: TextStyle(
-                                                  fontSize: 17,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                        ),
-                                      if (listRoom.isNotEmpty)
-                                        for (final day in listRoom)
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 10),
-                                            child: Row(
-                                              children: [
-                                                Text(
-                                                    'Ngày ${day.dayIndex + 1} - ',
-                                                    style: const TextStyle(
-                                                        fontSize: 17,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                Column(
-                                                  children: day.orderList
-                                                      .map((e) => const Text(
-                                                            'Nghỉ ngơi tại khách sạn',
-                                                            style: TextStyle(
-                                                                fontSize: 17,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold),
-                                                          ))
-                                                      .toList(),
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                      if (listFood.isNotEmpty)
-                                        Padding(
-                                          padding:
-                                              const EdgeInsets.only(top: 8),
-                                          child: Container(
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 6, vertical: 2),
-                                            decoration: BoxDecoration(
-                                                color: primaryColor
-                                                    .withOpacity(0.8),
-                                                borderRadius:
-                                                    const BorderRadius.all(
-                                                        Radius.circular(8))),
-                                            child: const Text(
-                                              'Ăn uống',
-                                              style: TextStyle(
-                                                  fontSize: 17,
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w500),
-                                            ),
-                                          ),
-                                        ),
-                                      if (listFood.isNotEmpty)
-                                        for (final day in listFood)
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(left: 10),
-                                            child: Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                Text(
-                                                    'Ngày ${day.dayIndex + 1} - ',
-                                                    style: const TextStyle(
-                                                        fontSize: 17,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                                Column(
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.start,
-                                                  children: [
-                                                    for (final detail
-                                                        in day.orderList)
-                                                      Text(
-                                                        '${Utils().getPeriodString(detail.period)['text']} - Nhà hàng',
-                                                        style: const TextStyle(
-                                                            fontSize: 17,
-                                                            fontWeight:
-                                                                FontWeight
-                                                                    .bold),
-                                                      )
-                                                  ],
-                                                )
-                                              ],
-                                            ),
-                                          ),
-                                    ],
-                                  ),
-                                )
-                              : Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    for (final sup in listHostServiceInfor)
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 4, left: 8),
-                                            child: Container(
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 6,
-                                                      vertical: 2),
-                                              decoration: BoxDecoration(
-                                                  color: primaryColor
-                                                      .withOpacity(0.8),
-                                                  borderRadius:
-                                                      const BorderRadius.all(
-                                                          Radius.circular(8))),
-                                              child: Text(
-                                                sup.supplierName,
-                                                style: const TextStyle(
-                                                    fontSize: 17,
-                                                    color: Colors.white,
-                                                    fontWeight:
-                                                        FontWeight.w500),
-                                              ),
-                                            ),
-                                          ),
-                                          for (final order in sup.orderList)
-                                            Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 16),
-                                              child: Text(
-                                                'Đơn ${sup.orderList.indexOf(order) + 1} - ${Utils().getPeriodString(order['period'])['text']} ${buildServingDatesText(order['serveDates'])} - ${(order['total'] / 100).toInt()} GCOIN',
-                                                style: const TextStyle(
-                                                    fontSize: 17,
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                                overflow: TextOverflow.clip,
-                                              ),
-                                            ),
-                                        ],
-                                      )
-                                  ],
-                                )
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (newRoomOrderList != null &&
+                                  newRoomOrderList!.isNotEmpty)
+                                buildServiceWidget(
+                                    'LODGING', newRoomOrderList!),
+                              if (newFoodOrderList != null &&
+                                  newFoodOrderList!.isNotEmpty)
+                                buildServiceWidget('MEAL', newFoodOrderList!),
+                            ],
+                          )
                       ],
                     )),
               if (widget.listSurcharges != null &&
@@ -665,30 +553,35 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           style: TextStyle(fontSize: 16),
                         ),
                         for (final order in widget.listSurcharges!)
-                          SizedBox(
-                              width: 80.w,
-                              child: Row(
-                                children: [
-                                  SizedBox(
-                                    width: 50.w,
-                                    child: Text(
-                                      '${json.decode(order['note'])}',
-                                      style: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                      overflow: TextOverflow.clip,
-                                    ),
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    '${NumberFormat.simpleCurrency(decimalDigits: 0, locale: 'vi_VN', name: '').format(order['gcoinAmount'])}GCOIN',
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ],
-                              ))
+                          Row(
+                            children: [
+                              SizedBox(
+                                width: 50.w,
+                                child: Text(
+                                  '${json.decode(order['note'])}',
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.clip,
+                                ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                NumberFormat.simpleCurrency(
+                                        decimalDigits: 0,
+                                        locale: 'vi_VN',
+                                        name: '')
+                                    .format(order['gcoinAmount']),
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              SvgPicture.asset(
+                                gcoin_logo,
+                                height: 23,
+                              )
+                            ],
+                          )
                       ]),
                 ),
               if (total != 0)
@@ -722,12 +615,23 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               ),
                               const Spacer(),
                               Text(
-                                '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(total)}GCOIN',
+                                NumberFormat.simpleCurrency(
+                                        locale: 'vi_VN',
+                                        decimalDigits: 0,
+                                        name: "")
+                                    .format(total),
                                 style: const TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              SvgPicture.asset(
+                                gcoin_logo,
+                                height: 23,
                               )
                             ],
                           ),
+                        SizedBox(
+                          height: 0.3.h,
+                        ),
                         Row(
                           children: [
                             const Text(
@@ -736,9 +640,17 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             ),
                             const Spacer(),
                             Text(
-                              '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(budgetPerCapita)}GCOIN',
+                              NumberFormat.simpleCurrency(
+                                      locale: 'vi_VN',
+                                      decimalDigits: 0,
+                                      name: "")
+                                  .format(budgetPerCapita),
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
+                            ),
+                            SvgPicture.asset(
+                              gcoin_logo,
+                              height: 23,
                             )
                           ],
                         ),
@@ -748,7 +660,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.isJoin)
+              if (widget.isJoin && !widget.isFromHost)
                 Container(
                   width: 100.w,
                   padding: const EdgeInsets.symmetric(vertical: 6),
@@ -810,18 +722,22 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                   const MaterialStatePropertyAll(Colors.white),
                               backgroundColor:
                                   MaterialStatePropertyAll(widget.isJoin
-                                      ? _isAceptedPolicy
+                                      ? _isAceptedPolicy || widget.isFromHost
                                           ? primaryColor
                                           : Colors.grey
                                       : primaryColor)),
                           onPressed: widget.isJoin
                               ? () {
-                                  if (_isAceptedPolicy) {
+                                  if (widget.isFromHost || _isAceptedPolicy) {
                                     widget.onJoinPlan!();
                                   }
                                 }
                               : widget.onCompletePlan,
-                          label: Text(widget.isJoin ? 'Đi thôi' : 'Xác nhận')),
+                          label: Text(widget.isJoin
+                              ? widget.isFromHost
+                                  ? 'Tham gia'
+                                  : 'Đi thôi'
+                              : 'Xác nhận')),
                     )
                   ],
                 )
@@ -832,10 +748,73 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
 
   buildServingDatesText(List<dynamic> serveDateIndexes) {
     if (serveDateIndexes.length == 1) {
-      return DateFormat('dd/MM').format(
-          DateTime.parse(serveDateIndexes[0]));
+      return DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]));
     } else {
-      return '${DateFormat('dd/MM').format( DateTime.parse(serveDateIndexes[0]))} (+${serveDateIndexes.length - 1} ngày)';
+      return '${DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]))} (+${serveDateIndexes.length - 1} ngày)';
     }
   }
+
+  buildServiceWidget(String type, List<dynamic> orders) => Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 4, left: 8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.8),
+                  borderRadius: const BorderRadius.all(Radius.circular(8))),
+              child: Text(
+                type == 'MEAL' ? 'Quán ăn/Nhà hàng' : 'Nhà nghỉ/Khách sạn',
+                style: const TextStyle(
+                    fontSize: 17,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w500),
+              ),
+            ),
+          ),
+          for (final order in orders)
+            Padding(
+              padding: const EdgeInsets.only(left: 16),
+              child: Row(
+                children: [
+                  SizedBox(
+                      width: 13.w,
+                      child: Text(
+                        'Đơn ${orders.indexOf(order) + 1}',
+                        style: const TextStyle(
+                            fontSize: 17, fontWeight: FontWeight.bold),
+                        overflow: TextOverflow.clip,
+                      )),
+                  SizedBox(
+                    width: 42.w,
+                    child: Text(
+                      '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ${buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}',
+                      style: const TextStyle(
+                          fontSize: 17, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.clip,
+                    ),
+                  ),
+                  const Spacer(),
+                  Text(
+                    NumberFormat.simpleCurrency(
+                            locale: 'vi_VN', decimalDigits: 0, name: '')
+                        .format(((order.runtimeType == OrderViewModel
+                                    ? order.total
+                                    : order['total']) /
+                                100)
+                            .toInt()),
+                    style: const TextStyle(
+                        fontSize: 17, fontWeight: FontWeight.bold),
+                    overflow: TextOverflow.clip,
+                  ),
+                  SvgPicture.asset(
+                    gcoin_logo,
+                    height: 23,
+                  )
+                ],
+              ),
+            ),
+        ],
+      );
 }

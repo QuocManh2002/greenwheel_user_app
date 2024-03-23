@@ -108,7 +108,7 @@ class SupplierOrderCard extends StatelessWidget {
                     height: 8,
                   ),
                   Text(
-                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total * order.serveDates!.length)} VND",
+                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(total * order.serveDates!.length)}VND",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )
                 ],

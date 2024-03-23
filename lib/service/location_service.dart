@@ -392,8 +392,9 @@ nodes{
     }
   }
 
-  Future<bool> commentOnDestination(String commentText, int destinationId) async{
-        try {
+  Future<bool> commentOnDestination(
+      String commentText, int destinationId) async {
+    try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation {
@@ -416,10 +417,9 @@ mutation {
     }
   }
 
-  Future<List<CommentViewModel>> getComments(int destinationId)async{
-    try{
-      QueryResult result = await client.query(
-        QueryOptions(document: gql("""
+  Future<List<CommentViewModel>> getComments(int destinationId) async {
+    try {
+      QueryResult result = await client.query(QueryOptions(document: gql("""
 {
   destinations(where: {
     id:{
@@ -439,23 +439,21 @@ mutation {
     }
   }
 }
-"""))
-      );
+""")));
       if (result.hasException) {
         throw Exception(result.exception);
       }
       List? res = result.data!['destinations']['nodes'][0]['comments'];
-      if(res == null || res.isEmpty){
+      if (res == null || res.isEmpty) {
         return [];
       }
-      List<CommentViewModel> comments = res.map((comment) => CommentViewModel.fromJson(comment)).toList();
+      List<CommentViewModel> comments =
+          res.map((comment) => CommentViewModel.fromJson(comment)).toList();
       return comments;
-    }catch (error) {
+    } catch (error) {
       throw Exception(error);
     }
   }
-
-
 
   @override
   // TODO: implement iterator

@@ -10,7 +10,6 @@ import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:sizer2/sizer2.dart';
 
-
 class LocateStartLocation extends StatefulWidget {
   const LocateStartLocation(
       {super.key, required this.location, required this.callback});
@@ -34,39 +33,35 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
   bool _isHasLine = false;
   MapboxMap? _mapboxMap;
   String? address;
-  _onMapCreated(MapboxMap controller) {
-    _mapboxMap = controller;
+  _onMapCreated(MapboxMap mapboxMap) {
+    _mapboxMap = mapboxMap;
     if (_mapboxMap != null) {
       getMapInfo();
     }
   }
-  
 
-  getMapInfo() {
+  getMapInfo() async {
     if (_mapboxMap != null) {
       if (_selectedLocation != null) {
         _onSelectLocation(_selectedLocation!);
       }
-       _mapboxMap!.setCamera(CameraOptions(
+      _mapboxMap!.setCamera(CameraOptions(
           center: Point(
                   coordinates: Position(
                       widget.location.longitude, widget.location.latitude))
               .toJson(),
           zoom: 10));
-       _mapboxMap?.flyTo(
+      _mapboxMap!.flyTo(
           CameraOptions(
               anchor: ScreenCoordinate(x: 0, y: 0),
               zoom: 8,
               bearing: 0,
               pitch: 0),
           MapAnimationOptions(duration: 2000, startDelay: 0));
-       _mapboxMap?.annotations
+      _mapboxMap!.annotations
           .createCircleAnnotationManager()
           .then((value) async {
-        setState(() {
-          _circleAnnotationManagerEnd =
-              value; // Store the reference to the circle annotation manager
-        });
+        _circleAnnotationManagerEnd = value;
         value.create(
           CircleAnnotationOptions(
             geometry: Point(
@@ -84,26 +79,23 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
   _getRouteInfo() async {
     var jsonResponse = await getRouteInfo(_selectedLocation!,
         PointLatLng(widget.location.latitude, widget.location.longitude));
-
-    var route = jsonResponse['routes'][0]['overview_polyline']['points'];
-    setState(() {
+    dynamic route;
+    if (jsonResponse != null) {
+      route = jsonResponse['routes'][0]['overview_polyline']['points'];
       durationText = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
       distanceText = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
       durationValue =
           jsonResponse['routes'][0]['legs'][0]['duration']['value'] / 3600;
       distanceValue =
           jsonResponse['routes'][0]['legs'][0]['distance']['value'] / 1000;
-    });
-
-    sharedPreferences.setString('plan_duration_text', durationText);
-    sharedPreferences.setString('plan_distance_text', distanceText);
-    sharedPreferences.setDouble('plan_duration_value', durationValue);
-    sharedPreferences.setDouble('plan_distance_value', distanceValue);
-
-    List<PointLatLng> result = polylinePoints.decodePolyline(route);
-    List<List<double>> coordinates =
-        result.map((point) => [point.longitude, point.latitude]).toList();
-    var geojson = '''{
+      sharedPreferences.setString('plan_duration_text', durationText);
+      sharedPreferences.setString('plan_distance_text', distanceText);
+      sharedPreferences.setDouble('plan_duration_value', durationValue);
+      sharedPreferences.setDouble('plan_distance_value', distanceValue);
+      List<PointLatLng> result = polylinePoints.decodePolyline(route);
+      List<List<double>> coordinates =
+          result.map((point) => [point.longitude, point.latitude]).toList();
+      var geojson = '''{
       "type": "FeatureCollection",
       "features": [
         {
@@ -118,39 +110,50 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
         }
       ]
     }''';
-    _mapboxMap!.setBounds(CameraBoundsOptions(
-        bounds: CoordinateBounds(
-            southwest: Point(
-                    coordinates: Position(
-                        widget.location.longitude, widget.location.latitude))
-                .toJson(),
-            northeast: Point(
-                    coordinates: Position(_selectedLocation!.longitude,
-                        _selectedLocation!.latitude))
-                .toJson(),
-            infiniteBounds: true),
-        maxZoom: 17,
-        minZoom: 0,
-        maxPitch: 10,
-        minPitch: 0));
 
-    await _mapboxMap?.style.addSource(GeoJsonSource(id: 'line', data: geojson));
-    var lineLayerJson = """{
-          "type":"line",
-          "id":"line_layer",
-          "source":"line",
-          "paint":{
-          "line-join":"round",
-          "line-cap":"round",
-          "line-color":"rgb(146, 174, 255)",
-          "line-width":9.0
-          }
-        }""";
-
-    await _mapboxMap?.style.addPersistentStyleLayer(lineLayerJson, null);
-    setState(() {
-      _isHasLine = true;
-    });
+      _mapboxMap!.setBounds(CameraBoundsOptions(
+          bounds: CoordinateBounds(
+              southwest: Point(
+                      coordinates: Position(
+                          widget.location.longitude, widget.location.latitude))
+                  .toJson(),
+              northeast: Point(
+                      coordinates: Position(_selectedLocation!.longitude,
+                          _selectedLocation!.latitude))
+                  .toJson(),
+              infiniteBounds: true),
+          maxZoom: 17,
+          minZoom: 0,
+          maxPitch: 10,
+          minPitch: 0));
+      if (_mapboxMap != null) {
+        await _mapboxMap!.style
+            .addSource(GeoJsonSource(id: 'line', data: geojson));
+        await _mapboxMap!.style.addLayer(LineLayer(
+            id: "line_layer",
+            sourceId: "line",
+            lineJoin: LineJoin.ROUND,
+            lineCap: LineCap.ROUND,
+            lineOpacity: 0.7,
+            lineColor: const Color.fromRGBO(146, 174, 255, 1).value,
+            lineWidth: 9.0));
+      }
+      if (await _mapboxMap!.style.getLayer('line_layer') != null) {
+        _isHasLine = true;
+      }
+    }
+    // var lineLayerJson = """{
+    //       "type":"line",
+    //       "id":"line_layer",
+    //       "source":"line",
+    //       "paint":{
+    //       "line-join":"round",
+    //       "line-cap":"round",
+    //       "line-color":"rgb(146, 174, 255)",
+    //       "line-width":9.0
+    //       }
+    //     }""";
+    // await _mapboxMap?.style.addPersistentStyleLayer(lineLayerJson, null);
   }
 
   _onSelectLocation(PointLatLng selectedLocation) async {
@@ -181,51 +184,48 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
       ).show();
     } else {
       _selectedLocation = selectedLocation;
-      if (_isHasLine) {
-        await _mapboxMap!.style.removeStyleLayer('line_layer');
-        await _mapboxMap!.style.removeStyleSource('line');
-      }
+      if (_mapboxMap != null) {
+        if (_isHasLine) {
+          await _mapboxMap!.style.removeStyleLayer('line_layer');
+          await _mapboxMap!.style.removeStyleSource('line');
+        }
 
-      _getRouteInfo();
-      _mapboxMap!.setCamera(CameraOptions(
-          center: Point(
-                  coordinates: Position(
-                      selectedLocation.longitude, selectedLocation.latitude))
-              .toJson(),
-          zoom: 10));
-      _mapboxMap?.flyTo(
-          CameraOptions(
-              anchor: ScreenCoordinate(x: 0, y: 0),
-              zoom: 10,
-              bearing: 0,
-              pitch: 0),
-          MapAnimationOptions(duration: 2000, startDelay: 0));
-    }
-    _mapboxMap?.annotations.createCircleAnnotationManager().then((value) async {
-      setState(() {
-        _circleAnnotationManagerStart =
-            value; // Store the reference to the circle annotation manager
+        _mapboxMap!.setCamera(CameraOptions(
+            center: Point(
+                    coordinates: Position(
+                        selectedLocation.longitude, selectedLocation.latitude))
+                .toJson(),
+            zoom: 10));
+        _mapboxMap?.flyTo(
+            CameraOptions(
+                anchor: ScreenCoordinate(x: 0, y: 0),
+                zoom: 10,
+                bearing: 0,
+                pitch: 0),
+            MapAnimationOptions(duration: 2000, startDelay: 0));
+      }
+      _mapboxMap?.annotations
+          .createCircleAnnotationManager()
+          .then((value) async {
+        _circleAnnotationManagerStart = value;
+        value.create(
+          CircleAnnotationOptions(
+            geometry: Point(
+                    coordinates: Position(
+                        selectedLocation.longitude, selectedLocation.latitude))
+                .toJson(),
+            circleColor: primaryColor.value,
+            circleRadius: 12.0,
+          ),
+        );
       });
-      value.create(
-        CircleAnnotationOptions(
-          geometry: Point(
-                  coordinates: Position(
-                      selectedLocation.longitude, selectedLocation.latitude))
-              .toJson(),
-          circleColor: primaryColor.value,
-          circleRadius: 12.0,
-        ),
-      );
-    });
-    sharedPreferences.setDouble('plan_start_lat', _selectedLocation!.latitude);
-    sharedPreferences.setDouble('plan_start_lng', _selectedLocation!.longitude);
+      _getRouteInfo();
+      sharedPreferences.setDouble(
+          'plan_start_lat', _selectedLocation!.latitude);
+      sharedPreferences.setDouble(
+          'plan_start_lng', _selectedLocation!.longitude);
+    }
   }
-  // @override
-  // void dispose() {
-  //   // TODO: implement dispose
-  //   super.dispose();
-  //   _mapboxMap!.dispose();
-  // }
 
   @override
   Widget build(BuildContext context) {
@@ -238,46 +238,52 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
             Navigator.of(context).pop();
           },
         ),
-      ),
-      body: Stack(
-        children: [
-          MapWidget(
-            key: const ValueKey('mapWidget'),
-            resourceOptions: ResourceOptions(
-                accessToken:
-                    "pk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xuM3AwM2hpMGlzZDJqcGFla2VlejFsOCJ9.gEsXIx57uMGskLDDQYBm4g"),
-            cameraOptions: CameraOptions(
-                center: Point(
-                        coordinates: Position(widget.location.longitude,
-                            widget.location.latitude))
-                    .toJson(),
-                zoom: 10),
-            styleUri: MapboxStyles.MAPBOX_STREETS,
-            onLongTapListener: (coordinate) async {
-              if (_circleAnnotationManagerStart != null) {
-                await _circleAnnotationManagerStart!.deleteAll();
-              }
-              await _onSelectLocation(PointLatLng(coordinate.x, coordinate.y));
-            },
-            textureView: false,
-            onMapCreated: _onMapCreated,
-          ),
-          if (_isHasLine)
-            Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 2.h, vertical: 3.h),
-                  child: ElevatedButton(
-                      style: elevatedButtonStyle,
-                      onPressed: () {
-                        widget.callback(_selectedLocation!);
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text('Chọn địa điểm này')),
-                ))
+        actions: [
+          IconButton(
+              onPressed: () {
+                if (_selectedLocation == null) {
+                  AwesomeDialog(
+                          context: context,
+                          animType: AnimType.leftSlide,
+                          dialogType: DialogType.warning,
+                          title: 'Hãy chọn địa điểm xuất phát',
+                          titleTextStyle: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                          btnOkColor: Colors.amber,
+                          btnOkOnPress: () {},
+                          btnOkText: 'OK')
+                      .show();
+                } else {
+                  widget.callback(_selectedLocation!);
+                  Navigator.of(context).pop();
+                }
+              },
+              icon: const Icon(
+                Icons.check,
+                color: Colors.white,
+                size: 35,
+              ))
         ],
+      ),
+      body: MapWidget(
+        key: UniqueKey(),
+        cameraOptions: CameraOptions(
+            center: Point(
+                    coordinates: Position(
+                        widget.location.longitude, widget.location.latitude))
+                .toJson(),
+            zoom: 10),
+        styleUri: MapboxStyles.MAPBOX_STREETS,
+        onTapListener: (coordinate) async {
+          if (_circleAnnotationManagerStart != null) {
+            await _circleAnnotationManagerStart!.deleteAll();
+          }
+          await _onSelectLocation(PointLatLng(coordinate.x, coordinate.y));
+        },
+        textureView: false,
+        onMapCreated: _onMapCreated,
       ),
     ));
   }

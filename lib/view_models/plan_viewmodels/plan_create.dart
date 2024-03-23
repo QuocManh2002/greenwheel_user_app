@@ -16,6 +16,7 @@ class PlanCreate {
   String? tempOrders;
   String? note;
   int? maxMemberWeight;
+  String? departureAddress;
 
   PlanCreate(
       {this.locationId,
@@ -34,5 +35,6 @@ class PlanCreate {
       this.tempOrders,
       this.note,
       this.maxMemberWeight,
+      this.departureAddress,
       this.savedContacts});
 }

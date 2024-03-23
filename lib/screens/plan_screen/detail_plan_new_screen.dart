@@ -8,10 +8,12 @@ import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/join_confirm_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/plan_pdf_view_screen.dart';
@@ -82,6 +84,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   var currencyFormat =
       NumberFormat.simpleCurrency(locale: 'vi_VN', name: '', decimalDigits: 0);
   bool _isEnableToConfirm = false;
+  DateTime? _arrivedTime;
 
   @override
   void initState() {
@@ -96,37 +99,41 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     _planDetail = null;
     _planDetail = await _planService.GetPlanById(widget.planId);
     List<String> productIds = [];
-    for (final order in _planDetail!.tempOrders!) {
-      Map<String, dynamic> cart = order['cart'];
-      for (final proId in cart.keys.toList()) {
-        if (!productIds.contains(proId)) {
-          productIds.add(proId);
+    if (_planDetail != null) {
+      for (final order in _planDetail!.tempOrders!) {
+        Map<String, dynamic> cart = order['cart'];
+        for (final proId in cart.keys.toList()) {
+          if (!productIds.contains(proId)) {
+            productIds.add(proId);
+          }
         }
       }
+      isLeader = sharedPreferences.getString('userId') ==
+          _planDetail!.leaderId.toString();
+      tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+      for (int i = 0;
+          i < _planDetail!.maxMember - _planDetail!.memberCount!;
+          i++) {
+        availableWeight.add(i + 1);
+      }
+      products = await _productService.getListProduct(productIds);
+      tempOrders = await getTempOrder();
+      _isPublic = _planDetail!.joinMethod != 'NONE';
+      _isEnableToInvite = _planDetail!.status == 'REGISTERING';
+      indexService = await getIndexTempOrder();
+      if (indexService != null) {
+        getOrderList();
+      }
+      await getPlanMember();
+      if (_planDetail != null) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+      _isEnableToConfirm = _planDetail!.status != 'READY';
     }
-    isLeader = sharedPreferences.getString('userId') ==
-        _planDetail!.leaderId.toString();
-    tabController = TabController(length: 3, vsync: this, initialIndex: 0);
-    for (int i = 0;
-        i < _planDetail!.maxMember - _planDetail!.memberCount!;
-        i++) {
-      availableWeight.add(i + 1);
-    }
-    products = await _productService.getListProduct(productIds);
-    tempOrders = await getTempOrder();
-    _isPublic = _planDetail!.joinMethod != 'NONE';
-    _isEnableToInvite = _planDetail!.status == 'REGISTERING';
-    indexService = await getIndexTempOrder();
-    if (indexService != null) {
-      getOrderList();
-    }
-    await getPlanMember();
-    if (_planDetail != null) {
-      setState(() {
-        isLoading = false;
-      });
-    }
-    _isEnableToConfirm = _planDetail!.status != 'READY';
+
+    // _arrivedTime = _planDetail!.departureDate.
   }
 
   getPlanMember() async {
@@ -183,7 +190,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   quantity: e.value);
             }).toList(),
             note: e['note'],
-            guid: e['guid'],
             serveDates: e["serveDates"],
             total: orderTotal * e['serveDates'].length,
             createdAt: DateTime.now(),
@@ -420,10 +426,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             })
                         : null,
             appBar: AppBar(
-              title: const Text(
-                'Kế hoạch',
-                style:
-                    TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              title: Text(
+                _planDetail != null
+                    ? _planDetail!.name!
+                    : 'Chuyen di chua dat ten',
+                style: const TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white),
               ),
               leading: BackButton(
                 onPressed: () {
@@ -484,16 +494,43 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               alignment: Alignment.centerLeft,
                               child: Row(
                                 children: [
-                                  Expanded(
-                                    child: Text(
-                                      _planDetail!.name ??
-                                          'Chuyến đi chưa đặt tên',
-                                      overflow: TextOverflow.clip,
-                                      style: const TextStyle(
-                                          fontSize: 22,
-                                          fontWeight: FontWeight.bold),
-                                    ),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      SizedBox(
+                                        width: 70.w,
+                                        child: Text(
+                                          _planDetail!.locationName,
+                                          overflow: TextOverflow.clip,
+                                          style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Text(
+                                            NumberFormat.simpleCurrency(
+                                                    locale: 'vi_VN',
+                                                    decimalDigits: 0,
+                                                    name: '')
+                                                .format(_planDetail!
+                                                    .gcoinBudgetPerCapita),
+                                            overflow: TextOverflow.clip,
+                                            style: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          SvgPicture.asset(
+                                            gcoin_logo,
+                                            height: 25,
+                                          )
+                                        ],
+                                      ),
+                                    ],
                                   ),
+                                  const Spacer(),
                                   Column(
                                     children: [
                                       if (!widget.isEnableToJoin && isLeader)
@@ -621,8 +658,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         )),
                       ),
                       if ((widget.isFromHost == null || widget.isFromHost!) &&
-                          (widget.isEnableToJoin ||
-                              _planDetail!.memberCount! == 0) &&
+                          widget.isEnableToJoin &&
                           !_isAlreadyJoin)
                         buildNewFooter()
                     ],
@@ -771,7 +807,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                 height: 90.h,
                 child: ConfirmPlanBottomSheet(
                   isInfo: false,
+                  isFromHost: isLeader,
                   plan: PlanCreate(
+                    departureAddress: _planDetail!.departureAddress,
                     schedule: json.encode(_planDetail!.schedule),
                     savedContacts: json.encode(emerList),
                     name: _planDetail!.name,
@@ -817,6 +855,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               plan: _planDetail!,
               isPublic: isPublic,
               isConfirm: false,
+              onPublicizePlan: handlePublicizePlan,
             )));
   }
 
@@ -1016,13 +1055,38 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       }
     } else {
       if (_planDetail!.joinMethod == 'NONE') {
-        showModalBottomSheet(
-            context: context,
-            backgroundColor: Colors.white.withOpacity(0.94),
-            builder: (ctx) => Padding(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 23, vertical: 15),
-                  child: Row(
+        handlePublicizePlan(false);
+      } else {
+        final rs = await _planService.updateJoinMethod(_planDetail!.id, 'NONE');
+        if (rs) {
+          setState(() {
+            _planDetail!.joinMethod = 'NONE';
+          });
+        }
+      }
+    }
+  }
+
+  handlePublicizePlan(bool isFromJoinScreen) async {
+    await showModalBottomSheet(
+        context: context,
+        backgroundColor: Colors.white.withOpacity(0.94),
+        builder: (ctx) => Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 15),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Text(
+                    'Cách chia sẻ chuyến đi',
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'NotoSans'),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                  Row(
                     children: [
                       Expanded(
                           child: InkWell(
@@ -1034,6 +1098,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               _planDetail!.joinMethod = 'INVITE';
                             });
                             Navigator.of(context).pop();
+                            if (isFromJoinScreen) {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                      builder: (ctx) =>
+                                          const TabScreen(pageIndex: 1)),
+                                  (route) => false);
+                            }
                           }
                         },
                         child: Container(
@@ -1080,6 +1152,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               _planDetail!.joinMethod = 'SCAN';
                             });
                             Navigator.of(context).pop();
+                            if (isFromJoinScreen) {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                      builder: (ctx) =>
+                                          const TabScreen(pageIndex: 1)),
+                                  (route) => false);
+                            }
                           }
                         },
                         child: Container(
@@ -1115,15 +1195,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                       )),
                     ],
                   ),
-                ));
-      } else {
-        final rs = await _planService.updateJoinMethod(_planDetail!.id, 'NONE');
-        if (rs) {
-          setState(() {
-            _planDetail!.joinMethod = 'NONE';
-          });
-        }
-      }
-    }
+                ],
+              ),
+            ));
   }
 }

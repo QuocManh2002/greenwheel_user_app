@@ -41,6 +41,8 @@ class PlanDetail {
   double? currentGcoinBudget;
   List<SurchargeViewModel>? surcharges;
   int? maxMemberWeight;
+  String? departureAddress;
+  DateTime? regClosedAt;
 
   PlanDetail(
       {required this.id,
@@ -69,6 +71,8 @@ class PlanDetail {
       this.currentGcoinBudget,
       this.surcharges,
       this.maxMemberWeight,
+      this.departureAddress,
+      this.regClosedAt,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -92,6 +96,8 @@ class PlanDetail {
         note: json['note'],
         currentGcoinBudget: json['currentGcoinBudget'].toDouble(),
         memberCount: json['memberCount'],
+        regClosedAt: DateTime.parse(json['regClosedAt']),
+        departureAddress: json['departureAddress'],
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'],
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
         startLocationLng: json["departure"]["coordinates"][0].toDouble(),

@@ -86,6 +86,22 @@ class _SelectPlanNameState extends State<SelectPlanName> {
           'plan_end_date', _rangeEnd.toString().split(' ')[0]);
     }
     sharedPreferences.setInt('numOfExpPeriod', numberOfDay + numberOfNight);
+    // List<DateTime> holidaysIndex = [];
+    // DateTime endDate = _rangeEnd!;
+    // for (DateTime date = _selectedDate!;
+    //     date.isBefore(endDate);
+    //     date.add(const Duration(days: 1))) {
+    //   final rs = holidays.any((element) =>
+    //       element.from.isBefore(date) ||
+    //       element.to.isAfter(date) ||
+    //       element.from.isAtSameMomentAs(date) ||
+    //       element.to.isAtSameMomentAs(date));
+    //   if (rs) {
+    //     holidaysIndex.add(date);
+    //   }
+    // }
+    // print(holidaysIndex);
+    
   }
 
   @override
@@ -107,6 +123,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     numberOfNight = _initComboDate.numberOfNight;
     final _duration = (_numOfExpPeriod! / 2).ceil();
     final initDate = DateTime.now().add(const Duration(days: 7));
+    _selectedDate = initDate;
     _dateController.text = DateFormat('dd/MM/yyyy').format(initDate);
     _timeController.text =
         DateFormat.Hm().format(DateTime.now().add(const Duration(hours: 1)));

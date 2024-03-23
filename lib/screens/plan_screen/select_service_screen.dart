@@ -12,6 +12,7 @@ import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_note_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -172,7 +173,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         appBar: AppBar(
           title: Text((widget.isOrder != null && widget.isOrder!)
               ? 'Thêm dịch vụ'
-              : 'Tạo đơn hàng mẫu'),
+              : 'Dự trù kinh phí'),
           leading: BackButton(
             onPressed: () {
               AwesomeDialog(
@@ -218,6 +219,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                   builder: (ctx) => SizedBox(
                     height: 80.h,
                     child: ConfirmPlanBottomSheet(
+                          isFromHost: false,
                           isJoin: false,
                           locationName: widget.location.name,
                           isInfo: true,
@@ -418,7 +420,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           Text(
-                            '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(tabIndex == 0 ? totalRest / 100 : tabIndex == 1 ? totalFood / 100 : totalSurcharge / 100)} GCOIN',
+                            '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(tabIndex == 0 ? totalRest / 100 : tabIndex == 1 ? totalFood / 100 : totalSurcharge / 100)}GCOIN',
                             style: const TextStyle(fontSize: 18),
                           ),
                         ],
@@ -540,28 +542,28 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     }
   }
 
-  DateTime? checkFullyTimeService() {
-    // final startDateText = sharedPreferences.getString('plan_start_date');
-    // final endDateText = sharedPreferences.getString('plan_end_date');
-    // final _startDate = DateTime.parse(startDateText!);
-    // final _endDate = DateTime.parse(endDateText!);
-    // final _duration = _endDate.difference(_startDate).inDays + 1;
-    // var _servingDatesList = [];
-    // for (final order in orderList!) {
-    //   _servingDatesList.addAll(order.servingDates);
-    // }
-    // for (int i = 0; i < _duration; i++) {
-    //   final tempDate = _startDate.add(Duration(days: i));
-    //   if (tempDate.isAfter(DateTime.now().add(const Duration(days: 3))) &&
-    //       !_servingDatesList.any((element) =>
-    //           DateTime.parse(element.toString()).difference(tempDate).inDays ==
-    //           0)) {
-    //     print(tempDate);
-    //     return tempDate;
-    //   }
-    // }
-    // return null;
-  }
+  // DateTime? checkFullyTimeService() {
+  //   // final startDateText = sharedPreferences.getString('plan_start_date');
+  //   // final endDateText = sharedPreferences.getString('plan_end_date');
+  //   // final _startDate = DateTime.parse(startDateText!);
+  //   // final _endDate = DateTime.parse(endDateText!);
+  //   // final _duration = _endDate.difference(_startDate).inDays + 1;
+  //   // var _servingDatesList = [];
+  //   // for (final order in orderList!) {
+  //   //   _servingDatesList.addAll(order.servingDates);
+  //   // }
+  //   // for (int i = 0; i < _duration; i++) {
+  //   //   final tempDate = _startDate.add(Duration(days: i));
+  //   //   if (tempDate.isAfter(DateTime.now().add(const Duration(days: 3))) &&
+  //   //       !_servingDatesList.any((element) =>
+  //   //           DateTime.parse(element.toString()).difference(tempDate).inDays ==
+  //   //           0)) {
+  //   //     print(tempDate);
+  //   //     return tempDate;
+  //   //   }
+  //   // }
+  //   // return null;
+  // }
 
   saveToLocal() {
     // PlanDetail? plan = await _planService.GetPlanById(
@@ -596,6 +598,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
             .toInt()));
     plan = PlanCreate(
+        departureAddress: sharedPreferences.getString('plan_start_address'),
         numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
         locationId: widget.location.id,
         name: sharedPreferences.getString('plan_name'),
@@ -620,6 +623,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         builder: (ctx) => SizedBox(
               height: 90.h,
               child: ConfirmPlanBottomSheet(
+                isFromHost: false,
                 isInfo: false,
                 locationName: widget.location.name,
                 orderList: orderList!,
@@ -711,13 +715,8 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           Utils().clearPlanSharePref();
           Navigator.of(context).pop();
           Navigator.of(context).pop();
-          Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(
-                builder: (ctx) => const TabScreen(
-                      pageIndex: 1,
-                    )),
-            (route) => false,
-          );
+          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 1)), (route) => false);
+          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DetailPlanNewScreen(planId: rs, isEnableToJoin: false)));
         });
       }
     }

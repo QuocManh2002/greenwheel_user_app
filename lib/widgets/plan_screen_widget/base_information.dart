@@ -34,29 +34,38 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   bool _isShowNote = false;
   PlanService _planService = PlanService();
   String status = '';
+  String travelDurationText = '';
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    if (widget.isPublic) {
-      switch (widget.plan.status) {
-        case 'REGISTERING':
-          status = 'Đang mời';
-          break;
-        case 'READY':
-          status = 'Đã chốt';
-          break;
-        case 'COMPLETED':
-          status = 'Đã hoàn tất';
-          break;
-        case 'CANCELED':
-          status = 'Đã huỷ';
-          break;
-        case 'FLAWED':
-          status = 'Để hỏi lead';
-          break;
-      }
+
+    switch (widget.plan.status) {
+      case 'REGISTERING':
+        status = 'Đang mời';
+        break;
+      case 'READY':
+        status = 'Đã chốt';
+        break;
+      case 'COMPLETED':
+        status = 'Đã hoàn tất';
+        break;
+      case 'CANCELED':
+        status = 'Đã huỷ';
+        break;
+      case 'FLAWED':
+        status = 'Để hỏi lead';
+        break;
     }
+
+    var tempDuration = DateFormat.Hm().parse(widget.plan.travelDuration!);
+    travelDurationText = DateFormat.Hm().format(tempDuration);
+    // if (tempDuration.hour != 0) {
+    //   travelDurationText += '${tempDuration.hour} giờ ';
+    // }
+    // if (tempDuration.minute != 0) {
+    //   travelDurationText += '${tempDuration.minute} phút';
+    // }
   }
 
   @override
@@ -65,12 +74,22 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const Text(
                     "Địa điểm:",
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  const Text(
+                    "Đóng đơn đăng kí:",
                     style: TextStyle(
                       fontSize: 18,
                     ),
@@ -93,15 +112,17 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                       fontSize: 18,
                     ),
                   ),
-                  const SizedBox(
-                    height: 12,
-                  ),
-                  const Text(
-                    "Số người tối đa:",
-                    style: TextStyle(
-                      fontSize: 18,
+                  if (widget.plan.memberCount! == 0)
+                    const SizedBox(
+                      height: 12,
                     ),
-                  ),
+                  if (widget.plan.memberCount! == 0)
+                    const Text(
+                      "Số người tối đa:",
+                      style: TextStyle(
+                        fontSize: 18,
+                      ),
+                    ),
                   if (widget.plan.memberCount! > 0)
                     const SizedBox(
                       height: 12,
@@ -113,27 +134,53 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                         fontSize: 18,
                       ),
                     ),
-                  if (widget.isPublic)
+                  if (widget.plan.status != 'PENDING')
                     const SizedBox(
                       height: 12,
                     ),
-                  if (widget.isPublic)
+                  if (widget.plan.status != 'PENDING')
                     const Text(
                       "Trạng thái:",
                       style: TextStyle(
                         fontSize: 18,
                       ),
                     ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  const Text(
+                    'Thời gian di chuyển: ',
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  const Text(
+                    'Địa điểm xuất phát: ',
+                    style: TextStyle(
+                      fontSize: 18,
+                    ),
+                  ),
                 ],
               ),
               SizedBox(
-                width: 3.w,
+                width: 1.w,
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     widget.plan.locationName,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  Text(
+                    DateFormat('dd/MM/yyyy').format(widget.plan.regClosedAt!),
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
@@ -157,30 +204,52 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                     height: 12,
                   ),
                   Text(
-                    '${widget.plan.maxMember < 10 ? '0${widget.plan.maxMember}' : widget.plan.maxMember} người',
+                    widget.plan.memberCount! > 0
+                        ? '${widget.plan.memberCount! > 0 && widget.plan.memberCount! < 10 ? '0${widget.plan.memberCount}' : widget.plan.memberCount}/${widget.plan.maxMember < 10 ? '0${widget.plan.maxMember}' : widget.plan.maxMember} người'
+                        : '${widget.plan.maxMember < 10 ? '0${widget.plan.maxMember}' : widget.plan.maxMember} người',
                     style: const TextStyle(
                         fontSize: 18, fontWeight: FontWeight.bold),
                   ),
-                  if (widget.plan.memberCount! > 0)
-                    const SizedBox(
-                      height: 12,
-                    ),
-                  if (widget.plan.memberCount! > 0)
-                    Text(
-                      '${widget.plan.memberCount! > 0 && widget.plan.memberCount! < 10 ? '0${widget.plan.memberCount}' : widget.plan.memberCount} người',
+                  // if (widget.plan.memberCount! > 0)
+                  //   const SizedBox(
+                  //     height: 12,
+                  //   ),
+                  // if (widget.plan.memberCount! > 0)
+                  //   Text(
+                  //     '${widget.plan.memberCount! > 0 && widget.plan.memberCount! < 10 ? '0${widget.plan.memberCount}' : widget.plan.memberCount} người',
+                  //     style: const TextStyle(
+                  //         fontSize: 18, fontWeight: FontWeight.bold),
+                  //   ),
+                   if (widget.plan.status != 'PENDING')
+                  const SizedBox(
+                    height: 12,
+                  ),
+                   if (widget.plan.status != 'PENDING')
+                  Text(
+                    status,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  Text(
+                    travelDurationText,
+                    style: const TextStyle(
+                        fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  SizedBox(
+                    width: 45.w,
+                    child: Text(
+                      widget.plan.departureAddress!,
+                      overflow: TextOverflow.clip,
                       style: const TextStyle(
                           fontSize: 18, fontWeight: FontWeight.bold),
                     ),
-                  if (widget.isPublic)
-                    const SizedBox(
-                      height: 12,
-                    ),
-                  if (widget.isPublic)
-                    Text(
-                      status,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold),
-                    )
+                  ),
                 ],
               )
             ],
@@ -334,7 +403,12 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                           ))
                     ],
                   ),
-                  for(int i = 0; i < (widget.members.length < 3 ? widget.members.length : 3); i++ )
+                  for (int i = 0;
+                      i <
+                          (widget.members.length < 3
+                              ? widget.members.length
+                              : 3);
+                      i++)
                     if (widget.members[i].weight != 0)
                       Padding(
                         padding: const EdgeInsets.symmetric(vertical: 6),
@@ -351,8 +425,8 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                                   height: 25,
                                   width: double.infinity,
                                   fit: BoxFit.cover,
-                                  imageUrl:
-                                      widget.members[i].imageUrl ?? defaultUserAvatarLink,
+                                  imageUrl: widget.members[i].imageUrl ??
+                                      defaultUserAvatarLink,
                                   placeholder: (context, url) =>
                                       Image.memory(kTransparentImage),
                                   errorWidget: (context, url, error) =>

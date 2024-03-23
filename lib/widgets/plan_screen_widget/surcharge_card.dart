@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -24,7 +26,7 @@ class SurchargeCard extends StatelessWidget {
                   width: 8,
                 ),
                 SizedBox(
-                  width: 53.w,
+                  width: 55.w,
                   child: Text(
                     note,
                     overflow: TextOverflow.clip,
@@ -32,6 +34,7 @@ class SurchargeCard extends StatelessWidget {
                         fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
+                const Spacer(),
                 Container(
                   color: Colors.grey,
                   width: 2,
@@ -41,11 +44,17 @@ class SurchargeCard extends StatelessWidget {
                   width: 8,
                 ),
                 SizedBox(
-                  width: 28.w,
-                  child: Text(
-                    NumberFormat.simpleCurrency(locale: 'vi_VN', name: 'GCOIN',decimalDigits: 0).format(amount),
-                    style: const TextStyle(fontSize: 16),
-                    overflow: TextOverflow.clip,
+                  width: 24.w,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        NumberFormat.simpleCurrency(locale: 'vi_VN', name: '',decimalDigits: 0).format(amount),
+                        style: const TextStyle(fontSize: 16),
+                        overflow: TextOverflow.clip,
+                      ),
+                      SvgPicture.asset(gcoin_logo, height: 25,)
+                    ],
                   ),
                 )
               ],

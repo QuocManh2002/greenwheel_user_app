@@ -179,19 +179,11 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
         ),
       ),
       body:
-          // isLoading
-          //     ? const Center(
-          //         child: Text("Loading..."),
-          //       )
-          // :
           Stack(
         children: [
           SizedBox(
             child: MapWidget(
               key: const ValueKey('mapWidget'),
-              resourceOptions: ResourceOptions(
-                  accessToken:
-                      "pk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xuM3AwM2hpMGlzZDJqcGFla2VlejFsOCJ9.gEsXIx57uMGskLDDQYBm4g"),
               cameraOptions: CameraOptions(
                   center: Point(
                           coordinates:

@@ -76,7 +76,7 @@ class _LocationScreenState extends State<LocationScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-          resizeToAvoidBottomInset: false,
+            resizeToAvoidBottomInset: false,
             body: isLoading
                 ? const Center(
                     child: Text("Loading..."),
@@ -324,28 +324,31 @@ class _LocationScreenState extends State<LocationScreen> {
                                               : Colors.black)),
                                 ),
                               ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 16),
-                                child: Container(
-                                  alignment: Alignment.center,
-                                  child: ElevatedButton.icon(
-                                    onPressed: () {},
-                                    icon: const Icon(Icons.menu_book),
-                                    label: const Text(
-                                      "Hướng dẫn cộng đồng",
-                                      style: TextStyle(
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    style: elevatedButtonStyle.copyWith(
-                                        backgroundColor:
-                                            MaterialStatePropertyAll(
-                                                Colors.grey.withOpacity(0.6)),
-                                        foregroundColor:
-                                            const MaterialStatePropertyAll(
-                                                Colors.black)),
-                                  ),
-                                ),
+                              // Padding(
+                              //   padding:
+                              //       const EdgeInsets.symmetric(vertical: 16),
+                              //   child: Container(
+                              //     alignment: Alignment.center,
+                              //     child: ElevatedButton.icon(
+                              //       onPressed: () {},
+                              //       icon: const Icon(Icons.menu_book),
+                              //       label: const Text(
+                              //         "Hướng dẫn cộng đồng",
+                              //         style: TextStyle(
+                              //             fontWeight: FontWeight.bold),
+                              //       ),
+                              //       style: elevatedButtonStyle.copyWith(
+                              //           backgroundColor:
+                              //               MaterialStatePropertyAll(
+                              //                   Colors.grey.withOpacity(0.6)),
+                              //           foregroundColor:
+                              //               const MaterialStatePropertyAll(
+                              //                   Colors.black)),
+                              //     ),
+                              //   ),
+                              // ),
+                              SizedBox(
+                                height: 2.h,
                               ),
                               buildDivider(),
                               const Padding(
@@ -403,12 +406,21 @@ class _LocationScreenState extends State<LocationScreen> {
                                         ]),
                                     TextButton(
                                         onPressed: () {
-                                          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => AllCommentScreen(
-                                            destinationId: widget.location.id,
-                                            destinationDescription: widget.location.description,
-                                            destinationImageUrl: widget.location.imageUrls[0],
-                                            destinationName: widget.location.name,
-                                            )));
+                                          Navigator.of(context).push(
+                                              MaterialPageRoute(
+                                                  builder: (ctx) =>
+                                                      AllCommentScreen(
+                                                        destinationId:
+                                                            widget.location.id,
+                                                        destinationDescription:
+                                                            widget.location
+                                                                .description,
+                                                        destinationImageUrl:
+                                                            widget.location
+                                                                .imageUrls[0],
+                                                        destinationName: widget
+                                                            .location.name,
+                                                      )));
                                         },
                                         child: const Row(
                                           children: [
@@ -434,7 +446,8 @@ class _LocationScreenState extends State<LocationScreen> {
                               ListView.builder(
                                 physics: const BouncingScrollPhysics(),
                                 shrinkWrap: true,
-                                itemCount: _comments.length > 2 ? 2 : _comments.length,
+                                itemCount:
+                                    _comments.length > 2 ? 2 : _comments.length,
                                 itemBuilder: (context, index) => Padding(
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 10),
@@ -464,10 +477,16 @@ class _LocationScreenState extends State<LocationScreen> {
                                             MaterialPageRoute(
                                                 builder: (ctx) =>
                                                     AddCommentScreen(
-                                                      destinationDescription: widget.location.description,
-                                                      destinationImageUrl: widget.location.imageUrls[0],
-                                                      destinationId: widget.location.id,
-                                                      destinationName: widget.location.name,
+                                                      destinationDescription:
+                                                          widget.location
+                                                              .description,
+                                                      destinationImageUrl:
+                                                          widget.location
+                                                              .imageUrls[0],
+                                                      destinationId:
+                                                          widget.location.id,
+                                                      destinationName:
+                                                          widget.location.name,
                                                       callback:
                                                           callbackAddComment,
                                                       comments: _comments,
@@ -499,11 +518,60 @@ class _LocationScreenState extends State<LocationScreen> {
                             alignment: Alignment.center,
                             child: ElevatedButton(
                                 onPressed: () {
-                                  Navigator.of(context).push(MaterialPageRoute(
-                                      builder: (ctx) => CreateNewPlanScreen(
-                                            location: widget.location,
-                                            isCreate: true,
-                                          )));
+                                  String? locationName = sharedPreferences
+                                      .getString('plan_location_name');
+                                  if (locationName != null) {
+                                    AwesomeDialog(
+                                      context: context,
+                                      animType: AnimType.leftSlide,
+                                      dialogType: DialogType.question,
+                                      title:
+                                          'Bạn đang có bản nháp chuyến đi tại ${locationName == widget.location.name ? 'địa điểm này' : locationName}',
+                                      titleTextStyle: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'NotoSans'),
+                                      desc:
+                                          'Bạn có muốn ghi đè chuyến đi đó không ?',
+                                      descTextStyle: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.grey,
+                                          fontFamily: 'NotoSans'),
+                                      btnOkOnPress: () async {
+                                        Utils().clearPlanSharePref();
+                                        Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (ctx) =>
+                                                    CreateNewPlanScreen(
+                                                        location:
+                                                            widget.location,
+                                                        isCreate: true)));
+                                      },
+                                      btnOkColor: Colors.deepOrangeAccent,
+                                      btnOkText: 'Có',
+                                      btnCancelText: 'Không',
+                                      btnCancelColor: Colors.blue,
+                                      btnCancelOnPress: () {
+                                        if(locationName == widget.location.name){
+                                          Navigator.of(context).push(
+                                            MaterialPageRoute(
+                                                builder: (ctx) =>
+                                                    CreateNewPlanScreen(
+                                                        location:
+                                                            widget.location,
+                                                        isCreate: true)));
+                                        }
+                                      },
+                                    ).show();
+                                  } else {
+                                    Navigator.of(context).push(
+                                        MaterialPageRoute(
+                                            builder: (ctx) =>
+                                                CreateNewPlanScreen(
+                                                  location: widget.location,
+                                                  isCreate: true,
+                                                )));
+                                  }
                                 },
                                 style: elevatedButtonStyle,
                                 child: const Text(
@@ -546,7 +614,7 @@ class _LocationScreenState extends State<LocationScreen> {
             : PointLatLng(selectedAddress.lat, selectedAddress.lng));
   }
 
-  callbackAddComment() async{
+  callbackAddComment() async {
     var comments = await _locationService.getComments(widget.location.id);
     setState(() {
       _comments = comments;

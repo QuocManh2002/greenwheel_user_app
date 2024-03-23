@@ -132,110 +132,130 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 shrinkWrap: true,
                 itemCount: widget.indexService['roomIndex'].length,
                 itemBuilder: (context, index) {
-                  return Container(
-                    width: 100.w,
-                    margin: const EdgeInsets.only(bottom: 12),
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                        color: Colors.grey.withOpacity(0.1),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(12))),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 2),
-                              decoration: BoxDecoration(
-                                  color: primaryColor.withOpacity(0.8),
-                                  borderRadius: const BorderRadius.all(
-                                      Radius.circular(8))),
-                              child: Text(
-                                'Ngày ${DateTime.parse(widget.indexService['roomIndex'][index]).difference(widget.plan.startDate!).inDays + 1}',
-                                style: const TextStyle(
-                                    fontSize: 17,
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w500),
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: Container(
+                      width: 100.w,
+                      margin: const EdgeInsets.only(bottom: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 12, vertical: 6),
+                      decoration: BoxDecoration(
+                          color: Colors.grey.withOpacity(0.1),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12))),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 6, vertical: 2),
+                                decoration: BoxDecoration(
+                                    color: primaryColor.withOpacity(0.8),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8))),
+                                child: Text(
+                                  'Ngày ${DateTime.parse(widget.indexService['roomIndex'][index]).difference(widget.plan.startDate!).inDays + 1}',
+                                  style: const TextStyle(
+                                      fontSize: 17,
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w500),
+                                ),
                               ),
-                            ),
-                            SizedBox(
-                              width: 1.h,
-                            ),
-                            SizedBox(
-                              width: 60.w,
-                              child: const Text(
-                                'Nghỉ tại khách sạn/nhà nghỉ',
-                                overflow: TextOverflow.clip,
-                                style: TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              SizedBox(
+                                width: 1.h,
                               ),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 1.h,
-                        ),
-                        if (widget.isLeader)
-                          Padding(
-                            padding: const EdgeInsets.only(left: 12),
-                            child: Column(
-                              children: [
-                                for (final order
-                                    in widget.listRoom[index].orderList)
-                                  Column(
-                                    children: [
-                                      Row(
-                                        children: [
-                                          SizedBox(
-                                              width: 43.w,
-                                              child: Text(order.supplier.name,
-                                                  overflow: TextOverflow.clip,
-                                                  style: const TextStyle(
-                                                      fontSize: 17,
-                                                      fontWeight:
-                                                          FontWeight.bold))),
-                                          SizedBox(
-                                            width: 1.h,
-                                          ),
+                              SizedBox(
+                                width: 60.w,
+                                child: const Text(
+                                  'Nghỉ tại khách sạn/nhà nghỉ',
+                                  overflow: TextOverflow.clip,
+                                  style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 1.h,
+                          ),
+                          if (widget.isLeader)
+                            Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: Column(
+                                children: [
+                                  for (final order
+                                      in widget.listRoom[index].orderList)
+                                    Column(
+                                      children: [
+                                        Row(
+                                          children: [
+                                            SizedBox(
+                                                width: 45.w,
+                                                child: Text(order.supplier.name,
+                                                    overflow: TextOverflow.clip,
+                                                    style: const TextStyle(
+                                                        fontSize: 17,
+                                                        fontWeight:
+                                                            FontWeight.bold))),
+                                            const Spacer(),
+                                            Container(
+                                              color: Colors.grey,
+                                              width: 2,
+                                              height: 40,
+                                            ),
+                                            SizedBox(
+                                              width: 1.h,
+                                            ),
+                                            SizedBox(
+                                              width: 20.w,
+                                              child: Row(
+                                                children: [
+                                                  Text(
+                                                      NumberFormat
+                                                              .simpleCurrency(
+                                                                  locale:
+                                                                      'vi_VN',
+                                                                  decimalDigits:
+                                                                      0,
+                                                                  name: '')
+                                                          .format((order.total /
+                                                                  100)
+                                                              .toInt()),
+                                                      overflow:
+                                                          TextOverflow.clip,
+                                                      style: const TextStyle(
+                                                          fontSize: 17,
+                                                          fontWeight:
+                                                              FontWeight.bold)),
+                                                  SvgPicture.asset(
+                                                    gcoin_logo,
+                                                    height: 25,
+                                                  )
+                                                ],
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                        if (order !=
+                                                widget.listRoom[index].orderList
+                                                    .last &&
+                                            widget.listRoom[index].orderList
+                                                    .last !=
+                                                1)
                                           Container(
                                             color: Colors.grey,
-                                            width: 2,
-                                            height: 40,
-                                          ),
-                                          SizedBox(
-                                            width: 1.h,
-                                          ),
-                                          SizedBox(
-                                            width: 30.w,
-                                            child: Text(
-                                                '${(order.total / 100).toInt()} GCOIN',
-                                                overflow: TextOverflow.clip,
-                                                style: const TextStyle(
-                                                    fontSize: 17,
-                                                    fontWeight:
-                                                        FontWeight.bold)),
+                                            height: 2,
                                           )
-                                        ],
-                                      ),
-                                      if (order !=
-                                              widget.listRoom[index].orderList
-                                                  .last &&
-                                          widget.listRoom[index].orderList
-                                                  .last !=
-                                              1)
-                                        Container(
-                                          color: Colors.grey,
-                                          height: 2,
-                                        )
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          )
-                      ],
+                                      ],
+                                    ),
+                                ],
+                              ),
+                            )
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -246,7 +266,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 itemCount: widget.indexService['foodIndex'].length,
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12),
+                    padding:
+                        const EdgeInsets.only(bottom: 12, left: 4, right: 4),
                     child: Container(
                       width: 100.w,
                       padding: const EdgeInsets.symmetric(
@@ -396,9 +417,12 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 shrinkWrap: true,
                 itemCount: widget.plan.surcharges!.length,
                 itemBuilder: (context, index) {
-                  return SurchargeCard(
-                      amount: widget.plan.surcharges![index].gcoinAmount,
-                      note: widget.plan.surcharges![index].note);
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: SurchargeCard(
+                        amount: widget.plan.surcharges![index].gcoinAmount,
+                        note: widget.plan.surcharges![index].note),
+                  );
                 },
               )
             ]),
@@ -406,58 +430,61 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
           const SizedBox(
             height: 8,
           ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                const Text(
-                  'Ngân sách ban đầu: ',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                Text(
-                  NumberFormat.simpleCurrency(
-                          locale: 'vi-VN', decimalDigits: 0, name: "")
-                      .format(widget.plan.gcoinBudgetPerCapita! *
-                          widget.plan.maxMember),
-                  style: const TextStyle(fontSize: 18),
-                ),
-                SvgPicture.asset(
-                  gcoin_logo,
-                  height: 25,
-                ),
-                SizedBox(
-                  width: 2.h,
-                )
-              ],
+          if (widget.total != 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  const Text(
+                    'Ngân sách ban đầu: ',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  Text(
+                    NumberFormat.simpleCurrency(
+                            locale: 'vi-VN', decimalDigits: 0, name: "")
+                        .format(widget.plan.gcoinBudgetPerCapita! *
+                            widget.plan.maxMember),
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  SvgPicture.asset(
+                    gcoin_logo,
+                    height: 25,
+                  ),
+                  SizedBox(
+                    width: 2.h,
+                  )
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Row(
-              children: [
-                const Text(
-                  'Ngân sách hiện tại: ',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                ),
-                const Spacer(),
-                Text(
-                  NumberFormat.simpleCurrency(
-                          locale: 'vi-VN', decimalDigits: 0, name: "")
-                      .format(widget.plan.gcoinBudgetPerCapita! *
-                          widget.plan.maxMember - widget.total/100),
-                  style: const TextStyle(fontSize: 18),
-                ),
-                SvgPicture.asset(
-                  gcoin_logo,
-                  height: 25,
-                ),
-                SizedBox(
-                  width: 2.h,
-                )
-              ],
+          if (widget.total != 0)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Row(
+                children: [
+                  const Text(
+                    'Ngân sách hiện tại: ',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const Spacer(),
+                  Text(
+                    NumberFormat.simpleCurrency(
+                            locale: 'vi-VN', decimalDigits: 0, name: "")
+                        .format(widget.plan.gcoinBudgetPerCapita! *
+                                widget.plan.maxMember -
+                            widget.total / 100),
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                  SvgPicture.asset(
+                    gcoin_logo,
+                    height: 25,
+                  ),
+                  SizedBox(
+                    width: 2.h,
+                  )
+                ],
+              ),
             ),
-          ),
           if (widget.total != 0)
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12),

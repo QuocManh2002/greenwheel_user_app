@@ -47,7 +47,6 @@ class ProductService extends Iterable {
               nodes {
                 id
                 name
-                paymentType
                 price
                 imageUrl
                 partySize
@@ -88,7 +87,6 @@ class ProductService extends Iterable {
     nodes {
       id
       name
-      paymentType
       price
       imageUrl
       partySize

@@ -28,6 +28,15 @@ class _BaseInformationState extends State<BaseInformationScreen> {
   bool _isSelecting = false;
   TextEditingController _memberController = TextEditingController();
   TextEditingController _maxMemberWeightController = TextEditingController();
+  int maxMemberWeight = 1;
+
+  getMaxMemberWeight() {
+    if(int.parse(_memberController.text) <=3){
+      return 1;
+    }else{
+      return (int.parse(_memberController.text)/3).floor();
+    }
+  }
 
   onChangeQuantity(String type) {
     if (type == "add") {
@@ -47,6 +56,10 @@ class _BaseInformationState extends State<BaseInformationScreen> {
         });
       }
     }
+    setState(() {
+      maxMemberWeight = getMaxMemberWeight();
+    });
+    sharedPreferences.setInt('plan_max_member_weight', 1);
     sharedPreferences.setInt(
         'plan_number_of_member', int.parse(_memberController.text));
   }
@@ -64,7 +77,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
       });
     }
     sharedPreferences.setInt(
-        'plan_max_member_weight', int.parse(_maxMemberWeightController.text));
+        'plan_max_member_weight', int.parse(_maxMemberWeightController.text) + 1);
   }
 
   @override
@@ -307,6 +320,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
           SizedBox(
             height: 3.h,
           ),
+          if(maxMemberWeight != 1)
           const Text(
             'Số người đi cùng tối đa',
             style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -314,6 +328,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
           SizedBox(
             height: 2.h,
           ),
+          if(maxMemberWeight != 1)
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -390,7 +405,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                   iconSize: 30,
                   onPressed: () {
                     if (int.parse(_maxMemberWeightController.text) + 1 <
-                       ( int.parse(_memberController.text) / 3 ).ceil()) {
+                       ( int.parse(_memberController.text) / 3 ).floor()) {
                       onChangeMaxWeightMember('add');
                     }
                   },

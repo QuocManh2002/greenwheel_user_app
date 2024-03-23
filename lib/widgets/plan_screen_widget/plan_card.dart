@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:sizer2/sizer2.dart';
@@ -35,9 +34,6 @@ class PlanCard extends StatelessWidget {
 
     return InkWell(
       onTap: () {
-        sharedPreferences.setString('selectedDate', plan.startDate.toString());
-        sharedPreferences.setInt('selectedDuration',
-            plan.endDate.difference(plan.startDate).inDays + 1);
         Navigator.of(context).push(MaterialPageRoute(
             builder: (ctx) => DetailPlanNewScreen(
                   planId: plan.id,

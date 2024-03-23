@@ -241,60 +241,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             SizedBox(
-              height: 2.h,
-            ),
-            Container(
-              width: 100.w,
-              alignment: Alignment.center,
-              height: 7.8.h,
-              padding: const EdgeInsets.only(left: 12, right: 8),
-              decoration: BoxDecoration(
-                  border: Border.all(color: Colors.grey),
-                  borderRadius: const BorderRadius.all(Radius.circular(14))),
-              child: DropdownButton<String>(
-                hint: const Text(
-                  'Dạng hoạt động',
-                  style: TextStyle(fontSize: 18),
-                ),
-                disabledHint: Text('aaa'),
-                iconEnabledColor: primaryColor,
-                iconSize: 36,
-                underline: const SizedBox(),
-                isExpanded: true,
-                dropdownColor: Colors.white,
-                icon: const Icon(Icons.arrow_drop_down),
-                style: const TextStyle(color: Colors.black, fontSize: 18),
-                value: _selectedType,
-                onChanged: (value) {
-                  setState(() {
-                    _selectedType = value;
-                    _isModify = true;
-                  });
-                  if (value == 'Ăn uống') {
-                    setState(() {
-                      _isFoodActivity = true;
-                      _isRoomActivity = false;
-                    });
-                  } else if (value == 'Check-in') {
-                    setState(() {
-                      _isRoomActivity = true;
-                      _isFoodActivity = false;
-                    });
-                  } else {
-                    setState(() {
-                      _isFoodActivity = false;
-                      _isRoomActivity = false;
-                    });
-                  }
-                },
-                items: schedule_item_types_vn
-                    .map(
-                      (e) => DropdownMenuItem(value: e, child: Text(e)),
-                    )
-                    .toList(),
-              ),
-            ),
-            SizedBox(
               height: 1.h,
             ),
             Form(
@@ -302,47 +248,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    SizedBox(
-                      height: 2.h,
-                    ),
-                    TextFormFieldWithLength(
-                        controller: _shortDescriptionController,
-                        inputType: TextInputType.text,
-                        maxLength: 40,
-                        maxline: 2,
-                        text: 'Mô tả',
-                        onChange: (p0) {
-                          setState(() {
-                            _isModify = true;
-                          });
-                        },
-                        onValidate: (value) {
-                          if (value!.isEmpty) {
-                            return "Mô tả của hoạt động không được để trống";
-                          }
-                        },
-                        hinttext: 'Câu cá, tắm suối...'),
-                    SizedBox(
-                      height: 2.h,
-                    ),
-                    TextFormFieldWithLength(
-                        controller: _descriptionController,
-                        inputType: TextInputType.text,
-                        maxLength: 110,
-                        maxline: 3,
-                        minline: 3,
-                        text: 'Mô tả chi tiết',
-                        onChange: (p0) {
-                          setState(() {
-                            _isModify = true;
-                          });
-                        },
-                        onValidate: (value) {
-                          if (value!.isEmpty) {
-                            return "Mô tả chi tiết của hoạt động không được để trống";
-                          }
-                        },
-                        hinttext: 'Câu cá ở sông Đà...'),
                     SizedBox(
                       height: 1.h,
                     ),
@@ -487,6 +392,104 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         ],
                       ),
                     ),
+                    SizedBox(
+                      height: 2.h,
+                    ),
+                    Container(
+                      width: 100.w,
+                      alignment: Alignment.center,
+                      height: 7.8.h,
+                      padding: const EdgeInsets.only(left: 12, right: 8),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: Colors.grey),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(14))),
+                      child: DropdownButton<String>(
+                        hint: const Text(
+                          'Dạng hoạt động',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                        disabledHint: Text('aaa'),
+                        iconEnabledColor: primaryColor,
+                        iconSize: 36,
+                        underline: const SizedBox(),
+                        isExpanded: true,
+                        dropdownColor: Colors.white,
+                        icon: const Icon(Icons.arrow_drop_down),
+                        style:
+                            const TextStyle(color: Colors.black, fontSize: 18),
+                        value: _selectedType,
+                        onChanged: (value) {
+                          setState(() {
+                            _selectedType = value;
+                            _isModify = true;
+                          });
+                          if (value == 'Ăn uống') {
+                            setState(() {
+                              _isFoodActivity = true;
+                              _isRoomActivity = false;
+                            });
+                          } else if (value == 'Check-in') {
+                            setState(() {
+                              _isRoomActivity = true;
+                              _isFoodActivity = false;
+                            });
+                          } else {
+                            setState(() {
+                              _isFoodActivity = false;
+                              _isRoomActivity = false;
+                            });
+                          }
+                        },
+                        items: schedule_item_types_vn
+                            .map(
+                              (e) => DropdownMenuItem(value: e, child: Text(e)),
+                            )
+                            .toList(),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 2.h,
+                    ),
+                    TextFormFieldWithLength(
+                        controller: _shortDescriptionController,
+                        inputType: TextInputType.text,
+                        maxLength: 40,
+                        maxline: 2,
+                        minline: 2,
+                        text: 'Mô tả',
+                        onChange: (p0) {
+                          setState(() {
+                            _isModify = true;
+                          });
+                        },
+                        onValidate: (value) {
+                          if (value!.isEmpty) {
+                            return "Mô tả của hoạt động không được để trống";
+                          }
+                        },
+                        hinttext: 'Câu cá, tắm suối...'),
+                    SizedBox(
+                      height: 2.h,
+                    ),
+                    TextFormFieldWithLength(
+                        controller: _descriptionController,
+                        inputType: TextInputType.text,
+                        maxLength: 300,
+                        maxline: 6,
+                        minline: 6,
+                        text: 'Mô tả chi tiết',
+                        onChange: (p0) {
+                          setState(() {
+                            _isModify = true;
+                          });
+                        },
+                        onValidate: (value) {
+                          if (value!.isEmpty) {
+                            return "Mô tả chi tiết của hoạt động không được để trống";
+                          }
+                        },
+                        hinttext: 'Câu cá ở sông Đà...'),
                   ],
                 )),
             SizedBox(
@@ -508,7 +511,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                               borderRadius:
                                   const BorderRadius.all(Radius.circular(14))),
                           child: const Text(
-                            'Đã đặt đơn hàng mẫu',
+                            'Đã dự trù kinh phí',
                             style: TextStyle(
                                 fontSize: 17,
                                 color: primaryColor,
@@ -524,7 +527,9 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (ctx) => ServiceMainScreen(
                                       isOrder: false,
-                                      serviceType: _isFoodActivity ? services[0] :services[4],
+                                      serviceType: _isFoodActivity
+                                          ? services[0]
+                                          : services[4],
                                       location: widget.location,
                                       numberOfMember: sharedPreferences
                                           .getInt('plan_number_of_member')!,
@@ -536,11 +541,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       callbackFunction: callback,
                                     )));
                           },
-                          icon: Icon(_isFoodActivity ? Icons.restaurant : Icons.hotel),
+                          icon: Icon(
+                              _isFoodActivity ? Icons.restaurant : Icons.hotel),
                           style: elevatedButtonStyle.copyWith(
                               minimumSize:
                                   MaterialStatePropertyAll(Size(50.w, 5.h))),
-                          label: const Text('Thêm đơn hàng mẫu')),
+                          label: const Text('Dự trù kinh phí')),
                     )
           ],
         ),

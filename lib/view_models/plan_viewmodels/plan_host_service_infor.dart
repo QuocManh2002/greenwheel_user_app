@@ -1,9 +1,10 @@
-import 'package:greenwheel_user_app/view_models/order_create.dart';
 
 class PlanHostServiceInfor{
   String supplierName;
   final List<dynamic> orderList;
+  final String type;
   PlanHostServiceInfor({
+    required this.type,
     required this.supplierName,
     required this.orderList
   });
