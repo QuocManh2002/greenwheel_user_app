@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:input_quantity/input_quantity.dart';
 import 'package:sizer2/sizer2.dart';
@@ -21,8 +22,6 @@ class MenuItemCard extends StatefulWidget {
 }
 
 class _MenuItemCardState extends State<MenuItemCard> {
-
-
   // Create a NumberFormat instance for currency formatting
   var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
   bool isQuantity = false;
@@ -88,15 +87,36 @@ class _MenuItemCardState extends State<MenuItemCard> {
                         children: [
                           Padding(
                             padding: const EdgeInsets.only(left: 8, top: 10),
-                            child: Text(
-                              widget.product.name,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.black,
-                                fontFamily: 'NotoSans',
-                              ),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 44.w,
+                                  child: Text(
+                                    widget.product.name,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.black,
+                                      fontFamily: 'NotoSans',
+                                    ),
+                                  ),
+                                ),
+                                Text(
+                                  widget.product.partySize.toString(),
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    color: primaryColor,
+                                    fontFamily: 'NotoSans',
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.person,
+                                  color: primaryColor,
+                                  size: 20,
+                                )
+                              ],
                             ),
                           ),
                           const SizedBox(height: 6),
@@ -105,8 +125,7 @@ class _MenuItemCardState extends State<MenuItemCard> {
                             child: Padding(
                               padding: const EdgeInsets.only(left: 8),
                               child: Text(
-                                currencyFormat
-                                    .format(widget.product.price),
+                                currencyFormat.format(widget.product.price),
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   color: Colors.grey,
@@ -143,7 +162,8 @@ class _MenuItemCardState extends State<MenuItemCard> {
                                     if (val == 0) {
                                       isQuantity = !isQuantity;
                                     }
-                                    widget.updateCart(widget.product, val.toInt());
+                                    widget.updateCart(
+                                        widget.product, val.toInt());
                                   });
                                 },
                               ),
@@ -166,13 +186,14 @@ class _MenuItemCardState extends State<MenuItemCard> {
                                   });
                                 },
                                 icon: const Icon(
-                                    Icons.shopping_cart, color: Colors.white,), // Icon for the cart
+                                  Icons.shopping_cart,
+                                  color: Colors.white,
+                                ), // Icon for the cart
                                 label: const Text(
                                   'Thêm',
                                   style: TextStyle(
-                                    fontFamily: 'NotoSans',
-                                    color: Colors.white
-                                  ),
+                                      fontFamily: 'NotoSans',
+                                      color: Colors.white),
                                 ), // Text for the button
                               ),
                             ),

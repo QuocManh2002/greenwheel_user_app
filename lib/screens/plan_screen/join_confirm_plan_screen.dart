@@ -35,6 +35,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   int weight = 1;
   double? newBalance;
   List<String> companionNames = [];
+  bool isEnableToAdd = false;
+  bool isEnableToSubtract = false;
 
   onChangeWeight(bool isAdd) {
     if (isAdd &&
@@ -43,10 +45,31 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
       setState(() {
         weight += 1;
       });
+      if (!isEnableToSubtract) {
+        setState(() {
+          isEnableToSubtract = true;
+        });
+      }
+      if (weight == widget.plan.maxMemberWeight ||
+          weight == widget.plan.maxMember - widget.plan.memberCount!) {
+        setState(() {
+          isEnableToAdd = false;
+        });
+      }
     } else if (!isAdd && weight > 1) {
       setState(() {
         weight -= 1;
       });
+      if (weight == 1) {
+        setState(() {
+          isEnableToSubtract = false;
+        });
+      }
+      if (!isEnableToAdd) {
+        setState(() {
+          isEnableToAdd = true;
+        });
+      }
     }
   }
 
@@ -57,6 +80,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
     if (widget.isConfirm) {
       weight = widget.plan.maxMember - widget.plan.memberCount!;
     }
+    isEnableToAdd = !(weight == widget.plan.maxMemberWeight! ||
+        weight == widget.plan.maxMember - widget.plan.memberCount!);
+    isEnableToSubtract = weight > 1;
   }
 
   @override
@@ -323,15 +349,16 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                             onTap: () {
                               onChangeWeight(false);
                             },
-                            child: const Icon(Icons.remove),
+                            child: Icon(Icons.remove, color: isEnableToSubtract ? Colors.black : Colors.grey,),
                           ),
                         SizedBox(
                           width: 0.5.h,
                         ),
                         Container(
                           decoration: BoxDecoration(
-                              border:
-                                  Border.all(color: Colors.grey, width: 1.5),
+                              border: widget.isConfirm
+                                  ? const Border()
+                                  : Border.all(color: Colors.grey, width: 1.5),
                               borderRadius:
                                   const BorderRadius.all(Radius.circular(8))),
                           alignment: Alignment.center,
@@ -352,7 +379,10 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                             onTap: () {
                               onChangeWeight(true);
                             },
-                            child: const Icon(Icons.add),
+                            child: Icon(
+                              Icons.add,
+                              color: isEnableToAdd ? Colors.black : Colors.grey,
+                            ),
                           ),
                       ],
                     ),
@@ -524,30 +554,45 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
       );
 
   handleJoin() {
-    AwesomeDialog(
-            context: context,
-            animType: AnimType.leftSlide,
-            dialogType: DialogType.question,
-            title:
-                'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${weight != 1 ? 'x $weight = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * weight)}' : ''}GCOIN',
-            titleTextStyle:
-                const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            btnOkColor: Colors.blue,
-            btnOkText: 'Chơi',
-            btnOkOnPress: () async {
-              if (companionNames.length < weight - 1) {
-                AwesomeDialog(
-                  context: context,
-                  animType: AnimType.leftSlide,
-                  dialogType: DialogType.warning,
-                  title: 'Chưa đầy đủ tên thành viên của nhóm',
-                  titleTextStyle: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
-                  btnOkColor: Colors.amber,
-                  btnOkText: 'Ok',
-                  btnOkOnPress: () {},
-                ).show();
-              } else {
+    if (companionNames.length < weight - 1) {
+      AwesomeDialog(
+        context: context,
+        animType: AnimType.leftSlide,
+        dialogType: DialogType.warning,
+        title: 'Chưa đầy đủ tên thành viên của nhóm',
+        titleTextStyle:
+            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+        btnOkColor: Colors.amber,
+        btnOkText: 'Ok',
+        btnOkOnPress: () {},
+      ).show();
+    } else if (companionNames.length > weight - 1) {
+      AwesomeDialog(
+        context: context,
+        animType: AnimType.leftSlide,
+        dialogType: DialogType.warning,
+        title: 'Số lượng thành viên đã thay đổi',
+        titleTextStyle: const TextStyle(
+            fontFamily: 'NotoSans', fontSize: 18, fontWeight: FontWeight.bold),
+        desc: 'Cập nhật lại thông tin thành viên để thanh toán',
+        descTextStyle: const TextStyle(
+            fontSize: 16, color: Colors.grey, fontFamily: 'NotoSans'),
+        btnOkColor: Colors.amber,
+        btnOkOnPress: () {},
+        btnOkText: 'Ok',
+      ).show();
+    } else {
+      AwesomeDialog(
+              context: context,
+              animType: AnimType.leftSlide,
+              dialogType: DialogType.question,
+              title:
+                  'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${weight != 1 ? 'x $weight = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * weight)}' : ''}GCOIN',
+              titleTextStyle:
+                  const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              btnOkColor: Colors.blue,
+              btnOkText: 'Chơi',
+              btnOkOnPress: () async {
                 final rs = await _planService.joinPlan(
                     widget.plan.id, weight, companionNames);
                 if (rs != null) {
@@ -572,12 +617,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                     },
                   ).show();
                 }
-              }
-            },
-            btnCancelColor: Colors.deepOrangeAccent,
-            btnCancelOnPress: () {},
-            btnCancelText: 'Huỷ')
-        .show();
+              },
+              btnCancelColor: Colors.deepOrangeAccent,
+              btnCancelOnPress: () {},
+              btnCancelText: 'Huỷ')
+          .show();
+    }
   }
 
   handleConfirm() {

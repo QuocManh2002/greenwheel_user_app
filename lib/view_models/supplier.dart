@@ -6,6 +6,7 @@ class SupplierViewModel {
   String? address;
   double? longitude;
   double? latitude;
+  String? type;
 
   SupplierViewModel({
     required this.id,
@@ -15,6 +16,7 @@ class SupplierViewModel {
     required this.address,
     this.longitude,
     this.latitude,
+    this.type,
   });
 
   factory SupplierViewModel.fromJson(Map<String, dynamic> json) =>
@@ -24,6 +26,7 @@ class SupplierViewModel {
         phone: json["phone"],
         thumbnailUrl: json["imageUrl"],
         address: json["address"],
+        type: json['type'],
         latitude: json["coordinate"]["coordinates"][1],
         longitude: json["coordinate"]["coordinates"][0],
       );

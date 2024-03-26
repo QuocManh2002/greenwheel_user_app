@@ -56,7 +56,7 @@ class _OrderDetailCardState extends State<OrderDetailCard> {
                           child: Text(
                             currencyFormat.format(
                                 widget.cartItem.product.price *
-                                    widget.cartItem.qty),
+                                    widget.cartItem.qty!),
                             overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                               color: Colors.grey,

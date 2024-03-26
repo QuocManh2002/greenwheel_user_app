@@ -29,7 +29,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
   TextEditingController _nameController = TextEditingController();
   bool isCreate = false;
   final OfflineService _offlineService = OfflineService();
-  DateTime? _rangeEnd;
+  DateTime? _endDate;
   late ComboDate _initComboDate;
   TimeOfDay _selectTime = TimeOfDay.now();
   TextEditingController _timeController = TextEditingController();
@@ -59,7 +59,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
       } else {
         setState(() {
           isOverDate = false;
-          numberOfNight = _initComboDate.numberOfNight + 1;
+          numberOfNight = _initComboDate.numberOfNight;
         });
         sharedPreferences.setString(
             'plan_start_date',
@@ -70,38 +70,22 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                 .split(' ')[0]);
       }
       setState(() {
-        _rangeEnd =
+        _endDate =
             departureDate.add(Duration(days: _initComboDate.numberOfDay));
       });
       sharedPreferences.setString(
-          'plan_end_date', _rangeEnd.toString().split(' ')[0]);
+          'plan_end_date', _endDate.toString().split(' ')[0]);
     } else {
       setState(() {
         numberOfNight = _initComboDate.numberOfNight;
         isOverDate = false;
-        _rangeEnd =
+        _endDate =
             departureDate.add(Duration(days: _initComboDate.numberOfDay - 1));
       });
       sharedPreferences.setString(
-          'plan_end_date', _rangeEnd.toString().split(' ')[0]);
+          'plan_end_date', _endDate.toString().split(' ')[0]);
     }
     sharedPreferences.setInt('numOfExpPeriod', numberOfDay + numberOfNight);
-    // List<DateTime> holidaysIndex = [];
-    // DateTime endDate = _rangeEnd!;
-    // for (DateTime date = _selectedDate!;
-    //     date.isBefore(endDate);
-    //     date.add(const Duration(days: 1))) {
-    //   final rs = holidays.any((element) =>
-    //       element.from.isBefore(date) ||
-    //       element.to.isAfter(date) ||
-    //       element.from.isAtSameMomentAs(date) ||
-    //       element.to.isAtSameMomentAs(date));
-    //   if (rs) {
-    //     holidaysIndex.add(date);
-    //   }
-    // }
-    // print(holidaysIndex);
-    
   }
 
   @override
@@ -122,20 +106,37 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     numberOfDay = _initComboDate.numberOfDay;
     numberOfNight = _initComboDate.numberOfNight;
     final _duration = (_numOfExpPeriod! / 2).ceil();
-    final initDate = DateTime.now().add(const Duration(days: 7));
-    _selectedDate = initDate;
-    _dateController.text = DateFormat('dd/MM/yyyy').format(initDate);
-    _timeController.text =
-        DateFormat.Hm().format(DateTime.now().add(const Duration(hours: 1)));
-    _rangeEnd = initDate.add(Duration(days: _duration - 1));
-    final _startTime =
-        DateTime(0, 0, 0, DateTime.now().hour + 1, DateTime.now().minute);
-    sharedPreferences.setString('plan_departureDate', initDate.toString());
-    sharedPreferences.setString('plan_start_time', _startTime.toString());
-    sharedPreferences.setString(
-        'plan_start_date', initDate.toString().split(' ')[0]);
-    sharedPreferences.setString('plan_end_date',
-        initDate.add(Duration(days: _duration - 1)).toString());
+    final _departDateText = sharedPreferences.getString('plan_departureDate');
+    final _departTimeText = sharedPreferences.getString('plan_start_time');
+    if (_departDateText != null) {
+      final departDate = DateTime.parse(_departDateText);
+      _selectedDate = departDate;
+      _dateController.text = DateFormat('dd/MM/yyyy').format(departDate);
+      _endDate = departDate.add(Duration(days: _duration - 1));
+    } else {
+      final initDate = DateTime.now().add(const Duration(days: 7));
+      _selectedDate = initDate;
+      _dateController.text = DateFormat('dd/MM/yyyy').format(initDate);
+      _endDate = initDate.add(Duration(days: _duration - 1));
+      sharedPreferences.setString('plan_departureDate', initDate.toString());
+      sharedPreferences.setString(
+          'plan_start_date', initDate.toString().split(' ')[0]);
+      sharedPreferences.setString('plan_end_date',
+          initDate.add(Duration(days: _duration - 1)).toString());
+    }
+
+    if (_departTimeText != null) {
+      final departTime = DateTime.parse(_departTimeText);
+      _selectTime = TimeOfDay.fromDateTime(departTime);
+      _timeController.text = DateFormat.Hm().format(departTime);
+    } else {
+      _timeController.text =
+          DateFormat.Hm().format(DateTime.now().add(const Duration(hours: 1)));
+
+      final _startTime =
+          DateTime(0, 0, 0, DateTime.now().hour + 1, DateTime.now().minute);
+      sharedPreferences.setString('plan_start_time', _startTime.toString());
+    }
     handleChangeComboDate();
   }
 
@@ -218,7 +219,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                               (sharedPreferences.getInt('numOfExpPeriod')! / 2)
                                   .ceil();
                           setState(() {
-                            _rangeEnd = _selectedDate!
+                            _endDate = _selectedDate!
                                 .add(Duration(days: duration - 1));
                           });
                           handleChangeComboDate();
@@ -259,7 +260,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                                   child: Localizations.override(
                                     context: context,
                                     locale: const Locale('vi',
-                                        ''), // Set the locale to Vietnamese
+                                        ''), 
                                     child: child!,
                                   ),
                                 ));
@@ -345,7 +346,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
               style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
             ),
             Text(
-              '${_timeController.text} ${_dateController.text} - ${DateFormat('dd/MM/yyyy').format(_rangeEnd!)}',
+              '${_timeController.text} ${_dateController.text} - ${DateFormat('dd/MM/yyyy').format(_endDate!)}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             SizedBox(

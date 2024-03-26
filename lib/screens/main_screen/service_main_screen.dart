@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_loading_screen.dart';
@@ -37,7 +38,7 @@ class ServiceMainScreen extends StatefulWidget {
 
 class _ServiceMainScreenState extends State<ServiceMainScreen> {
   SupplierService supplierService = SupplierService();
-  List<SupplierViewModel> list = [];
+  List<SupplierViewModel>? list = [];
   String title = "";
   bool isLoading = true;
   List<OrderViewModel>? orderList;
@@ -59,10 +60,24 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
       title = "Dịch vụ lưu trú";
       type.add("ROOM");
     }
+    switch (widget.serviceType.id) {
+      case 1:
+        title = "Dịch vụ ăn uống";
+        type.add("FOOD");
+        break;
+      case 5:
+        title = "Dịch vụ lưu trú";
+        type.add("ROOM");
+        break;
+      case 6:
+        title = "Dịch vụ cho thuê xe";
+        type.add("VEHICLE");
+        break;
+    }
     list = await supplierService.getSuppliers(
         widget.location.longitude, widget.location.latitude, type);
 
-    if (list.isNotEmpty) {
+    if (list != null) {
       setState(() {
         isLoading = false;
       });
@@ -95,13 +110,13 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                         if (sharedPreferences.getInt("planId") == null) {
                           Navigator.of(context).pop();
                         }
-                          // widget.callbackFunction();
-                          Navigator.of(context).pop();
+                        // widget.callbackFunction();
+                        Navigator.of(context).pop();
                         // Close the current page
                       },
                     ),
                     Padding(
-                      padding: EdgeInsets.only(left: 14),
+                      padding: const EdgeInsets.only(left: 14),
                       child: Text(
                         title,
                         style: const TextStyle(
@@ -137,8 +152,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                                 Icons.search,
                                 color: Colors.black,
                               ),
-                              onPressed: () {
-                              },
+                              onPressed: () {},
                             ),
                             hintText: "Bạn cần tìm dịch vụ nào?",
                             contentPadding: EdgeInsets.all(4.w),
@@ -158,7 +172,6 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // print(().toString()),
                     if ((widget.startDate.difference(DateTime.now()).inDays +
                             1) <=
                         3)
@@ -179,23 +192,42 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                               ]),
                         ),
                       ),
-                    ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: list.length,
-                      itemBuilder: (context, index) {
-                        return SupplierCard(
-                          isOrder: widget.isOrder,
-                          startDate: widget.startDate,
-                          endDate: widget.endDate,
-                          numberOfMember: widget.numberOfMember,
-                          supplier: list[index],
-                          serviceType: widget.serviceType,
-                          location: widget.location,
-                          callbackFunction: widget.callbackFunction,
-                        );
-                      },
-                    ),
+                    list!.isEmpty
+                        ? Container(
+                          alignment: Alignment.center,
+                          child: Column(
+                              children: [
+                                SizedBox(height: 20.h,),
+                                Image.asset(empty_plan, height: 30.h,fit: BoxFit.cover, ),
+                                SizedBox(height: 2.h,),
+                                const Text(
+                                  'Rất tiếc! Hiện dịch vụ không khả dụng',
+                                  style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'NotoSans',
+                                      fontSize: 17,
+                                      color: Colors.grey),
+                                ),
+                              ],
+                            ),
+                        )
+                        : ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: list!.length,
+                            itemBuilder: (context, index) {
+                              return SupplierCard(
+                                isOrder: widget.isOrder,
+                                startDate: widget.startDate,
+                                endDate: widget.endDate,
+                                numberOfMember: widget.numberOfMember,
+                                supplier: list![index],
+                                serviceType: widget.serviceType,
+                                location: widget.location,
+                                callbackFunction: widget.callbackFunction,
+                              );
+                            },
+                          ),
                   ],
                 ),
               ),

@@ -6,6 +6,7 @@ import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
+import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
 
 class CustomerService {
@@ -236,6 +237,46 @@ mutation{
           res.map((users) => CustomerViewModel.fromJson(users)).toList();
       return users;
     } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<Transaction>?> getTransactionList()async{
+    try{
+      QueryResult result = await client.query(
+        QueryOptions(
+          fetchPolicy: FetchPolicy.noCache,
+          document: gql("""
+{
+  transactions(order: { id: DESC }) {
+    edges {
+      node {
+        id
+        receiverId
+        type
+        status
+        gcoinAmount
+        description
+        gateway
+        bankTransCode
+        createdAt
+        senderId
+      }
+    }
+  }
+}
+"""))
+      );
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      List? res = result.data!['transactions']['edges'];
+       if (res == null || res.isEmpty) {
+        return [];
+      }
+      List<Transaction> rs = res.map((e) => Transaction.fromJson(e['node'])).toList();
+      return rs;
+    }catch (error) {
       throw Exception(error);
     }
   }

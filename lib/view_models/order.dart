@@ -36,6 +36,7 @@ class OrderViewModel {
       createdAt: DateTime.parse(json["createdAt"]),
       type: json['type'],
       supplier: SupplierViewModel(
+          type: json["supplier"]['type'],
           id: json["supplier"]["id"],
           name: json["supplier"]["name"],
           phone: json["supplier"]["phone"],

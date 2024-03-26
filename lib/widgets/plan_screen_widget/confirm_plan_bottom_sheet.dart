@@ -70,9 +70,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         total += order['total'] / 100;
       }
     }
-    for (final sur in widget.listSurcharges!) {
-      total += double.parse(sur['gcoinAmount'].toString());
-    }
+    // for (final sur in widget.listSurcharges!) {
+    //   total += double.parse(sur['amount'].toString());
+    // }
     budgetPerCapita = ((total / widget.plan!.memberLimit!)).ceil();
   }
 
@@ -570,16 +570,12 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                 NumberFormat.simpleCurrency(
                                         decimalDigits: 0,
                                         locale: 'vi_VN',
-                                        name: '')
-                                    .format(order['gcoinAmount']),
+                                        name: 'đ')
+                                    .format(order['amount']),
                                 style: const TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              SvgPicture.asset(
-                                gcoin_logo,
-                                height: 23,
-                              )
                             ],
                           )
                       ]),
@@ -746,13 +742,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     );
   }
 
-  buildServingDatesText(List<dynamic> serveDateIndexes) {
-    if (serveDateIndexes.length == 1) {
-      return DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]));
-    } else {
-      return '${DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]))} (+${serveDateIndexes.length - 1} ngày)';
-    }
-  }
+  
 
   buildServiceWidget(String type, List<dynamic> orders) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -789,7 +779,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                   SizedBox(
                     width: 42.w,
                     child: Text(
-                      '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ${buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}',
+                      '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}',
                       style: const TextStyle(
                           fontSize: 17, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.clip,

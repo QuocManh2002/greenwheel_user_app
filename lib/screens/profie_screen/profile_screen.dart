@@ -1,17 +1,18 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/profile_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/qr_screen.dart';
+import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
 import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
 import 'package:greenwheel_user_app/service/customer_service.dart';
-import 'package:greenwheel_user_app/service/device_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -24,7 +25,6 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   CustomerService _customerService = CustomerService();
-  DeviceService _deviceService = DeviceService();
   CustomerViewModel? _customer;
   bool _isLoading = true;
 
@@ -185,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                       children: [
                                         Text(
                                           NumberFormat.simpleCurrency(
-                                                  locale: 'en-US',
+                                                  locale: 'vi_VN',
                                                   decimalDigits: 0,
                                                   name: "")
                                               .format(double.parse(_customer!
@@ -264,109 +264,49 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(
                         height: 8,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                                alignment: const Alignment(-1, 0),
-                                backgroundColor: Colors.white,
-                                minimumSize: Size(100.w, 6.h),
-                                shadowColor: primaryColor,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)))),
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.person,
-                              color: primaryColor,
-                            ),
-                            label: const Text(
-                              "Chỉnh sửa thông tin",
-                              style: TextStyle(
-                                  color: Colors.black54, fontSize: 18),
-                            )),
+                      buildProfileButton(
+                          () {}, Icons.person, 'Chỉnh sửa thông tin'),
+                      SizedBox(
+                        height: 1.h,
                       ),
-                      const SizedBox(
-                        height: 12,
+                      buildProfileButton(() {
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                                child: const TransactionHistoryScreen(),
+                                type: PageTransitionType.rightToLeft));
+                      }, Icons.history, 'Lịch sử giao dịch'),
+                      SizedBox(
+                        height: 1.h,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                                alignment: const Alignment(-1, 0),
-                                backgroundColor: Colors.white,
-                                minimumSize: Size(100.w, 6.h),
-                                shadowColor: primaryColor,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)))),
-                            onPressed: () {},
-                            icon: const Icon(
-                              Icons.vpn_key,
-                              color: primaryColor,
-                            ),
-                            label: const Text(
-                              "Thay đổi mật khẩu",
-                              style: TextStyle(
-                                  color: Colors.black54, fontSize: 18),
-                            )),
+                      buildProfileButton(
+                          () {}, Icons.vpn_key, 'Thay đổi mật khẩu'),
+                      SizedBox(
+                        height: 1.h,
                       ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 32),
-                        child: ElevatedButton.icon(
-                            style: ElevatedButton.styleFrom(
-                                alignment: const Alignment(-1, 0),
-                                backgroundColor: Colors.white,
-                                minimumSize: Size(100.w, 6.h),
-                                shadowColor: primaryColor,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(10)))),
-                            onPressed: () {
-                              AwesomeDialog(
-                                      context: context,
-                                      dialogType: DialogType.question,
-                                      animType: AnimType.leftSlide,
-                                      showCloseIcon: true,
-                                      title: "Đăng xuất",
-                                      btnOkColor: primaryColor,
-                                      btnOkText: "Đồng ý",
-                                      btnCancelText: "Đóng",
-                                      desc:
-                                          "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
-                                      btnOkOnPress: () async {
-                                        // _deviceService.stopNotification();
-                                        final rs = await _customerService
-                                            .travelerSignOut();
-                                        if (rs != 0) {
-                                          sharedPreferences.clear();
-                                          // ignore: use_build_context_synchronously
-                                          // Navigator.pushAndRemoveUntil(
-                                          //   context,
-                                          //   MaterialPageRoute(
-                                          //       builder: (_) =>
-                                          //           const LoginScreen()),
-                                          //   (route) => false,
-                                          // );
-                                          Restart.restartApp();
-                                        }
-                                      },
-                                      btnCancelOnPress: () {})
-                                  .show();
-                            },
-                            icon: const Icon(
-                              Icons.logout,
-                              color: primaryColor,
-                            ),
-                            label: const Text(
-                              "Đăng xuất",
-                              style: TextStyle(
-                                  color: Colors.black54, fontSize: 18),
-                            )),
-                      ),
+                      buildProfileButton(() {
+                        AwesomeDialog(
+                                context: context,
+                                dialogType: DialogType.question,
+                                animType: AnimType.leftSlide,
+                                showCloseIcon: true,
+                                title: "Đăng xuất",
+                                btnOkColor: primaryColor,
+                                btnOkText: "Đồng ý",
+                                btnCancelText: "Đóng",
+                                desc:
+                                    "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
+                                btnOkOnPress: () async {
+                                  final rs =
+                                      await _customerService.travelerSignOut();
+                                  if (rs != 0) {
+                                    sharedPreferences.clear();
+                                    Restart.restartApp();
+                                  }
+                                },
+                                btnCancelOnPress: () {})
+                            .show();
+                      }, Icons.logout, 'Đăng xuất'),
                     ],
                   ),
                 ),
@@ -389,4 +329,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
     ));
   }
+
+  buildProfileButton(void Function() onTap, IconData icon, String text) =>
+      InkWell(
+        onTap: onTap,
+        borderRadius: const BorderRadius.all(Radius.circular(10)),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 32),
+          child: Container(
+            width: 100.w,
+            height: 6.h,
+            decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    blurRadius: 3,
+                    color: primaryColor.withOpacity(0.5),
+                    offset: const Offset(1, 3),
+                  )
+                ],
+                borderRadius: const BorderRadius.all(Radius.circular(10))),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(
+                  width: 1.h,
+                ),
+                Icon(
+                  icon,
+                  color: primaryColor,
+                  size: 25,
+                ),
+                SizedBox(
+                  width: 1.h,
+                ),
+                Text(
+                  text,
+                  style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.bold),
+                )
+              ],
+            ),
+          ),
+        ),
+      );
 }

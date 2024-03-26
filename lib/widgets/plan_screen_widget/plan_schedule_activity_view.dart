@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/bottom_sheet_container_widget.dart';
-import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class PlanScheduleActivityView extends StatelessWidget {
@@ -40,8 +39,7 @@ class PlanScheduleActivityView extends StatelessWidget {
                     SizedBox(height: 1.h,),
                     BottomSheetContainerWidget(content: item.description!, title: 'Chi tiết'),
                     SizedBox(height: 1.h,),
-                    BottomSheetContainerWidget(content: DateFormat.yMMMMEEEEd('vi_VN')
-                                    .format(item.date!), title: 'Thời gian'),
+                    BottomSheetContainerWidget(content: '${item.activityTime!.toString()} giờ', title: 'Thời gian'),
                                     SizedBox(height: 2.h,)
                   ],
                 ),

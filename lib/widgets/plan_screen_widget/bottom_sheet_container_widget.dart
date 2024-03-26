@@ -26,11 +26,11 @@ class BottomSheetContainerWidget extends StatelessWidget {
           children: [
             Text(
               title,
-              style: const TextStyle(fontSize: 16),
+              style: const TextStyle(fontSize: 16, fontFamily: 'NotoSans'),
             ),
             Text(
               content,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
               overflow: TextOverflow.clip,
             )
           ],

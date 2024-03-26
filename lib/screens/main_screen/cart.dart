@@ -227,7 +227,7 @@ class _CartScreenState extends State<CartScreen> {
                                     // Handle the item removal here
                                     setState(() {
                                       finalTotal -= list[index].product.price *
-                                          list[index].qty;
+                                          list[index].qty!;
                                       list.removeAt(index);
                                     });
                                   },
@@ -627,14 +627,14 @@ class _CartScreenState extends State<CartScreen> {
       if (updatedList[i].product.id == cartItem.product.id) {
         if (newQty != 0) {
           setState(() {
-            finalTotal -= cartItem.product.price * cartItem.qty;
+            finalTotal -= cartItem.product.price * cartItem.qty!;
             finalTotal += cartItem.product.price * newQty;
 
             updatedList[i] = ItemCart(product: cartItem.product, qty: newQty);
           });
         } else {
           setState(() {
-            finalTotal -= cartItem.product.price * cartItem.qty;
+            finalTotal -= cartItem.product.price * cartItem.qty!;
           });
           updatedList.removeAt(i);
           break; // Exit the loop since the item was found and removed
@@ -677,11 +677,11 @@ class _CartScreenState extends State<CartScreen> {
     List<Map> detailsMap = [];
     List<String> _serveDates = _servingDates.map((e) => e.toLocal().toString().split(' ')[0]).toList();
     for (final item in list) {
-      total += item.product.price * item.qty;
+      total += item.product.price * item.qty!;
       details.add(OrderDetailViewModel(
           id: item.product.id,
           productName: item.product.name,
-          quantity: item.qty,
+          quantity: item.qty!,
           productId: item.product.id,
           unitPrice: item.product.price.toDouble(),
           price: item.product.price.toDouble()));

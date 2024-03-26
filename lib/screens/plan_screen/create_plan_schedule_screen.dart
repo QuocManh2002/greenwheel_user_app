@@ -46,7 +46,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   PlanScheduleItem? _selectedItem;
   DateTime? departureDate;
   DateTime startDate = DateTime.now();
-  int _numberOfDay = 0;
+  int duration = 0;
   bool _isNotOverDay = false;
 
   getTotal(OrderViewModel order) {
@@ -70,18 +70,20 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   }
 
   setUpData() async {
-    _numberOfDay = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
+    duration = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
     String? _scheduleText = sharedPreferences.getString('plan_schedule');
-    DateTime _startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-    final DateTime _endDate = _startDate.add(Duration(days: _numberOfDay));
+    DateTime _startDate =
+        DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    final DateTime _endDate = _startDate.add(Duration(days: duration));
     if (widget.isCreate) {
       if (!widget.isClone) {
         if (_scheduleText == null) {
           testList = _planService.generateEmptySchedule(_startDate, _endDate);
           var finalList = _planService.convertPlanScheduleToJson(testList);
           sharedPreferences.setString('plan_schedule', json.encode(finalList));
-        }else{
-testList = _planService.ConvertPLanJsonToObject(_startDate, _scheduleText);
+        } else {
+          testList =
+              _planService.ConvertPLanJsonToObject(duration, _startDate, _scheduleText);
         }
       } else {
         var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
@@ -358,30 +360,30 @@ testList = _planService.ConvertPLanJsonToObject(_startDate, _scheduleText);
               SizedBox(
                 width: 2.h,
               ),
-              if(sharedPreferences.getString('plan_temp_order') != null)
-              IconButton(
-                  style: ButtonStyle(
-                      shape: const MaterialStatePropertyAll(CircleBorder(
-                          side: BorderSide(color: primaryColor, width: 1))),
-                      backgroundColor: MaterialStatePropertyAll(
-                          Colors.white.withOpacity(0.7))),
-                  onPressed: () async {
-                    final orderList = json.decode(
-                        sharedPreferences.getString('plan_temp_order')!);
-                    List<OrderViewModel> listMotelOrder = [];
-                    List<OrderViewModel> listRestaurantOrder = [];
-                    var total = 0.0;
-                    for (var item in orderList!) {
-                      List<OrderDetailViewModel> details = [];
-                      for (final detail in item['details']) {
-                        details.add(OrderDetailViewModel(
-                            productId: detail['productId'],
-                            price: detail['unitPrice'],
-                            productName: detail['productName'],
-                            unitPrice: detail['unitPrice'],
-                            quantity: detail['quantity']));
-                      }
-                      final temp = OrderViewModel(
+              if (sharedPreferences.getString('plan_temp_order') != null)
+                IconButton(
+                    style: ButtonStyle(
+                        shape: const MaterialStatePropertyAll(CircleBorder(
+                            side: BorderSide(color: primaryColor, width: 1))),
+                        backgroundColor: MaterialStatePropertyAll(
+                            Colors.white.withOpacity(0.7))),
+                    onPressed: () async {
+                      final orderList = json.decode(
+                          sharedPreferences.getString('plan_temp_order')!);
+                      List<OrderViewModel> listMotelOrder = [];
+                      List<OrderViewModel> listRestaurantOrder = [];
+                      var total = 0.0;
+                      for (var item in orderList!) {
+                        List<OrderDetailViewModel> details = [];
+                        for (final detail in item['details']) {
+                          details.add(OrderDetailViewModel(
+                              productId: detail['productId'],
+                              price: detail['unitPrice'],
+                              productName: detail['productName'],
+                              unitPrice: detail['unitPrice'],
+                              quantity: detail['quantity']));
+                        }
+                        final temp = OrderViewModel(
                           note: item['note'],
                           details: details,
                           type: item['type'],
@@ -389,34 +391,40 @@ testList = _planService.ConvertPLanJsonToObject(_startDate, _scheduleText);
                           serveDates: item['servingDates'],
                           total: double.parse(item['total'].toString()),
                           createdAt: DateTime.parse(item['createdAt']),
-                          supplier: SupplierViewModel(id: item['supplierId'], name: item['supplierName'], phone: item['supplierPhone'], thumbnailUrl: item['supplierImageUrl'], address: item['supplierAddress']), );
-                      if (item['type'] == 'FOOD') {
-                        listRestaurantOrder.add(temp);
-                      } else {
-                        listMotelOrder.add(temp);
+                          supplier: SupplierViewModel(
+                              id: item['supplierId'],
+                              name: item['supplierName'],
+                              phone: item['supplierPhone'],
+                              thumbnailUrl: item['supplierImageUrl'],
+                              address: item['supplierAddress']),
+                        );
+                        if (item['type'] == 'FOOD') {
+                          listRestaurantOrder.add(temp);
+                        } else {
+                          listMotelOrder.add(temp);
+                        }
+                        total += double.parse(item['total'].toString());
                       }
-                      total += double.parse(item['total'].toString());
-                    }
-                    showModalBottomSheet(
-                        context: context,
-                        builder: (ctx) => ConfirmServiceInfor(
-                              listSurcharges: [],
-                              total: total / 100.toDouble(),
-                              budgetPerCapita: ((total /
-                                          sharedPreferences.getInt(
-                                              'plan_number_of_member')!) /
-                                      100)
-                                  .ceil()
-                                  .toDouble(),
-                              listFood: listRestaurantOrder,
-                              listRest: listMotelOrder,
-                            ));
-                  },
-                  icon: const Icon(
-                    Icons.attach_money_rounded,
-                    color: primaryColor,
-                    size: 23,
-                  )),
+                      showModalBottomSheet(
+                          context: context,
+                          builder: (ctx) => ConfirmServiceInfor(
+                                listSurcharges: [],
+                                total: total / 100.toDouble(),
+                                budgetPerCapita: ((total /
+                                            sharedPreferences.getInt(
+                                                'plan_number_of_member')!) /
+                                        100)
+                                    .ceil()
+                                    .toDouble(),
+                                listFood: listRestaurantOrder,
+                                listRest: listMotelOrder,
+                              ));
+                    },
+                    icon: const Icon(
+                      Icons.attach_money_rounded,
+                      color: primaryColor,
+                      size: 23,
+                    )),
               const Spacer(),
               // if (departureDate!
               //     .add(Duration(days: _currentPage.toInt()))

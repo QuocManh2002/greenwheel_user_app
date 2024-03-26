@@ -130,33 +130,60 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       });
     }
 
-    if (widget.currentCart.isNotEmpty) {
-      double tmp = 0;
-      if (widget.currentCart.isNotEmpty) {}
-      for (var cartItem in widget.currentCart) {
-        tmp += cartItem.product.price * cartItem.qty;
-      }
-      setState(() {
-        items = widget.currentCart;
-        total = tmp;
-      });
-    }
+    // if (widget.currentCart.isNotEmpty) {
+    //   double tmp = 0;
+    //   if (widget.currentCart.isNotEmpty) {}
+    //   for (var cartItem in widget.currentCart) {
+    //     tmp += cartItem.product.price * cartItem.qty!;
+    //   }
+    //   setState(() {
+    //     items = widget.currentCart;
+    //     total = tmp;
+    //   });
+    // }
     pickupDate = widget.iniPickupDate;
     returnDate = widget.iniReturnDate;
     note = widget.iniNote;
 
     if (widget.serviceType.id == 1) {
       title = "Món ăn";
+      if (widget.isFromTempOrder != null && widget.isFromTempOrder!) {
+        List<int> qtys= [];
+        for (final item in widget.currentCart) {
+          int index = widget.currentCart.indexOf(item);
+          // if (list
+          //             .firstWhere((element) => element.id == item.product.id)
+          //             .partySize! *
+          //         item.qty! >
+          //     widget.numberOfMember) {
+            // setState(() {
+            //   item.qty = (widget.numberOfMember /
+            //           list
+            //               .firstWhere(
+            //                   (element) => element.id == item.product.id)
+            //               .partySize!)
+            //       .ceil();
+            // });
+            qtys.add(item.qty = (widget.numberOfMember /
+                      list
+                          .firstWhere(
+                              (element) => element.id == item.product.id)
+                          .partySize!)
+                  .ceil());
+          // }
+          updateCart(
+              list.firstWhere((element) => element.id == item.product.id),
+              qtys[index]);
+        }
+      }
     } else {
       title = "Phòng nghỉ";
-      if (widget.isFromTempOrder == null || !widget.isFromTempOrder!) {
-        findSumCombinations(list, widget.numberOfMember);
-        List<ProductViewModel> rs = getResult(_listResult);
-        Map gr = rs.groupListsBy((element) => element.id);
-        for (final item in gr.keys) {
-          updateCart(list.firstWhere((element) => element.id == item),
-              rs.where((element) => element.id == item).toList().length);
-        }
+      findSumCombinations(list, widget.numberOfMember);
+      List<ProductViewModel> rs = getResult(_listResult);
+      Map gr = rs.groupListsBy((element) => element.id);
+      for (final item in gr.keys) {
+        updateCart(list.firstWhere((element) => element.id == item),
+            rs.where((element) => element.id == item).toList().length);
       }
     }
   }
@@ -348,11 +375,12 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                 const SizedBox(
                                   height: 8,
                                 ),
-                                if (widget.isFromTempOrder == null || !widget.isFromTempOrder!) 
-                                const Text(
-                                  "Chúng tôi đã đề xuất cho bạn combo phòng có giá hợp lý nhất ứng với số lượng thành viên của chuyến đi.",
-                                  style: TextStyle(color: Colors.grey),
-                                )
+                                if (widget.isFromTempOrder == null ||
+                                    !widget.isFromTempOrder!)
+                                  const Text(
+                                    "Chúng tôi đã đề xuất cho bạn combo phòng có giá hợp lý nhất ứng với số lượng thành viên của chuyến đi.",
+                                    style: TextStyle(color: Colors.grey),
+                                  )
                               ],
                             ),
                           )
@@ -496,10 +524,10 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
 
       if (existingItemIndex != -1) {
         final existingItem = items[existingItemIndex];
-        total -= existingItem.product.price * existingItem.qty;
+        total -= existingItem.product.price * existingItem.qty!;
 
         if (qty != 0) {
-          total += prod.price * qty;
+            total += prod.price * qty;
           items[existingItemIndex] = ItemCart(product: prod, qty: qty);
         } else {
           items.removeAt(existingItemIndex);

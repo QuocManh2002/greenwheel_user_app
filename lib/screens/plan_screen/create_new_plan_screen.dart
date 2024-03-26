@@ -18,6 +18,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bott
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
 // ignore: must_be_immutable
@@ -124,16 +125,6 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                   location: widget.location,
                   isClone: true,
                 );
-          break;
-        case 5:
-          _stepperText = 'Dịch vụ';
-          _stepperNumber = 5;
-          activePage = SelectServiceScreen(
-            isOrder: sharedPreferences.getInt('plan_number_of_member')! == 1,
-            location: widget.location,
-            isClone: widget.schedule == null ? false : true,
-            memberLimit: sharedPreferences.getInt('plan_number_of_member')!,
-          );
           break;
       }
     });
@@ -576,12 +567,14 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                   text: 'Ngày ${index + 1}: ',
                   style: const TextStyle(
                       fontSize: 16,
+                      fontFamily: 'NotoSans',
                       fontWeight: FontWeight.bold,
                       color: Colors.black),
                   children: [
                     TextSpan(
                         text: rsText,
-                        style: const TextStyle(fontWeight: FontWeight.normal))
+                        style: const TextStyle(
+                          fontWeight: FontWeight.normal))
                   ]),
             ),
             const SizedBox(
@@ -599,15 +592,14 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         btnOkText: 'Xác nhận',
         btnOkColor: Colors.blue,
         btnOkOnPress: () {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (ctx) => SelectServiceScreen(
+          Navigator.push(context, PageTransition(child: SelectServiceScreen(
                     isOrder:
                         sharedPreferences.getInt('plan_number_of_member')! == 1,
                     location: widget.location,
                     isClone: widget.schedule == null ? false : true,
                     memberLimit:
                         sharedPreferences.getInt('plan_number_of_member')!,
-                  )));
+                  ), type: PageTransitionType.rightToLeft));
         },
         btnCancelColor: Colors.orange,
         btnCancelText: 'Chỉnh sửa',
@@ -621,7 +613,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                 alignment: Alignment.center,
                 child: const Text(
                   'Xác nhận lịch trình chuyến đi',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
                 ),
               ),
               const SizedBox(

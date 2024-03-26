@@ -252,7 +252,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
                             child: _selectedTab == 0
                                 ? Column(
                                     children: [
-                                      BaseInformationWidget(plan: _planDetail!, members: [],isPublic: true,),
+                                      BaseInformationWidget(plan: _planDetail!, members: []),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 24),

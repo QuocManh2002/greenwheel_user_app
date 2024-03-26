@@ -77,10 +77,10 @@ class MainApp extends StatelessWidget {
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
         localizationsDelegates: localization.localizationsDelegates,
-        // supportedLocales: const [
-        //   //  Locale('vi', 'VN'), // Vietnamese
-        //   //  Locale('en', 'US'), // English (fallback)
-        // ],
+        supportedLocales: const [
+          //  Locale('vi', 'VN'), // Vietnamese
+           Locale('en', 'US'), // English (fallback)
+        ],
         home: hasConnection
             ? userToken != null
                 ? const SplashScreen()

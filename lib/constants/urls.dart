@@ -37,6 +37,9 @@ const String rating_white = '${baseImage}rating_white.svg';
 const String rating_green = '${baseImage}rating_green.svg';
 const String backpack = '${baseImage}backpack.png';
 const String pdf_mark = '${baseImage}pdf_mark.svg';
+const String surcharge_green = '${baseImage}surcharge_green.svg';
+const String surcharge_white = '${baseImage}surcharge_white.svg';
+
 
 const String baseBucketImage = 'https://d38ozmgi8b70tu.cloudfront.net';
 
@@ -45,6 +48,6 @@ const String defaultHomeImage = "https://th.bing.com/th/id/R.e61db6eda58d4e57acf
 const String defaultUserAvatarLink =
     "https://media.altchar.com/prod/images/gm_article_promo_image/23364b481aa9-edg-viper.jpg";
 
-const String defaultPlanNotiAvatar = 'https://lh3.googleusercontent.com/proxy/gxbMACmTsPWzhlOMyv8l2l8buUe_HT8T5TYA-V-i-7s7KJqimxL67l8fDc6TDhiPpmfx67h1U05_qq4HgX00xWuyu0twcptg0r-CnYm_vImQbiMeE4Yc5uY5rxcF3y8RMLFznM5F7_19dV7n';
+const String defaultPlanNotiAvatar = 'https://bizweb.dktcdn.net/100/349/716/files/8-dieu-luu-y.jpg?v=1565255002868';
 
 const String defaultServiceNotiAvatar = 'https://runglakimresort.com/Uploads/Images/tintuc/1280x904/Leng-keng-homestay-8.jpg';

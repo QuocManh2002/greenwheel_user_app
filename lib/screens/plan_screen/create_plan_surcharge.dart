@@ -24,7 +24,8 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
       String? surchargeText = sharedPreferences.getString('plan_surcharge');
       final surchargeObject = {
         'note': json.encode(_noteController.text),
-        'gcoinAmount': amount
+        'amount': amount,
+        'needToBeDivide': false
       };
       if (surchargeText == null) {
         sharedPreferences.setString(
@@ -57,7 +58,7 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
               height: 32,
             ),
             defaultTextFormField(
-                text: 'Khoản phụ thu (GCOIN)',
+                text: 'Khoản phụ thu (VND)',
                 hinttext: '10, 100, 1000,...',
                 controller: _amountController,
                 onValidate: (value) {

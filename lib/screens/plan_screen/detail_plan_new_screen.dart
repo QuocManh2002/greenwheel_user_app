@@ -4,17 +4,17 @@ import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_surcharge_note.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/join_confirm_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/plan_pdf_view_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/share_plan_screen.dart';
@@ -26,7 +26,6 @@ import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_join_service_infor.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/base_information.dart';
@@ -62,7 +61,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   ProductService _productService = ProductService();
   PlanDetail? _planDetail;
   late TabController tabController;
-  late TextEditingController newItemController;
   List<PlanMemberViewModel> _planMembers = [];
   List<PlanMemberViewModel> _joinedMember = [];
   double total = 0;
@@ -78,28 +76,31 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   Widget? activeWidget;
   List<int> availableWeight = [];
   bool _isAlreadyJoin = false;
-  List<PlanJoinServiceInfor> listRoom = [];
-  List<PlanJoinServiceInfor> listFood = [];
-  dynamic indexService;
   var currencyFormat =
       NumberFormat.simpleCurrency(locale: 'vi_VN', name: '', decimalDigits: 0);
   bool _isEnableToConfirm = false;
-  DateTime? _arrivedTime;
+  String comboDateText = '';
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    newItemController = TextEditingController();
     setupData();
     sharedPreferences.setInt('planId', widget.planId);
   }
 
   setupData() async {
+    setState(() {
+      isLoading = true;
+    });
     _planDetail = null;
-    _planDetail = await _planService.GetPlanById(widget.planId);
+    final plan = await _planService.GetPlanById(widget.planId);
     List<String> productIds = [];
-    if (_planDetail != null) {
+    if (plan != null) {
+      setState(() {
+        _planDetail = plan;
+        isLoading = false;
+      });
       for (final order in _planDetail!.tempOrders!) {
         Map<String, dynamic> cart = order['cart'];
         for (final proId in cart.keys.toList()) {
@@ -120,10 +121,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       tempOrders = await getTempOrder();
       _isPublic = _planDetail!.joinMethod != 'NONE';
       _isEnableToInvite = _planDetail!.status == 'REGISTERING';
-      indexService = await getIndexTempOrder();
-      if (indexService != null) {
-        getOrderList();
-      }
+      getOrderList();
       await getPlanMember();
       if (_planDetail != null) {
         setState(() {
@@ -132,8 +130,23 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       }
       _isEnableToConfirm = _planDetail!.status != 'READY';
     }
-
-    // _arrivedTime = _planDetail!.departureDate.
+    var tempDuration = DateFormat.Hm().parse(_planDetail!.travelDuration!);
+    final startTime = DateTime(0, 0, 0, _planDetail!.departureDate!.hour,
+        _planDetail!.departureDate!.minute, 0);
+    final arrivedTime = startTime
+        .add(Duration(hours: tempDuration.hour))
+        .add(Duration(minutes: tempDuration.minute));
+    var cmd;
+    if (arrivedTime.isAfter(DateTime(0, 0, 0, 16, 0)) &&
+        arrivedTime.isBefore(DateTime(0, 0, 1, 6, 0))) {
+      cmd = listComboDate.firstWhere(
+          (element) => element.duration == _planDetail!.numOfExpPeriod - 1);
+      comboDateText = '${cmd.numberOfDay} ngày ${cmd.numberOfNight + 1} đêm';
+    } else {
+      cmd = listComboDate.firstWhere(
+          (element) => element.duration == _planDetail!.numOfExpPeriod);
+      comboDateText = '${cmd.numberOfDay} ngày ${cmd.numberOfNight} đêm';
+    }
   }
 
   getPlanMember() async {
@@ -154,6 +167,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           memberId: mem.memberId,
           phone: mem.phone,
           status: mem.status,
+          companions: mem.companions,
           accountId: mem.accountId,
           accountType: type,
           weight: mem.weight));
@@ -194,6 +208,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             total: orderTotal * e['serveDates'].length,
             createdAt: DateTime.now(),
             supplier: SupplierViewModel(
+                type: sampleProduct.supplierType,
                 id: sampleProduct.supplierId!,
                 name: sampleProduct.supplierName,
                 phone: sampleProduct.supplierPhone,
@@ -203,110 +218,22 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             period: e['period']);
       }).toList();
 
-  getIndexTempOrder() {
-    List<String> indexRoomOrder = [];
-    List<String> indexFoodOrder = [];
-    List<OrderViewModel> roomOrderList = [];
-    List<OrderViewModel> foodOrderList = [];
-    for (var item in tempOrders) {
-      if (item.type == 'MEAL') {
-        foodOrderList.add(item);
-      } else {
-        roomOrderList.add(item);
-      }
-    }
-
-    for (final order in roomOrderList) {
-      for (final index in order.serveDates!) {
-        if (!indexRoomOrder.contains(index)) {
-          indexRoomOrder.add(index);
-        }
-      }
-    }
-
-    for (final order in foodOrderList) {
-      for (final index in order.serveDates!) {
-        if (!indexFoodOrder.contains(index)) {
-          indexFoodOrder.add(index);
-        }
-      }
-    }
-    List<Map> periodList = [];
-    for (final index in indexFoodOrder) {
-      List<OrderViewModel> orders = [];
-      for (final order in foodOrderList) {
-        if (order.serveDates!.contains(index)) {
-          orders.add(order);
-        }
-      }
-      List<dynamic> keys = orders.groupListsBy((e) => e.period).keys.toList();
-      var periods = keys.map((e) => Utils().getPeriodString(e)).toList();
-      Utils().sortPeriodList(periods);
-      periodList.add({'periods': periods});
-    }
-    return {
-      'roomIndex': indexRoomOrder,
-      'foodIndex': indexFoodOrder,
-      'foodPeriodList': periodList
-    };
-  }
-
   getOrderList() async {
     var _total = 0.0;
-    List<OrderViewModel> roomOrderList = [];
-    List<OrderViewModel> foodOrderList = [];
-    List<PlanJoinServiceInfor> _listRoom = [];
-    List<PlanJoinServiceInfor> _listFood = [];
-
-    final rs = await _planService.getOrderCreatePlan(widget.planId);
-    if (rs != null) {
-      orderList = rs['orders'];
-      for (final order in orderList) {
-        if (order.type == 'MEAL') {
-          foodOrderList.add(order);
-        } else {
-          roomOrderList.add(order);
-        }
-        _total += order.total!;
+    if (_planDetail!.status == 'REGISTERING' ||
+        _planDetail!.status == 'PENDING') {
+      orderList = tempOrders;
+    } else {
+      final rs = await _planService.getOrderCreatePlan(widget.planId);
+      if (rs != null) {
+        orderList = rs['orders'];
+        _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
       }
-
-      for (final day in indexService['roomIndex']) {
-        var _orderList = [];
-        for (final order in roomOrderList) {
-          if (order.serveDates!.contains(day)) {
-            _orderList.add(order);
-          }
-        }
-        _listRoom.add(PlanJoinServiceInfor(
-            dayIndex:
-                DateTime.parse(day).difference(_planDetail!.startDate!).inDays,
-            orderList: _orderList));
-      }
-      for (final day in indexService['foodIndex']) {
-        var _orderList = [];
-        List<String> _periodList = [];
-        for (final order in foodOrderList) {
-          if (order.serveDates!.contains(day)) {
-            _orderList.add(order);
-          }
-        }
-        _orderList.sort(
-          (a, b) => Utils()
-              .getPeriodString(a.period)['value']
-              .compareTo(Utils().getPeriodString(b.period)['value']),
-        );
-        _listFood.add(PlanJoinServiceInfor(
-            dayIndex:
-                DateTime.parse(day).difference(_planDetail!.startDate!).inDays,
-            orderList: _orderList,
-            periodString: _periodList));
-      }
-      setState(() {
-        total = _total;
-        listRoom = _listRoom;
-        listFood = _listFood;
-      });
     }
+    _total = orderList.fold(0, (sum, obj) => sum + obj.total!);
+    setState(() {
+      total = _total;
+    });
   }
 
   updatePlan() async {
@@ -427,9 +354,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         : null,
             appBar: AppBar(
               title: Text(
-                _planDetail != null
-                    ? _planDetail!.name!
-                    : 'Chuyen di chua dat ten',
+                _planDetail != null ? _planDetail!.name! : '',
                 style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
@@ -459,219 +384,259 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             ),
             body: isLoading
                 ? const Center(
-                    child: Text("Loading..."),
+                    child: Text("Đang tải..."),
                   )
-                : Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: SingleChildScrollView(
-                            child: Column(
-                          children: [
-                            CachedNetworkImage(
-                              height: 25.h,
-                              width: double.infinity,
-                              fit: BoxFit.fill,
-                              imageUrl: _planDetail!.imageUrls[0],
-                              placeholder: (context, url) =>
-                                  Image.memory(kTransparentImage),
-                              errorWidget: (context, url, error) =>
-                                  FadeInImage.assetNetwork(
-                                height: 15.h,
-                                width: 15.h,
-                                fit: BoxFit.cover,
-                                placeholder: 'No Image',
-                                image:
-                                    'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                : RefreshIndicator(
+                    onRefresh: () async {
+                      await setupData();
+                    },
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                              child: Column(
+                            children: [
+                              CachedNetworkImage(
+                                height: 25.h,
+                                width: double.infinity,
+                                fit: BoxFit.fill,
+                                imageUrl: _planDetail!.imageUrls[0],
+                                placeholder: (context, url) =>
+                                    Image.memory(kTransparentImage),
+                                errorWidget: (context, url, error) =>
+                                    FadeInImage.assetNetwork(
+                                  height: 15.h,
+                                  width: 15.h,
+                                  fit: BoxFit.cover,
+                                  placeholder: 'No Image',
+                                  image:
+                                      'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                                ),
                               ),
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              alignment: Alignment.centerLeft,
-                              child: Row(
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      SizedBox(
-                                        width: 70.w,
-                                        child: Text(
-                                          _planDetail!.locationName,
-                                          overflow: TextOverflow.clip,
-                                          style: const TextStyle(
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                      ),
-                                      Row(
-                                        children: [
-                                          Text(
-                                            NumberFormat.simpleCurrency(
-                                                    locale: 'vi_VN',
-                                                    decimalDigits: 0,
-                                                    name: '')
-                                                .format(_planDetail!
-                                                    .gcoinBudgetPerCapita),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 24),
+                                alignment: Alignment.centerLeft,
+                                child: Row(
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        SizedBox(
+                                          width: 70.w,
+                                          child: Text(
+                                            _planDetail!.locationName,
                                             overflow: TextOverflow.clip,
                                             style: const TextStyle(
                                                 fontSize: 20,
                                                 fontWeight: FontWeight.bold),
                                           ),
-                                          SvgPicture.asset(
-                                            gcoin_logo,
-                                            height: 25,
-                                          )
-                                        ],
-                                      ),
-                                    ],
-                                  ),
-                                  const Spacer(),
-                                  Column(
+                                        ),
+                                        Text(
+                                          comboDateText,
+                                          overflow: TextOverflow.clip,
+                                          style: const TextStyle(
+                                              fontSize: 20,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        if (!_isAlreadyJoin &&
+                                            _planDetail!.gcoinBudgetPerCapita !=
+                                                0)
+                                          Row(
+                                            children: [
+                                              Text(
+                                                NumberFormat.simpleCurrency(
+                                                        locale: 'vi_VN',
+                                                        decimalDigits: 0,
+                                                        name: '')
+                                                    .format(_planDetail!
+                                                        .gcoinBudgetPerCapita),
+                                                overflow: TextOverflow.clip,
+                                                style: const TextStyle(
+                                                    fontSize: 20,
+                                                    fontWeight:
+                                                        FontWeight.bold),
+                                              ),
+                                              SvgPicture.asset(
+                                                gcoin_logo,
+                                                height: 25,
+                                              )
+                                            ],
+                                          ),
+                                      ],
+                                    ),
+                                    const Spacer(),
+                                    Column(
+                                      children: [
+                                        if (!widget.isEnableToJoin && isLeader)
+                                          CupertinoSwitch(
+                                            value: _isPublic,
+                                            activeColor: primaryColor,
+                                            onChanged: (value) async {
+                                              setState(() {
+                                                _isPublic = !_isPublic;
+                                              });
+                                              onPublicizePlan();
+                                            },
+                                          ),
+                                        Text(
+                                          _isPublic ? 'Công khai' : 'Riêng tư',
+                                          style: TextStyle(
+                                              fontSize: 13,
+                                              color: _isPublic
+                                                  ? primaryColor
+                                                  : Colors.grey),
+                                        )
+                                      ],
+                                    )
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              Padding(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 24),
+                                child: Container(
+                                  height: 1.8,
+                                  color: Colors.grey.withOpacity(0.4),
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 16,
+                              ),
+                              Container(
+                                padding:
+                                    const EdgeInsets.symmetric(horizontal: 24),
+                                alignment: Alignment.centerLeft,
+                                child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.start,
                                     children: [
-                                      if (!widget.isEnableToJoin && isLeader)
-                                        CupertinoSwitch(
-                                          value: _isPublic,
-                                          activeColor: primaryColor,
-                                          onChanged: (value) async {
+                                      Expanded(
+                                        child: InkWell(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(12)),
+                                          onTap: () {
                                             setState(() {
-                                              _isPublic = !_isPublic;
+                                              _selectedTab = 0;
                                             });
-                                            onPublicizePlan();
                                           },
+                                          child: TabIconButton(
+                                            iconDefaultUrl:
+                                                basic_information_green,
+                                            iconSelectedUrl:
+                                                basic_information_white,
+                                            text: 'Thông tin',
+                                            isSelected: _selectedTab == 0,
+                                            index: 0,
+                                          ),
                                         ),
-                                      Text(
-                                        _isPublic ? 'Công khai' : 'Riêng tư',
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color: _isPublic
-                                                ? primaryColor
-                                                : Colors.grey),
-                                      )
-                                    ],
-                                  )
-                                ],
+                                      ),
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
+                                      Expanded(
+                                        child: InkWell(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(12)),
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedTab = 1;
+                                            });
+                                          },
+                                          child: TabIconButton(
+                                            iconDefaultUrl: schedule_green,
+                                            iconSelectedUrl: schedule_white,
+                                            text: 'Lịch trình',
+                                            isSelected: _selectedTab == 1,
+                                            index: 1,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
+                                      Expanded(
+                                        child: InkWell(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(12)),
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedTab = 2;
+                                            });
+                                          },
+                                          child: TabIconButton(
+                                            iconDefaultUrl: service_green,
+                                            iconSelectedUrl: service_white,
+                                            text: 'Dịch vụ',
+                                            isSelected: _selectedTab == 2,
+                                            index: 2,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8,),
+                                      Expanded(
+                                        child: InkWell(
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(12)),
+                                          onTap: () {
+                                            setState(() {
+                                              _selectedTab = 3;
+                                            });
+                                          },
+                                          child: TabIconButton(
+                                            iconDefaultUrl: surcharge_green,
+                                            iconSelectedUrl: surcharge_white,
+                                            text: 'Tiền mặt & ghi chú',
+                                            isSelected: _selectedTab == 3,
+                                            index: 3,
+                                          ),
+                                        ),
+                                      ),
+                                    ]),
                               ),
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              child: Container(
-                                height: 1.8,
-                                color: Colors.grey.withOpacity(0.4),
+                              const SizedBox(
+                                height: 16,
                               ),
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            Container(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 24),
-                              alignment: Alignment.centerLeft,
-                              child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    Expanded(
-                                      child: InkWell(
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(12)),
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedTab = 0;
-                                          });
-                                        },
-                                        child: TabIconButton(
-                                          iconDefaultUrl:
-                                              basic_information_green,
-                                          iconSelectedUrl:
-                                              basic_information_white,
-                                          text: 'Thông tin',
-                                          isSelected: _selectedTab == 0,
-                                          index: 0,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 16,
-                                    ),
-                                    Expanded(
-                                      child: InkWell(
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(12)),
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedTab = 1;
-                                          });
-                                        },
-                                        child: TabIconButton(
-                                          iconDefaultUrl: schedule_green,
-                                          iconSelectedUrl: schedule_white,
-                                          text: 'Lịch trình',
-                                          isSelected: _selectedTab == 1,
-                                          index: 1,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 16,
-                                    ),
-                                    Expanded(
-                                      child: InkWell(
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(12)),
-                                        onTap: () {
-                                          setState(() {
-                                            _selectedTab = 2;
-                                          });
-                                        },
-                                        child: TabIconButton(
-                                          iconDefaultUrl: service_green,
-                                          iconSelectedUrl: service_white,
-                                          text: 'Dịch vụ',
-                                          isSelected: _selectedTab == 2,
-                                          index: 2,
-                                        ),
-                                      ),
-                                    ),
-                                  ]),
-                            ),
-                            const SizedBox(
-                              height: 16,
-                            ),
-                            Container(
-                                child: _selectedTab == 2
-                                    ? buildServiceWidget()
-                                    : _selectedTab == 1
-                                        ? buildScheduleWidget()
-                                        : buildInforWidget()),
-                            SizedBox(
-                              height: 2.h,
-                            )
-                          ],
-                        )),
-                      ),
-                      if ((widget.isFromHost == null || widget.isFromHost!) &&
-                          widget.isEnableToJoin &&
-                          !_isAlreadyJoin)
-                        buildNewFooter()
-                    ],
+                              Container(
+                                  child: _selectedTab == 2
+                                      ? buildServiceWidget()
+                                      : _selectedTab == 1
+                                          ? buildScheduleWidget():
+                                          _selectedTab == 0 ?
+                                          buildInforWidget():
+                                          buildSurchagreNoteWidget()
+                                          ),
+                              SizedBox(
+                                height: 2.h,
+                              )
+                            ],
+                          )),
+                        ),
+                        if ((widget.isFromHost == null || widget.isFromHost!) &&
+                            widget.isEnableToJoin &&
+                            !_isAlreadyJoin)
+                          buildNewFooter()
+                      ],
+                    ),
                   )));
   }
 
+  buildSurchagreNoteWidget() => DetailPlanSurchargeNote(
+    plan: _planDetail!,
+  );
+
   buildServiceWidget() => DetailPlanServiceWidget(
-      indexService: indexService,
-      listFood: listFood,
-      listRoom: listRoom,
       plan: _planDetail!,
       isLeader: isLeader,
       tempOrders: tempOrders,
+      orderList: orderList,
       total: total,
       onGetOrderList: getOrderList);
 
@@ -689,7 +654,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             height: 16,
           ),
           BaseInformationWidget(
-            isPublic: _isPublic,
             plan: _planDetail!,
             members: _planMembers,
           ),
@@ -825,7 +789,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   onCompletePlan: () {},
                   listSurcharges: _planDetail!.surcharges!
                       .map((e) => {
-                            "gcoinAmount": e.gcoinAmount,
+                            "amount": e.gcoinAmount,
                             "note": json.encode(e.note)
                           })
                       .toList(),

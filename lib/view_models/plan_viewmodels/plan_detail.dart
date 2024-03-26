@@ -43,6 +43,7 @@ class PlanDetail {
   int? maxMemberWeight;
   String? departureAddress;
   DateTime? regClosedAt;
+  String? leaderName;
 
   PlanDetail(
       {required this.id,
@@ -73,11 +74,13 @@ class PlanDetail {
       this.maxMemberWeight,
       this.departureAddress,
       this.regClosedAt,
+      this.leaderName,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
         id: json["id"],
         name: json["name"],
+        leaderName: json['account']['name'],
         tempOrders: json['tempOrders'],
         departureDate: DateTime.parse(json['departAt']),
         startDate: DateTime.parse(json["startDate"]),

@@ -17,6 +17,7 @@ class PlanMemberViewModel {
     int? accountType;
     int weight;
     String? imageUrl;
+    List<dynamic>? companions;
 
     PlanMemberViewModel({
         required this.name,
@@ -25,6 +26,7 @@ class PlanMemberViewModel {
         required this.status,
         required this.accountId,
         this.accountType,
+        this.companions,
         this.imageUrl,
         required this.weight,
     });
@@ -36,7 +38,8 @@ class PlanMemberViewModel {
         status: json["status"],
         accountId: json['account']['id'],
         weight: json['weight'],
-        imageUrl: json['account']['avatarUrl']
+        imageUrl: json['account']['avatarUrl'],
+        companions: json['companions']
     );
 
     Map<String, dynamic> toJson() => {

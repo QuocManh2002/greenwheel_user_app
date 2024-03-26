@@ -96,6 +96,7 @@ class ProductService extends Iterable {
         imageUrl
         phone
         address
+        type
       }
     }
   }

@@ -11,6 +11,7 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_note_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_note_surcharge_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
@@ -30,6 +31,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.da
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectServiceScreen extends StatefulWidget {
@@ -56,6 +58,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   final OrderService _orderService = OrderService();
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
+  List<Widget> _listVehicleRental = [];
   List<Widget> _listSurcharges = [];
   DateTime? startDate;
   DateTime? endDate;
@@ -88,7 +91,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
     callback();
-    callbackSurcharge();
   }
 
   callback() {
@@ -157,14 +159,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     }
   }
 
-  getOrderTotal(OrderViewModel order) {
-    var _total = 0.0;
-    for (final detail in order.details!) {
-      _total += detail.price! * detail.quantity;
-    }
-    return _total;
-  }
-
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -205,64 +199,64 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           ),
           actions: [
             InkWell(
-            onTap: () {
-              DateTime? _travelDuration =
-                  sharedPreferences.getDouble('plan_duration_value') != null
-                      ? DateTime(0, 0, 0).add(Duration(
-                          seconds: (sharedPreferences
-                                      .getDouble('plan_duration_value')! * 3600)
-                              .toInt()))
-                      : null;
-              showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (ctx) => SizedBox(
-                    height: 80.h,
-                    child: ConfirmPlanBottomSheet(
-                          isFromHost: false,
-                          isJoin: false,
-                          locationName: widget.location.name,
-                          isInfo: true,
-                          orderList: orderList,
-                          listSurcharges: json.decode(sharedPreferences.getString('plan_surcharge') ?? "[]"),
-                          plan: PlanCreate(
-                            startDate: DateTime.parse(sharedPreferences.getString('plan_start_date')!),
-                              endDate:
-                                  sharedPreferences.getString('plan_end_date') == null
-                                      ? null
-                                      : DateTime.parse(sharedPreferences
-                                          .getString('plan_end_date')!),
-                              memberLimit: sharedPreferences
-                                  .getInt('plan_number_of_member'),
-                              departureDate: sharedPreferences
-                                          .getString('plan_departureDate') ==
-                                      null
-                                  ? null
-                                  : DateTime.parse(sharedPreferences
-                                      .getString('plan_departureDate')!),
-                              name: sharedPreferences.getString('plan_name'),
-                              schedule:
-                                  sharedPreferences.getString('plan_schedule'),
-                              note: sharedPreferences.getString('plan_note'),
-                              savedContacts: sharedPreferences
-                                  .getString('plan_saved_emergency'),
-                              travelDuration: _travelDuration ==
-                                      null
-                                  ? null
-                                  : DateFormat.Hm().format(_travelDuration)),
-                        ),
-                  ));
-            },
-            overlayColor: const MaterialStatePropertyAll(Colors.transparent),
-            child: Container(
-              margin: const EdgeInsets.only(right: 8.0),
-              child: Image.asset(
-                backpack,
-                fit: BoxFit.fill,
-                height: 32,
+              onTap: () {
+                DateTime? _travelDuration =
+                    sharedPreferences.getDouble('plan_duration_value') != null
+                        ? DateTime(0, 0, 0).add(Duration(
+                            seconds: (sharedPreferences
+                                        .getDouble('plan_duration_value')! *
+                                    3600)
+                                .toInt()))
+                        : null;
+                showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (ctx) => SizedBox(
+                          height: 80.h,
+                          child: ConfirmPlanBottomSheet(
+                            isFromHost: false,
+                            isJoin: false,
+                            locationName: widget.location.name,
+                            isInfo: true,
+                            orderList: orderList,
+                            listSurcharges: json.decode(
+                                sharedPreferences.getString('plan_surcharge') ??
+                                    "[]"),
+                            plan: PlanCreate(
+                                startDate: DateTime.parse(sharedPreferences
+                                    .getString('plan_start_date')!),
+                                endDate:
+                                    sharedPreferences.getString('plan_end_date') == null
+                                        ? null
+                                        : DateTime.parse(sharedPreferences
+                                            .getString('plan_end_date')!),
+                                memberLimit: sharedPreferences
+                                    .getInt('plan_number_of_member'),
+                                departureDate:
+                                    sharedPreferences.getString('plan_departureDate') == null
+                                        ? null
+                                        : DateTime.parse(sharedPreferences
+                                            .getString('plan_departureDate')!),
+                                name: sharedPreferences.getString('plan_name'),
+                                schedule: sharedPreferences
+                                    .getString('plan_schedule'),
+                                note: sharedPreferences.getString('plan_note'),
+                                savedContacts: sharedPreferences
+                                    .getString('plan_saved_emergency'),
+                                travelDuration: _travelDuration == null ? null : DateFormat.Hm().format(_travelDuration)),
+                          ),
+                        ));
+              },
+              overlayColor: const MaterialStatePropertyAll(Colors.transparent),
+              child: Container(
+                margin: const EdgeInsets.only(right: 8.0),
+                child: Image.asset(
+                  backpack,
+                  fit: BoxFit.fill,
+                  height: 32,
+                ),
               ),
             ),
-          ),
           ],
         ),
         body: Padding(
@@ -318,9 +312,16 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                 break;
                               case 2:
                                 Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => CreatePlanSurcharge(
-                                          callback: callbackSurcharge,
-                                        )));
+                                  builder: (ctx) => ServiceMainScreen(
+                                    endDate: endDate!,
+                                    startDate: startDate!,
+                                    numberOfMember: numberOfMember!,
+                                    serviceType: services[5],
+                                    location: widget.location,
+                                    isOrder: widget.isOrder,
+                                    callbackFunction: callback,
+                                  ),
+                                ));
                             }
                           },
                           style: elevatedButtonStyle,
@@ -347,21 +348,25 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                       text: "(${_listRestaurant.length})",
                       icon: const Icon(Icons.restaurant),
                     ),
-                    if (memberLimit != 1)
-                      Tab(
-                        text: "(${_listSurcharges.length})",
-                        icon: const Icon(Icons.account_balance_wallet),
-                      )
+                    Tab(
+                      text: "(${_listSurcharges.length})",
+                      icon: const Icon(Icons.directions_car),
+                    )
                   ]),
               Container(
                 margin: const EdgeInsets.only(top: 8),
-                height:
-                    _listRestaurant.isEmpty && _listMotel.isEmpty ? 50.h : 46.h,
+                height: _listRestaurant.isEmpty &&
+                        _listMotel.isEmpty &&
+                        _listVehicleRental.isEmpty
+                    ? 50.h
+                    : 46.h,
                 child: TabBarView(
                     controller: tabController,
                     physics: const NeverScrollableScrollPhysics(),
                     children: [
-                      _listRestaurant.isEmpty && _listMotel.isEmpty
+                      _listRestaurant.isEmpty &&
+                              _listMotel.isEmpty &&
+                              _listVehicleRental.isEmpty
                           ? Image.asset(
                               empty_plan,
                               fit: BoxFit.cover,
@@ -374,7 +379,9 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                 return _listMotel[index];
                               },
                             ),
-                      _listRestaurant.isEmpty && _listMotel.isEmpty
+                      _listRestaurant.isEmpty &&
+                              _listMotel.isEmpty &&
+                              _listVehicleRental.isEmpty
                           ? Image.asset(
                               empty_plan,
                               fit: BoxFit.cover,
@@ -387,15 +394,21 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                 return _listRestaurant[index];
                               },
                             ),
-                      if (memberLimit != 1)
-                        ListView.builder(
-                          physics: const BouncingScrollPhysics(),
-                          shrinkWrap: true,
-                          itemCount: _listSurcharges.length,
-                          itemBuilder: (context, index) {
-                            return _listSurcharges[index];
-                          },
-                        ),
+                      _listRestaurant.isEmpty &&
+                              _listMotel.isEmpty &&
+                              _listVehicleRental.isEmpty
+                          ? Image.asset(
+                              empty_plan,
+                              fit: BoxFit.cover,
+                            )
+                          : ListView.builder(
+                              physics: const BouncingScrollPhysics(),
+                              shrinkWrap: true,
+                              itemCount: _listSurcharges.length,
+                              itemBuilder: (context, index) {
+                                return _listSurcharges[index];
+                              },
+                            ),
                     ]),
               ),
               const Spacer(),
@@ -429,31 +442,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                     SizedBox(
                       height: 1.h,
                     ),
-                    // SizedBox(
-                    //   height: 1.h,
-                    // ),
-                    // if (memberLimit != 1)
-                    //   Padding(
-                    //     padding: const EdgeInsets.symmetric(horizontal: 12),
-                    //     child: Row(
-                    //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    //       children: [
-                    //         const Text(
-                    //           'Khoản thu bình quân: ',
-                    //           style: TextStyle(
-                    //               fontSize: 18, fontWeight: FontWeight.bold),
-                    //         ),
-                    //         Text(
-                    //           '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(((total / memberLimit) / 100).ceil())} GCOIN',
-                    //           style: const TextStyle(fontSize: 18),
-                    //         ),
-                    //       ],
-                    //     ),
-                    //   ),
-                    // if (memberLimit != 1)
-                    //   const SizedBox(
-                    //     height: 16,
-                    //   )
                   ],
                 ),
               Row(
@@ -484,27 +472,15 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                     child: ElevatedButton(
                         style: elevatedButtonStyle,
                         onPressed: () async {
-                          AwesomeDialog(
-                              context: context,
-                              animType: AnimType.bottomSlide,
-                              dialogType: DialogType.question,
-                              title:
-                                  'Bạn có muốn thêm ghi chú cho chuyến đi hay không ?',
-                              titleTextStyle: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 12),
-                              btnOkColor: Colors.blue,
-                              btnOkOnPress: () {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => CreateNoteScreen(onCompletePlan: completeService,)));
-                              },
-                              btnOkText: 'Có',
-                              btnCancelText: 'Không',
-                              btnCancelColor: Colors.orangeAccent,
-                              btnCancelOnPress: () {
-                                completeService(context);
-                              }).show();
+                          Navigator.push(
+                              context,
+                              PageTransition(
+                                  child: CreateNoteSurchargeScreen(
+                                    location: widget.location,
+                                    totalService: total.toDouble(),
+                                    orderList: orderList,
+                                  ),
+                                  type: PageTransitionType.rightToLeft));
                         },
                         child: const Text('Tiếp tục')),
                   ),
@@ -592,8 +568,14 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   }
 
   completeService(BuildContext ctx) {
-    final departureDate =
+    DateTime departureDate =
         DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+    final departureTime =
+        DateTime.parse(sharedPreferences.getString('plan_start_time')!);
+    departureDate =
+        DateTime(departureDate.year, departureDate.month, departureDate.day)
+            .add(Duration(hours: departureTime.hour))
+            .add(Duration(minutes: departureTime.minute));
     DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
         seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
             .toInt()));
@@ -634,28 +616,6 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                 isJoin: false,
               ),
             ));
-  }
-
-  callbackSurcharge() {
-    String? surchargeText = sharedPreferences.getString('plan_surcharge');
-    List<Widget> listSurcharges = [];
-    _listSurchargeObjects = [];
-    if (surchargeText != null) {
-      final surcharges = json.decode(surchargeText);
-      for (final sur in surcharges) {
-        listSurcharges.add(SurchargeCard(
-            amount: sur['gcoinAmount'], note: json.decode(sur['note'])));
-        totalSurcharge += sur['gcoinAmount'] * 100;
-        total += sur['gcoinAmount'] * 100;
-        _listSurchargeObjects.add(sur);
-      }
-    }
-    setState(() {
-      _listSurcharges = listSurcharges;
-    });
-    sharedPreferences.setString(
-        'plan_surcharge', json.encode(_listSurchargeObjects));
-    getTotal();
   }
 
   onCompletePlan() async {
@@ -715,8 +675,13 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           Utils().clearPlanSharePref();
           Navigator.of(context).pop();
           Navigator.of(context).pop();
-          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 1)), (route) => false);
-          Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => DetailPlanNewScreen(planId: rs, isEnableToJoin: false)));
+          Navigator.of(context).pushAndRemoveUntil(
+              MaterialPageRoute(
+                  builder: (ctx) => const TabScreen(pageIndex: 1)),
+              (route) => false);
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (ctx) =>
+                  DetailPlanNewScreen(planId: rs, isEnableToJoin: false)));
         });
       }
     }
@@ -726,11 +691,9 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   getTotal() {
     total = 0;
     for (final order in listMotelOrder!) {
-      // total += getOrderTotal(order);
       total += order.total!;
     }
     for (final order in listRestaurantOrder!) {
-      // total += getOrderTotal(order);
       total += order.total!;
     }
     for (final sur in _listSurchargeObjects) {

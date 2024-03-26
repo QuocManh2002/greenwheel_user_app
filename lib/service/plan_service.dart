@@ -107,6 +107,7 @@ class PlanService {
         period
         type
         supplier {
+          type
           id
           phone
           name
@@ -159,10 +160,11 @@ class PlanService {
 
   Future<PlanDetail?> GetPlanById(int planId) async {
     try {
-      QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-query GetPlanById(\$planId: Int){
-  plans(where: { id: { eq: \$planId } }) {
+      QueryResult result = await client.query(QueryOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
+{
+  plans(where: { id: { eq: $planId } }) {
     nodes {
       name
       id
@@ -170,6 +172,9 @@ query GetPlanById(\$planId: Int){
       endDate
       departureAddress
       accountId
+      account{
+        name
+      }
       joinMethod
       gcoinBudgetPerCapita
       currentGcoinBudget
@@ -200,35 +205,6 @@ query GetPlanById(\$planId: Int){
       departure {
         coordinates
       }
-      orders {
-        id
-        planId
-        deposit
-        total
-        serveDates
-        note
-        createdAt
-        period
-        type
-        supplier {
-          id
-          phone
-          name
-          imageUrl
-          address
-        }
-        details {
-          id
-          price
-          quantity
-          product {
-            id
-            name
-            type
-            price
-          }
-        }
-      }
       destination {
         id
         name
@@ -253,14 +229,15 @@ query GetPlanById(\$planId: Int){
         note
       }
       surcharges{
-          gcoinAmount
+          amount
           note
         }
     }
   }
 }
 
-"""), variables: {"planId": planId}));
+"""),
+      ));
 
       if (result.hasException) {
         throw Exception(result.exception);
@@ -273,33 +250,11 @@ query GetPlanById(\$planId: Int){
       List<PlanDetail> plan =
           res.map((plan) => PlanDetail.fromJson(plan)).toList();
       var rs = plan[0];
-      List<OrderViewModel>? orders = [];
-      for (final item in res[0]["orders"]) {
-        List<OrderDetailViewModel>? details = [];
-        OrderViewModel order = OrderViewModel.fromJson(item);
-        for (final detail in item["details"]) {
-          details.add(OrderDetailViewModel.fromJson(detail));
-        }
-        order.details = details;
-        orders.add(order);
-      }
-      rs.orders = orders;
       return rs;
     } catch (error) {
       throw Exception(error);
     }
   }
-
-  String a = '''{
-  plans(
-    first: 50
-    where: { members: { some: { and: [{ status: { eq: INVITED } }, { accountId: { eq : 1 }}] } } }
-  ) {
-    nodes {
-      id
-    }
-  }
-}''';
 
   Future<List<PlanCardViewModel>?> getPlanCards(int accountId) async {
     try {
@@ -394,7 +349,7 @@ query GetPlanById(\$planId: Int){
   }
 
   List<PlanSchedule> ConvertPLanJsonToObject(
-      DateTime startDate, String scheduleText) {
+      int duration, DateTime startDate, String scheduleText) {
     List<PlanSchedule> list = [];
     List<dynamic> _scheduleList = json.decode(scheduleText);
 
@@ -509,6 +464,7 @@ mutation{
       members {
         status
         weight
+        companions
         account {
           name
           phone
@@ -610,7 +566,7 @@ mutation{
       eq: $locationId
     }
     status:{
-      in:[READY VERIFIED PUBLISHED PENDING]
+      in:[FLAWED COMPLETED]
     }
   }){
     nodes{

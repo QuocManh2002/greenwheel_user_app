@@ -131,7 +131,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       durationText = sharedPreferences.getString('plan_duration_text')!;
       durationValue = sharedPreferences.getDouble('plan_duration_value');
       setState(() {
-        _searchController.text = sharedPreferences.getString('plan_start_address')!;
+        _searchController.text =
+            sharedPreferences.getString('plan_start_address')!;
         _isSelectedLocation = true;
       });
     }
@@ -195,7 +196,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                     ),
                   ),
                 ),
-                // if (_isSearching)
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 2.h),
                   child: InkWell(
@@ -207,7 +207,9 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                             defaultAddress == null || defaultAddress!.isEmpty
                                 ? 'Không có dữ liệu'
                                 : defaultAddress!;
-                                sharedPreferences.setString('plan_start_address', defaultAddress == null || defaultAddress!.isEmpty
+                        sharedPreferences.setString(
+                            'plan_start_address',
+                            defaultAddress == null || defaultAddress!.isEmpty
                                 ? 'Không có dữ liệu'
                                 : defaultAddress!);
                         _onSelectLocation(defaultLatLng!);
@@ -396,15 +398,20 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                                 fontSize: 15, fontWeight: FontWeight.bold),
                           ),
                           const Spacer(),
-                          Text( distanceText == '' || distanceText == 'null' ? '': distanceText,
+                          Text(
+                            distanceText == '' || distanceText == 'null'
+                                ? ''
+                                : distanceText,
                             style: const TextStyle(fontSize: 15),
                           ),
-                          SizedBox(width: 1.h,)
+                          SizedBox(
+                            width: 1.h,
+                          )
                         ]),
                       ),
                     ),
                   ),
-                  if (_isSelectedLocation)
+                if (_isSelectedLocation)
                   Padding(
                     padding:
                         EdgeInsets.symmetric(horizontal: 2.h, vertical: 0.5.h),
@@ -444,7 +451,9 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                             '$durationText',
                             style: const TextStyle(fontSize: 15),
                           ),
-                          SizedBox(width: 1.h,)
+                          SizedBox(
+                            width: 1.h,
+                          )
                         ]),
                       ),
                     ),
@@ -559,7 +568,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         _selectedLatLng = point;
         _searchController.text = result['results'][0]['formatted_address'];
       });
-      sharedPreferences.setString('plan_start_address', _searchController.text );
+      _onSelectLocation(point);
+      sharedPreferences.setString('plan_start_address', _searchController.text);
     }
   }
 }

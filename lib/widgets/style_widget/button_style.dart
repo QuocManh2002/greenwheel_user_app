@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:sizer2/sizer2.dart';
 
 final elevatedButtonStyle = ElevatedButton.styleFrom(
   backgroundColor: primaryColor,
@@ -26,7 +27,6 @@ final elevatedButtonStyleNoSize = ElevatedButton.styleFrom(
   ),
 );
 
-
 final outlinedButtonStyle = OutlinedButton.styleFrom(
   side: const BorderSide(width: 2, color: Colors.black),
   foregroundColor: primaryColor,
@@ -35,7 +35,6 @@ final outlinedButtonStyle = OutlinedButton.styleFrom(
 );
 
 final elevatedButtonStyleWithIcon = ElevatedButton.styleFrom(
-  
   backgroundColor: primaryColor,
   foregroundColor: Colors.white,
   elevation: 0,
@@ -47,3 +46,10 @@ final elevatedButtonStyleWithIcon = ElevatedButton.styleFrom(
     ),
   ),
 );
+
+final profileButtonStyle = ElevatedButton.styleFrom(
+    alignment: const Alignment(-1, 0),
+    minimumSize: Size(100.w, 6.h),
+    shadowColor: primaryColor,
+    shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.all(Radius.circular(10))));

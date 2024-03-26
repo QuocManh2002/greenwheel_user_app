@@ -221,19 +221,27 @@ class Utils {
   getSupplierType(String input) {
     switch (input) {
       case "FOOD_STALL":
-        return "Quán ăn";
+        return "quán ăn";
       case "GROCERY_STORE":
-        return "Tạp hoá";
+        return "tạp hoá";
       case "HOTEL":
-        return 'Khách sạn';
+        return 'khách sạn';
       case "MOTEL":
-        return 'Nhà nghỉ';
+        return 'nhà nghỉ';
       case "REPAIR_SHOP":
-        return 'Tiệm sửa xe';
+        return 'tiệm sửa xe';
       case "RESTAURANT":
-        return 'Nhà hàng';
+        return 'nhà hàng';
       case "VEHICLE_RENTAL":
-        return "Cho thuê xe";
+        return "cho thuê xe";
+    }
+  }
+
+  buildServingDatesText(List<dynamic> serveDateIndexes) {
+    if (serveDateIndexes.length == 1) {
+      return DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]));
+    } else {
+      return '${DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]))} (+${serveDateIndexes.length - 1} ngày)';
     }
   }
 }

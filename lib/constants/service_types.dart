@@ -6,5 +6,5 @@ const List<ServiceType> services = [
   ServiceType(id: 3, name: "CAMP"),
   ServiceType(id: 4, name: "OTHER"),
   ServiceType(id: 5, name: "LODGING"),
-  ServiceType(id: 6, name: "VEHICLE"),
+  ServiceType(id: 6, name: "VEHICLE_RENTAL"),
 ];
