@@ -6,6 +6,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/constant.dart';
 import 'package:greenwheel_user_app/constants/tags.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -29,8 +30,8 @@ import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class LocationScreen extends StatefulWidget {
-  const LocationScreen({super.key, required this.location});
-  final LocationViewModel location;
+  const LocationScreen({super.key, required this.locationId});
+  final int locationId;
 
   @override
   State<LocationScreen> createState() => _LocationScreenState();
@@ -45,6 +46,7 @@ class _LocationScreenState extends State<LocationScreen> {
   List<Tag> tagList = [];
   List<CommentViewModel> _comments = [];
   LocationService _locationService = LocationService();
+  LocationViewModel? location;
 
   var default_address = sharedPreferences.getString('defaultAddress');
   @override
@@ -52,24 +54,26 @@ class _LocationScreenState extends State<LocationScreen> {
     // TODO: implement initState
     super.initState();
     getData();
-    // sharedPreferences.remove('default_address');
   }
 
-  getData() {
-    imageUrls = widget.location.imageUrls;
-    _comments = widget.location.comments!;
-    // province tag
-    tagList.add(getTag(widget.location.topographic));
-    for (final activity in widget.location.activities) {
-      tagList.add(getTag(activity));
+  getData() async {
+    location = await _locationService.GetLocationById(widget.locationId);
+    if (location != null) {
+      imageUrls = location!.imageUrls;
+      _comments = location!.comments!;
+      // province tag
+      tagList.add(getTag(location!.topographic));
+      for (final activity in location!.activities) {
+        tagList.add(getTag(activity));
+      }
+      for (final season in location!.seasons) {
+        tagList.add(getTag(season));
+      }
+      setState(() {
+        lineNumber = (tagList.length / 4).ceil();
+        isLoading = false;
+      });
     }
-    for (final season in widget.location.seasons) {
-      tagList.add(getTag(season));
-    }
-    setState(() {
-      lineNumber = (tagList.length / 4).ceil();
-      isLoading = false;
-    });
   }
 
   @override
@@ -107,7 +111,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                   height: 25.h,
                                                   fit: BoxFit.cover,
                                                 ),
-                                                imageUrl: item.toString(),
+                                                imageUrl: '$baseBucketImage$item',
                                               ))
                                           .toList(),
                                       carouselController: carouselController,
@@ -156,7 +160,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                 padding:
                                     const EdgeInsets.only(left: 12, top: 20),
                                 child: Text(
-                                  widget.location.name,
+                                  location!.name,
                                   style: const TextStyle(
                                       fontSize: 20,
                                       fontWeight: FontWeight.w900),
@@ -198,12 +202,12 @@ class _LocationScreenState extends State<LocationScreen> {
                               ),
                               Padding(
                                   padding: const EdgeInsets.only(
-                                    left: 12,
-                                    right: 12,
+                                    left: 18,
+                                    right: 18,
                                     bottom: 16,
                                   ),
                                   child: ReadMoreText(
-                                    widget.location.description,
+                                    location!.description,
                                     trimLines: 3,
                                     textAlign: TextAlign.justify,
                                     trimMode: TrimMode.Line,
@@ -228,8 +232,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                         MaterialPageRoute(
                                             builder: (ctx) =>
                                                 SuggestPlansByLocationScreen(
-                                                    location:
-                                                        widget.location)));
+                                                    location: location!)));
                                   },
                                   icon: const Icon(Icons.luggage),
                                   label: const Text(
@@ -299,7 +302,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (ctx) => LocalMapScreen(
-                                                  location: widget.location)));
+                                                  location: location!)));
                                     }
                                   },
                                   icon: default_address == null
@@ -400,7 +403,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                 width: 4,
                                               ),
                                               Text(
-                                                  '(${widget.location.comments!.length} đánh giá)')
+                                                  '(${location!.comments!.length} đánh giá)')
                                             ],
                                           ),
                                         ]),
@@ -411,15 +414,15 @@ class _LocationScreenState extends State<LocationScreen> {
                                                   builder: (ctx) =>
                                                       AllCommentScreen(
                                                         destinationId:
-                                                            widget.location.id,
+                                                            location!.id,
                                                         destinationDescription:
-                                                            widget.location
+                                                            location!
                                                                 .description,
                                                         destinationImageUrl:
-                                                            widget.location
+                                                            location!
                                                                 .imageUrls[0],
-                                                        destinationName: widget
-                                                            .location.name,
+                                                        destinationName:
+                                                            location!.name,
                                                       )));
                                         },
                                         child: const Row(
@@ -478,15 +481,14 @@ class _LocationScreenState extends State<LocationScreen> {
                                                 builder: (ctx) =>
                                                     AddCommentScreen(
                                                       destinationDescription:
-                                                          widget.location
-                                                              .description,
+                                                          location!.description,
                                                       destinationImageUrl:
-                                                          widget.location
+                                                          location!
                                                               .imageUrls[0],
                                                       destinationId:
-                                                          widget.location.id,
+                                                          location!.id,
                                                       destinationName:
-                                                          widget.location.name,
+                                                          location!.name,
                                                       callback:
                                                           callbackAddComment,
                                                       comments: _comments,
@@ -526,7 +528,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                       animType: AnimType.leftSlide,
                                       dialogType: DialogType.question,
                                       title:
-                                          'Bạn đang có bản nháp chuyến đi tại ${locationName == widget.location.name ? 'địa điểm này' : locationName}',
+                                          'Bạn đang có bản nháp chuyến đi tại ${locationName == location!.name ? 'địa điểm này' : locationName}',
                                       titleTextStyle: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
@@ -543,8 +545,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                             MaterialPageRoute(
                                                 builder: (ctx) =>
                                                     CreateNewPlanScreen(
-                                                        location:
-                                                            widget.location,
+                                                        location: location!,
                                                         isCreate: true)));
                                       },
                                       btnOkColor: Colors.deepOrangeAccent,
@@ -552,14 +553,13 @@ class _LocationScreenState extends State<LocationScreen> {
                                       btnCancelText: 'Không',
                                       btnCancelColor: Colors.blue,
                                       btnCancelOnPress: () {
-                                        if(locationName == widget.location.name){
+                                        if (locationName == location!.name) {
                                           Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (ctx) =>
-                                                    CreateNewPlanScreen(
-                                                        location:
-                                                            widget.location,
-                                                        isCreate: true)));
+                                              MaterialPageRoute(
+                                                  builder: (ctx) =>
+                                                      CreateNewPlanScreen(
+                                                          location: location!,
+                                                          isCreate: true)));
                                         }
                                       },
                                     ).show();
@@ -568,7 +568,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                         MaterialPageRoute(
                                             builder: (ctx) =>
                                                 CreateNewPlanScreen(
-                                                  location: widget.location,
+                                                  location: location!,
                                                   isCreate: true,
                                                 )));
                                   }
@@ -615,7 +615,7 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   callbackAddComment() async {
-    var comments = await _locationService.getComments(widget.location.id);
+    var comments = await _locationService.getComments(location!.id);
     setState(() {
       _comments = comments;
     });

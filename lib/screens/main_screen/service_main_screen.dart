@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
-import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_loading_screen.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
@@ -52,14 +51,6 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
 
   setUpData() async {
     List<String> type = [];
-
-    if (widget.serviceType.id == 1) {
-      title = "Dịch vụ ăn uống";
-      type.add("FOOD");
-    } else if (widget.serviceType.id == 5) {
-      title = "Dịch vụ lưu trú";
-      type.add("ROOM");
-    }
     switch (widget.serviceType.id) {
       case 1:
         title = "Dịch vụ ăn uống";
@@ -107,12 +98,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                         color: Colors.black,
                       ),
                       onPressed: () async {
-                        if (sharedPreferences.getInt("planId") == null) {
-                          Navigator.of(context).pop();
-                        }
-                        // widget.callbackFunction();
                         Navigator.of(context).pop();
-                        // Close the current page
                       },
                     ),
                     Padding(
@@ -217,6 +203,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                             itemCount: list!.length,
                             itemBuilder: (context, index) {
                               return SupplierCard(
+                                availableGcoinAmount: widget.availableGcoinAmount,
                                 isOrder: widget.isOrder,
                                 startDate: widget.startDate,
                                 endDate: widget.endDate,

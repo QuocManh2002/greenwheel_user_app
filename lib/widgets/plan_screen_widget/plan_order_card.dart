@@ -27,7 +27,6 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
     // TODO: implement initState
     super.initState();
     final tmp = widget.order.details!.groupListsBy((element) => element.productId);
-    print(tmp);
     for(final temp in tmp.values){
       details.add(temp.first);
     }

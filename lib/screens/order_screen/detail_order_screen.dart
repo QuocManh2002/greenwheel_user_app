@@ -54,9 +54,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     } else {
       noteController.text = widget.order.note!;
     }
-    _servingDates = widget.order.serveDates!
-        .map((e) => DateTime.parse(e))
-        .toList();
+    _servingDates =
+        widget.order.serveDates!.map((e) => DateTime.parse(e)).toList();
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
         .range;
@@ -228,8 +227,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         '+${_servingDates.length - 1} ngày',
                                         style: const TextStyle(fontSize: 18),
                                       ),
-                                    if (widget.order.serveDates!.length >
-                                        1)
+                                    if (widget.order.serveDates!.length > 1)
                                       IconButton(
                                           onPressed: () {
                                             setState(() {
@@ -332,7 +330,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             decoration: BoxDecoration(
                               borderRadius: BorderRadius.circular(
                                   10.0), // Set the border radius
-                              color: Colors.grey.withOpacity(0.4),
+                              color: Colors.grey.withOpacity(0.2),
                             ),
                             child: TextField(
                               readOnly: true,
@@ -340,7 +338,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               maxLines:
                                   null, // Allow for multiple lines of text
                               decoration: const InputDecoration(
-                                hintText: 'Thêm ghi chú',
                                 border: InputBorder
                                     .none, // Remove the bottom border
                                 contentPadding:
@@ -497,7 +494,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   }
                   List<String> ids = [];
                   for (final item in cart) {
-                    if(!ids.contains(item.product.id.toString())){
+                    if (!ids.contains(item.product.id.toString())) {
                       ids.add(item.product.id.toString());
                     }
                   }
@@ -505,7 +502,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (ctx) => ServiceMenuScreen(
-                        availableGcoinAmount: widget.availableGcoinAmount,
+                          availableGcoinAmount: widget.availableGcoinAmount,
                           initCart: cart,
                           session: session,
                           orderGuid: widget.order.guid,

@@ -551,7 +551,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       final rs = await _planService.createNewPlan(
           plan!, context, _listSurchargeObjects.toString());
       if (rs != 0) {
-        await AwesomeDialog(
+         AwesomeDialog(
           context: context,
           animType: AnimType.leftSlide,
           dialogType: DialogType.success,

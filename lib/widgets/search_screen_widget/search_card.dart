@@ -25,7 +25,7 @@ class SearchCard extends StatelessWidget {
                 backgroundColor: Colors.white),
             onPressed: () async {
               Navigator.of(context).push(MaterialPageRoute(
-                  builder: (ctx) => LocationScreen(location: location)));
+                  builder: (ctx) => LocationScreen(locationId: location.id)));
             },
             child: Row(
               children: [

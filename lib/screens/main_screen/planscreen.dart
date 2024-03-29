@@ -50,7 +50,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
     List<PlanCardViewModel> historyPlans = [];
     List<PlanCardViewModel> futurePlans = [];
     List<PlanCardViewModel> draftPlans = [];
-    List<PlanCardViewModel>? totalPlans = await _planService.getPlanCards(int.parse(sharedPreferences.getString('userId')!));
+    List<PlanCardViewModel>? totalPlans = await _planService.getPlanCards();
 
     if (totalPlans != null) {
       for (final plan in totalPlans) {
@@ -95,13 +95,13 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
         _onGoingPlans = onGoingPlans;
         _historyPlans = historyPlans;
         _draftPlans = draftPlans;
-        
+
         _totalPlans.add(_futuredPlans);
         _totalPlans.add(_onGoingPlans);
         _totalPlans.add(historyPlans);
         _totalPlans.add(canceledPlans);
         _totalPlans.add(draftPlans);
-        
+
         isLoading = false;
       });
     }
@@ -111,9 +111,9 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-          backgroundColor:const Color(0xFFf2f2f2),
+      backgroundColor: const Color(0xFFf2f2f2),
       appBar: AppBar(
-        backgroundColor:const Color(0xFFf2f2f2),
+        backgroundColor: const Color(0xFFf2f2f2),
         title: const Text(
           "Kế hoạch",
           style: TextStyle(
@@ -144,7 +144,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                             iconSelectedUrl: up_coming_white,
                             text: 'Sắp đến',
                             isSelected: _selectedTab == 0,
-                            index: 0,hasHeight: true,
+                            index: 0,
+                            hasHeight: true,
                           ),
                         ),
                       ),
@@ -165,7 +166,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                             iconSelectedUrl: on_going_white,
                             text: 'Đang diễn ra',
                             isSelected: _selectedTab == 1,
-                            index: 1,hasHeight: true,
+                            index: 1,
+                            hasHeight: true,
                           ),
                         ),
                       ),
@@ -230,7 +232,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                             iconSelectedUrl: draft_white,
                             text: 'Bản nháp',
                             isSelected: _selectedTab == 4,
-                            index: 4,hasHeight: true,
+                            index: 4,
+                            hasHeight: true,
                           ),
                         ),
                       ),

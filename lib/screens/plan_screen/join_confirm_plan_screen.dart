@@ -4,7 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/input_companion_name_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
@@ -23,7 +23,7 @@ class JoinConfirmPlanScreen extends StatefulWidget {
   final PlanDetail plan;
   final bool isPublic;
   final bool isConfirm;
-  final void Function(bool isFromJoinScreen)? onPublicizePlan;
+  final void Function(bool isFromJoinScreen, int? amount)? onPublicizePlan;
   final void Function()? callback;
 
   @override
@@ -349,7 +349,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                             onTap: () {
                               onChangeWeight(false);
                             },
-                            child: Icon(Icons.remove, color: isEnableToSubtract ? Colors.black : Colors.grey,),
+                            child: Icon(
+                              Icons.remove,
+                              color: isEnableToSubtract
+                                  ? Colors.black
+                                  : Colors.grey,
+                            ),
                           ),
                         SizedBox(
                           width: 0.5.h,
@@ -477,38 +482,38 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                       )
                     ],
                   ),
-                  SizedBox(
-                    height: 1.h,
-                  ),
-                  Row(
-                    children: [
-                      const Text(
-                        'Số dư mới',
-                        style: TextStyle(fontSize: 16, color: Colors.grey),
-                      ),
-                      const Spacer(),
-                      Text(
-                        NumberFormat.simpleCurrency(
-                                locale: 'vi-VN', decimalDigits: 0, name: "")
-                            .format(sharedPreferences
-                                    .getDouble('userBalance')! -
-                                (weight * widget.plan.gcoinBudgetPerCapita!)),
-                        textAlign: TextAlign.end,
-                        overflow: TextOverflow.clip,
-                        style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.black),
-                      ),
-                      SizedBox(
-                        width: 1.h,
-                      ),
-                      SvgPicture.asset(
-                        gcoin_logo,
-                        height: 30,
-                      )
-                    ],
-                  ),
+                  // SizedBox(
+                  //   height: 1.h,
+                  // ),
+                  // Row(
+                  //   children: [
+                  //     const Text(
+                  //       'Số dư mới',
+                  //       style: TextStyle(fontSize: 16, color: Colors.grey),
+                  //     ),
+                  //     const Spacer(),
+                  //     Text(
+                  //       NumberFormat.simpleCurrency(
+                  //               locale: 'vi-VN', decimalDigits: 0, name: "")
+                  //           .format(sharedPreferences
+                  //                   .getDouble('userBalance')! -
+                  //               (weight * widget.plan.gcoinBudgetPerCapita!)),
+                  //       textAlign: TextAlign.end,
+                  //       overflow: TextOverflow.clip,
+                  //       style: const TextStyle(
+                  //           fontSize: 18,
+                  //           fontWeight: FontWeight.w500,
+                  //           color: Colors.black),
+                  //     ),
+                  //     SizedBox(
+                  //       width: 1.h,
+                  //     ),
+                  //     SvgPicture.asset(
+                  //       gcoin_logo,
+                  //       height: 30,
+                  //     )
+                  //   ],
+                  // ),
                   SizedBox(
                     height: 1.h,
                   ),
@@ -596,26 +601,32 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                 final rs = await _planService.joinPlan(
                     widget.plan.id, weight, companionNames);
                 if (rs != null) {
-                  AwesomeDialog(
-                    // ignore: use_build_context_synchronously
-                    context: context,
-                    dialogType: DialogType.success,
-                    animType: AnimType.topSlide,
-                    showCloseIcon: true,
-                    title: "Tham gia kế hoạch thành công",
-                    desc: "Ấn tiếp tục để trở về",
-                    btnOkText: "Tiếp tục",
-                    btnOkOnPress: () async {
-                      if (widget.isPublic) {
-                        widget.onPublicizePlan!(true);
-                      } else {
-                        handleJoinSuccess();
-                      }
-                      final rs = sharedPreferences.getDouble('userBalance')! -
-                          (widget.plan.gcoinBudgetPerCapita! * weight);
-                      sharedPreferences.setDouble('userBalance', rs);
-                    },
-                  ).show();
+                  if (widget.isPublic) {
+                    widget.onPublicizePlan!(true, widget.plan.gcoinBudgetPerCapita! * weight);
+                  } else {
+                    handleJoinSuccess();
+                  }
+
+                  // AwesomeDialog(
+                  //   // ignore: use_build_context_synchronously
+                  //   context: context,
+                  //   dialogType: DialogType.success,
+                  //   animType: AnimType.topSlide,
+                  //   showCloseIcon: true,
+                  //   title: "Tham gia kế hoạch thành công",
+                  //   desc: "Ấn tiếp tục để trở về",
+                  //   btnOkText: "Tiếp tục",
+                  //   btnOkOnPress: () async {
+                  //     if (widget.isPublic) {
+                  //       widget.onPublicizePlan!(true);
+                  //     } else {
+                  //       handleJoinSuccess();
+                  //     }
+                  //     final rs = sharedPreferences.getDouble('userBalance')! -
+                  //         (widget.plan.gcoinBudgetPerCapita! * weight);
+                  //     sharedPreferences.setDouble('userBalance', rs);
+                  //   },
+                  // ).show();
                 }
               },
               btnCancelColor: Colors.deepOrangeAccent,
@@ -639,8 +650,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             btnOkOnPress: () async {
               final rs = await _planService.confirmMember(widget.plan.id);
               if (rs != 0) {
-                // ignore: use_build_context_synchronously
                 AwesomeDialog(
+                   // ignore: use_build_context_synchronously
                   context: context,
                   dialogType: DialogType.success,
                   animType: AnimType.topSlide,
@@ -670,9 +681,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   }
 
   handleJoinSuccess() {
-    Navigator.of(context).pop();
-    Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 1)),
+    Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+            builder: (ctx) => SuccessPaymentScreen(
+                  amount: widget.plan.gcoinBudgetPerCapita! * weight,
+                )),
         (route) => false);
   }
 }

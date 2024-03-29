@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
-import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:greenwheel_user_app/widgets/profile_screen_widget/transaction_card.dart';
 

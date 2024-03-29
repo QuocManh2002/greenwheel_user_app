@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:input_quantity/input_quantity.dart';
 import 'package:sizer2/sizer2.dart';
@@ -12,19 +14,23 @@ class MenuItemCard extends StatefulWidget {
     required this.product,
     required this.updateCart,
     this.quantity,
+    required this.numberOfMember,
+    required this.serviceType
   });
   final ProductViewModel product;
   final Function updateCart;
   final int? quantity;
+  final int numberOfMember;
+  final ServiceType serviceType;
 
   @override
   State<MenuItemCard> createState() => _MenuItemCardState();
 }
 
 class _MenuItemCardState extends State<MenuItemCard> {
-  // Create a NumberFormat instance for currency formatting
   var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
   bool isQuantity = false;
+  bool isFoodOrder = false;
 
   @override
   void initState() {
@@ -35,6 +41,7 @@ class _MenuItemCardState extends State<MenuItemCard> {
         isQuantity = true;
       });
     }
+    isFoodOrder = widget.serviceType.id == 1;
   }
 
   @override
@@ -68,7 +75,7 @@ class _MenuItemCardState extends State<MenuItemCard> {
                     child: FadeInImage(
                       height: 15.h,
                       placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage(widget.product.thumbnailUrl!),
+                      image: NetworkImage('$baseBucketImage${widget.product.thumbnailUrl!}'),
                       fit: BoxFit.cover,
                       width: 15.h,
                       filterQuality: FilterQuality.high,
@@ -181,8 +188,12 @@ class _MenuItemCardState extends State<MenuItemCard> {
                                     backgroundColor: Colors.green),
                                 onPressed: () async {
                                   setState(() {
-                                    isQuantity = true;
-                                    widget.updateCart(widget.product, 1);
+                                    if (isFoodOrder && !isQuantity) {
+                                      widget.updateCart(widget.product, (widget.numberOfMember / widget.product.partySize!).ceil());
+                                    } else {
+                                      widget.updateCart(widget.product, 1);
+                                    }
+                                      isQuantity = true;
                                   });
                                 },
                                 icon: const Icon(

@@ -438,7 +438,7 @@ class _SearchScreenState extends State<SearchScreen> {
                               itemBuilder: (context, index) => Padding(
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 8),
-                                child: LocationCard(location: locations[index]),
+                                // child: LocationCard(location: locations[index]),
                               ),
                             ),
                           ))

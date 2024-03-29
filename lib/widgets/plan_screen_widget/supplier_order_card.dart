@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:intl/intl.dart';
@@ -67,7 +68,7 @@ class SupplierOrderCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 15.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(order.supplier!.thumbnailUrl!),
+                    image: NetworkImage('$baseBucketImage${order.supplier!.thumbnailUrl!}'),
                     fit: BoxFit.cover,
                     width: 15.h,
                     filterQuality: FilterQuality.high,

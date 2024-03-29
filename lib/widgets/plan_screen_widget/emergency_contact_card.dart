@@ -95,7 +95,7 @@ class EmergencyContactCard extends StatelessWidget {
                         width: 1.h,
                       ),
                       Text(
-                        '0${emergency.phone!.substring(3)}',
+                        emergency.phone!,
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 16,

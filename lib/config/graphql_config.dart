@@ -2,12 +2,14 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/main.dart';
 
 class GraphQlConfig {
+  String oldServer = 'https://btssapp.azurewebsites.net/graphql';
+  String newServer =
+      'https://api-btss.southeastasia.cloudapp.azure.com/graphql';
 
   GraphQLClient getClient() {
     String? userToken = sharedPreferences.getString("userToken");
     print("1: $userToken");
-    final HttpLink httpLink = HttpLink(
-        "https://btssapp.azurewebsites.net/graphql");
+    final HttpLink httpLink = HttpLink(newServer);
 
     final AuthLink authLink =
         AuthLink(getToken: () async => 'Bearer $userToken');

@@ -53,6 +53,7 @@ class TabIconButton extends StatelessWidget {
               textAlign: TextAlign.center,
               style: TextStyle(
                   fontSize: 10.9,
+                  fontFamily: 'NotoSans',
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected ? Colors.white : primaryColor),
             ),

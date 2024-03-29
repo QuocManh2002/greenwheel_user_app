@@ -9,7 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';

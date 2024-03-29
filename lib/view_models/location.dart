@@ -37,7 +37,7 @@ class LocationViewModel {
       LocationViewModel(
           id: json["id"],
           description: json["description"],
-          imageUrls: json["imageUrls"],
+          imageUrls: json["imagePaths"],
           name: json["name"],
           activities: List<String>.from(json["activities"].map((x) => x)),
           seasons: List<String>.from(json["seasons"].map((x) => x)),
@@ -47,5 +47,6 @@ class LocationViewModel {
           address: json["address"],
           province: ProvinceViewModel.fromJson(json["province"]),
           comments: List<CommentViewModel>.from(json['comments'].map((e) => CommentViewModel.fromJson(e))).toList(),
-          emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),);
+          // emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
+          );
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/constants/sessions.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
@@ -61,7 +62,7 @@ class SupplierCard extends StatelessWidget {
                     builder: (ctx) => SelectSessionScreen(
                       startDate: startDate,
                       endDate: endDate,
-                      numberOfMember: 0,
+                      numberOfMember: numberOfMember,
                       supplier: supplier,
                       serviceType:serviceType,
                       location: location,
@@ -111,7 +112,7 @@ class SupplierCard extends StatelessWidget {
                     child: FadeInImage(
                       height: 15.h,
                       placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage(supplier.thumbnailUrl!),
+                      image: NetworkImage('$baseBucketImage${supplier.thumbnailUrl!}'),
                       fit: BoxFit.cover,
                       width: 15.h,
                       filterQuality: FilterQuality.high,

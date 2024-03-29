@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
@@ -32,6 +32,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   bool isLoading = true;
   double? refreshedBalance;
   String? paymentData;
+  int amount = 0;
 
   @override
   void dispose() {
@@ -42,11 +43,10 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
 
   setUpData() async {
     String phone = sharedPreferences.getString("userPhone")!;
-    List<CustomerViewModel>?  customer ;
+    CustomerViewModel? customer;
     customer = await customerService.GetCustomerByPhone(phone);
-    if (customer.isNotEmpty) {
+    if (customer != null) {
       setState(() {
-        _customer = customer![0];
         refreshedBalance = _customer!.balance;
       });
     }
@@ -57,13 +57,13 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-      backgroundColor: Colors.white.withOpacity(0.92),
+      backgroundColor: lightPrimaryTextColor,
       appBar: AppBar(
         title: const Text("Nạp tiền vào ví"),
         leading: BackButton(onPressed: () {
           Navigator.of(context).pop();
-          Navigator.of(context).push(
-              MaterialPageRoute(builder: (ctx) => TabScreen(pageIndex: 3)));
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (ctx) => const TabScreen(pageIndex: 3)));
         }),
       ),
       body: SingleChildScrollView(
@@ -103,7 +103,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               SvgPicture.asset(
-                                "assets/images/gcoin_logo.svg",
+                                gcoin_logo,
                                 height: 32,
                               )
                             ],
@@ -123,9 +123,23 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                           const EdgeInsets.only(top: 16, left: 16, right: 16),
                       child: TextFormField(
                         onChanged: (value) {
-                          setState(() {
-                            newBalanceController.text = value;
-                          });
+                          if (value.isEmpty) {
+                            setState(() {
+                              amount = 0;
+                            });
+                          } else {
+                            setState(() {
+                              amount = NumberFormat.simpleCurrency(
+                                      locale: 'vi_VN',
+                                      decimalDigits: 0,
+                                      name: '')
+                                  .parse(value)
+                                  .toInt();
+                            });
+                          }
+                          newBalanceController.text =
+                              NumberFormat('###,###,##0', 'vi_VN')
+                                  .format(amount);
                         },
                         controller: newBalanceController,
                         cursorColor: primaryColor,
@@ -171,7 +185,11 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                 TextStyle(fontSize: 18, color: Colors.black54),
                           ),
                           Text(
-                            "${1000 * int.parse(newBalanceController.text.isEmpty ? '0' : newBalanceController.text)}đ",
+                            NumberFormat.simpleCurrency(
+                                    decimalDigits: 0,
+                                    locale: 'vi_VN',
+                                    name: 'đ')
+                                .format(amount * 100),
                             style: const TextStyle(
                                 fontSize: 18,
                                 color: Colors.black87,
@@ -189,6 +207,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                           InkWell(
                             onTap: () {
                               setState(() {
+                                amount = 100;
                                 newBalanceController.text = "100";
                               });
                             },
@@ -204,6 +223,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                           InkWell(
                             onTap: () {
                               setState(() {
+                                amount = 200;
                                 newBalanceController.text = "200";
                               });
                             },
@@ -219,6 +239,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                           InkWell(
                             onTap: () {
                               setState(() {
+                                amount = 500;
                                 newBalanceController.text = "500";
                               });
                             },
@@ -298,7 +319,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                   style: elevatedButtonStyle,
                   onPressed: () async {
                     TopupRequestViewModel? request = await orderService
-                        .topUpRequest(int.parse(newBalanceController.text));
+                        .topUpRequest(amount * 100);
+
                     if (request != null) {
                       // ignore: use_build_context_synchronously
                       showVNPayScreen(
@@ -311,7 +333,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                           AwesomeDialog(
                             context: context,
                             dialogType: DialogType.success,
-                            body: Center(
+                            body: const Center(
                               child: Text('Nạp GCOIN vào ví thành công'),
                             ),
                             btnOkColor: primaryColor,

@@ -3,6 +3,7 @@ import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
+import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 
 class LocationService extends Iterable {
@@ -254,7 +255,7 @@ query search(\$search: String!) {
     nodes{
       id
       name
-      imageUrl
+      imagePath
     }
   }
 }
@@ -339,42 +340,39 @@ query getById(\$id: Int) {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-query getByLocationId(\$id: Int) {
-  destinations(where: { id: { eq: \$id } }) {
-nodes{
-          id
-          description
-          imageUrls
+{
+  destinations(where: { id: { eq: $locationId } }) {
+    nodes {
+      id
+      description
+      imagePaths
+      name
+      activities
+      seasons
+      topographic
+      coordinate {
+        coordinates
+      }
+      address
+      province {
+        id
+        name
+        imagePath
+      }
+
+      comments {
+        id
+        comment
+        createdAt
+        account {
           name
-          activities
-          seasons
-          topographic
-          coordinate{coordinates}
-          address
-          province{
-            id
-            name
-            imageUrl
-          }
-          emergencyContacts{
-            name
-            phone
-            address
-            type
-          }
-          comments{
-            id
-            comment
-            createdAt
-            account{
-              avatarUrl
-              name
-            }
-          }
         }
+      }
+    }
   }
 }
-"""), variables: {"id": locationId}));
+
+""")));
 
       if (result.hasException) {
         throw Exception(result.exception);
@@ -458,4 +456,41 @@ mutation {
   @override
   // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();
+
+  Future<List<LocationCardViewModel>> getLocationCard() async{
+    try{
+      QueryResult result = await client.query(
+        QueryOptions(document: gql("""
+{
+  destinations(where: {
+    isVisible:{
+      eq:true
+    }
+  }){
+    edges{
+      node{
+        id
+        description
+        name
+        imagePaths
+        rating
+      }
+    }
+  }
+}
+"""))
+      );
+      if(result.hasException){
+        throw Exception(result.exception);
+      }
+      List? res = result.data!['destinations']['edges'];
+      if(res == null || res.isEmpty){
+        return [];
+      }
+      List<LocationCardViewModel> rs = res.map((e) => LocationCardViewModel.fromJson(e['node'])).toList();
+      return rs;
+    }catch(error){
+      throw Exception(error);
+    }
+  }
 }

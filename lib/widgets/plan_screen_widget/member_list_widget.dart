@@ -79,12 +79,13 @@ class MemberListWidget extends StatelessWidget {
                               child: Text(
                                 '${mem.name} (${mem.companions == null ? 1 : mem.companions!.length + 1})',
                                 style: const TextStyle(
+                                  fontFamily: 'NotoSans',
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                             ),
                             Text(
                               '0${mem.phone.substring(3)}',
-                              style: const TextStyle(fontSize: 19),
+                              style: const TextStyle(fontFamily: 'NotoSans', fontSize: 19),
                             )
                           ]),
                       const Spacer(),

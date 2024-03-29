@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:input_quantity/input_quantity.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:intl/intl.dart';
 
@@ -44,7 +43,7 @@ class _CartItemCardState extends State<CartItemCard>
             child: Row(
               children: [
                 SizedBox(
-                  height: 10.h,
+                  height: 7.h,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -81,25 +80,30 @@ class _CartItemCardState extends State<CartItemCard>
                 ),
                 Spacer(),
                 Container(
+                  height: 7.h,
+                  alignment: Alignment.center,
                   margin: const EdgeInsets.only(right: 10),
-                  child: InputQty(
-                    maxVal: 100,
-                    initVal: widget.cartItem.qty!,
-                    minVal: 0,
-                    steps: 1,
-                    decoration: const QtyDecorationProps(
-                      contentPadding: EdgeInsets.symmetric(
-                        horizontal: 2,
-                        vertical: 10,
-                      ),
-                      width: 8,
-                      isBordered: false,
-                      fillColor: Colors.black12,
-                    ),
-                    onQtyChanged: (val) async {
-                      widget.updateFinalCart(widget.cartItem, val);
-                    },
-                  ),
+                  child: 
+                  // InputQty(
+                  //   maxVal: 100,
+                  //   initVal: widget.cartItem.qty!,
+                  //   minVal: 0,
+                  //   steps: 1,
+                  //   decoration: const QtyDecorationProps(
+                  //     contentPadding: EdgeInsets.symmetric(
+                  //       horizontal: 2,
+                  //       vertical: 10,
+                  //     ),
+                  //     width: 8,
+                  //     isBordered: false,
+                  //     fillColor: Colors.black12,
+                  //   ),
+                  //   onQtyChanged: (val) async {
+                  //     widget.updateFinalCart(widget.cartItem, val.toInt());
+                  //   },
+                  // ),
+                  Text('x${widget.cartItem.qty}', 
+                  style:const TextStyle(color: Colors.grey, fontSize: 19, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),)
                 )
               ],
             ),

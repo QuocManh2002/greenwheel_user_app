@@ -15,6 +15,7 @@ import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
+import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/cart_item_card.dart';
 import 'package:intl/intl.dart';
@@ -38,6 +39,7 @@ class CartScreen extends StatefulWidget {
       this.isChangeCart,
       this.orderGuid,
       this.availableGcoinAmount,
+      required this.updateCart,
       required this.callbackFunction});
   final SupplierViewModel supplier;
   final List<ItemCart> list;
@@ -54,6 +56,7 @@ class CartScreen extends StatefulWidget {
   final void Function() callbackFunction;
   final bool? isChangeCart;
   final String? orderGuid;
+  final void Function(ProductViewModel prod, int qty) updateCart;
   final double? availableGcoinAmount;
 
   @override
@@ -152,14 +155,12 @@ class _CartScreenState extends State<CartScreen> {
               )
             : list.isEmpty
                 ? Center(
-                    child: Container(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: <Widget>[
-                          Image.asset(
-                              cartEmptyIcon), // Replace with your image path
-                        ],
-                      ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Image.asset(
+                            cartEmptyIcon), // Replace with your image path
+                      ],
                     ),
                   )
                 : SingleChildScrollView(
@@ -211,33 +212,35 @@ class _CartScreenState extends State<CartScreen> {
                               shrinkWrap: true,
                               itemCount: list.length,
                               itemBuilder: (context, index) {
-                                return Dismissible(
-                                  key:
-                                      UniqueKey(), // Unique key for each Dismissible item
-                                  background: Container(
-                                    color: Colors
-                                        .red, // Background color when swiped
-                                    alignment: Alignment.centerRight,
-                                    child: const Icon(
-                                      Icons.delete,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  onDismissed: (direction) {
-                                    // Handle the item removal here
-                                    setState(() {
-                                      finalTotal -= list[index].product.price *
-                                          list[index].qty!;
-                                      list.removeAt(index);
-                                    });
-                                  },
-                                  child: CartItemCard(
+                                return 
+                                // Dismissible(
+                                  // key:
+                                  //     UniqueKey(), // Unique key for each Dismissible item
+                                  // background: Container(
+                                  //   color: Colors
+                                  //       .red, // Background color when swiped
+                                  //   alignment: Alignment.centerRight,
+                                  //   child: const Icon(
+                                  //     Icons.delete,
+                                  //     color: Colors.white,
+                                  //   ),
+                                  // ),
+                                  // onDismissed: (direction) {
+                                  //   // Handle the item removal here
+                                  //   setState(() {
+                                  //     finalTotal -= list[index].product.price *
+                                  //         list[index].qty!;
+                                  //     list.removeAt(index);
+                                  //   });
+                                  // },
+                                  // child: 
+                                  CartItemCard(
                                     cartItem: list[index],
-                                    updateFinalCart: updateFinalCart,
+                                    updateFinalCart: newUpdateFinalCart,
                                     days: selectedDays,
                                     serviceType: widget.serviceType,
-                                  ),
-                                );
+                                  );
+                                // );
                               },
                             ),
                           ),
@@ -310,7 +313,7 @@ class _CartScreenState extends State<CartScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
                                 10.0), // Set the border radius
-                            color: Colors.grey.withOpacity(0.4),
+                            color: Colors.grey.withOpacity(0.2),
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -441,7 +444,7 @@ class _CartScreenState extends State<CartScreen> {
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(
                                 10.0), // Set the border radius
-                            color: Colors.grey.withOpacity(0.4),
+                            color: Colors.grey.withOpacity(0.2),
                           ),
                           child: TextField(
                             controller: noteController,
@@ -598,7 +601,7 @@ class _CartScreenState extends State<CartScreen> {
                                 child: Text(
                                   (widget.isOrder != null && widget.isOrder!)
                                       ? 'Thanh toán'
-                                      : 'Thêm đơn hàng mẫu',
+                                      : 'Dự trù kinh phí',
                                   style: const TextStyle(
                                     color: Colors.white, // Text color
                                     fontSize: 18,
@@ -647,6 +650,34 @@ class _CartScreenState extends State<CartScreen> {
     });
   }
 
+  void newUpdateFinalCart(ItemCart cartItem , int newQty){
+    widget.updateCart(cartItem.product, newQty);
+    List<ItemCart> updatedList =
+        List.from(list); // Create a copy of the original list
+
+    for (var i = 0; i < updatedList.length; i++) {
+      if (updatedList[i].product.id == cartItem.product.id) {
+        if (newQty != 0) {
+          setState(() {
+            finalTotal -= cartItem.product.price * cartItem.qty!;
+            finalTotal += cartItem.product.price * newQty;
+            updatedList[i] = ItemCart(product: cartItem.product, qty: newQty);
+          });
+        } else {
+          setState(() {
+            finalTotal -= cartItem.product.price * cartItem.qty!;
+          });
+          updatedList.removeAt(i);
+          break; // Exit the loop since the item was found and removed
+        }
+      }
+    }
+
+    setState(() {
+      list = updatedList; // Update the original list with the modified copy
+    });
+  }
+
   OrderCreateViewModel convertCart() {
     List<Map> details = list.map((itemCart) {
       return {
@@ -675,7 +706,8 @@ class _CartScreenState extends State<CartScreen> {
     var order = convertCart();
     List<OrderDetailViewModel> details = [];
     List<Map> detailsMap = [];
-    List<String> _serveDates = _servingDates.map((e) => e.toLocal().toString().split(' ')[0]).toList();
+    List<String> _serveDates =
+        _servingDates.map((e) => e.toLocal().toString().split(' ')[0]).toList();
     for (final item in list) {
       total += item.product.price * item.qty!;
       details.add(OrderDetailViewModel(
@@ -701,7 +733,7 @@ class _CartScreenState extends State<CartScreen> {
       'details': detailsMap,
       'type': widget.serviceType.name,
       'note': noteController.text,
-      'supplierId': widget.supplier.id,
+      'providerId': widget.supplier.id,
       'createdAt': DateTime.now().toString(),
       'supplierName': widget.supplier.name,
       'supplierPhone': widget.supplier.phone,
@@ -736,7 +768,7 @@ class _CartScreenState extends State<CartScreen> {
         },
       ).show();
     } else {
-      if ((total/100 * _servingDates.length) > widget.availableGcoinAmount!) {
+      if ((total / 100 * _servingDates.length) > widget.availableGcoinAmount!) {
         AwesomeDialog(
                 context: context,
                 animType: AnimType.rightSlide,
@@ -750,17 +782,25 @@ class _CartScreenState extends State<CartScreen> {
                         style: TextStyle(
                             fontSize: 20, fontWeight: FontWeight.bold),
                       ),
-                      const SizedBox(height: 12,),
+                      const SizedBox(
+                        height: 12,
+                      ),
                       Text(
-                          'Ngân sách hiện tại: ${widget.availableGcoinAmount!.toInt()} GCOIN', style:const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      const SizedBox(height: 12,),
+                        'Ngân sách hiện tại: ${widget.availableGcoinAmount!.toInt()} GCOIN',
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
                       Text(
-                          'Giá trị đơn hàng: ${currencyFormat.format((finalTotal / 100) *
-                                      (_servingDates.isEmpty
-                                          ? 1
-                                          : _servingDates
-                                              .length))}', style:const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),),
-                      const SizedBox(height: 12,),
+                        'Giá trị đơn hàng: ${currencyFormat.format((finalTotal / 100) * (_servingDates.isEmpty ? 1 : _servingDates.length))}',
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(
+                        height: 12,
+                      ),
                       const Text(
                         'Hãy thay đổi đơn hàng của bạn',
                         style: TextStyle(fontSize: 18, color: Colors.grey),
@@ -773,39 +813,41 @@ class _CartScreenState extends State<CartScreen> {
                 btnOkText: 'Ok')
             .show();
       } else {
-        if (widget.isFromTempOrder != null && widget.isFromTempOrder!) {
-            final rs = await orderService.createOrder(
-                OrderViewModel(
-                    createdAt: DateTime.now(),
-                    details: details,
-                    note: noteController.text,
-                    type: widget.serviceType.name,
-                    period: order.period,
-                    serveDates: _servingDates.map((e) => json.encode(e.toLocal().toString().split(' ')[0])).toList(),
-                    supplier: widget.supplier),
-                sharedPreferences.getInt('planId')!);
-            if (rs != 0) {
+          final rs = await orderService.createOrder(
+              OrderViewModel(
+                  createdAt: DateTime.now(),
+                  details: details,
+                  note: noteController.text,
+                  type: widget.serviceType.name,
+                  period: order.period,
+                  serveDates: _servingDates
+                      .map((e) =>
+                          json.encode(e.toLocal().toString().split(' ')[0]))
+                      .toList(),
+                  supplier: widget.supplier),
+              sharedPreferences.getInt('planId')!);
+          if (rs != 0) {
+            AwesomeDialog(
               // ignore: use_build_context_synchronously
-              AwesomeDialog(
-                context: context,
-                dialogType: DialogType.success,
-                animType: AnimType.topSlide,
-                showCloseIcon: true,
-                title: widget.isOrder != null && widget.isOrder!
-                    ? "Thanh toán thành công"
-                    : "Thêm đơn hàng mẫu thành công",
-                desc: "Ấn tiếp tục để trở về",
-                btnOkText: "Tiếp tục",
-                btnOkOnPress: () {
-                  widget.callbackFunction();
+              context: context,
+              dialogType: DialogType.success,
+              animType: AnimType.topSlide,
+              showCloseIcon: true,
+              title:"Thanh toán thành công",
+              desc: "Ấn tiếp tục để trở về",
+              btnOkText: "Tiếp tục",
+              btnOkOnPress: () {
+                widget.callbackFunction();
+                if(widget.isFromTempOrder == null ){
                   Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                  Navigator.of(context).pop();
-                },
-              ).show();
-            }
-        } else {}
+                }
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                Navigator.of(context).pop();
+              },
+            ).show();
+          }
       }
     }
   }
@@ -822,19 +864,8 @@ class _CartScreenState extends State<CartScreen> {
             selectedDate: _servingDates.isEmpty ? [] : _servingDates,
             serviceType: widget.serviceType,
             numberOfMember: widget.numberOfMember,
-            endDate: DateTime.now()
-                        .add(Duration(days: 3))
-                        .difference(widget.endDate)
-                        .inDays ==
-                    0
-                ? DateTime.now()
-                    .add(const Duration(days: 3))
-                    .add(const Duration(hours: 1))
-                : widget.endDate,
-            startDate:
-                widget.startDate.difference(DateTime.now()).inDays + 1 < 3
-                    ? DateTime.now().add(const Duration(days: 3))
-                    : widget.startDate)));
+            endDate: widget.endDate,
+            startDate: widget.startDate)));
   }
 
   callback(List<DateTime> servingDates) {

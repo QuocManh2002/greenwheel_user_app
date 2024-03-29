@@ -37,7 +37,7 @@ class ProductService extends Iterable {
           {
             products(
               where: {
-                supplierId: { eq: $supplierId },
+                providerId: { eq: $supplierId },
                 periods: { some: {in: [$session]} }
               },
               order: {
@@ -48,9 +48,9 @@ class ProductService extends Iterable {
                 id
                 name
                 price
-                imageUrl
+                imagePath
                 partySize
-                supplier {
+                provider {
                   id
                   name
                 }

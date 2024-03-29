@@ -14,7 +14,7 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/temp_plan.dart';
-import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -63,17 +63,15 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   List<PlanMemberViewModel> _planMembers = [];
 
   searchCustomer() async {
-    List<CustomerViewModel>? customer;
-    customer = await customerService.GetCustomerByPhone(
-        '+84${phoneSearch.text.substring(1)}');
-    if (customer.isEmpty) {
+    CustomerViewModel? customer = await customerService.GetCustomerByPhone(
+        '84${phoneSearch.text.substring(1)}');
+    if (customer == null) {
       setState(() {
         _isEmptySearchResult = true;
         _isSearchingLoading = false;
       });
     } else {
-      var rs = customer[0];
-      if (_planMembers.any((member) => member.accountId == rs.id)) {
+      if (_planMembers.any((member) => member.accountId == customer.id)) {
         setState(() {
           _isEnableToInvite = false;
         });
@@ -83,7 +81,6 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
         });
       }
       setState(() {
-        _customer = customer![0];
         _isEmptySearchResult = false;
         _isSearchingLoading = false;
       });

@@ -95,6 +95,7 @@ class PlanScheduleActivityView extends StatelessWidget {
                     const Icon(Icons.watch_later_outlined),
                     SizedBox(width: 1.h,),
                     Text('${item.activityTime} giờ', style:const TextStyle(
+                      fontFamily: 'NotoSans',
                       fontSize: 16
                     ),)
                   ],

@@ -12,7 +12,7 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_surcharge_note.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/join_confirm_plan_screen.dart';
@@ -226,7 +226,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     } else {
       final rs = await _planService.getOrderCreatePlan(widget.planId);
       if (rs != null) {
-        orderList = rs['orders'];
+        setState(() {
+          orderList = rs['orders'];
+        });
         _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
       }
     }
@@ -401,7 +403,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                 height: 25.h,
                                 width: double.infinity,
                                 fit: BoxFit.fill,
-                                imageUrl: _planDetail!.imageUrls[0],
+                                imageUrl: '$baseBucketImage${_planDetail!.imageUrls[0]}',
                                 placeholder: (context, url) =>
                                     Image.memory(kTransparentImage),
                                 errorWidget: (context, url, error) =>
@@ -434,6 +436,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                             overflow: TextOverflow.clip,
                                             style: const TextStyle(
                                                 fontSize: 20,
+                                                fontFamily: 'NotoSans',
                                                 fontWeight: FontWeight.bold),
                                           ),
                                         ),
@@ -441,6 +444,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                           comboDateText,
                                           overflow: TextOverflow.clip,
                                           style: const TextStyle(
+                                              fontFamily: 'NotoSans',
                                               fontSize: 20,
                                               fontWeight: FontWeight.bold),
                                         ),
@@ -459,6 +463,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                 overflow: TextOverflow.clip,
                                                 style: const TextStyle(
                                                     fontSize: 20,
+                                                    fontFamily: 'NotoSans',
                                                     fontWeight:
                                                         FontWeight.bold),
                                               ),
@@ -488,6 +493,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                           _isPublic ? 'Công khai' : 'Riêng tư',
                                           style: TextStyle(
                                               fontSize: 13,
+                                              fontFamily: 'NotoSans',
                                               color: _isPublic
                                                   ? primaryColor
                                                   : Colors.grey),
@@ -580,7 +586,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(width: 8,),
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
                                       Expanded(
                                         child: InkWell(
                                           borderRadius: const BorderRadius.all(
@@ -608,11 +616,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   child: _selectedTab == 2
                                       ? buildServiceWidget()
                                       : _selectedTab == 1
-                                          ? buildScheduleWidget():
-                                          _selectedTab == 0 ?
-                                          buildInforWidget():
-                                          buildSurchagreNoteWidget()
-                                          ),
+                                          ? buildScheduleWidget()
+                                          : _selectedTab == 0
+                                              ? buildInforWidget()
+                                              : buildSurchagreNoteWidget()),
                               SizedBox(
                                 height: 2.h,
                               )
@@ -629,8 +636,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   buildSurchagreNoteWidget() => DetailPlanSurchargeNote(
-    plan: _planDetail!,
-  );
+        plan: _planDetail!,
+      );
 
   buildServiceWidget() => DetailPlanServiceWidget(
       plan: _planDetail!,
@@ -647,7 +654,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             padding: EdgeInsets.symmetric(horizontal: 24),
             child: Text(
               'Thông tin cơ bản',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                  fontSize: 20,
+                  fontFamily: 'NotoSans',
+                  fontWeight: FontWeight.bold),
             ),
           ),
           const SizedBox(
@@ -667,7 +677,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                 alignment: Alignment.centerLeft,
                 child: const Text(
                   "Lịch trình",
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                      fontFamily: 'NotoSans',
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold),
                 )),
             const SizedBox(
               height: 16,
@@ -1019,7 +1032,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       }
     } else {
       if (_planDetail!.joinMethod == 'NONE') {
-        handlePublicizePlan(false);
+        handlePublicizePlan(false, null);
       } else {
         final rs = await _planService.updateJoinMethod(_planDetail!.id, 'NONE');
         if (rs) {
@@ -1031,7 +1044,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     }
   }
 
-  handlePublicizePlan(bool isFromJoinScreen) async {
+  handlePublicizePlan(bool isFromJoinScreen, int? amount) async {
     await showModalBottomSheet(
         context: context,
         backgroundColor: Colors.white.withOpacity(0.94),
@@ -1063,11 +1076,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             });
                             Navigator.of(context).pop();
                             if (isFromJoinScreen) {
-                              Navigator.of(context).pop();
-                              Navigator.of(context).pushAndRemoveUntil(
+                              Navigator.pushAndRemoveUntil(
+                                  context,
                                   MaterialPageRoute(
-                                      builder: (ctx) =>
-                                          const TabScreen(pageIndex: 1)),
+                                      builder: (ctx) => SuccessPaymentScreen(
+                                            amount: amount!,
+                                          )),
                                   (route) => false);
                             }
                           }
@@ -1117,11 +1131,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             });
                             Navigator.of(context).pop();
                             if (isFromJoinScreen) {
-                              Navigator.of(context).pop();
-                              Navigator.of(context).pushAndRemoveUntil(
+                              Navigator.pushAndRemoveUntil(
+                                  context,
                                   MaterialPageRoute(
-                                      builder: (ctx) =>
-                                          const TabScreen(pageIndex: 1)),
+                                      builder: (ctx) => SuccessPaymentScreen(
+                                            amount: amount!,
+                                          )),
                                   (route) => false);
                             }
                           }

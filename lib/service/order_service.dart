@@ -154,7 +154,7 @@ mutation{
     var orders = [];
     for (final order in sourceOrders) {
       orders.add({
-        'supplierId': order['supplierId'],
+        'providerId': order['providerId'],
         'cart': [
           for (final detail in order['details'])
             {'key': detail['productId'], 'value': detail['quantity']}

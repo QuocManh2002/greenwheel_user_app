@@ -1,6 +1,8 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
 
 class SupplierService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
@@ -19,8 +21,10 @@ class SupplierService extends Iterable {
       List<Map<String, dynamic>> typeConditions1 = [
         {
           "products": {
-          "some": { "type": { "in": types.map((type) => type).toList() } }
-        }
+            "some": {
+              "type": {"in": types.map((type) => type).toList()}
+            }
+          }
         },
       ];
 
@@ -53,7 +57,7 @@ class SupplierService extends Iterable {
                 name
                 address
                 phone
-                imageUrl
+                imagePath
                 coordinate {
                   coordinates
                 }
@@ -130,4 +134,52 @@ query getSupplierById(\$id: [Int]!) {
   @override
   // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();
+
+  Future<List<EmergencyContactViewModel>> getEmergencyContacts(
+      double longitude, double latitude) async {
+    try {
+      String coordinateString = '''
+        coordinate: {
+          distance: {
+            geometry: { type: Point, coordinates: [$longitude, $latitude], crs: 4326 },
+            buffer: 0.09138622285234489,
+            eq: 0
+          }
+        },
+      ''';
+      QueryResult result = await client.query(QueryOptions(document: gql("""
+{
+            suppliers(
+              where: {
+                $coordinateString
+                type:{
+      eq:EMERGENCY
+    }
+              }
+            ) {
+              nodes {
+                id
+                name
+                address
+                phone
+                imagePath
+              }
+            }
+          }
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      List? res = result.data!['suppliers']['nodes'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+      List<EmergencyContactViewModel> rs = res
+          .map((e) => EmergencyContactViewModel.fromJsonByLocation(e))
+          .toList();
+      return rs;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
 }

@@ -15,7 +15,7 @@ class FilterLocationCard extends StatelessWidget {
     return InkWell(
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (ctx) => LocationScreen(location: location)));
+            builder: (ctx) => LocationScreen(locationId: location.id)));
       },
       child: Container(
         decoration: BoxDecoration(

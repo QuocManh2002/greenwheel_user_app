@@ -24,6 +24,7 @@ class PlanService {
       PlanCreate model, BuildContext context, String surcharges) async {
     try {
       var schedule = json.decode(model.schedule!);
+      final emerIds = json.decode(model.savedContacts!).map((e) => e['id']).toList();
       log("""
   mutation{
   createPlan(dto: {
@@ -31,13 +32,12 @@ class PlanService {
     departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
     departure:[${model.longitude},${model.latitude}]
     destinationId:${model.locationId}
-    gcoinBudgetPerCapita:${model.gcoinBudget}
     maxMember:${model.memberLimit}
     maxMemberWeight:${model.maxMemberWeight!}
     name:"${model.name}"
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
-    savedContacts:${json.decode(model.savedContacts!).toString()}
+    savedProviderIds:$emerIds
     schedule:$schedule
     surcharges:$surcharges
     tempOrders:${model.tempOrders}
@@ -57,13 +57,12 @@ class PlanService {
     departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
     departure:[${model.longitude},${model.latitude}]
     destinationId:${model.locationId}
-    gcoinBudgetPerCapita:${model.gcoinBudget}
     maxMember:${model.memberLimit}
     maxMemberWeight:${model.maxMemberWeight!}
     name:"${model.name}"
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
-    savedContacts:${json.decode(model.savedContacts!).toString()}
+    savedProviderIds:$emerIds
     schedule:$schedule
     surcharges:$surcharges
     tempOrders:${model.tempOrders}
@@ -256,7 +255,7 @@ class PlanService {
     }
   }
 
-  Future<List<PlanCardViewModel>?> getPlanCards(int accountId) async {
+  Future<List<PlanCardViewModel>?> getPlanCards() async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -264,7 +263,6 @@ class PlanService {
   plans(first: 50
   order: {
   id:DESC
-  
 }
   ){
     nodes{
@@ -276,7 +274,7 @@ class PlanService {
       destination{
         id
           description
-          imageUrls
+          imagePaths
           name
           activities
           seasons
@@ -286,20 +284,13 @@ class PlanService {
           province{
             id
             name
-            imageUrl
-          }
-          emergencyContacts{
-            name
-            phone
-            address
-            type
+            imagePath
           }
           comments{
             id
             comment
             createdAt
             account{
-              avatarUrl
               name
             }
           }

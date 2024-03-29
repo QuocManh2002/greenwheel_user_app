@@ -24,7 +24,7 @@ class SupplierViewModel {
         id: json["id"],
         name: json["name"],
         phone: json["phone"],
-        thumbnailUrl: json["imageUrl"],
+        thumbnailUrl: json["imagePath"],
         address: json["address"],
         type: json['type'],
         latitude: json["coordinate"]["coordinates"][1],

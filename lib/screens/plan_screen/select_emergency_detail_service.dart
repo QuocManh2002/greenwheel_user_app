@@ -1,12 +1,12 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SelectEmergencyDetailService extends StatefulWidget {
   const SelectEmergencyDetailService(
@@ -31,27 +31,27 @@ class _SelectEmergencyDetailServiceState
   @override
   Widget build(BuildContext context) {
     List<String>? selectedIndex =
-      sharedPreferences.getStringList('selectedIndex');
-  var isEnableToAdd = false;
-  if(selectedIndex != null){
-    isEnableToAdd = selectedIndex.any(
-    (element) => element == widget.index.toString(),
-  );
-  }
-   
+        sharedPreferences.getStringList('selectedIndex');
+    var isEnableToAdd = false;
+    if (selectedIndex != null) {
+      isEnableToAdd = selectedIndex.any(
+        (element) => element == widget.index.toString(),
+      );
+    }
+
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
-              title: const Text('Chi tiết dịch vụ', style: TextStyle(
-                color: Colors.white
-              ),),
+              title: const Text(
+                'Chi tiết dịch vụ',
+                style: TextStyle(color: Colors.white),
+              ),
               leading: BackButton(
-                style:const ButtonStyle(
-                  foregroundColor: MaterialStatePropertyAll(Colors.white)
-                ),
+                style: const ButtonStyle(
+                    foregroundColor: MaterialStatePropertyAll(Colors.white)),
                 onPressed: () {
                   Navigator.of(context).pop();
-                  if(!widget.isView){
+                  if (!widget.isView) {
                     widget.callback();
                   }
                 },
@@ -103,9 +103,21 @@ class _SelectEmergencyDetailServiceState
                             const TextStyle(fontSize: 20, color: Colors.grey),
                       ),
                       const Spacer(),
-                      IconButton(onPressed: ()async{ 
-                        await FlutterPhoneDirectCaller.callNumber('0${widget.emergency.phone!.substring(3)}');
-                      }, icon:const Icon(Icons.call, color: primaryColor, size: 32,))
+                      IconButton(
+                          onPressed: () async {
+                            final Uri url = Uri(
+                                scheme: 'tel',
+                                path:
+                                    '0${widget.emergency.phone!.substring(3)}');
+                            if (await canLaunchUrl(url)) {
+                              await launchUrl(url);
+                            }
+                          },
+                          icon: const Icon(
+                            Icons.call,
+                            color: primaryColor,
+                            size: 32,
+                          ))
                     ],
                   ),
                 ),
@@ -124,7 +136,8 @@ class _SelectEmergencyDetailServiceState
                               fontWeight: FontWeight.bold),
                           children: [
                             TextSpan(
-                                text: widget.emergency.address ?? 'Không có địa chỉ',
+                                text: widget.emergency.address ??
+                                    'Không có địa chỉ',
                                 style: const TextStyle(
                                     fontWeight: FontWeight.normal))
                           ])),
@@ -155,13 +168,11 @@ class _SelectEmergencyDetailServiceState
                             ),
                             btnOkColor: primaryColor,
                             btnOkOnPress: () {
-                              
                               setState(() {
                                 isEnableToAdd == true;
                               });
                               widget.callback();
                               Navigator.of(context).pop();
-
                             },
                           ).show();
                         },

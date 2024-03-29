@@ -21,6 +21,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:cron/cron.dart';
 
 late SharedPreferences sharedPreferences;
 late FirebaseAuth auth;
@@ -57,7 +58,12 @@ void main() async {
   // _myPlans.clear();
   hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-  initializeDateFormatting('vi', null).then((_) {
+
+  final cron = Cron();
+  cron.schedule(Schedule.parse('*/1 * * * *'),(){
+    print('Cron Job');
+  });
+  initializeDateFormatting('vi_VN', null).then((_) {
     runApp(const MainApp());
   });
 }
@@ -76,15 +82,20 @@ class MainApp extends StatelessWidget {
 
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        localizationsDelegates: localization.localizationsDelegates,
+        localizationsDelegates:  
+          localization.localizationsDelegates
+          ,
         supportedLocales: const [
-          //  Locale('vi', 'VN'), // Vietnamese
+           Locale('vi', 'VN'), // Vietnamese
            Locale('en', 'US'), // English (fallback)
         ],
-        home: hasConnection
+        locale: const Locale('vi'),
+        home: 
+        hasConnection
             ? userToken != null
                 ? const SplashScreen()
-                : const LoginScreen()
+                : 
+                const LoginScreen()
             : const OfflineHomeScreen(),
         // home: const LoginScreen(),
         // home: const TopupSuccessfulScreen(data: null),

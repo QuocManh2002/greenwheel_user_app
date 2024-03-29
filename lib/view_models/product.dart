@@ -29,14 +29,14 @@ class ProductViewModel {
           id: json["id"],
           name: json["name"],
           price: json["price"],
-          thumbnailUrl: json["imageUrl"],
-          supplierId: json["supplier"]["id"],
-          supplierName: json["supplier"]["name"],
+          thumbnailUrl: json["imagePath"],
+          supplierId: json["provider"]["id"],
+          supplierName: json["provider"]["name"],
           partySize: json["partySize"],
-          supplierThumbnailUrl: json['supplier']['imageUrl'],
-          supplierPhone: json['supplier']['phone'],
-          supplierType: json['supplier']['type'],
-          supplierAddress: json['supplier']['address']);
+          supplierThumbnailUrl: json['provider']['imagePath'],
+          supplierPhone: json['provider']['phone'],
+          supplierType: json['provider']['type'],
+          supplierAddress: json['provider']['address']);
 
   Map<String, dynamic> toJson() => {
         "id": id,

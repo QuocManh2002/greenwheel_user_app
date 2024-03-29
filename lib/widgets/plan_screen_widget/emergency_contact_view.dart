@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_phone_direct_caller/flutter_phone_direct_caller.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_detail_service.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:sizer2/sizer2.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class EmergencyContactView extends StatelessWidget {
   const EmergencyContactView({super.key, required this.emergency});
@@ -38,7 +38,9 @@ class EmergencyContactView extends StatelessWidget {
                     emergency.name ?? 'Không có thông tin',
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
-                        fontSize: 16, fontWeight: FontWeight.bold),
+                        fontFamily: 'NotoSans',
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
                   ),
                 ),
                 SizedBox(
@@ -57,7 +59,10 @@ class EmergencyContactView extends StatelessWidget {
                       emergency.phone == null
                           ? 'Không có thông tin'
                           : '0${emergency.phone!.substring(3)}',
-                      style: const TextStyle(fontSize: 16, color: Colors.grey),
+                      style: const TextStyle(
+                          fontFamily: 'NotoSans',
+                          fontSize: 16,
+                          color: Colors.grey),
                     )
                   ],
                 ),
@@ -80,8 +85,10 @@ class EmergencyContactView extends StatelessWidget {
                             ? 'Không có thông tin'
                             : emergency.address!,
                         overflow: TextOverflow.ellipsis,
-                        style:
-                            const TextStyle(fontSize: 16, color: Colors.grey),
+                        style: const TextStyle(
+                            fontFamily: 'NotoSans',
+                            fontSize: 16,
+                            color: Colors.grey),
                       ),
                     )
                   ],
@@ -90,8 +97,12 @@ class EmergencyContactView extends StatelessWidget {
             ),
             const Spacer(),
             IconButton(
-                onPressed: () async{
-                  await FlutterPhoneDirectCaller.callNumber('0${emergency.phone!.substring(3)}');
+                onPressed: () async {
+                  final Uri url = Uri(
+                      scheme: 'tel', path: '0${emergency.phone!.substring(3)}');
+                  if (await canLaunchUrl(url)) {
+                    await launchUrl(url);
+                  }
                 },
                 icon: const Icon(
                   Icons.call,

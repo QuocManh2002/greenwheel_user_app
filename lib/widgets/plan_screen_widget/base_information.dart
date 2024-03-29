@@ -142,7 +142,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
               alignment: Alignment.centerLeft,
               child: const Text(
                 'Dịch vụ khẩn cấp đã lưu: ',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: TextStyle(fontSize: 18,fontFamily: 'NotoSans', fontWeight: FontWeight.bold),
               )),
           SizedBox(
             height: 1.h,
@@ -189,52 +189,6 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           const SizedBox(
             height: 8,
           ),
-          // if (widget.plan.note != null && widget.plan.note != 'null')
-          //   Column(
-          //     children: [
-          //       InkWell(
-          //         onTap: () {
-          //           setState(() {
-          //             _isShowNote = !_isShowNote;
-          //           });
-          //         },
-          //         child: Row(
-          //           children: [
-          //             const Text(
-          //               'Ghi chú',
-          //               style: TextStyle(
-          //                   fontSize: 18, fontWeight: FontWeight.bold),
-          //             ),
-          //             const Spacer(),
-          //             Icon(
-          //               _isShowNote
-          //                   ? Icons.arrow_drop_up
-          //                   : Icons.arrow_drop_down,
-          //               color: primaryColor,
-          //               size: 40,
-          //             )
-          //           ],
-          //         ),
-          //       ),
-          //       if (_isShowNote)
-          //         Container(
-          //             padding: const EdgeInsets.all(8),
-          //             decoration: const BoxDecoration(
-          //                 color: Color(0xFFf2f2f2),
-          //                 borderRadius: BorderRadius.all(Radius.circular(12))),
-          //             child: HtmlWidget(widget.plan.note ?? '')),
-          //       const SizedBox(
-          //         height: 8,
-          //       ),
-          //       Container(
-          //         height: 1.8,
-          //         color: Colors.grey.withOpacity(0.4),
-          //       ),
-          //       const SizedBox(
-          //         height: 16,
-          //       ),
-          //     ],
-          //   ),
           if (widget.plan.memberCount != 0)
             Container(
                 alignment: Alignment.topLeft,
@@ -247,6 +201,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                           "Thành viên đã tham gia: ",
                           style: TextStyle(
                               fontSize: 18,
+                              fontFamily: 'NotoSans',
                               fontWeight: FontWeight.bold,
                               color: Colors.black),
                         ),
@@ -274,7 +229,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                               children: [
                                 Text(
                                   'Xem tất cả',
-                                  style: TextStyle(fontSize: 16),
+                                  style: TextStyle(fontFamily: 'NotoSans', fontSize: 16),
                                 ),
                                 Icon(
                                   Icons.keyboard_arrow_right,
@@ -324,7 +279,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                               ),
                               Text(
                                 " ${widget.members[i].name} (${widget.members[i].companions== null ? 1 : widget.members[i].companions!.length + 1})",
-                                style: const TextStyle(fontSize: 18),
+                                style: const TextStyle(fontSize: 18,fontFamily: 'NotoSans'),
                               ),
                             ],
                           ),

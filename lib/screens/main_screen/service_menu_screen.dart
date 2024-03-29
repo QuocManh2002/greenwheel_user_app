@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
@@ -278,7 +279,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                           height: 30.h,
                           width: double.infinity,
                           child: Image.network(
-                            widget.supplier.thumbnailUrl!,
+                            '$baseBucketImage${widget.supplier.thumbnailUrl!}',
                             fit: BoxFit.fitWidth,
                             height: 30.h,
                           ),
@@ -413,11 +414,15 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                         ItemCart? itemCart =
                             getItemCartByMenuItemId(list[index].id);
                         if (itemCart != null) {
-                          qty = itemCart.qty;
+                          // setState(() {
+                            qty = itemCart.qty;
+                          // });
                         }
                         return MenuItemCard(
                           product: list[index],
                           quantity: qty,
+                          serviceType: widget.serviceType,
+                          numberOfMember: widget.numberOfMember,
                           updateCart: updateCart,
                         );
                       },
@@ -439,7 +444,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                   height: 6.h,
                   child: ElevatedButton(
                     onPressed: () async {
-                      // Navigator.of(context).pop();
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (ctx) => CartScreen(
@@ -450,6 +454,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                             supplier: widget.supplier,
                             list: items,
                             total: total,
+                            updateCart: updateCart,
                             serviceType: widget.serviceType,
                             note: note,
                             orderGuid: widget.orderGuid,
@@ -509,10 +514,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
 
   ItemCart? getItemCartByMenuItemId(int selectId) {
     try {
-      print(items.length);
       return items.firstWhere((cart) => cart.product.id == selectId);
     } catch (e) {
-      // Handle the case when no matching item is found
       return null;
     }
   }

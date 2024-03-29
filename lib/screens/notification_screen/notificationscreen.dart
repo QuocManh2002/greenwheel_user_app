@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
-import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
@@ -24,7 +24,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
     // TODO: implement initState
     super.initState();
     setUpData();
-    print('deviceToken: ${sharedPreferences.getString('deviceToken')}');
   }
 
   setUpData() async {
@@ -32,7 +31,6 @@ class _NotificationScreenState extends State<NotificationScreen> {
     _notiList = await _notificationService.getNotificationList();
     if (_notiList != null) {
       setState(() {
-      _notiList!.reversed;
         _isLoading = false;
       });
     }
@@ -52,91 +50,95 @@ class _NotificationScreenState extends State<NotificationScreen> {
       ),
       body: _isLoading
           ? const PlanLoadingScreen()
-          : Padding(
-              padding: EdgeInsets.all(1.h),
-              child: _notiList!.isEmpty
-                  ? Center(
-                      child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.center,
-                          children: [
-                            Image.asset(empty_plan),
-                            SizedBox(
-                              height: 1.h,
-                            ),
-                            const Text(
-                              'Bạn không có thông báo nào',
-                              style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey),
-                              textAlign: TextAlign.center,
-                            )
-                          ]),
-                    )
-                  : SingleChildScrollView(
-                      child: Column(children: [
-                        for (final noti in _notiList!)
-                          InkWell(
-                            onTap: () {
-                              if (noti.type == 'PLAN') {
-                                Navigator.of(context).push(MaterialPageRoute(
-                                    builder: (ctx) => DetailPlanNewScreen(
-                                          isEnableToJoin: true,
-                                          planId: noti.planId!,
-                                        )));
-                              } else {
-                              }
-                            },
-                            child: Padding(
-                              padding: const EdgeInsets.only(
-                                  top: 12, left: 12, right: 12),
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        height: 8.h,
-                                        width: 8.h,
-                                        clipBehavior: Clip.hardEdge,
-                                        decoration: const BoxDecoration(
-                                            shape: BoxShape.circle),
-                                        child: Image.network(
-                                          noti.imageUrl == null
-                                              ? noti.type == 'PLAN'? defaultPlanNotiAvatar : defaultServiceNotiAvatar
-                                              : noti.imageUrl!,
-                                          fit: BoxFit.cover,
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: 2.w,
-                                      ),
-                                      SizedBox(
-                                        width: 70.w,
-                                        child: Text(
-                                          noti.body,
-                                          style: const TextStyle(
-                                              fontSize: 18,fontWeight: FontWeight.w500,fontFamily: 'NotoSans'
-                                              ),
-                                          overflow: TextOverflow.clip,
-                                        ),
-                                      )
-                                    ],
-                                  ),
-                                  const SizedBox(
-                                    height: 6,
-                                  ),
-                                  Container(
-                                    color: Colors.grey.withOpacity(0.5),
-                                    height: 1.5,
-                                  )
-                                ],
-                              ),
-                            ),
-                          )
+          : _notiList!.isEmpty
+              ? Center(
+                  child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Image.asset(empty_plan),
+                        SizedBox(
+                          height: 1.h,
+                        ),
+                        const Text(
+                          'Bạn không có thông báo nào',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey),
+                          textAlign: TextAlign.center,
+                        )
                       ]),
-                    ),
-            ),
+                )
+              : SingleChildScrollView(
+                  child: Column(children: [
+                    for (final noti in _notiList!)
+                      InkWell(
+                        onTap: () {
+                          if (noti.type == 'PLAN') {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (ctx) => DetailPlanNewScreen(
+                                      isEnableToJoin: true,
+                                      planId: noti.planId!,
+                                    )));
+                          } else {}
+                        },
+                        child: Container(
+                          color: _notiList!.indexOf(noti).isEven
+                              ? lightPrimaryTextColor
+                              : Colors.white,
+                          child: Column(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                    top: 12, left: 12, right: 12),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      height: 8.h,
+                                      width: 8.h,
+                                      clipBehavior: Clip.hardEdge,
+                                      decoration: const BoxDecoration(
+                                          shape: BoxShape.circle),
+                                      child: Image.network(
+                                        noti.imageUrl == null
+                                            ? noti.type == 'PLAN'
+                                                ? defaultPlanNotiAvatar
+                                                : defaultServiceNotiAvatar
+                                            : noti.imageUrl!,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 2.w,
+                                    ),
+                                    SizedBox(
+                                      width: 65.w,
+                                      child: Text(
+                                        noti.body,
+                                        style: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                            fontFamily: 'NotoSans'),
+                                        overflow: TextOverflow.clip,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(
+                                height: 6,
+                              ),
+                              Container(
+                                color: Colors.grey.withOpacity(0.5),
+                                height: 1,
+                              )
+                            ],
+                          ),
+                        ),
+                      )
+                  ]),
+                ),
     ));
   }
 }

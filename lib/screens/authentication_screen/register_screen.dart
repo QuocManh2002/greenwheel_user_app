@@ -3,13 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/helpers/goong_request.dart';
-import 'package:greenwheel_user_app/helpers/restart_widget.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/select_default_address.dart';
-import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
-import 'package:greenwheel_user_app/service/customer_service.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
+import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
@@ -89,7 +84,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: nameController,
                   inputType: TextInputType.name,
                   text: 'Tên người dùng',
-                  hinttext: 'Câu cá, tắm suối...',
+                  hinttext: 'Nguyễn Văn A',
                   onValidate: (value) {
                     if (value!.isEmpty) {
                       return "Tên của người dùng không được để trống";

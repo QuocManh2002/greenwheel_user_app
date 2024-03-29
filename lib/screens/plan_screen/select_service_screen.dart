@@ -10,9 +10,7 @@ import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_note_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_note_surcharge_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
@@ -27,7 +25,6 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline_mem
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:intl/intl.dart';
@@ -122,7 +119,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             total: double.parse(item['total'].toString()),
             createdAt: DateTime.parse(item['createdAt']),
             supplier: SupplierViewModel(
-                id: item['supplierId'],
+                id: item['providerId'],
                 name: item['supplierName'],
                 phone: item['supplierPhone'],
                 thumbnailUrl: item['supplierImageUrl'],

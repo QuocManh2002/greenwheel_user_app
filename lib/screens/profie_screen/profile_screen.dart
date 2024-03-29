@@ -6,10 +6,12 @@ import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/profile_loading_screen.dart';
+import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/qr_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
+import 'package:greenwheel_user_app/screens/profie_screen/update_profile_screen.dart';
 import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
-import 'package:greenwheel_user_app/service/customer_service.dart';
+import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
@@ -37,11 +39,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   setUpData() async {
     String phone = sharedPreferences.getString("userPhone")!;
-    List<CustomerViewModel>? customer;
-    customer = await _customerService.GetCustomerByPhone(phone);
-    if (customer.isNotEmpty) {
+    _customer = await _customerService.GetCustomerByPhone(phone);
+    if (_customer != null) {
       setState(() {
-        _customer = customer![0];
         _isLoading = false;
       });
     }
@@ -107,6 +107,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         _customer!.name,
@@ -264,8 +266,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       const SizedBox(
                         height: 8,
                       ),
-                      buildProfileButton(
-                          () {}, Icons.person, 'Chỉnh sửa thông tin'),
+                      buildProfileButton(() {
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                                child: UpdateProfileScreen(
+                                  traveler: _customer!,
+                                ),
+                                type: PageTransitionType.rightToLeft));
+                      }, Icons.person, 'Chỉnh sửa thông tin'),
                       SizedBox(
                         height: 1.h,
                       ),
@@ -279,8 +288,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       SizedBox(
                         height: 1.h,
                       ),
-                      buildProfileButton(
-                          () {}, Icons.vpn_key, 'Thay đổi mật khẩu'),
+                      buildProfileButton(() {
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                                child: const SuccessPaymentScreen(
+                                  amount: 0,
+                                ),
+                                type: PageTransitionType.rightToLeft));
+                      }, Icons.vpn_key, 'Thay đổi mật khẩu'),
                       SizedBox(
                         height: 1.h,
                       ),

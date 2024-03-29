@@ -141,7 +141,11 @@ class NotificationService {
     accountId:{
       eq : $travelerId
     }
-  }){
+  }
+  order: {
+  id:DESC
+  
+}){
     nodes{
       id
       accountId

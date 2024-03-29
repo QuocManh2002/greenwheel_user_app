@@ -2,10 +2,9 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/otp_screen.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
+import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 
@@ -24,6 +23,8 @@ class _LoginScreenState extends State<LoginScreen> {
   String verificationIDReceived = "";
 
   bool checkVerify = false;
+
+  CustomerService _customerService = CustomerService();
 
   @override
   Widget build(BuildContext context) {
@@ -127,31 +128,31 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(
                         height: 8,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          const Text(
-                            "Bạn chưa có tài khoản?",
-                            style: TextStyle(
-                              fontFamily: 'NotoSans',
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (ctx) => const RegisterScreen()));
-                            },
-                            child: const Text(
-                              'Đăng ký ngay',
-                              style: TextStyle(
-                                fontFamily: 'NotoSans',
-                                color:
-                                    primaryColor, // Set the color of the link text
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
+                      // Row(
+                      //   mainAxisAlignment: MainAxisAlignment.center,
+                      //   children: [
+                      //     const Text(
+                      //       "Bạn chưa có tài khoản?",
+                      //       style: TextStyle(
+                      //         fontFamily: 'NotoSans',
+                      //       ),
+                      //     ),
+                      //     TextButton(
+                      //       onPressed: () {
+                      //         Navigator.of(context).push(MaterialPageRoute(
+                      //             builder: (ctx) => const RegisterScreen()));
+                      //       },
+                      //       child: const Text(
+                      //         'Đăng ký ngay',
+                      //         style: TextStyle(
+                      //           fontFamily: 'NotoSans',
+                      //           color:
+                      //               primaryColor, // Set the color of the link text
+                      //         ),
+                      //       ),
+                      //     ),
+                      //   ],
+                      // ),
                       Spacer(),
                       Container(
                         height: 7.h,
@@ -184,31 +185,41 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void verifyNumber() {
-    auth.verifyPhoneNumber(
-      phoneNumber: "+84${phoneController.text.trim()}",
-      verificationCompleted: (PhoneAuthCredential credential) async {
-        await auth.signInWithCredential(credential).then(
-              (value) => {
-                print("VERIFY SUCCESSFULLY!"),
-              },
-            );
-      },
-      verificationFailed: (FirebaseAuthException exception) {
-        Fluttertoast.showToast(
-          msg: 'Vui lòng kiểm tra lại số điện thoại! ${phoneController.text}',
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.BOTTOM,
-        );
-      },
-      codeSent: (String verificationID, int? resendToken) {
-        verificationIDReceived = verificationID;
-        sharedPreferences.setString('verificationID', verificationIDReceived);
-        Navigator.pop(context);
-        Navigator.push(
-            context, MaterialPageRoute(builder: (_) => const OTPScreen()));
-      },
-      codeAutoRetrievalTimeout: (String verificationId) {},
-    );
+  void verifyNumber() async {
+    // auth.verifyPhoneNumber(
+    //   phoneNumber: "+84${phoneController.text.trim()}",
+    //   verificationCompleted: (PhoneAuthCredential credential) async {
+    //     await auth.signInWithCredential(credential).then(
+    //           (value) => {
+    //             print("VERIFY SUCCESSFULLY!"),
+    //           },
+    //         );
+    //   },
+    //   verificationFailed: (FirebaseAuthException exception) {
+    //     Fluttertoast.showToast(
+    //       msg: 'Vui lòng kiểm tra lại số điện thoại! ${phoneController.text}',
+    //       toastLength: Toast.LENGTH_SHORT,
+    //       gravity: ToastGravity.BOTTOM,
+    //     );
+    //   },
+    //   codeSent: (String verificationID, int? resendToken) {
+    //     verificationIDReceived = verificationID;
+    //     sharedPreferences.setString('verificationID', verificationIDReceived);
+    //     Navigator.pop(context);
+    //     Navigator.push(
+    //         context, MaterialPageRoute(builder: (_) => const OTPScreen(phoneNumber: '',)));
+    //   },
+    //   codeAutoRetrievalTimeout: (String verificationId) {},
+    // );
+    final rs = await _customerService.requestTravelerOTP(phoneController.text);
+    if (rs!) {
+      Navigator.pop(context);
+      Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (_) => OTPScreen(
+                    phoneNumber: phoneController.text,
+                  )));
+    }
   }
 }

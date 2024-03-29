@@ -35,22 +35,16 @@ class PlanScheduleTitle extends StatelessWidget {
           DateFormat.MMMM('vi_VN').format(date),
           style: TextStyle(
               fontSize: 14,
+              fontFamily: 'NotoSans',
               color: isSelected ? Colors.white : Colors.grey,
               fontWeight: FontWeight.w500),
         ),
-        // Text(
-        //   'Ngày',
-        //   style: TextStyle(
-        //       fontSize: 20,
-        //       fontWeight: FontWeight.bold,
-        //       color: isSelected ? Colors.white : Colors.grey),
-        // ),
-        // const SizedBox(height: 8,),
         Text(
           DateFormat.d().format(date),
           style: TextStyle(
               fontSize: 26,
               fontWeight: FontWeight.bold,
+              fontFamily: 'NotoSans',
               color: isSelected ? Colors.white : Colors.grey),
         ),
 
@@ -58,18 +52,10 @@ class PlanScheduleTitle extends StatelessWidget {
           DateFormat.EEEE('vi_VN').format(date),
           style: TextStyle(
               fontSize: 15,
+              fontFamily: 'NotoSans',
               fontWeight: FontWeight.bold,
               color: isSelected ? Colors.white : Colors.grey),
         ),
-
-        // Text(
-        //   (index + 1).toString(),
-        //   style: TextStyle(
-        //       fontSize: 24,
-        //       color: isSelected ? Colors.white : Colors.grey,
-        //       fontWeight: FontWeight.bold),
-        // ),
-        // const Spacer(),
       ]),
     );
   }

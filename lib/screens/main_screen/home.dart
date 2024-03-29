@@ -6,6 +6,7 @@ import 'package:greenwheel_user_app/screens/loading_screen/home_loading_screen.d
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:greenwheel_user_app/widgets/home_screen_widget/activity_card.dart';
 import 'package:greenwheel_user_app/widgets/home_screen_widget/location_card.dart';
@@ -22,7 +23,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   TextEditingController searchController = TextEditingController();
-  List<LocationViewModel>? locationModels;
+  List<LocationCardViewModel>? locationCardList = [];
   List<ProvinceViewModel>? provinceModels;
   LocationService _locationService = LocationService();
   bool isLoading = true;
@@ -41,11 +42,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   _setUpData() async {
-    locationModels = null;
     provinceModels = null;
-    locationModels = await _locationService.getLocations();
+    locationCardList = await _locationService.getLocationCard();
     provinceModels = await _locationService.getProvinces();
-    if (locationModels != null && provinceModels != null) {
+    if ( provinceModels != null && locationCardList != null) {
       setState(() {
         isLoading = false;
       });
@@ -179,13 +179,13 @@ class _HomeScreenState extends State<HomeScreen> {
                         height: 30.h,
                         child: ListView.builder(
                           physics: const BouncingScrollPhysics(),
-                          itemCount: locationModels!.length,
+                          itemCount: locationCardList!.length,
                           shrinkWrap: true,
                           scrollDirection: Axis.horizontal,
                           itemBuilder: (context, index) => Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child:
-                                LocationCard(location: locationModels![index]),
+                                LocationCard(location: locationCardList![index]),
                           ),
                         ),
                       ))

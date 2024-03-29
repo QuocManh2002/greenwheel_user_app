@@ -441,170 +441,68 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
           const SizedBox(
             height: 8,
           ),
-          if (widget.total != 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
+          if(widget.isLeader)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  color: Colors.grey.withOpacity(0.2)),
+              child: Column(
                 children: [
-                  const Text(
-                    'Ngân sách ban đầu: ',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  Text(
-                    NumberFormat.simpleCurrency(
-                            locale: 'vi-VN', decimalDigits: 0, name: "")
-                        .format(widget.plan.gcoinBudgetPerCapita! *
+                  buildAmountInfo(
+                        'Ngân sách dự tính:',
+                        widget.plan.gcoinBudgetPerCapita! *
                             widget.plan.maxMember),
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 25,
-                  ),
-                  SizedBox(
-                    width: 2.h,
-                  )
+                  buildAmountInfo(
+                      'Ngân sách ban đầu:',
+                      widget.plan.gcoinBudgetPerCapita! *
+                          widget.plan.memberCount!),
+                  buildAmountInfo(
+                      'Ngân sách hiện tại:', widget.plan.currentGcoinBudget!),
+                  buildAmountInfo('Đã chi:', widget.plan.status == 'PENDING' || widget.plan.status == 'REGISTERING' ? 0 : widget.total / 100),
+                  buildAmountInfo(
+                      'Bình quân ban đầu:', widget.plan.gcoinBudgetPerCapita!),
+                  buildAmountInfo('Bình quân đã chi:',
+                     widget.plan.status == 'PENDING' || widget.plan.status == 'REGISTERING' ? 0 : ((widget.total / widget.plan.memberCount!) / 100).ceil()),
+                  buildAmountInfo(
+                      'Số tiền cần phải bù:',
+                      widget.total / 100 -
+                          widget.plan.gcoinBudgetPerCapita! *
+                              widget.plan.memberCount! > 0 ?
+                       widget.total / 100 -
+                          widget.plan.gcoinBudgetPerCapita! *
+                              widget.plan.memberCount! : 0)
                 ],
               ),
             ),
-          if (widget.plan.currentGcoinBudget != 0)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                children: [
-                  const Text(
-                    'Ngân sách hiện tại: ',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  Text(
-                    NumberFormat.simpleCurrency(
-                            locale: 'vi-VN', decimalDigits: 0, name: "")
-                        .format(widget.plan.currentGcoinBudget),
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 25,
-                  ),
-                  SizedBox(
-                    width: 2.h,
-                  )
-                ],
-              ),
-            ),
-          if (widget.total != 0 && isShowTotal)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Đã chi: ',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  Text(
-                    NumberFormat.simpleCurrency(
-                            locale: 'vi-VN', decimalDigits: 0, name: "")
-                        .format(widget.total / 100),
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 25,
-                  ),
-                  SizedBox(
-                    width: 2.h,
-                  )
-                ],
-              ),
-            ),
-            if (widget.total != 0 && isShowTotal)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Bình quân ban đầu: ',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  Text(
-                    NumberFormat.simpleCurrency(
-                            locale: 'vi-VN', decimalDigits: 0, name: "")
-                        .format(widget.plan.gcoinBudgetPerCapita!),
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 25,
-                  ),
-                  SizedBox(
-                    width: 2.h,
-                  )
-                ],
-              ),
-            ),
-          if (widget.total != 0 && isShowTotal)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Bình quân đã chi: ',
-                      style:
-                          TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                    ),
-                    const Spacer(),
-                    Text(
-                      NumberFormat.simpleCurrency(
-                              locale: 'vi-VN', decimalDigits: 0, name: "")
-                          .format((widget.total / widget.plan.memberCount!) / 100),
-                      style: const TextStyle(fontSize: 18),
-                    ),
-                    SvgPicture.asset(
-                      gcoin_logo,
-                      height: 25,
-                    ),
-                    SizedBox(
-                      width: 2.h,
-                    )
-                  ],
-                ),
-              ),
-              if (widget.total != 0 && isShowTotal && (widget.total / widget.plan.memberCount! / 100) > widget.plan.gcoinBudgetPerCapita!)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Số tiền cần phải bù: ',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  ),
-                  const Spacer(),
-                  Text(
-                    NumberFormat.simpleCurrency(
-                            locale: 'vi-VN', decimalDigits: 0, name: "")
-                        .format(((widget.total / widget.plan.memberCount! / 100) - widget.plan.gcoinBudgetPerCapita!) * widget.plan.memberCount! ),
-                    style: const TextStyle(fontSize: 18),
-                  ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 25,
-                  ),
-                  SizedBox(
-                    width: 2.h,
-                  )
-                ],
-              ),
-            ),
+          ),
         ],
       ),
     );
   }
+
+  buildAmountInfo(String title, num amount) => Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Row(
+          children: [
+            Text(
+              title,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const Spacer(),
+            Text(
+              NumberFormat.simpleCurrency(
+                      locale: 'vi-VN', decimalDigits: 0, name: "")
+                  .format(amount),
+              style: const TextStyle(fontSize: 18),
+            ),
+            SvgPicture.asset(
+              gcoin_logo,
+              height: 20,
+            ),
+          ],
+        ),
+      );
 }

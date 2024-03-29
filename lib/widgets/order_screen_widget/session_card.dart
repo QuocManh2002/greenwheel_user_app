@@ -56,7 +56,7 @@ class SessionCard extends StatelessWidget {
                     isOrder: isOrder,
                     startDate: startDate,
                     endDate: endDate,
-                    numberOfMember: 0,
+                    numberOfMember: numberOfMember,
                     supplier: supplier,
                     serviceType: serviceType,
                     session: session,

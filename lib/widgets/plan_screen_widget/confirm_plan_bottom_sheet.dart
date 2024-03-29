@@ -70,9 +70,6 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         total += order['total'] / 100;
       }
     }
-    // for (final sur in widget.listSurcharges!) {
-    //   total += double.parse(sur['amount'].toString());
-    // }
     budgetPerCapita = ((total / widget.plan!.memberLimit!)).ceil();
   }
 
@@ -135,85 +132,6 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         .firstOrNull;
     print(rs.values);
   }
-
-  // buildHostServiceInfo() {
-  //   List<String> nameSupplierOrder = [];
-  //   if (roomOrderList.isNotEmpty) {
-  //     for (final order in roomOrderList) {
-  //       if (!nameSupplierOrder.contains(order['supplierName'])) {
-  //         nameSupplierOrder.add(order['supplierName']);
-  //       }
-  //     }
-  //   }
-  //   if (foodOrderList.isNotEmpty) {
-  //     for (final order in foodOrderList) {
-  //       if (!nameSupplierOrder.contains(order['supplierName'])) {
-  //         nameSupplierOrder.add(order['supplierName']);
-  //       }
-  //     }
-  //   }
-
-  //   for (final name in nameSupplierOrder) {
-  //     var orderList = [];
-  //     for (final order in widget.orderList!) {
-  //       if (order['supplierName'] == name) {
-  //         orderList.add(order);
-  //       }
-  //     }
-  //     listHostServiceInfor.add(PlanHostServiceInfor(
-  //         supplierName: name,
-  //         orderList: orderList,
-  //         type: orderList.first['type']));
-  //   }
-  // }
-
-  // buildJoinServiceInfo() {
-  //   List<String> indexRoomOrder = [];
-  //   List<String> indexFoodOrder = [];
-
-  //   if (roomOrderList.isNotEmpty) {
-  //     for (final order in roomOrderList) {
-  //       for (final index in order['serveDates']) {
-  //         if (!indexRoomOrder.contains(index)) {
-  //           indexRoomOrder.add(index);
-  //         }
-  //       }
-  //     }
-  //   }
-  //   if (foodOrderList.isNotEmpty) {
-  //     for (final order in foodOrderList) {
-  //       for (final index in order['serveDates']) {
-  //         if (!indexFoodOrder.contains(index)) {
-  //           indexFoodOrder.add(index);
-  //         }
-  //       }
-  //     }
-  //   }
-  //   for (final day in indexRoomOrder) {
-  //     var orderList = [];
-  //     for (final order in roomOrderList) {
-  //       if (order['serveDates'].contains(day)) {
-  //         orderList.add(order);
-  //       }
-  //     }
-  //     listRoom.add(PlanJoinServiceInfor(
-  //         dayIndex:
-  //             DateTime.parse(day).difference(widget.plan!.startDate!).inDays,
-  //         orderList: orderList));
-  //   }
-  //   for (final day in indexFoodOrder) {
-  //     var orderList = [];
-  //     for (final order in foodOrderList) {
-  //       if (order.serveDates.contains(day)) {
-  //         orderList.add(order);
-  //       }
-  //     }
-  //     listFood.add(PlanJoinServiceInfor(
-  //         dayIndex:
-  //             DateTime.parse(day).difference(widget.plan!.startDate!).inDays,
-  //         orderList: orderList));
-  //   }
-  // }
 
   @override
   Widget build(BuildContext context) {
