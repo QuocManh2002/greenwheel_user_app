@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/constant.dart';
-import 'package:greenwheel_user_app/constants/tags.dart';
+import 'package:greenwheel_user_app/core/constants/constant.dart';
+import 'package:greenwheel_user_app/core/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 import 'package:greenwheel_user_app/widgets/search_screen_widget/tag_search_card.dart';

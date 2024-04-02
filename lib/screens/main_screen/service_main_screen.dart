@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_loading_screen.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
@@ -27,7 +27,7 @@ class ServiceMainScreen extends StatefulWidget {
   final DateTime startDate;
   final DateTime endDate;
   final bool? isOrder;
-  final double? availableGcoinAmount;
+  final int? availableGcoinAmount;
   final bool? isFromTempOrder;
   final void Function() callbackFunction;
 

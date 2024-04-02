@@ -1,6 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/filter_location_screen.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:sizer2/sizer2.dart';

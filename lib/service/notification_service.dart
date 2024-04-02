@@ -132,12 +132,12 @@ class NotificationService {
 
   Future<List<NotificationViewModel>> getNotificationList() async {
     try {
-      String travelerId = sharedPreferences.getString('userId')!;
+      int travelerId = sharedPreferences.getInt('userId')!;
       QueryResult result = await client.query(QueryOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 {
-  notifications(where: {
+  announcements(where: {
     accountId:{
       eq : $travelerId
     }
@@ -145,15 +145,19 @@ class NotificationService {
   order: {
   id:DESC
   
-}){
-    nodes{
-      id
-      accountId
-      title
-      body
-      imageUrl
-      type
-      planId
+}) {
+    edges {
+      node {
+        id
+        orderId
+        title
+        body
+        imageUrl
+        type
+        createdAt
+        accountId
+        planId
+      }
     }
   }
 }
@@ -163,12 +167,12 @@ class NotificationService {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['notifications']['nodes'];
+      List? res = result.data!['announcements']['edges'];
       if (res == null || res.isEmpty) {
         return [];
       }
       List<NotificationViewModel> notifications =
-          res.map((noti) => NotificationViewModel.fromJson(noti)).toList();
+          res.map((noti) => NotificationViewModel.fromJson(noti['node'])).toList();
       return notifications;
     } catch (error) {
       throw Exception(error);

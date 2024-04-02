@@ -61,6 +61,7 @@ class _QRScreenState extends State<QRScreen> {
                     isEnableToJoin: true,
                     isFromHost: jwt.payload['isFromHost'],
                     planId: jwt.payload["planId"],
+                    planType: 'SCAN',
                   )));
         } else {
           print('Payload for travelerId!');

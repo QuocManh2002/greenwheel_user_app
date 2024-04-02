@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:intl/intl.dart';
@@ -16,15 +16,15 @@ class SupplierOrderCard extends StatelessWidget {
   final int? memberLimit;
   final DateTime? endDate;
   final bool? isFromTempOrder;
-  final double? availableGcoinAmount;
+  final int? availableGcoinAmount;
   final void Function() callback;
 
   @override
   Widget build(BuildContext context) {
-    var total = 0.0;
-    for(final detail in order.details!){
-      total += detail.price! * detail.quantity;
-    }
+    // var total = 0.0;
+    // for(final detail in order.details!){
+    //   total += detail.price! * detail.quantity;
+    // }
 
     return InkWell(
       onTap: () {
@@ -109,7 +109,7 @@ class SupplierOrderCard extends StatelessWidget {
                     height: 8,
                   ),
                   Text(
-                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(total * order.serveDates!.length)}VND",
+                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(order.total)}VND",
                     style: const TextStyle(fontWeight: FontWeight.bold),
                   )
                 ],

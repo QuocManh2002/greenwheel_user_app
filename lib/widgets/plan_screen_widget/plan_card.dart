@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class PlanCard extends StatelessWidget {
-  const PlanCard({super.key, required this.plan});
+  const PlanCard({super.key, required this.plan, required this.isOwned});
   final PlanCardViewModel plan;
+  final bool isOwned;
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +40,7 @@ class PlanCard extends StatelessWidget {
             builder: (ctx) => DetailPlanNewScreen(
                   planId: plan.id,
                   isEnableToJoin: false,
+                  planType: isOwned ? 'OWNED':'JOIN',
                 )));
       },
       child: Container(
@@ -70,7 +73,7 @@ class PlanCard extends StatelessWidget {
                     child: FadeInImage(
                       height: 15.h,
                       placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage(plan.location.imageUrls[0]),
+                      image: NetworkImage('$baseBucketImage${plan.location.imageUrls[0]}'),
                       fit: BoxFit.cover,
                       width: 15.h,
                       filterQuality: FilterQuality.high,

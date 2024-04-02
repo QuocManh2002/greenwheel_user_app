@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/models/login.dart';
+import 'package:greenwheel_user_app/models/register.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
@@ -24,22 +27,17 @@ class CustomerService {
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql("""
-   {
-    accounts
-    (
-      where: { 
-        phone: {eq: "$phone" } 
-        }
-      )
-        {
-        nodes {
+{
+  accounts(where: { phone: { eq: "$phone" } }) {
+    nodes {
       id
       name
       isMale
       gcoinBalance
       phone
+      avatarPath
     }
-    }
+  }
 }
           """),
         ),
@@ -90,18 +88,24 @@ mutation{
     }
   }
 
-  Future<int?> registerTraveler(RegisterViewModel model) async {
+  Future<RegisterModel?> registerTraveler(RegisterViewModel model) async {
     GraphQLClient client = graphQlConfig.getClient();
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''
-mutation {
-  registerTraveler(dto: {
-     deviceToken:${json.encode(model.deviceToken)}
-     isMale: ${model.isMale}
-     name:${json.encode(model.name)}
+mutation register{
+  travelerRegister(dto: {
+    deviceToken:"${model.deviceToken}"
+    isMale:${model.isMale}
+    name:"${model.name}" 
   }){
-    id
+    authResult{
+      accessToken
+      refreshToken
+    }
+    account{
+      id
+    }
   }
 }
 ''')));
@@ -109,12 +113,12 @@ mutation {
         throw Exception(result.exception);
       }
 
-      int? res = result.data!['registerTraveler']['id'];
+      var res = result.data!['travelerRegister'];
       if (res == null) {
         return null;
       }
-      TokenRefresher.refreshToken();
-      return res;
+      RegisterModel rs = RegisterModel.fromJson(res);
+      return rs;
     } catch (error) {
       throw Exception(error);
     }
@@ -259,6 +263,8 @@ mutation{
       node {
         id
         receiverId
+        planMemberId
+        orderId
         type
         status
         gcoinAmount
@@ -271,6 +277,7 @@ mutation{
     }
   }
 }
+
 """)));
       if (result.hasException) {
         throw Exception(result.exception);
@@ -317,15 +324,9 @@ mutation{
     }
   }
 
-  Future<bool?> requestTravelerOTP(String phoneNumber) async {
+  Future<bool?> requestTravelerOTP(String phoneNumber, BuildContext context) async {
     try {
       GraphQLClient client = graphQlConfig.getClient();
-      print("""mutation{
-  travelerRequestOTP(dto: {
-    channel:VONAGE
-    phone:"84${phoneNumber.substring(1).toString()}"
-  })
-}""");
 
       QueryResult result = await client.mutate(MutationOptions(document: gql("""
 mutation{
@@ -336,7 +337,10 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
       return result.data!['travelerRequestOTP'];
     } catch (error) {
@@ -372,4 +376,41 @@ mutation auth{
       throw Exception(error);
     }
   }
+
+  Future<int> getTravelerBalance(int accountId) async{
+    try{
+      GraphQLClient client = graphQlConfig.getClient();
+      QueryResult result = await client.query(
+        QueryOptions(document: gql("""
+{
+  accounts(where: {
+    id:{
+      eq:$accountId
+    }
+  }){
+    edges{
+      node{
+        gcoinBalance
+      }
+    }
+  }
+}
+"""),
+    fetchPolicy: FetchPolicy.noCache
+)
+      );
+      if(result.hasException){
+        throw Exception(result.exception);
+      }
+
+      int? rs = result.data!['accounts']['edges'][0]['node']['gcoinBalance'];
+      if(rs == null){
+        return 0;
+      }else{
+        return rs;
+      }
+    }catch (error) {
+      throw Exception(error);
+    }
+  } 
 }

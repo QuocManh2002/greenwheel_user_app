@@ -1,9 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
@@ -47,7 +49,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    setUpData();
+    // setUpData();
   }
 
   setUpData() {
@@ -84,6 +86,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                   var rs = true;
                   if (rs) {
                     Utils().clearPlanSharePref();
+                    Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                   }
@@ -357,7 +360,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                   const Spacer(),
                   Text(
                     NumberFormat.simpleCurrency(
-                            locale: 'vi_VN', decimalDigits: 0, name: 'đ')
+                            locale: 'vi_VN', decimalDigits: 0, name: '')
                         .format(_totalSurcharge),
                     style: const TextStyle(
                       fontFamily: 'NotoSans',
@@ -365,6 +368,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  SvgPicture.asset(gcoin_logo, height: 25,),
                 ],
               ),
             if (_selectedIndex == 0 && _totalSurcharge != 0)
@@ -380,7 +384,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                   const Spacer(),
                   Text(
                     NumberFormat.simpleCurrency(
-                            locale: 'vi_VN', decimalDigits: 0, name: 'đ')
+                            locale: 'vi_VN', decimalDigits: 0, name: '')
                         .format(_totalSurcharge /
                             memberLimit),
                     style: const TextStyle(
@@ -389,6 +393,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  SvgPicture.asset(gcoin_logo, height: 25,),
                 ],
               ),
             SizedBox(
@@ -445,8 +450,12 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       final surcharges = json.decode(surchargeText);
       for (final sur in surcharges) {
         listSurcharges.add(SurchargeCard(
-            amount: sur['amount'], note: json.decode(sur['note'])));
-        _totalSurcharge += sur['amount'];
+            amount: sur['gcoinAmount'], note: json.decode(sur['note'])));
+        if(sur['alreadyDivided']){
+          _totalSurcharge += sur['gcoinAmount'] * memberLimit;
+        }else{
+          _totalSurcharge += sur['gcoinAmount'];
+        }
         _listSurchargeObjects.add(sur);
       }
     }
@@ -551,7 +560,8 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       final rs = await _planService.createNewPlan(
           plan!, context, _listSurchargeObjects.toString());
       if (rs != 0) {
-         AwesomeDialog(
+        Navigator.of(context).pop();
+        AwesomeDialog(
           context: context,
           animType: AnimType.leftSlide,
           dialogType: DialogType.success,
@@ -559,21 +569,19 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
           titleTextStyle:
               const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           padding: const EdgeInsets.all(12),
-        ).show;
+        ).show();
         Future.delayed(
             const Duration(
               seconds: 2,
             ), () {
           Utils().clearPlanSharePref();
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
           Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                   builder: (ctx) => const TabScreen(pageIndex: 1)),
               (route) => false);
           Navigator.of(context).push(MaterialPageRoute(
               builder: (ctx) =>
-                  DetailPlanNewScreen(planId: rs, isEnableToJoin: false)));
+                  DetailPlanNewScreen(planId: rs, isEnableToJoin: false, planType: "OWNED",)));
         });
       }
     }

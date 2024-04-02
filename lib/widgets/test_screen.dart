@@ -3,8 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/helpers/pdf_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_note_surcharge_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -26,16 +29,9 @@ class _TestScreenState extends State<TestScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-   _init();
   }
 
-  Future<void> _init() async{
-    final info = await Printing.info();
-    setState(() {
-      printingInfo = info;
-    });
-    sharedPreferences.setInt('plan_id_pdf', 71);
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -49,14 +45,11 @@ class _TestScreenState extends State<TestScreen> {
     return SafeArea(child: Scaffold(appBar: AppBar(
 
     ),
-    body:const Center(
-      child: PdfPreview(
-        maxPageWidth: 700,
-        actions: [ ],
-        onPrinted: showPrintedToast,
-        onShared: showSharedToast,
-        build: generatePdf,
-      )
+    body: Center(
+      child: ElevatedButton(onPressed: (){
+        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => 
+        CreateNoteSurchargeScreen(location: LocationViewModel(id: 1, description: "", imageUrls: [], name: "name", activities: [], seasons: [], topographic: "", latitude: 0, longitude: 0, address: "", province: ProvinceViewModel(id: 0, name: "name", thumbnailUrl: "thumbnailUrl")), totalService: 0)));
+      }, child: Text('to page'))
     ),
     ));
   }

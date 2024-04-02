@@ -32,7 +32,7 @@ class CustomerViewModel {
         id: json["id"],
         name: json["name"],
         isMale: json["isMale"],
-        avatarUrl: json["avatarUrl"],
+        avatarUrl: json["avatarPath"],
         phone: json["phone"],
         defaultAddress: json['defaultAddress'],
         defaultCoordinate: json['defaultCoordinate'] == null

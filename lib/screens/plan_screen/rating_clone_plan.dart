@@ -1,7 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';

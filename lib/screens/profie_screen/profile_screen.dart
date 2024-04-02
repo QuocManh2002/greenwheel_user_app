@@ -1,12 +1,13 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/profile_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/qr_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/update_profile_screen.dart';
@@ -17,6 +18,7 @@ import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:sizer2/sizer2.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -44,6 +46,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _isLoading = false;
       });
+      print('$baseBucketImage${_customer!.avatarUrl}');
     }
   }
 
@@ -292,8 +295,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                             context,
                             PageTransition(
-                                child: const SuccessPaymentScreen(
-                                  amount: 0,
+                                child: const DetailPlanNewScreen(
+                                  isEnableToJoin: true,
+                                  planId: 134,
+                                  planType: 'INVITATION',
                                 ),
                                 type: PageTransitionType.rightToLeft));
                       }, Icons.vpn_key, 'Thay đổi mật khẩu'),
@@ -329,17 +334,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Positioned(
                   top: 0,
                   child: Container(
-                    margin: EdgeInsets.only(top: 5.h),
-                    height: 18.h,
-                    clipBehavior: Clip.hardEdge,
-                    decoration: const BoxDecoration(shape: BoxShape.circle),
-                    child: Image.network(
-                      _customer!.avatarUrl == null || _customer!.avatarUrl == ""
-                          ? defaultUserAvatarLink
-                          : _customer!.avatarUrl!,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                      margin: EdgeInsets.only(top: 5.h),
+                      height: 18.h,
+                      width: 18.h,
+                      clipBehavior: Clip.hardEdge,
+                      decoration: const BoxDecoration(
+                          color: Colors.white, shape: BoxShape.circle),
+                      child:
+                          CachedNetworkImage(
+                              key: UniqueKey(),
+                              height: 18.h,
+                              width: 18.h,
+                              fit: BoxFit.cover,
+                              imageUrl:
+                                  '$baseBucketImage${_customer!.avatarUrl}',
+                              placeholder: (context, url) =>
+                                  Image.memory(kTransparentImage),
+                              errorWidget: (context, url, error) => Image.asset(
+                                    _customer!.isMale
+                                        ? male_default_avatar
+                                        : female_default_avatar,
+                                    fit: BoxFit.cover,
+                                  ))),
                 )
               ],
             ),

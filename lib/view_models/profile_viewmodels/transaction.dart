@@ -1,6 +1,8 @@
 class Transaction {
   int? id;
   int? receiverId;
+  int? planMemberId;
+  int? orderId;
   String? type;
   String? status;
   int? gcoinAmount;
@@ -21,10 +23,14 @@ class Transaction {
     this.bankTransCode,
     this.createdAt,
     this.senderId,
+    this.orderId,
+    this.planMemberId
   });
 
   factory Transaction.fromJson(Map<String, dynamic> json) => Transaction(
         id: json["id"],
+        orderId: json['orderId'],
+        planMemberId: json['planMemberId'],
         receiverId: json["receiverId"],
         type: json["type"],
         status: json["status"],

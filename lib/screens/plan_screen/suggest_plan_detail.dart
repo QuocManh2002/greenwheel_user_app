@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/direction_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
@@ -60,7 +60,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
   }
 
   setUpData() async {
-    _planDetail = await _planService.GetPlanById(widget.planId);
+    _planDetail = await _planService.GetPlanById(widget.planId,"");
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
 
@@ -252,7 +252,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
                             child: _selectedTab == 0
                                 ? Column(
                                     children: [
-                                      BaseInformationWidget(plan: _planDetail!, members: []),
+                                      BaseInformationWidget(plan: _planDetail!, members: [],type: '',refreshData: (){},),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 24),
@@ -555,7 +555,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
         .toList();
     sharedPreferences.setInt('plan_combo_date', _comboDate.id - 1);
     sharedPreferences.setInt('numOfExpPeriod', _planDetail!.numOfExpPeriod);
-    sharedPreferences.setInt('plan_number_of_member', _planDetail!.maxMember);
+    sharedPreferences.setInt('plan_number_of_member', _planDetail!.maxMemberCount);
     sharedPreferences.setDouble(
         'plan_start_lat', _planDetail!.startLocationLat);
     sharedPreferences.setDouble(

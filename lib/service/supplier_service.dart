@@ -2,7 +2,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
 
 class SupplierService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
@@ -46,7 +45,7 @@ class SupplierService extends Iterable {
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
           query GetSuppliers {
-            suppliers(
+            providers(
               where: {
                 $coordinateString
                 or: $typeConditions1
@@ -72,7 +71,7 @@ class SupplierService extends Iterable {
         throw Exception(result.exception.toString());
       }
 
-      final List<dynamic>? res = result.data?['suppliers']['nodes'];
+      final List<dynamic>? res = result.data?['providers']['nodes'];
       if (res == null || res.isEmpty) {
         return <SupplierViewModel>[];
       }
@@ -149,7 +148,7 @@ query getSupplierById(\$id: [Int]!) {
       ''';
       QueryResult result = await client.query(QueryOptions(document: gql("""
 {
-            suppliers(
+            providers(
               where: {
                 $coordinateString
                 type:{
@@ -170,7 +169,7 @@ query getSupplierById(\$id: [Int]!) {
       if (result.hasException) {
         throw Exception(result.exception);
       }
-      List? res = result.data!['suppliers']['nodes'];
+      List? res = result.data!['providers']['nodes'];
       if (res == null || res.isEmpty) {
         return [];
       }

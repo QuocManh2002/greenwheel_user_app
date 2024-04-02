@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -22,7 +22,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   List<PlanCardViewModel> _futuredPlans = [];
   List<PlanCardViewModel> _historyPlans = [];
   List<List<PlanCardViewModel>> _totalPlans = [];
-  List<PlanCardViewModel> _draftPlans = [];
+  List<PlanCardViewModel> _myPlans = [];
 
   int _selectedTab = 0;
 
@@ -49,38 +49,13 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
     List<PlanCardViewModel> canceledPlans = [];
     List<PlanCardViewModel> historyPlans = [];
     List<PlanCardViewModel> futurePlans = [];
-    List<PlanCardViewModel> draftPlans = [];
-    List<PlanCardViewModel>? totalPlans = await _planService.getPlanCards();
+    List<PlanCardViewModel> myPlans = [];
+    List<PlanCardViewModel>? totalPlans =
+        await _planService.getPlanCards(false);
 
     if (totalPlans != null) {
       for (final plan in totalPlans) {
-        // switch (plan.status) {
-        //   case "CANCELED":
-        //     canceledPlans.add(plan);
-        //     break;
-        //   case "DRAFT":
-        //     draftPlans.add(plan);
-        //     break;
-        //   case "FUTURE":
-        //     futurePlans.add(plan);
-        //     break;
-        //   case "VERIFIED":
-        //     onGoingPlans.add(plan);
-        //     break;
-        //   case "FINISHED":
-        //     historyPlans.add(plan);
-        //     break;
-        //   case "ONGOING":
-        //     onGoingPlans.add(plan);
-        //     break;
-        //   case "PAST":
-        //     historyPlans.add(plan);
-        //     break;
-        // }
-
-        if (plan.status == 'DRAFT') {
-          draftPlans.add(plan);
-        } else if (plan.startDate.isAfter(DateTime.now())) {
+        if (plan.startDate.isAfter(DateTime.now())) {
           futurePlans.add(plan);
         } else if (plan.startDate.isBefore(DateTime.now()) &&
             plan.endDate.isAfter(DateTime.now())) {
@@ -94,14 +69,11 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
         _futuredPlans = futurePlans;
         _onGoingPlans = onGoingPlans;
         _historyPlans = historyPlans;
-        _draftPlans = draftPlans;
 
         _totalPlans.add(_futuredPlans);
         _totalPlans.add(_onGoingPlans);
         _totalPlans.add(historyPlans);
         _totalPlans.add(canceledPlans);
-        _totalPlans.add(draftPlans);
-
         isLoading = false;
       });
     }
@@ -222,15 +194,24 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                         child: InkWell(
                           borderRadius:
                               const BorderRadius.all(Radius.circular(12)),
-                          onTap: () {
+                          onTap: () async {
                             setState(() {
+                              isLoading = true;
                               _selectedTab = 4;
                             });
+                            List<PlanCardViewModel>? myplans =
+                                await _planService.getPlanCards(true);
+                            if (myplans != null) {
+                              setState(() {
+                                isLoading = false;
+                                _myPlans = myplans;
+                              });
+                            }
                           },
                           child: TabIconButton(
                             iconDefaultUrl: draft_green,
                             iconSelectedUrl: draft_white,
-                            text: 'Bản nháp',
+                            text: 'Chuyến đi của tôi',
                             isSelected: _selectedTab == 4,
                             index: 4,
                             hasHeight: true,
@@ -241,23 +222,46 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                   ),
                   Expanded(
                       child: Container(
-                    margin: const EdgeInsets.only(top: 8),
-                    child: _totalPlans[_selectedTab].isEmpty
-                        ? const EmptyPlan()
-                        : ListView.builder(
-                            physics: const BouncingScrollPhysics(),
-                            shrinkWrap: true,
-                            itemCount: _totalPlans[_selectedTab].length,
-                            itemBuilder: (context, index) {
-                              return Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(vertical: 4),
-                                child: PlanCard(
-                                    plan: _totalPlans[_selectedTab][index]),
-                              );
-                            },
-                          ),
-                  ))
+                          margin: const EdgeInsets.only(top: 8),
+                          child: _selectedTab != 4
+                              ? _totalPlans[_selectedTab].isEmpty
+                                  ? const EmptyPlan()
+                                  : ListView.builder(
+                                      physics: const BouncingScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount:
+                                          _totalPlans[_selectedTab].length,
+                                      itemBuilder: (context, index) {
+                                        return Padding(
+                                          padding: const EdgeInsets.symmetric(
+                                              vertical: 4),
+                                          child: PlanCard(
+                                              isOwned: false,
+                                              plan: _totalPlans[_selectedTab]
+                                                  [index]),
+                                        );
+                                      },
+                                    )
+                              : isLoading
+                                  ? PlanLoadingScreen()
+                                  : _myPlans.isEmpty
+                                      ? const EmptyPlan()
+                                      : ListView.builder(
+                                          physics:
+                                              const BouncingScrollPhysics(),
+                                          shrinkWrap: true,
+                                          itemCount: _myPlans.length,
+                                          itemBuilder: (context, index) {
+                                            return Padding(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      vertical: 4),
+                                              child: PlanCard(
+                                                  isOwned: true,
+                                                  plan: _myPlans[index]),
+                                            );
+                                          },
+                                        )))
                 ],
               ),
             ),

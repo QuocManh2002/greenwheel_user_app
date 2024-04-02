@@ -1,8 +1,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -56,16 +56,16 @@ class MemberListWidget extends StatelessWidget {
                             height: 6.h,
                             width: double.infinity,
                             fit: BoxFit.cover,
-                            imageUrl: mem.imageUrl ?? defaultUserAvatarLink,
+                            imageUrl: '$baseBucketImage${mem.imagePath}',
                             placeholder: (context, url) =>
                                 Image.memory(kTransparentImage),
                             errorWidget: (context, url, error) =>
-                                FadeInImage.assetNetwork(
+                                Image.asset(
+                              mem.isMale
+                                  ? male_default_avatar
+                                  : female_default_avatar,
                               height: 6.h,
-                              width: double.infinity,
                               fit: BoxFit.cover,
-                              placeholder: '',
-                              image: empty_plan,
                             ),
                           )),
                       SizedBox(
@@ -79,13 +79,15 @@ class MemberListWidget extends StatelessWidget {
                               child: Text(
                                 '${mem.name} (${mem.companions == null ? 1 : mem.companions!.length + 1})',
                                 style: const TextStyle(
-                                  fontFamily: 'NotoSans',
-                                    fontSize: 20, fontWeight: FontWeight.bold),
+                                    fontFamily: 'NotoSans',
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold),
                               ),
                             ),
                             Text(
-                              '0${mem.phone.substring(3)}',
-                              style: const TextStyle(fontFamily: 'NotoSans', fontSize: 19),
+                              '0${mem.phone.substring(2)}',
+                              style: const TextStyle(
+                                  fontFamily: 'NotoSans', fontSize: 19),
                             )
                           ]),
                       const Spacer(),
@@ -94,28 +96,28 @@ class MemberListWidget extends StatelessWidget {
                           : mem.accountType == 3
                               ? PopupMenuButton(
                                   itemBuilder: (ctx) => [
-                                    if(mem.companions != null)
-                                    const PopupMenuItem(
-                                      value: 0,
-                                      child: Row(
-                                        children: [
-                                          Icon(
-                                            Icons.info,
-                                            color: primaryColor,
-                                            size: 32,
-                                          ),
-                                          SizedBox(
-                                            width: 8,
-                                          ),
-                                          Text(
-                                            'Chi tiết',
-                                            style: TextStyle(
-                                                color: primaryColor,
-                                                fontSize: 18),
-                                          )
-                                        ],
+                                    if (mem.companions != null)
+                                      const PopupMenuItem(
+                                        value: 0,
+                                        child: Row(
+                                          children: [
+                                            Icon(
+                                              Icons.info,
+                                              color: primaryColor,
+                                              size: 32,
+                                            ),
+                                            SizedBox(
+                                              width: 8,
+                                            ),
+                                            Text(
+                                              'Chi tiết',
+                                              style: TextStyle(
+                                                  color: primaryColor,
+                                                  fontSize: 18),
+                                            )
+                                          ],
+                                        ),
                                       ),
-                                    ),
                                     const PopupMenuItem(
                                       value: 1,
                                       child: Row(
@@ -251,18 +253,18 @@ class MemberListWidget extends StatelessWidget {
                                               animType: AnimType.bottomSlide,
                                               dialogType: DialogType.question,
                                               title:
-                                                  'Bạn có chắc chắn muốn xoá tài khoản này khỏi chuyến đi không ?',
+                                                  'Xoá ${mem.name} khỏi chuyến đi này ?',
                                               titleTextStyle: const TextStyle(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.bold),
                                               btnOkColor: Colors.blue,
-                                              btnOkText: 'Có',
+                                              btnOkText: 'Xoá',
                                               padding: const EdgeInsets.all(12),
                                               btnOkOnPress: () {
                                                 onRemoveMember(
                                                     mem.memberId, false);
                                               },
-                                              btnCancelColor: Colors.orange,
+                                              btnCancelColor: Colors.deepOrangeAccent,
                                               btnCancelText: 'Không',
                                               btnCancelOnPress: () {})
                                           .show();
@@ -272,18 +274,18 @@ class MemberListWidget extends StatelessWidget {
                                               animType: AnimType.bottomSlide,
                                               dialogType: DialogType.question,
                                               title:
-                                                  'Bạn có chắc chắn muốn chặn tài khoản này hay không ?',
+                                                  'Chặn ${mem.name} khỏi chuyến đi này ?',
                                               titleTextStyle: const TextStyle(
                                                   fontSize: 18,
                                                   fontWeight: FontWeight.bold),
                                               btnOkColor: Colors.blue,
                                               padding: const EdgeInsets.all(12),
-                                              btnOkText: 'Có',
+                                              btnOkText: 'Chặn',
                                               btnOkOnPress: () {
                                                 onRemoveMember(
                                                     mem.memberId, true);
                                               },
-                                              btnCancelColor: Colors.orange,
+                                              btnCancelColor: Colors.deepOrangeAccent,
                                               btnCancelText: 'Không',
                                               btnCancelOnPress: () {})
                                           .show();

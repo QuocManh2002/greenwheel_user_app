@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:sizer2/sizer2.dart';
 class TabIconButton extends StatelessWidget {
   const TabIconButton(
@@ -22,7 +22,7 @@ class TabIconButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 10.h,
+      height: 11.h,
       padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
       decoration: BoxDecoration(
         color: isSelected ? primaryColor : Colors.white,
@@ -52,7 +52,7 @@ class TabIconButton extends StatelessWidget {
               overflow: TextOverflow.clip,
               textAlign: TextAlign.center,
               style: TextStyle(
-                  fontSize: 10.9,
+                  fontSize: 10,
                   fontFamily: 'NotoSans',
                   fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                   color: isSelected ? Colors.white : primaryColor),

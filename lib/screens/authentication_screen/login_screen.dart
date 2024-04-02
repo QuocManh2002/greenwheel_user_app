@@ -211,14 +211,15 @@ class _LoginScreenState extends State<LoginScreen> {
     //   },
     //   codeAutoRetrievalTimeout: (String verificationId) {},
     // );
-    final rs = await _customerService.requestTravelerOTP(phoneController.text);
+  
+    final rs = await _customerService.requestTravelerOTP(phoneController.text.length == 10 ? phoneController.text : '0${phoneController.text}' , context);
     if (rs!) {
       Navigator.pop(context);
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (_) => OTPScreen(
-                    phoneNumber: phoneController.text,
+                    phoneNumber: phoneController.text.length == 10 ? phoneController.text : '0${phoneController.text}',
                   )));
     }
   }

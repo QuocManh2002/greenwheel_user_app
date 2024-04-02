@@ -15,6 +15,7 @@ class PlanScheduleItem {
   final String? type;
   final String? shortDescription;
   final int? activityTime;
+  final bool? isStarred;
 
   PlanScheduleItem(
       {String? id,
@@ -24,6 +25,7 @@ class PlanScheduleItem {
       this.date,
       this.orderId,
       this.activityTime,
+      this.isStarred,
       this.type})
       : id = id ?? uuid.v4();
 

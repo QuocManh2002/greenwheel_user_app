@@ -3,8 +3,8 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/constants/constant.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/constant.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
@@ -57,7 +57,7 @@ class CartScreen extends StatefulWidget {
   final bool? isChangeCart;
   final String? orderGuid;
   final void Function(ProductViewModel prod, int qty) updateCart;
-  final double? availableGcoinAmount;
+  final int? availableGcoinAmount;
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -841,6 +841,7 @@ class _CartScreenState extends State<CartScreen> {
                 if(widget.isFromTempOrder == null ){
                   Navigator.of(context).pop();
                 }
+                // Navigator.of(context).pop();
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();
                 Navigator.of(context).pop();

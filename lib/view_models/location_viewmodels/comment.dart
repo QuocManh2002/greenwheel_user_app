@@ -1,4 +1,4 @@
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 
 class CommentViewModel {
   const CommentViewModel(

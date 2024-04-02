@@ -7,10 +7,8 @@ const String gcoin_logo = "${baseImage}gcoin_logo.svg";
 const String male_icon = "${baseImage}male.png";
 const String female_icon = "${baseImage}female.png";
 const String vnpay_logo = "${baseImage}vnpay.png";
-const String stripe_logo = "${baseImage}stripe_logo.jpg";
 const String app_logo = "${baseImage}phuot_travel_logo.png";
 const String success_icon = "${baseImage}success.png";
-const String share_icon = "${baseImage}share.png";
 const String empty_plan = "${baseImage}empty_plan.png";
 const String calendar_search = "${baseImage}calendar_search.png";
 const String current_location = "${baseImage}current_location.png";
@@ -39,6 +37,8 @@ const String backpack = '${baseImage}backpack.png';
 const String pdf_mark = '${baseImage}pdf_mark.svg';
 const String surcharge_green = '${baseImage}surcharge_green.svg';
 const String surcharge_white = '${baseImage}surcharge_white.svg';
+const String male_default_avatar = '${baseImage}man.png';
+const String female_default_avatar = '${baseImage}woman.png';
 
 
 const String baseBucketImage = 'https://d38ozmgi8b70tu.cloudfront.net';

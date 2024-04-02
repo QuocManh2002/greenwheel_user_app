@@ -10,8 +10,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:greenwheel_user_app/config/token_generator.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/temp_plan.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
@@ -81,6 +81,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
         });
       }
       setState(() {
+        _customer = customer;
         _isEmptySearchResult = false;
         _isSearchingLoading = false;
       });
@@ -160,8 +161,8 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   onInvite() async {
     var rs = await _planService.inviteToPlan(widget.planId, _customer!.id);
     if (rs != 0) {
-      // ignore: use_build_context_synchronously
       AwesomeDialog(
+              // ignore: use_build_context_synchronously
               context: context,
               title: 'Đã gửi lời mời',
               dialogType: DialogType.success,
@@ -169,12 +170,14 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                   const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               btnOkColor: primaryColor,
               btnOkOnPress: () {
+                phoneSearch.clear();
                 _planMembers.add(PlanMemberViewModel(
                     name: _customer!.name,
                     memberId: _customer!.id,
                     phone: _customer!.phone,
                     accountId: 1,
                     weight: 1,
+                    isMale: _customer!.isMale,
                     status: "INVITED"));
                 setState(() {
                   _isSearch = false;
@@ -223,7 +226,6 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
       body: Stack(
         children: [
           Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            if (widget.joinMethod == 'INVITE')
               Padding(
                 padding: const EdgeInsets.all(32),
                 child: TextField(
@@ -361,31 +363,42 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                               )
                             : Row(
                                 children: [
+                                  SizedBox(width: 3.w,),
                                   Container(
                                     height: 6.h,
+                                    width: 6.h,
                                     decoration: const BoxDecoration(
                                         shape: BoxShape.circle),
                                     clipBehavior: Clip.hardEdge,
-                                    child: Image.network(defaultUserAvatarLink),
+                                    child: _customer!.avatarUrl == null
+                                        ? Image.asset(_customer!.isMale
+                                            ? male_default_avatar
+                                            : female_default_avatar, height: 6.h, width: 6.h, fit: BoxFit.cover,)
+                                        : Image.network('$baseBucketImage${_customer!.avatarUrl!}',width: 6.h, height: 6.h, fit: BoxFit.cover),
                                   ),
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _customer!.name,
-                                        style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18),
-                                      ),
-                                      const SizedBox(
-                                        height: 5,
-                                      ),
-                                      Text(
-                                        "0${_customer!.phone.substring(3)}",
-                                        style: const TextStyle(fontSize: 16),
-                                      )
-                                    ],
+                                  SizedBox(width: 3.w,),
+                                  SizedBox(
+                                    width: 40.w,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _customer!.name,
+                                          overflow: TextOverflow.clip,
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18),
+                                        ),
+                                        const SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(
+                                          "0${_customer!.phone.substring(3)}",
+                                          style: const TextStyle(fontSize: 16),
+                                        )
+                                      ],
+                                    ),
                                   ),
                                   const Spacer(),
                                   _isEnableToInvite

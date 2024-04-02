@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:intl/intl.dart';
@@ -98,7 +100,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                   const Spacer(),
                   Text(
                     NumberFormat.simpleCurrency(
-                            locale: 'vi_VN', decimalDigits: 0, name: 'đ')
+                            locale: 'vi_VN', decimalDigits: 0, name: '')
                         .format(_totalSurcharge),
                     style: const TextStyle(
                       fontFamily: 'NotoSans',
@@ -106,6 +108,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                       fontWeight: FontWeight.bold,
                     ),
                   ),
+                  SvgPicture.asset(gcoin_logo, height: 20, fit: BoxFit.cover,)
                 ],
               ),
             if ( _totalSurcharge != 0)
@@ -123,18 +126,18 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                     NumberFormat.simpleCurrency(
                             locale: 'vi_VN', decimalDigits: 0, name: 'đ')
                         .format(_totalSurcharge /
-                            widget.plan.maxMember),
+                            widget.plan.maxMemberCount),
                     style: const TextStyle(
                       fontFamily: 'NotoSans',
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
-                  // SvgPicture.asset(
-                  //   gcoin_logo,
-                  //   height: 20,
-                  //   fit: BoxFit.cover,
-                  // )
+                  SvgPicture.asset(
+                    gcoin_logo,
+                    height: 20,
+                    fit: BoxFit.cover,
+                  )
                 ],
               ),
                 ],

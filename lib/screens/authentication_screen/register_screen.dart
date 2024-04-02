@@ -2,7 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
@@ -256,14 +256,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
     } else {
       if (_formKey.currentState!.validate()) {
         final CustomerService _newService = CustomerService();
-        var id = await _newService.registerTraveler(RegisterViewModel(
+        var rs = await _newService.registerTraveler(RegisterViewModel(
             deviceToken: sharedPreferences.getString('deviceToken')!,
             isMale: isMale,
             name: nameController.text));
-        if (id != null || id != 0) {
-          await TokenRefresher.refreshToken();
-          print("2: ${sharedPreferences.getString('userToken')}");
-          await _customerService.travelerSignIn(sharedPreferences.getString('deviceToken')!);
+        if (rs != null ) {
+          sharedPreferences.setString('userToken', rs.accessToken);
           // ignore: use_build_context_synchronously
           Restart.restartApp(); // ignore: use_build_context_synchronously
           // Navigator.of(context).pushAndRemoveUntil(

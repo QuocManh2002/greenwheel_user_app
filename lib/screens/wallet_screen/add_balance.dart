@@ -1,8 +1,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
@@ -318,30 +318,18 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
               ElevatedButton(
                   style: elevatedButtonStyle,
                   onPressed: () async {
-                    TopupRequestViewModel? request = await orderService
-                        .topUpRequest(amount * 100);
+                    TopupRequestViewModel? request =
+                        await orderService.topUpRequest(amount);
 
                     if (request != null) {
-                      // ignore: use_build_context_synchronously
                       showVNPayScreen(
+                        // ignore: use_build_context_synchronously
                         context,
                         paymentUrl: request.paymentUrl,
-                        onPaymentSuccess: (data) {
+                        onPaymentSuccess: (data) async {
                           print(data);
                           Navigator.of(context).pop();
-                          // Navigator.of(context).pop();
-                          AwesomeDialog(
-                            context: context,
-                            dialogType: DialogType.success,
-                            body: const Center(
-                              child: Text('Nạp GCOIN vào ví thành công'),
-                            ),
-                            btnOkColor: primaryColor,
-                            btnOkOnPress: () => Navigator.of(context).push(
-                                MaterialPageRoute(
-                                    builder: (ctx) =>
-                                        const TabScreen(pageIndex: 3))),
-                          ).show();
+                          showSuccessPaymentDialog();
                         },
                         onPaymentError: _onPaymentFailure,
                       );
@@ -355,7 +343,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                       // } else {
                       //   // ignore: use_build_context_synchronously
                       // }
-//                       Ngân hàng	NCB
+// Ngân hàng	NCB
 // Số thẻ	9704198526191432198
 // Tên chủ thẻ	NGUYEN VAN A
 // Ngày phát hành	07/15
@@ -400,4 +388,19 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
     ).show();
     print(error);
   }
+
+  showSuccessPaymentDialog() {
+    print('sucess payment');
+    AwesomeDialog(
+        context: context,
+        dialogType: DialogType.success,
+        body: const Center(
+          child: Text('Nạp GCOIN vào ví thành công'),
+        ),
+        btnOkColor: primaryColor,
+        btnOkOnPress: () => Navigator.of(context).push(
+            MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 3))),
+      ).show();
+      
+      }
 }

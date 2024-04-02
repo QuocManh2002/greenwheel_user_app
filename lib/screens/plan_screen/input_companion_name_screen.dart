@@ -1,6 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:sizer2/sizer2.dart';
@@ -10,10 +10,12 @@ class InputCompanionNameScreen extends StatefulWidget {
       {super.key,
       required this.weight,
       required this.callback,
+      required this.onJoin,
       this.initNames});
   final int weight;
   final void Function(List<String> names) callback;
   final List<String>? initNames;
+  final void Function() onJoin;
 
   @override
   State<InputCompanionNameScreen> createState() =>
@@ -43,41 +45,92 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
         title: const Text('Thông tin thành viên'),
         leading: BackButton(
           onPressed: () {
-            AwesomeDialog(
-                    context: context,
-                    animType: AnimType.rightSlide,
-                    dialogType: DialogType.warning,
-                    title: 'Thông tin thành viên chưa được lưu',
-                    titleTextStyle: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold),
-                    desc: 'Vẫn rời khỏi màn hình này chứ?',
-                    descTextStyle:
-                        const TextStyle(fontSize: 16, color: Colors.grey),
-                    btnOkColor: Colors.amber,
-                    btnOkOnPress: () {
-                      Navigator.of(context).pop();
-                    },
-                    btnOkText: 'Rời khỏi',
-                    btnCancelColor: Colors.blue,
-                    btnCancelOnPress: () {},
-                    btnCancelText: 'Huỷ')
-                .show();
+            if (names.isNotEmpty) {
+              widget.callback(names);
+            }
+            Navigator.of(context).pop();
+            // AwesomeDialog(
+            //         context: context,
+            //         animType: AnimType.rightSlide,
+            //         dialogType: DialogType.warning,
+            //         title: 'Thông tin thành viên chưa được lưu',
+            //         titleTextStyle: const TextStyle(
+            //             fontSize: 18, fontWeight: FontWeight.bold),
+            //         desc: 'Vẫn rời khỏi màn hình này chứ?',
+            //         descTextStyle:
+            //             const TextStyle(fontSize: 16, color: Colors.grey),
+            //         btnOkColor: Colors.amber,
+            //         btnOkOnPress: () {
+            //           Navigator.of(context).pop();
+            //         },
+            //         btnOkText: 'Rời khỏi',
+            //         btnCancelColor: Colors.blue,
+            //         btnCancelOnPress: () {},
+            //         btnCancelText: 'Huỷ')
+            //     .show();
           },
         ),
         actions: [
-          if(names.length < widget.weight)
-          IconButton(
-              onPressed:
-               onAddName ,
-              icon: const Icon(
-                Icons.add,
-                color: Colors.white,
-                size: 40,
-              )),
+          if (names.length < widget.weight)
+            IconButton(
+                onPressed: onAddName,
+                icon: const Icon(
+                  Icons.add,
+                  color: Colors.white,
+                  size: 40,
+                )),
           SizedBox(
             width: 1.h,
           )
         ],
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Expanded(
+                child: ElevatedButton(
+                    style: elevatedButtonStyle.copyWith(
+                        shape: const MaterialStatePropertyAll(
+                            RoundedRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(10)),
+                                side:
+                                    BorderSide(color: primaryColor, width: 2))),
+                        foregroundColor:
+                            const MaterialStatePropertyAll(primaryColor),
+                        backgroundColor:
+                            const MaterialStatePropertyAll(Colors.white)),
+                    onPressed: () {
+                      if (names.isNotEmpty) {
+                        widget.callback(names);
+                      }
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Quay lại'))),
+            SizedBox(
+              width: 3.w,
+            ),
+            Expanded(
+                child: ElevatedButton(
+                    style: elevatedButtonStyle.copyWith(
+                        foregroundColor: MaterialStatePropertyAll(
+                            widget.weight == names.length
+                                ? Colors.white
+                                : Colors.grey),
+                        backgroundColor: MaterialStatePropertyAll(
+                            widget.weight == names.length
+                                ? primaryColor
+                                : lightPrimaryTextColor)),
+                    onPressed: widget.weight == names.length
+                        ? (){
+                          widget.callback(names);
+                          widget.onJoin();
+                        }
+                        : null,
+                    child: const Text('Xuống tiền'))),
+          ],
+        ),
       ),
       body: Column(
         children: [
@@ -86,22 +139,22 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
             child: SingleChildScrollView(
               child: Column(
                 children: [
-                  for (final name in names)
+                  for (int i = 0; i < names.length; i++)
                     Container(
                       width: 100.w,
                       decoration: BoxDecoration(
-                        color: names.indexOf(name).isOdd
+                        color: i.isOdd
                             ? Colors.white
                             : lightPrimaryTextColor,
                       ),
-                      padding:
-                          const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                       child: Row(
                         children: [
                           SizedBox(
                             width: 70.w,
                             child: Text(
-                              '${names.indexOf(name) + 1}. $name',
+                              '${i + 1}. ${names[i]}',
                               overflow: TextOverflow.clip,
                               style: const TextStyle(
                                   fontSize: 22,
@@ -127,7 +180,8 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
                                     Text(
                                       'Cập nhật',
                                       style: TextStyle(
-                                          color: Colors.blueAccent, fontSize: 18),
+                                          color: Colors.blueAccent,
+                                          fontSize: 18),
                                     )
                                   ],
                                 ),
@@ -147,18 +201,22 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
                                     Text(
                                       'Xoá',
                                       style: TextStyle(
-                                          color: Colors.redAccent, fontSize: 18),
+                                          color: Colors.redAccent,
+                                          fontSize: 18),
                                     )
                                   ],
                                 ),
                               ),
                             ],
-                            child:const Icon(Icons.more_horiz, color: Colors.grey,),
+                            child: const Icon(
+                              Icons.more_horiz,
+                              color: Colors.grey,
+                            ),
                             onSelected: (value) {
                               if (value == 0) {
-                                onUpdateName(names.indexOf(name));
+                                onUpdateName(i);
                               } else {
-                                onDeleteName(names.indexOf(name));
+                                onDeleteName(i);
                               }
                             },
                           )
@@ -169,17 +227,6 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
               ),
             ),
           ),
-          const Spacer(),
-          Container(
-            alignment: Alignment.center,
-            child: ElevatedButton(
-              style: elevatedButtonStyle,
-              onPressed: (){
-              widget.callback(names);
-              Navigator.of(context).pop();
-            }, child:const Text('Lưu')),
-          ),
-          SizedBox(height: 2.h,)
         ],
       ),
     ));

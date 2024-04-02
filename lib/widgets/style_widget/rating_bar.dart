@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 
 // ignore: must_be_immutable
 class RatingBar extends StatelessWidget {

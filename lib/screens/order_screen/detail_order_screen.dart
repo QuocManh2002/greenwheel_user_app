@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/service_types.dart';
-import 'package:greenwheel_user_app/constants/sessions.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/service_types.dart';
+import 'package:greenwheel_user_app/core/constants/sessions.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/session.dart';
@@ -31,7 +32,7 @@ class OrderDetailScreen extends StatefulWidget {
   final int? memberLimit;
   final DateTime? endDate;
   final bool? isFromTempOrder;
-  final double? availableGcoinAmount;
+  final int? availableGcoinAmount;
   final void Function() callback;
 
   @override
@@ -81,7 +82,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         height: 30.h,
                         width: double.infinity,
                         child: Image.network(
-                          widget.order.supplier!.thumbnailUrl!,
+                          '$baseBucketImage${widget.order.supplier!.thumbnailUrl!}',
                           fit: BoxFit.fitWidth,
                           height: 30.h,
                         ),

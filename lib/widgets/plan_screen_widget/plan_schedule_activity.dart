@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/bottom_sheet_container_widget.dart';
 import 'package:intl/intl.dart';
@@ -80,7 +80,7 @@ class PlanScheduleActivity extends StatelessWidget {
               decoration: BoxDecoration(
                   color: isSelected
                       ? primaryColor.withOpacity(0.3)
-                      : const Color(0xFFf2f2f2),
+                      :  lightPrimaryTextColor.withOpacity(0.8),
                   boxShadow: const [
                     BoxShadow(
                       blurRadius: 3,
@@ -88,9 +88,11 @@ class PlanScheduleActivity extends StatelessWidget {
                       offset: Offset(2, 4),
                     )
                   ],
-                  border: item.type == 'Ăn uống' || item.type == 'Check-in'
-                      ? Border.all(color: primaryColor, width: 2)
-                      : const Border(),
+                  border: item.isStarred != null && item.isStarred!
+                      ? Border.all(color: Colors.amber, width: 2)
+                      : item.type == 'Ăn uống' || item.type == 'Check-in'
+                          ? Border.all(color: primaryColor, width: 2)
+                          : const Border(),
                   borderRadius: const BorderRadius.all(Radius.circular(12))),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -128,9 +130,11 @@ class PlanScheduleActivity extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      color: item.type == 'Ăn uống'
-                          ? primaryColor
-                          : Colors.black54,
+                      color: item.isStarred != null && item.isStarred!
+                          ? Colors.amber
+                          : item.type == 'Ăn uống'
+                              ? primaryColor
+                              : Colors.black54,
                       height: 2,
                     ),
                     SizedBox(
@@ -153,7 +157,7 @@ class PlanScheduleActivity extends StatelessWidget {
                             const Icon(
                               Icons.watch_later_outlined,
                               size: 22,
-                            ), 
+                            ),
                           ],
                         ),
                         const SizedBox(

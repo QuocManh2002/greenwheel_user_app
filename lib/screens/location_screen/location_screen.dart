@@ -3,15 +3,16 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/constant.dart';
-import 'package:greenwheel_user_app/constants/tags.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/constant.dart';
+import 'package:greenwheel_user_app/core/constants/tags.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/select_default_address.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/location_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/location_screen/add_comment_screen.dart';
 import 'package:greenwheel_user_app/screens/location_screen/all_comment_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
@@ -82,9 +83,7 @@ class _LocationScreenState extends State<LocationScreen> {
         child: Scaffold(
             resizeToAvoidBottomInset: false,
             body: isLoading
-                ? const Center(
-                    child: Text("Loading..."),
-                  )
+                ? const LocationLoadingScreen()
                 : Column(
                     children: [
                       Expanded(
@@ -111,7 +110,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                                   height: 25.h,
                                                   fit: BoxFit.cover,
                                                 ),
-                                                imageUrl: '$baseBucketImage$item',
+                                                imageUrl:
+                                                    '$baseBucketImage$item',
                                               ))
                                           .toList(),
                                       carouselController: carouselController,
@@ -267,37 +267,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                 child: ElevatedButton.icon(
                                   onPressed: () {
                                     if (default_address == null) {
-                                      AwesomeDialog(
-                                              context: context,
-                                              dialogType: DialogType.warning,
-                                              animType: AnimType.leftSlide,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 16),
-                                              title:
-                                                  'Không tìm thấy địa chỉ mặc định',
-                                              titleTextStyle: const TextStyle(
-                                                  fontSize: 16,
-                                                  fontWeight: FontWeight.bold),
-                                              desc:
-                                                  'Bạn phải thêm địa chỉ mặc định để xem được bản đồ định hướng. Bạn có muốn thêm địa chỉ mặc định không?',
-                                              descTextStyle: const TextStyle(
-                                                  fontSize: 15,
-                                                  color: Colors.black54),
-                                              btnOkColor: Colors.blue,
-                                              btnOkText: 'Có',
-                                              btnOkOnPress: () {
-                                                Navigator.of(context).push(
-                                                    MaterialPageRoute(
-                                                        builder: (ctx) =>
-                                                            SelectDefaultAddress(
-                                                                callback:
-                                                                    callbackSelectDefaultLocation)));
-                                              },
-                                              btnCancelColor: Colors.orange,
-                                              btnCancelText: 'Không',
-                                              btnCancelOnPress: () {})
-                                          .show();
+                                      handleNonDefaultAddress(false);
                                     } else {
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
@@ -520,7 +490,8 @@ class _LocationScreenState extends State<LocationScreen> {
                             alignment: Alignment.center,
                             child: ElevatedButton(
                                 onPressed: () {
-                                  String? locationName = sharedPreferences
+                                  if(default_address != null){
+                                    String? locationName = sharedPreferences
                                       .getString('plan_location_name');
                                   if (locationName != null) {
                                     AwesomeDialog(
@@ -572,6 +543,9 @@ class _LocationScreenState extends State<LocationScreen> {
                                                   isCreate: true,
                                                 )));
                                   }
+                                  }else{
+                                    handleNonDefaultAddress(true);
+                                  }
                                 },
                                 style: elevatedButtonStyle,
                                 child: const Text(
@@ -620,4 +594,27 @@ class _LocationScreenState extends State<LocationScreen> {
       _comments = comments;
     });
   }
+
+  handleNonDefaultAddress(bool isCreate) => AwesomeDialog(
+          context: context,
+          dialogType: DialogType.warning,
+          animType: AnimType.leftSlide,
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          title: 'Không tìm thấy địa chỉ mặc định',
+          titleTextStyle:
+              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          desc: 
+              'Bạn phải thêm địa chỉ mặc định để ${isCreate? 'tạo kế hoạch':'xem được bản đồ định hướng'}',
+          descTextStyle: const TextStyle(fontSize: 15, color: Colors.black54),
+          btnOkColor: Colors.blue,
+          btnOkText: 'Thêm',
+          btnOkOnPress: () {
+            Navigator.of(context).push(MaterialPageRoute(
+                builder: (ctx) => SelectDefaultAddress(
+                    callback: callbackSelectDefaultLocation)));
+          },
+          btnCancelColor: Colors.orange,
+          btnCancelText: 'Huỷ',
+          btnCancelOnPress: () {})
+      .show();
 }

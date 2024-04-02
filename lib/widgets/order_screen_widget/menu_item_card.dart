@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:input_quantity/input_quantity.dart';

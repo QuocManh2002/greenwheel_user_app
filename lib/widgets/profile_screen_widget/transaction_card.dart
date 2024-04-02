@@ -2,8 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -15,6 +15,12 @@ class TransactionCard extends StatelessWidget {
   final int index;
   @override
   Widget build(BuildContext context) {
+    bool isNegative = false;
+    if(transaction.receiverId != null){
+      isNegative = false;
+    }else{
+      isNegative = true;
+    }
     return Container(
       width: 100.w,
       decoration: BoxDecoration(
@@ -31,11 +37,19 @@ class TransactionCard extends StatelessWidget {
                 shape: BoxShape.circle,
                 border: Border.all(
                     color: Colors.grey.withOpacity(0.5), width: 0.5)),
-            child: Icon(
+            child:
+            isNegative ? 
+             Icon(
               Icons.account_balance,
               color: Colors.red.withOpacity(0.7),
               size: 25,
-            ),
+            ):
+            const Icon(
+              Icons.paid_sharp,
+              color: Colors.blueAccent,
+              size: 28,
+            )
+            ,
           ),
           SizedBox(
             width: 1.h,
@@ -48,9 +62,9 @@ class TransactionCard extends StatelessWidget {
               children: [
                 SizedBox(
                     width: 70.w,
-                    child: const Text(
-                      'Chuyển tiền đến ...',
-                      style: TextStyle(
+                    child: Text(
+                      transaction.description ?? 'Không có mô tả',
+                      style:const TextStyle(
                           fontSize: 17,
                           fontFamily: 'NotoSans',
                           fontWeight: FontWeight.bold,
@@ -69,12 +83,12 @@ class TransactionCard extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      NumberFormat.simpleCurrency(
+                      '${isNegative ? '-':'+'}${NumberFormat.simpleCurrency(
                               locale: 'vi_VN', decimalDigits: 0, name: '')
-                          .format(transaction.gcoinAmount),
+                          .format(transaction.gcoinAmount)}',
                       style: const TextStyle(
                           fontFamily: 'NotoSans',
-                          fontSize: 18,
+                          fontSize: 16,
                           fontWeight: FontWeight.bold),
                     ),
                     SvgPicture.asset(

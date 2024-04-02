@@ -1,13 +1,15 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/goong_request.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/select_default_address.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
@@ -41,6 +43,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    nameController.text = widget.traveler.name;
+    isMale = widget.traveler.isMale;
+    _selectedAddressLatLng = widget.traveler.defaultCoordinate;
+    addressController.text =
+        widget.traveler.defaultAddress ?? 'Không có địa chỉ';
   }
 
   @override
@@ -54,30 +61,34 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
         padding: const EdgeInsets.all(24),
         child: ElevatedButton(
             style: elevatedButtonStyle,
-            onPressed: () async{
-              final defaultCoordinate = sharedPreferences.getStringList('defaultCoordinate');
+            onPressed: () async {
               final rs = await _customerService.updateTravelerProfile(
-                CustomerViewModel(
-                  id: widget.traveler.id, 
-                  name: nameController.text, 
-                  isMale: isMale, 
-                  avatarUrl: avatarLink, 
-                  phone: widget.traveler.phone, 
-                  balance: widget.traveler.balance, 
-                  defaultAddress: sharedPreferences.getString('defaultAddress'), 
-                  defaultCoordinate: PointLatLng(double.parse(defaultCoordinate![0]), double.parse(defaultCoordinate[1])))
-              );
-              if(rs != null){
-               await AwesomeDialog(context: context,
-                  animType: AnimType.bottomSlide,
-                  dialogType: DialogType.success,
-                  title: 'Cập nhật thông tin thành công',
-                  titleTextStyle: const TextStyle(
-                    fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans',
-                  )
-                ).show();
+                  CustomerViewModel(
+                      id: widget.traveler.id,
+                      name: nameController.text,
+                      isMale: isMale,
+                      avatarUrl: avatarLink,
+                      phone: widget.traveler.phone,
+                      balance: widget.traveler.balance,
+                      defaultAddress: addressController.text,
+                      defaultCoordinate: _selectedAddressLatLng));
+              if (rs != null) {
+                if (_selectedAddressLatLng != null) {
+                  Utils().SaveDefaultAddressToSharedPref(
+                      addressController.text, _selectedAddressLatLng!);
+                }
+                AwesomeDialog(
+                    context: context,
+                    animType: AnimType.bottomSlide,
+                    dialogType: DialogType.success,
+                    title: 'Cập nhật thông tin thành công',
+                    titleTextStyle: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'NotoSans',
+                    )).show();
 
-                Future.delayed(const Duration(seconds: 1), (){
+                Future.delayed(const Duration(seconds: 1), () {
                   Navigator.of(context).pop();
                 });
               }
@@ -98,7 +109,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                 splashColor: Colors.transparent,
                 onTap: () async {
                   final ImagePicker _picker = ImagePicker();
-                  myImage = await _picker.pickImage(source: ImageSource.gallery);
+                  myImage =
+                      await _picker.pickImage(source: ImageSource.gallery);
                   if (myImage != null) {
                     var headers = {
                       'Content-Type': 'application/json',
@@ -110,13 +122,15 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             'https://oafr1w3y52.execute-api.ap-southeast-2.amazonaws.com/default/btss-getPresignedUrl'),
                         headers: headers,
                         body: encodedImage);
-                        if(response.statusCode == 200){
-                          setState(() {
-                            avatarLink = json.decode(response.body)['fileName'];
-                          });
-                        }else{
-                          print('Exception when uploading image to server!');
-                        }
+                    if (response.statusCode == 200) {
+                      setState(() {
+                        
+                        avatarLink = json.decode(response.body)['fileName'];
+                        log(avatarLink);
+                      });
+                    } else {
+                      print('Exception when uploading image to server!');
+                    }
                   }
                 },
                 child: Container(
@@ -129,8 +143,7 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                       shape: BoxShape.circle,
                     ),
                     clipBehavior: Clip.hardEdge,
-                    child:
-                        Image.network(avatarLink, fit: BoxFit.cover),
+                    child: Image.network(avatarLink, fit: BoxFit.cover),
                   ),
                 ),
               ),

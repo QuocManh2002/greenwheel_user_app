@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/notification_list_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
@@ -41,7 +41,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: lightPrimaryTextColor,
         title: const Text(
           'Thông báo',
           style: TextStyle(
@@ -49,14 +49,16 @@ class _NotificationScreenState extends State<NotificationScreen> {
         ),
       ),
       body: _isLoading
-          ? const PlanLoadingScreen()
+          ? const NotificationListLoadingScreen()
           : _notiList!.isEmpty
-              ? Center(
+              ? Container(
+                color: lightPrimaryTextColor,
+                alignment: Alignment.center,
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Image.asset(empty_plan),
+                        Image.asset(empty_plan, width: 70.w,),
                         SizedBox(
                           height: 1.h,
                         ),
@@ -75,11 +77,15 @@ class _NotificationScreenState extends State<NotificationScreen> {
                     for (final noti in _notiList!)
                       InkWell(
                         onTap: () {
-                          if (noti.type == 'PLAN') {
+                          if (noti.type == 'PLAN'
+                          && noti.title != 'Bị loại khỏi kế hoạch.'
+                          && noti.title != 'Bị chặn khỏi kế hoạch.'
+                          ) {
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (ctx) => DetailPlanNewScreen(
                                       isEnableToJoin: true,
                                       planId: noti.planId!,
+                                      planType: "INVITATION",
                                     )));
                           } else {}
                         },

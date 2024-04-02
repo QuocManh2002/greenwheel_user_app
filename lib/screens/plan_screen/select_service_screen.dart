@@ -4,9 +4,9 @@ import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/service_types.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/service_types.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
@@ -495,7 +495,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
 
   saveToOffline() async {
     PlanDetail? plan =
-        await _planService.GetPlanById(sharedPreferences.getInt('planId')!);
+        await _planService.GetPlanById(sharedPreferences.getInt('planId')!,"");
     if (plan != null) {
       await _offlineService.savePlanToHive(PlanOfflineViewModel(
           id: plan.id,
@@ -503,7 +503,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           imageBase64: await Utils().getImageBase64Encoded(plan.imageUrls[0]),
           startDate: plan.startDate!,
           endDate: plan.endDate!,
-          memberLimit: plan.maxMember,
+          memberLimit: plan.maxMemberCount,
           schedule: plan.schedule,
           memberList: [
             PlanOfflineMember(
@@ -678,7 +678,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
               (route) => false);
           Navigator.of(context).push(MaterialPageRoute(
               builder: (ctx) =>
-                  DetailPlanNewScreen(planId: rs, isEnableToJoin: false)));
+                  DetailPlanNewScreen(planId: rs, isEnableToJoin: false, planType: 'OWNED',)));
         });
       }
     }

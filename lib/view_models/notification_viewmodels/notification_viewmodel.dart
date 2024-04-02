@@ -6,8 +6,8 @@ class NotificationViewModel {
   String? imageUrl;
   String type;
   int? planId;
+  int? orderId;
   DateTime? createdAt;
-  String? targetGuid;
 
   NotificationViewModel(
       {required this.body,
@@ -16,8 +16,8 @@ class NotificationViewModel {
       required this.title,
       required this.type,
       this.planId,
+      this.orderId,
       this.createdAt,
-      this.targetGuid,
       this.imageUrl});
 
   factory NotificationViewModel.fromJson(Map<String, dynamic> json) =>
@@ -28,7 +28,7 @@ class NotificationViewModel {
           title: json['title'],
           type: json['type'],
           planId: json['planId'],
-          createdAt: json['createdAt'],
-          targetGuid: json['targetGuid'],
+          createdAt: DateTime.parse(json['createdAt']),
+          orderId: json['orderId'],
           imageUrl: json['imageUrl']);
 }

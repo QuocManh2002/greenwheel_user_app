@@ -1,27 +1,20 @@
-// To parse this JSON data, do
-//
-//     final planDetail = planDetailFromJson(jsonString);
 
-import 'dart:convert';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
-
-PlanDetail planDetailFromJson(String str) =>
-    PlanDetail.fromJson(json.decode(str));
-
-String planDetailToJson(PlanDetail data) => json.encode(data.toJson());
+import 'package:intl/intl.dart';
 
 class PlanDetail {
   int id;
   String? name;
-  DateTime? departureDate;
+  DateTime? departDate;
+  DateTime? departTime;
   DateTime? startDate;
   DateTime? endDate;
   String? joinMethod;
   List<dynamic> schedule;
-  int maxMember;
+  int maxMemberCount;
   String status;
   String locationName;
   int locationId;
@@ -38,19 +31,21 @@ class PlanDetail {
   int? leaderId;
   String? note;
   int? memberCount;
-  double? currentGcoinBudget;
   List<SurchargeViewModel>? surcharges;
   int? maxMemberWeight;
   String? departureAddress;
-  DateTime? regClosedAt;
+  DateTime? regCloseAt;
   String? leaderName;
+  int? actualGcoinBudget;
+  int? displayGcoinBudget;
+  int? gcoinHostDonated;
 
   PlanDetail(
       {required this.id,
       required this.startDate,
       required this.endDate,
       required this.schedule,
-      required this.maxMember,
+      required this.maxMemberCount,
       required this.status,
       required this.locationName,
       required this.locationId,
@@ -63,17 +58,20 @@ class PlanDetail {
       required this.startLocationLat,
       required this.startLocationLng,
       required this.numOfExpPeriod,
-      required this.departureDate,
+      required this.departDate,
+      this.departTime,
       this.travelDuration,
       this.tempOrders,
       this.leaderId,
       this.memberCount,
       this.note,
-      this.currentGcoinBudget,
+      this.actualGcoinBudget,
+      this.displayGcoinBudget,
+      this.gcoinHostDonated,
       this.surcharges,
       this.maxMemberWeight,
       this.departureAddress,
-      this.regClosedAt,
+      this.regCloseAt,
       this.leaderName,
       this.orders});
 
@@ -82,24 +80,27 @@ class PlanDetail {
         name: json["name"],
         leaderName: json['account']['name'],
         tempOrders: json['tempOrders'],
-        departureDate: DateTime.parse(json['departAt']),
+        departDate: DateTime.parse(json['departDate']),
+        departTime: DateFormat.Hms().parse(json['departTime']),
         startDate: DateTime.parse(json["startDate"]),
         endDate: DateTime.parse(json["endDate"]),
         schedule: json["schedule"],
-        maxMember: json["maxMember"],
+        maxMemberCount: json["maxMemberCount"],
         status: json["status"],
         leaderId: json['accountId'],
         maxMemberWeight: json['maxMemberWeight'],
         travelDuration: json['travelDuration'],
         locationName: json["destination"]["name"],
         locationId: json["destination"]["id"],
-        imageUrls: json["destination"]["imageUrls"],
+        imageUrls: json["destination"]["imagePaths"],
         joinMethod: json["joinMethod"],
         numOfExpPeriod: json['periodCount'],
         note: json['note'],
-        currentGcoinBudget: json['currentGcoinBudget'].toDouble(),
+        gcoinHostDonated: json['gcoinHostDonated'],
+        actualGcoinBudget: json['actualGcoinBudget'],
+        displayGcoinBudget: json['displayGcoinBudget'],
         memberCount: json['memberCount'],
-        regClosedAt: DateTime.parse(json['regClosedAt']),
+        regCloseAt: DateTime.parse(json['regCloseAt']),
         departureAddress: json['departureAddress'],
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'],
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
@@ -108,16 +109,4 @@ class PlanDetail {
         members: List<PlanMemberViewModel>.from(json['members'].map((e) => PlanMemberViewModel.fromJson(e))).toList(),
         savedContacts: List<EmergencyContactViewModel>.from(json['savedContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
       );
-
-  Map<String, dynamic> toJson() => {
-        "id": id,
-        "startDate": startDate!.toIso8601String(),
-        "endDate": endDate!.toIso8601String(),
-        "schedule": schedule,
-        "memberLimit": maxMember,
-        "status": status,
-        "locationName": locationName,
-        "locationId": locationId,
-        "imageUrls": imageUrls,
-      };
 }

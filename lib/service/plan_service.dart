@@ -4,7 +4,7 @@ import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
+import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
@@ -32,7 +32,7 @@ class PlanService {
     departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
     departure:[${model.longitude},${model.latitude}]
     destinationId:${model.locationId}
-    maxMember:${model.memberLimit}
+    maxMemberCount:${model.memberLimit}
     maxMemberWeight:${model.maxMemberWeight!}
     name:"${model.name}"
     note: "${model.note}"
@@ -57,7 +57,7 @@ class PlanService {
     departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000Z"
     departure:[${model.longitude},${model.latitude}]
     destinationId:${model.locationId}
-    maxMember:${model.memberLimit}
+    maxMemberCount:${model.memberLimit}
     maxMemberWeight:${model.maxMemberWeight!}
     name:"${model.name}"
     note: "${model.note}"
@@ -93,9 +93,9 @@ class PlanService {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  plans(where: { id: { eq: $planId } }) {
+  joinedPlans(where: { id: { eq: $planId } }) {
     nodes {
-      currentGcoinBudget
+      actualGcoinBudget
       orders {
         id
         planId
@@ -105,12 +105,12 @@ class PlanService {
         createdAt
         period
         type
-        supplier {
+        provider {
           type
           id
           phone
           name
-          imageUrl
+          imagePath
           address
         }
         details {
@@ -134,7 +134,7 @@ class PlanService {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['plans']['nodes'][0]['orders'];
+      List? res = result.data!['joinedPlans']['nodes'][0]['orders'];
       if (res == null) {
         return null;
       }
@@ -150,20 +150,35 @@ class PlanService {
       }
       return {
         'orders': orders,
-        'currentBudget': result.data!['plans']['nodes'][0]['currentGcoinBudget']
+        'currentBudget': result.data!['joinedPlans']['nodes'][0]['actualGcoinBudget']
       };
     } catch (error) {
       throw Exception(error);
     }
   }
 
-  Future<PlanDetail?> GetPlanById(int planId) async {
+  Future<PlanDetail?> GetPlanById(int planId, String type) async {
     try {
+      String planType ='';
+      switch (type){
+        case "JOIN":
+          planType = 'joinedPlans';
+          break;
+        case "OWNED":
+          planType = 'ownedPlans';
+          break;
+        case "INVITATION":
+          planType = 'invitations';
+          break;
+        case "SCAN":
+          planType = 'scannablePlans';
+          break;
+      }
       QueryResult result = await client.query(QueryOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 {
-  plans(where: { id: { eq: $planId } }) {
+  $planType(where: { id: { eq: $planId } }) {
     nodes {
       name
       id
@@ -171,70 +186,87 @@ class PlanService {
       endDate
       departureAddress
       accountId
-      account{
+      account {
         name
       }
       joinMethod
       gcoinBudgetPerCapita
-      currentGcoinBudget
+      actualGcoinBudget
+      displayGcoinBudget
+      gcoinHostDonated
       travelDuration
       note
       memberCount
-      regClosedAt
+      regCloseAt
       schedule {
         events {
           shortDescription
           type
           description
           duration
+          isStarred
         }
       }
-      maxMember
+      orders{
+        details{
+          productId
+          
+        }
+      }
+      maxMemberCount
       maxMemberWeight
       savedContacts {
         name
         phone
         address
         type
-        imageUrl
+        imagePath
       }
       status
       periodCount
-      departAt
+      departDate
+      departTime
       departure {
         coordinates
       }
       destination {
         id
         name
-        imageUrls
+        imagePaths
       }
       members {
         status
         weight
+        companions
+        gcoinDonation
         account {
-          avatarUrl
+          avatarPath
           id
           name
           phone
+          isMale
         }
         id
       }
-      tempOrders{
+      tempOrders {
         cart
-        type
+        providerId
         serveDates
+        type
         period
         note
+        total
       }
-      surcharges{
-          amount
-          note
-        }
+      surcharges {
+        gcoinAmount
+        alreadyDivided
+        id
+        imagePath
+        note
+      }
     }
   }
 }
-
 """),
       ));
 
@@ -242,7 +274,7 @@ class PlanService {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['plans']['nodes'];
+      List? res = result.data![planType]['nodes'];
       if (res == null || res.isEmpty) {
         return null;
       }
@@ -255,12 +287,12 @@ class PlanService {
     }
   }
 
-  Future<List<PlanCardViewModel>?> getPlanCards() async {
+  Future<List<PlanCardViewModel>?> getPlanCards(bool isOwned) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  plans(first: 50
+  ${isOwned ? 'ownedPlans' : 'joinedPlans'}(first: 50
   order: {
   id:DESC
 }
@@ -303,7 +335,7 @@ class PlanService {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['plans']['nodes'];
+      List? res = result.data![isOwned ? 'ownedPlans' : 'joinedPlans']['nodes'];
       if (res == null || res.isEmpty) {
         return [];
       }
@@ -372,6 +404,7 @@ class PlanService {
       if (i < schedules.length) {
         for (final planItem in schedules[i]['events']) {
           item.add(PlanScheduleItem(
+              isStarred: planItem['isStarred'],
               activityTime:
                   int.parse(planItem['duration'].toString().substring(0, 2)),
               shortDescription: planItem['shortDescription'],
@@ -403,7 +436,7 @@ class PlanService {
         final type = schedule_item_types_vn
             .firstWhere((element) => element == item.type);
         items.add({
-          'isStarred': false,
+          'isStarred': item.isStarred,
           'duration': json.encode("${item.activityTime}:00:00"),
           'description': json.encode(item.description),
           'shortDescription': json.encode(item.shortDescription),
@@ -416,7 +449,7 @@ class PlanService {
     return rs;
   }
 
-  Future<int?> joinPlan(int planId, int weight, List<String> names) async {
+  Future<int?> joinPlan(int planId, List<String> names) async {
     final listName = names.map((e) => json.encode(e)).toList();
     try {
       QueryResult result = await client.mutate(
@@ -425,7 +458,6 @@ mutation{
   joinPlan(dto: {
     companions:${listName.isEmpty ? null : listName}
     planId: $planId
-    weight: $weight
   }){
     id
   }
@@ -445,12 +477,27 @@ mutation{
     }
   }
 
-  Future<List<PlanMemberViewModel>> getPlanMember(int planId) async {
+  Future<List<PlanMemberViewModel>> getPlanMember(int planId, String type) async {
     try {
+      String planType ='';
+      switch (type){
+        case "JOIN":
+          planType = 'joinedPlans';
+          break;
+        case "OWNED":
+          planType = 'ownedPlans';
+          break;
+        case "INVITATION":
+          planType = 'invitations';
+          break;
+        case "SCAN":
+          planType = 'scannablePlans';
+          break;
+      }
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  plans(where: { id: { eq: $planId } }) {
+  $planType(where: { id: { eq: $planId } }) {
     nodes {
       members {
         status
@@ -460,6 +507,8 @@ mutation{
           name
           phone
           id
+          isMale
+          avatarPath
         }
         id
       }
@@ -471,7 +520,7 @@ mutation{
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['plans']['nodes'][0]['members'];
+      List? res = result.data![planType]['nodes'][0]['members'];
       if (res == null || res.isEmpty) {
         return [];
       }
@@ -489,7 +538,7 @@ mutation{
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
-  changePlanJoinMethod(dto: {
+  updateJoinMethod(dto: {
     joinMethod:$method,
     planId:$planId
   }){
@@ -501,7 +550,7 @@ mutation{
         throw Exception(result.exception);
       }
 
-      int? res = result.data!['changePlanJoinMethod']['id'];
+      int? res = result.data!['updateJoinMethod']['id'];
       if (res == null || res == 0) {
         return false;
       }
@@ -636,7 +685,7 @@ mutation{
 mutation{
   removeMember(dto: {
     planMemberId:$memberId
-    shouldBeBlocked:$isBlock
+    alsoBlock:$isBlock
   }){
     id
   }
@@ -646,6 +695,28 @@ mutation{
         throw Exception(result.exception);
       }
       int? res = result.data!['removeMember']['id'];
+      if (res == null) {
+        return 0;
+      }
+      return res;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int> cancelPlan(int planId) async{
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql("""
+mutation{
+  cancelPlan(planId: $planId){
+    id
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      int? res = result.data!['cancelPlan']['id'];
       if (res == null) {
         return 0;
       }

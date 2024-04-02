@@ -2,9 +2,9 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/service_types.dart';
-import 'package:greenwheel_user_app/constants/shedule_item_type.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/service_types.dart';
+import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
@@ -52,6 +52,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   bool _isFoodActivity = false;
   bool _isRoomActivity = false;
   bool _isOrderedActivity = false;
+  bool _isStarEvent = false;
 
   @override
   void initState() {
@@ -174,6 +175,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                       } else {
                         widget.callback(
                             PlanScheduleItem(
+                                isStarred: _isStarEvent,
                                 shortDescription:
                                     _shortDescriptionController.text,
                                 description: _descriptionController.text,
@@ -391,6 +393,20 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           ),
                         ],
                       ),
+                    ),
+                    SizedBox(height: 2.h,),
+                    Row(
+                      children: [
+                        IconButton(onPressed: (){
+                          setState(() {
+                            _isStarEvent = !_isStarEvent;
+                          });
+                        }, icon:
+                          _isStarEvent?
+                         const Icon(Icons.star, size: 25, color: Colors.amber,):
+                         const Icon(Icons.star_border_outlined, size: 25, color: Colors.grey,)),
+                         const Text('Hoạt động đặc biệt', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),)
+                      ],
                     ),
                     SizedBox(
                       height: 2.h,

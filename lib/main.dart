@@ -8,7 +8,7 @@ import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/firebase_options.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
 import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
@@ -59,10 +59,10 @@ void main() async {
   hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  final cron = Cron();
-  cron.schedule(Schedule.parse('*/1 * * * *'),(){
-    print('Cron Job');
-  });
+  // final cron = Cron();
+  // cron.schedule(Schedule.parse('*/1 * * * *'),(){
+  //   print('Cron Job');
+  // });
   initializeDateFormatting('vi_VN', null).then((_) {
     runApp(const MainApp());
   });

@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:greenwheel_user_app/constants/contact_type.dart';
+import 'package:greenwheel_user_app/core/constants/contact_type.dart';
 
 class EmergencyContactViewModel {
   int? id;

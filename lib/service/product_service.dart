@@ -78,7 +78,7 @@ class ProductService extends Iterable {
     }
   }
 
-  Future<List<ProductViewModel>> getListProduct(List<String> productIds) async {
+  Future<List<ProductViewModel>> getListProduct(List<int> productIds) async {
     try {
       final QueryResult result =
           await client.query(QueryOptions(document: gql("""
@@ -88,12 +88,12 @@ class ProductService extends Iterable {
       id
       name
       price
-      imageUrl
+      imagePath
       partySize
-      supplier {
+      provider {
         id
         name
-        imageUrl
+        imagePath
         phone
         address
         type

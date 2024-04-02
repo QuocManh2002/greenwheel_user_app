@@ -1,8 +1,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -15,13 +15,16 @@ import 'package:transparent_image/transparent_image.dart';
 
 // ignore: must_be_immutable
 class BaseInformationWidget extends StatefulWidget {
-  BaseInformationWidget({
-    super.key,
-    required this.plan,
-    required this.members,
-  });
+  BaseInformationWidget(
+      {super.key,
+      required this.plan,
+      required this.members,
+      required this.type,
+      required this.refreshData});
   final PlanDetail plan;
   List<PlanMemberViewModel> members;
+  final String type;
+  final void Function() refreshData;
 
   @override
   State<BaseInformationWidget> createState() => _BaseInformationWidgetState();
@@ -66,7 +69,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
       travelDurationText += '${tempDuration.minute} phút';
     }
     maxMemberText =
-        '${widget.plan.maxMember < 10 ? '0${widget.plan.maxMember}' : widget.plan.maxMember}';
+        '${widget.plan.maxMemberCount < 10 ? '0${widget.plan.maxMemberCount}' : widget.plan.maxMemberCount}';
     if (widget.plan.memberCount != 0) {
       memberCountText =
           '${widget.plan.memberCount! < 10 ? '0${widget.plan.memberCount}' : widget.plan.memberCount}';
@@ -87,17 +90,17 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             height: 1.h,
           ),
           buildInforWidget('Đóng đơn đăng kí:',
-              DateFormat('dd/MM/yy').format(widget.plan.regClosedAt!)),
+              DateFormat('dd/MM/yy').format(widget.plan.regCloseAt!)),
           SizedBox(
             height: 1.h,
           ),
           buildInforWidget('Bắt đầu:',
-              '${DateFormat.Hm().format(widget.plan.departureDate!)} ${DateFormat('dd/MM/yy').format(widget.plan.departureDate!)}'),
+              '${DateFormat.Hm().format(widget.plan.departTime!)} ${DateFormat('dd/MM/yy').format(widget.plan.departDate!)}'),
           SizedBox(
             height: 1.h,
           ),
-          buildInforWidget('Kết thúc:',
-              DateFormat('dd/MM/yy').format(widget.plan.endDate!)),
+          buildInforWidget(
+              'Kết thúc:', DateFormat('dd/MM/yy').format(widget.plan.endDate!)),
           SizedBox(
             height: 1.h,
           ),
@@ -111,11 +114,6 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             ),
           if (widget.plan.status != 'PENDING')
             buildInforWidget('Trạng thái:', status),
-          // SizedBox(
-          //   height: 1.h,
-          // ),
-          // buildInforWidget('Thời gian xuất phát:',
-          //     DateFormat.Hm().format(widget.plan.departureDate!)),
           SizedBox(
             height: 1.h,
           ),
@@ -142,7 +140,10 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
               alignment: Alignment.centerLeft,
               child: const Text(
                 'Dịch vụ khẩn cấp đã lưu: ',
-                style: TextStyle(fontSize: 18,fontFamily: 'NotoSans', fontWeight: FontWeight.bold),
+                style: TextStyle(
+                    fontSize: 18,
+                    fontFamily: 'NotoSans',
+                    fontWeight: FontWeight.bold),
               )),
           SizedBox(
             height: 1.h,
@@ -229,7 +230,8 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                               children: [
                                 Text(
                                   'Xem tất cả',
-                                  style: TextStyle(fontFamily: 'NotoSans', fontSize: 16),
+                                  style: TextStyle(
+                                      fontFamily: 'NotoSans', fontSize: 16),
                                 ),
                                 Icon(
                                   Icons.keyboard_arrow_right,
@@ -257,29 +259,29 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                                       shape: BoxShape.circle),
                                   clipBehavior: Clip.hardEdge,
                                   child: CachedNetworkImage(
-                                    key: UniqueKey(),
-                                    height: 25,
-                                    width: double.infinity,
-                                    fit: BoxFit.cover,
-                                    imageUrl: widget.members[i].imageUrl ??
-                                        defaultUserAvatarLink,
-                                    placeholder: (context, url) =>
-                                        Image.memory(kTransparentImage),
-                                    errorWidget: (context, url, error) =>
-                                        FadeInImage.assetNetwork(
+                                      key: UniqueKey(),
                                       height: 25,
                                       width: double.infinity,
                                       fit: BoxFit.cover,
-                                      placeholder: '',
-                                      image: empty_plan,
-                                    ),
-                                  )),
+                                      imageUrl:
+                                          '$baseBucketImage${widget.members[i].imagePath}',
+                                      placeholder: (context, url) =>
+                                          Image.memory(kTransparentImage),
+                                      errorWidget: (context, url, error) =>
+                                          Image.asset(
+                                            widget.members[i].isMale
+                                                ? male_default_avatar
+                                                : female_default_avatar,
+                                            height: 25,
+                                            fit: BoxFit.cover,
+                                          ))),
                               const SizedBox(
                                 width: 4,
                               ),
                               Text(
-                                " ${widget.members[i].name} (${widget.members[i].companions== null ? 1 : widget.members[i].companions!.length + 1})",
-                                style: const TextStyle(fontSize: 18,fontFamily: 'NotoSans'),
+                                " ${widget.members[i].name} (${widget.members[i].companions == null ? 1 : widget.members[i].companions!.length + 1})",
+                                style: const TextStyle(
+                                    fontSize: 18, fontFamily: 'NotoSans'),
                               ),
                             ],
                           ),
@@ -293,6 +295,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
     final rs = await _planService.removeMember(memberId, isBlock);
     if (rs != 0) {
       AwesomeDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         animType: AnimType.leftSlide,
         dialogType: DialogType.success,
@@ -301,17 +304,22 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         padding: const EdgeInsets.all(12),
       ).show();
-      Future.delayed(const Duration(seconds: 1), () async {
-        final planMembers = await _planService.getPlanMember(widget.plan.id);
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop();
+      // ignore: use_build_context_synchronously
+      Navigator.of(context).pop();
+      widget.refreshData();
+      // Future.delayed(const Duration(seconds: 1), () async {
+      //   final planMembers = await _planService.getPlanMember(widget.plan.id, widget.type);
 
-        if (planMembers.isNotEmpty) {
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          setState(() {
-            widget.members = planMembers;
-          });
-        }
-      });
+      //   if (planMembers.isNotEmpty) {
+      //     Navigator.of(context).pop();
+      //     Navigator.of(context).pop();
+      //     setState(() {
+      //       widget.members = planMembers;
+      //     });
+      //   }
+      // });
     }
   }
 
@@ -324,9 +332,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             child: Text(
               title,
               overflow: TextOverflow.clip,
-              style: const TextStyle(
-                fontSize: 17,fontFamily: 'NotoSans'
-              ),
+              style: const TextStyle(fontSize: 17, fontFamily: 'NotoSans'),
             ),
           ),
           SizedBox(
@@ -334,7 +340,10 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             child: Text(
               content,
               overflow: TextOverflow.clip,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'NotoSans'),
             ),
           )
         ],

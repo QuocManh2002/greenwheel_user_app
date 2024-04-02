@@ -6,8 +6,6 @@ import 'dart:convert';
 
 PlanMemberViewModel planMemberFromJson(String str) => PlanMemberViewModel.fromJson(json.decode(str));
 
-String planMemberToJson(PlanMemberViewModel data) => json.encode(data.toJson());
-
 class PlanMemberViewModel {
     String name;
     int memberId;
@@ -16,8 +14,10 @@ class PlanMemberViewModel {
     int accountId;
     int? accountType;
     int weight;
-    String? imageUrl;
+    String? imagePath;
     List<dynamic>? companions;
+    int? gcoinDonation;
+    bool isMale;
 
     PlanMemberViewModel({
         required this.name,
@@ -27,8 +27,10 @@ class PlanMemberViewModel {
         required this.accountId,
         this.accountType,
         this.companions,
-        this.imageUrl,
+        this.imagePath,
+        this.gcoinDonation,
         required this.weight,
+        required this.isMale
     });
 
     factory PlanMemberViewModel.fromJson(Map<String, dynamic> json) => PlanMemberViewModel(
@@ -38,14 +40,9 @@ class PlanMemberViewModel {
         status: json["status"],
         accountId: json['account']['id'],
         weight: json['weight'],
-        imageUrl: json['account']['avatarUrl'],
-        companions: json['companions']
+        imagePath: json['account']['avatarPath'],
+        companions: json['companions'],
+        gcoinDonation: json['gcoinDonation'],
+        isMale: json['account']['isMale']
     );
-
-    Map<String, dynamic> toJson() => {
-        "name": name,
-        "travelerId": memberId,
-        "phone": phone,
-        "status": status,
-    };
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:greenwheel_user_app/widgets/search_screen_widget/filter_location_card.dart';
 
@@ -12,7 +13,7 @@ class FilterLocationScreen extends StatefulWidget {
 }
 
 class _FilterLocationScreenState extends State<FilterLocationScreen> {
-  List<LocationViewModel>? locationModels;
+  List<LocationCardViewModel>? locationModels;
   LocationService _locationService = LocationService();
   bool isLoading = true;
 

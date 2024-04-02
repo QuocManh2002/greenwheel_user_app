@@ -2,10 +2,12 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:intl/intl.dart';
+import 'package:sizer2/sizer2.dart';
 
 class CreatePlanSurcharge extends StatefulWidget {
   const CreatePlanSurcharge({super.key, required this.callback});
@@ -18,14 +20,15 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   TextEditingController _amountController = TextEditingController();
   TextEditingController _noteController = TextEditingController();
+  bool alreadyDivided = false;
   int amount = 0;
   onCreateSurcharge() {
     if (_formKey.currentState!.validate()) {
       String? surchargeText = sharedPreferences.getString('plan_surcharge');
       final surchargeObject = {
         'note': json.encode(_noteController.text),
-        'amount': amount,
-        'needToBeDivide': false
+        'gcoinAmount': amount,
+        'alreadyDivided': alreadyDivided
       };
       if (surchargeText == null) {
         sharedPreferences.setString(
@@ -58,7 +61,7 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
               height: 32,
             ),
             defaultTextFormField(
-                text: 'Khoản phụ thu (VND)',
+                text: 'Khoản phụ thu (GCOIN)',
                 hinttext: '10, 100, 1000,...',
                 controller: _amountController,
                 onValidate: (value) {
@@ -95,7 +98,30 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
                 },
                 inputType: TextInputType.text),
             const SizedBox(
-              height: 32,
+              height: 16,
+            ),
+            Row(
+              children: [
+                Checkbox(
+                  activeColor: primaryColor,
+                  value: alreadyDivided, onChanged: (value){
+                  setState(() {
+                    alreadyDivided = !alreadyDivided;
+                  });
+                }),
+                SizedBox(width: 70.w,
+                child:const Text(
+                  'Đã chia đều cho các thành viên',
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(
+                    fontSize: 17, fontFamily: 'NotoSans'
+                  ),
+                ),
+                )
+              ],
+            ),
+            const SizedBox(
+              height: 16,
             ),
             ElevatedButton.icon(
               onPressed: onCreateSurcharge,

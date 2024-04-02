@@ -2,8 +2,8 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
@@ -11,9 +11,14 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class PlanOrderCard extends StatefulWidget {
-  const PlanOrderCard({super.key, required this.order, required this.isLeader});
+  const PlanOrderCard(
+      {super.key,
+      required this.isShowQuantity,
+      required this.order,
+      required this.isLeader});
   final OrderViewModel order;
   final bool isLeader;
+  final bool isShowQuantity;
 
   @override
   State<PlanOrderCard> createState() => _PlanOrderCardState();
@@ -26,8 +31,9 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    final tmp = widget.order.details!.groupListsBy((element) => element.productId);
-    for(final temp in tmp.values){
+    final tmp =
+        widget.order.details!.groupListsBy((element) => element.productId);
+    for (final temp in tmp.values) {
       details.add(temp.first);
     }
   }
@@ -125,17 +131,20 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                     children: [
                       Text(
                         detail.productName,
-                        style:const TextStyle(
+                        style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w300,
                             fontFamily: 'NotoSans'),
                       ),
                       const Spacer(),
-                      Text('x${detail.quantity}',
-                        style:const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w300,
-                            fontFamily: 'NotoSans'),),
+                      if (widget.isShowQuantity)
+                        Text(
+                          'x${detail.quantity}',
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w300,
+                              fontFamily: 'NotoSans'),
+                        ),
                     ],
                   ),
                 )

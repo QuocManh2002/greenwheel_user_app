@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/sessions.dart';
+import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
@@ -28,7 +28,7 @@ class SelectSessionScreen extends StatefulWidget {
   final int numberOfMember;
   final bool? isOrder;
   final bool? isFromTempOrder;
-  final double? availableGcoinAmount;
+  final int? availableGcoinAmount;
   final void Function() callbackFunction;
 
   @override

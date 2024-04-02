@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/models/order.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/order_detail_card.dart';

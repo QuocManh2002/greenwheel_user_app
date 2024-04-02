@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/constant.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/constant.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CustomPlanItem extends StatefulWidget {

@@ -1,8 +1,8 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/constants/constant.dart';
-import 'package:greenwheel_user_app/helpers/dio_exception.dart';
+import 'package:greenwheel_user_app/core/constants/constant.dart';
+import 'package:greenwheel_user_app/core/errors/dio_exception.dart';
 
 Dio _dio = Dio();
 String accessToken = "pk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xuNGdremoxMDA5czJ1cW11bDlnbnVuNyJ9.tVbjQ8dn3-ShbqqKjEsFWQ";

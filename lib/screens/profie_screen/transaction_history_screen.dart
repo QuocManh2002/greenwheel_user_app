@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/notification_list_loading_screen.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:greenwheel_user_app/widgets/profile_screen_widget/transaction_card.dart';
-
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
 
@@ -21,6 +21,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     // TODO: implement initState
     super.initState();
     setUpData();
+    
   }
 
   setUpData() async {
@@ -40,9 +41,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
               title: const Text('Lịch sử giao dịch'),
             ),
             body: _isLoading
-                ? const Center(
-                    child: Text('Đang tải ...'),
-                  )
+                ? const NotificationListLoadingScreen()
                 : _transactions!.isEmpty
                     ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,

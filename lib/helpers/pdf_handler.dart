@@ -6,7 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
@@ -79,7 +79,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   List<dynamic>? newRoomOrderList = [];
   List<dynamic>? newFoodOrderList = [];
   PlanDetail? _plan =
-      await _planService.GetPlanById(sharedPreferences.getInt('plan_id_pdf')!);
+      await _planService.GetPlanById(sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   final rs = await _cusomterService.GetCustomerById(_plan!.leaderId!);
   CustomerViewModel _leader = rs[0];
   final doc = pw.Document(
@@ -189,16 +189,16 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                           ttf,
                           ' Ngày khởi hành',
                           DateFormat('dd/MM/yyyy')
-                              .format(_plan.departureDate!)),
+                              .format(_plan.departDate!)),
                       buildInfoRow(boldTtf, ttf, ' Ngày kết thúc',
                           DateFormat('dd/MM/yyyy').format(_plan.endDate!)),
                       buildInfoRow(
                           boldTtf,
                           ttf,
                           ' Số lượng thành viên',
-                          _plan.maxMember < 10
-                              ? '0${_plan.maxMember}'
-                              : '${_plan.maxMember}'),
+                          _plan.maxMemberCount < 10
+                              ? '0${_plan.maxMemberCount}'
+                              : '${_plan.maxMemberCount}'),
                       pw.SizedBox(height: 20),
                       pw.Text('LỊCH TRÌNH',
                           style: pw.TextStyle(

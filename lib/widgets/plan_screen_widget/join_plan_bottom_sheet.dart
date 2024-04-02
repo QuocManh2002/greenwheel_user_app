@@ -1,8 +1,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -21,7 +21,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
   int weight = 1;
 
   onChangeWeight(bool isAdd) {
-    if (isAdd && weight < widget.plan.maxMember - widget.plan.memberCount!) {
+    if (isAdd && weight < widget.plan.maxMemberCount - widget.plan.memberCount!) {
       setState(() {
         weight += 1;
       });
@@ -159,7 +159,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
                     SizedBox(
                       width: 60.w,
                       child: Text(
-                        '${DateFormat('dd/MM/yyyy').format(widget.plan.departureDate!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan.endDate!)}',
+                        '${DateFormat('dd/MM/yyyy').format(widget.plan.departDate!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan.endDate!)}',
                         textAlign: TextAlign.end,
                         overflow: TextOverflow.clip,
                         style: const TextStyle(
@@ -181,9 +181,9 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
                     SizedBox(
                       width: 30.w,
                       child: Text(
-                        widget.plan.maxMember < 10
-                            ? '0${widget.plan.maxMember}'
-                            : widget.plan.maxMember.toString(),
+                        widget.plan.maxMemberCount < 10
+                            ? '0${widget.plan.maxMemberCount}'
+                            : widget.plan.maxMemberCount.toString(),
                         textAlign: TextAlign.end,
                         overflow: TextOverflow.clip,
                         style: const TextStyle(

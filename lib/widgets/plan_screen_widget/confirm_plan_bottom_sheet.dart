@@ -5,8 +5,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
@@ -70,7 +70,17 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         total += order['total'] / 100;
       }
     }
-    budgetPerCapita = ((total / widget.plan!.memberLimit!)).ceil();
+    if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty) {
+      for (final sur in widget.listSurcharges!) {
+        if(sur['alreadyDivided']){
+          total += sur['gcoinAmount'] * widget.plan!.memberLimit;
+        }else{
+          total += sur['gcoinAmount'];
+        }
+      }
+    }
+
+    budgetPerCapita = ((total * 1.1 / widget.plan!.memberLimit!)).floor();
   }
 
   buildListScheduleText() {
@@ -488,8 +498,8 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                 NumberFormat.simpleCurrency(
                                         decimalDigits: 0,
                                         locale: 'vi_VN',
-                                        name: 'đ')
-                                    .format(order['amount']),
+                                        name: 'GCOIN')
+                                    .format(order['gcoinAmount']),
                                 style: const TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
                                 overflow: TextOverflow.ellipsis,
@@ -524,7 +534,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           Row(
                             children: [
                               const Text(
-                                'Tổng cộng',
+                                'Tổng cộng (đã gồm VAT)',
                                 style: TextStyle(fontSize: 16),
                               ),
                               const Spacer(),
@@ -533,7 +543,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                         locale: 'vi_VN',
                                         decimalDigits: 0,
                                         name: "")
-                                    .format(total),
+                                    .format((total * 1.1).ceil()),
                                 style: const TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
                               ),
@@ -659,8 +669,6 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
       ),
     );
   }
-
-  
 
   buildServiceWidget(String type, List<dynamic> orders) => Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
@@ -216,8 +216,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  'assets/images/anhnen2.png',
-                  width: 70.w,
+                  empty_plan,
+                  width: 60.w,
                 ),
                 const SizedBox(
                   height: 12,
@@ -294,7 +294,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.white,
+      color:  Colors.white,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,

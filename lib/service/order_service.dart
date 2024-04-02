@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
@@ -71,7 +72,7 @@ mutation{
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
           mutation {
-  createTopUpRequest(dto: {
+  createTopUp(dto: {
     amount:$amount
     gateway:VNPAY
   })  {
@@ -87,12 +88,12 @@ mutation{
         throw Exception(result.exception);
       }
       final int? transactionId =
-          result.data?['createTopUpRequest']['transactionId'];
+          result.data?['createTopUp']['transactionId'];
       if (transactionId == null) {
         return null;
       }
       final String paymentUrl =
-          result.data?['createTopUpRequest']['paymentUrl'];
+          result.data?['createTopUp']['paymentUrl'];
       TopupRequestViewModel request = TopupRequestViewModel(
           transactionId: transactionId, paymentUrl: paymentUrl);
       return request;
@@ -154,7 +155,6 @@ mutation{
     var orders = [];
     for (final order in sourceOrders) {
       orders.add({
-        'providerId': order['providerId'],
         'cart': [
           for (final detail in order['details'])
             {'key': detail['productId'], 'value': detail['quantity']}
@@ -170,6 +170,7 @@ mutation{
 
   Future<int> createOrder(OrderViewModel order, int planId) async {
     try {
+  
       List<Map<String, dynamic>> details = order.details!.map((detail) {
         return {'key': detail.id, 'value': detail.quantity};
       }).toList();
@@ -188,7 +189,7 @@ mutation{
   }
 }
 """;
-
+    log(mutationText);
       final QueryResult result = await client.mutate(MutationOptions(
           fetchPolicy: FetchPolicy.noCache, document: gql(mutationText)));
       if (result.hasException) {

@@ -31,7 +31,7 @@ class SessionCard extends StatelessWidget {
   final void Function() callbackFunction;
   final bool? isOrder;
   final bool? isFromTempOrder;
-  final double? availableGcoinAmount;
+  final int? availableGcoinAmount;
 
   @override
   Widget build(BuildContext context) {

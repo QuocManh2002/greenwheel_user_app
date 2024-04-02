@@ -10,74 +10,6 @@ class LocationService extends Iterable {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
 
-  Future<List<LocationViewModel>> getLocations() async {
-    try {
-      QueryResult result = await client.query(QueryOptions(
-        fetchPolicy: FetchPolicy.noCache,
-        document: gql("""
-{
-    destinations
-    (
-      first: 10, 
-      order: { 
-        id:ASC
-      },
-      )
-        {
-        nodes{
-          id
-          description
-          imageUrls
-          name
-          activities
-          seasons
-          topographic
-          coordinate{coordinates}
-          address
-          province{
-            id
-            name
-            imageUrl
-          }
-          emergencyContacts{
-            name
-            phone
-            address
-            type
-          }
-          comments{
-            id
-            comment
-            createdAt
-            account{
-              avatarUrl
-              name
-            }
-          }
-        }
-    }
-}
-
-"""),
-      ));
-
-      if (result.hasException) {
-        throw Exception(result.exception);
-      }
-
-      List? res = result.data!['destinations']['nodes'];
-      if (res == null || res.isEmpty) {
-        return [];
-      }
-
-      List<LocationViewModel> locations =
-          res.map((location) => LocationViewModel.fromJson(location)).toList();
-
-      return locations;
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
 
   String _capitalize(String word) {
     if (word.isEmpty) return word;
@@ -278,58 +210,37 @@ query search(\$search: String!) {
     }
   }
 
-  Future<List<LocationViewModel>> getLocationsByProvinceId(
+  Future<List<LocationCardViewModel>> getLocationsByProvinceId(
       int provinceId) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-query getById(\$id: Int) {
-  destinations(where: { provinceId: { eq: \$id } }) {
-    nodes{
-          id
-          description
-          imageUrls
-          name
-          activities
-          seasons
-          topographic
-          coordinate{coordinates}
-          address
-          province{
-            id
-            name
-            imageUrl
-          }
-          emergencyContacts{
-            name
-            phone
-            address
-            type
-          }
-          comments{
-            id
-            comment
-            createdAt
-            account{
-              avatarUrl
-              name
-            }
-          }
-        }
+{
+  destinations(where: { provinceId: { eq: $provinceId } }) {
+    edges{
+      node{
+        id
+        description
+        name
+        imagePaths
+        rating
+      }
+    }
   }
 }
+
 """), variables: {"id": provinceId}));
 
       if (result.hasException) {
         throw Exception(result.exception);
       }
 
-      List? res = result.data!['destinations']['nodes'];
+      List? res = result.data!['destinations']['edges'];
       if (res == null || res.isEmpty) {
         return [];
       }
-      List<LocationViewModel> locations =
-          res.map((location) => LocationViewModel.fromJson(location)).toList();
+      List<LocationCardViewModel> locations =
+          res.map((location) => LocationCardViewModel.fromJson(location['node'])).toList();
       return locations;
     } catch (error) {
       throw Exception(error);

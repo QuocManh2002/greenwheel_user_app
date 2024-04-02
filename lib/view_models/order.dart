@@ -9,7 +9,7 @@ class OrderViewModel {
   List<dynamic>? serveDates;
   int? rating;
   DateTime? createdAt;
-  List<OrderDetailViewModel>? details;
+  List<dynamic>? details;
   String? period;
   String? type;
   SupplierViewModel? supplier;
@@ -36,12 +36,12 @@ class OrderViewModel {
       createdAt: DateTime.parse(json["createdAt"]),
       type: json['type'],
       supplier: SupplierViewModel(
-          type: json["supplier"]['type'],
-          id: json["supplier"]["id"],
-          name: json["supplier"]["name"],
-          phone: json["supplier"]["phone"],
-          thumbnailUrl: json["supplier"]["imageUrl"],
-          address: json["supplier"]["address"]),
+          type: json["provider"]['type'],
+          id: json["provider"]["id"],
+          name: json["provider"]["name"],
+          phone: json["provider"]["phone"],
+          thumbnailUrl: json["provider"]["imageUrl"],
+          address: json["provider"]["address"]),
       period: json['period']);
 
   List<OrderDetailViewModel> getDetails(dynamic details) {

@@ -13,7 +13,7 @@ import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:pinput/pinput.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 
 class OTPScreen extends StatefulWidget {
@@ -245,6 +245,8 @@ class _OTPScreenState extends State<OTPScreen> {
         } else {
           sharedPreferences.setInt('userId', traveler.id);
           sharedPreferences.setString('userPhone', traveler.phone);
+          sharedPreferences.setString('userName', traveler.name);
+          sharedPreferences.setInt('userBalance', traveler.balance.toInt());
           Navigator.pushAndRemoveUntil(
               context,
               PageTransition(

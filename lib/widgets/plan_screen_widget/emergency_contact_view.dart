@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_detail_service.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:sizer2/sizer2.dart';
@@ -58,7 +58,7 @@ class EmergencyContactView extends StatelessWidget {
                     Text(
                       emergency.phone == null
                           ? 'Không có thông tin'
-                          : '0${emergency.phone!.substring(3)}',
+                          : emergency.phone!,
                       style: const TextStyle(
                           fontFamily: 'NotoSans',
                           fontSize: 16,

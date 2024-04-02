@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/constants/sessions.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/sessions.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
@@ -30,7 +30,7 @@ class SupplierCard extends StatelessWidget {
   final int numberOfMember;
   final bool? isOrder;
   final bool? isFromTempOrder;
-  final double? availableGcoinAmount;
+  final int? availableGcoinAmount;
   final void Function() callbackFunction;
 
   @override

@@ -1,14 +1,15 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/location_screen/location_screen.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class FilterLocationCard extends StatelessWidget {
   const FilterLocationCard({super.key, required this.location});
-  final LocationViewModel location;
+  final LocationCardViewModel location;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +44,7 @@ class FilterLocationCard extends StatelessWidget {
                   height: 15.h,
                   width: 15.h,
                   fit: BoxFit.cover,
-                  imageUrl: location.imageUrls[0],
+                  imageUrl: '$baseBucketImage${location.imagePaths[0]}',
                   placeholder: (context, url) =>
                       Image.memory(kTransparentImage),
                   errorWidget: (context, url, error) =>

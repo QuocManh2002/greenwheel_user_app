@@ -8,10 +8,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/constants/colors.dart';
-import 'package:greenwheel_user_app/constants/combo_date_plan.dart';
-import 'package:greenwheel_user_app/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/plan_detail_loading_screen.dart';
+import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_surcharge_note.dart';
@@ -34,6 +36,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_servi
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_icon_button.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -44,10 +47,12 @@ class DetailPlanNewScreen extends StatefulWidget {
       {super.key,
       required this.planId,
       this.isFromHost,
+      required this.planType,
       required this.isEnableToJoin});
   final int planId;
   final bool isEnableToJoin;
   final bool? isFromHost;
+  final String planType;
 
   @override
   State<DetailPlanNewScreen> createState() => _DetailPlanScreenState();
@@ -62,9 +67,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   PlanDetail? _planDetail;
   late TabController tabController;
   List<PlanMemberViewModel> _planMembers = [];
-  List<PlanMemberViewModel> _joinedMember = [];
   double total = 0;
-  double totalTempOrders = 0;
   int _selectedTab = 0;
   bool _isPublic = false;
   bool _isEnableToInvite = false;
@@ -94,8 +97,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       isLoading = true;
     });
     _planDetail = null;
-    final plan = await _planService.GetPlanById(widget.planId);
-    List<String> productIds = [];
+    final plan = await _planService.GetPlanById(widget.planId, widget.planType);
+    List<int> productIds = [];
     if (plan != null) {
       setState(() {
         _planDetail = plan;
@@ -105,15 +108,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         Map<String, dynamic> cart = order['cart'];
         for (final proId in cart.keys.toList()) {
           if (!productIds.contains(proId)) {
-            productIds.add(proId);
+            productIds.add(int.parse(proId));
           }
         }
       }
-      isLeader = sharedPreferences.getString('userId') ==
-          _planDetail!.leaderId.toString();
+      isLeader = sharedPreferences.getInt('userId') == _planDetail!.leaderId;
       tabController = TabController(length: 3, vsync: this, initialIndex: 0);
       for (int i = 0;
-          i < _planDetail!.maxMember - _planDetail!.memberCount!;
+          i < _planDetail!.maxMemberCount - _planDetail!.memberCount!;
           i++) {
         availableWeight.add(i + 1);
       }
@@ -131,8 +133,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       _isEnableToConfirm = _planDetail!.status != 'READY';
     }
     var tempDuration = DateFormat.Hm().parse(_planDetail!.travelDuration!);
-    final startTime = DateTime(0, 0, 0, _planDetail!.departureDate!.hour,
-        _planDetail!.departureDate!.minute, 0);
+    final startTime = DateTime(0, 0, 0, _planDetail!.departTime!.hour,
+        _planDetail!.departTime!.minute, 0);
     final arrivedTime = startTime
         .add(Duration(hours: tempDuration.hour))
         .add(Duration(minutes: tempDuration.minute));
@@ -150,46 +152,41 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   getPlanMember() async {
-    final memberList = await _planService.getPlanMember(widget.planId);
+    final memberList =
+        await _planService.getPlanMember(widget.planId, widget.planType);
     _planMembers = [];
     for (final mem in memberList) {
-      int type = 0;
-      if (mem.accountId == _planDetail!.leaderId) {
-        type = 1;
-      } else if (mem.accountId.toString() ==
-          sharedPreferences.getString('userId')) {
-        type = 2;
-      } else {
-        type = 3;
+      if (mem.status == 'JOINED') {
+        int type = 0;
+        if (mem.accountId == _planDetail!.leaderId) {
+          type = 1;
+        } else if (mem.accountId == sharedPreferences.getInt('userId')) {
+          type = 2;
+        } else {
+          type = 3;
+        }
+        _planMembers.add(PlanMemberViewModel(
+            name: mem.name,
+            memberId: mem.memberId,
+            phone: mem.phone,
+            status: mem.status,
+            companions: mem.companions,
+            accountId: mem.accountId,
+            accountType: type,
+            isMale: mem.isMale,
+            imagePath: mem.imagePath,
+            weight: mem.weight));
       }
-      _planMembers.add(PlanMemberViewModel(
-          name: mem.name,
-          memberId: mem.memberId,
-          phone: mem.phone,
-          status: mem.status,
-          companions: mem.companions,
-          accountId: mem.accountId,
-          accountType: type,
-          weight: mem.weight));
     }
     _isAlreadyJoin = _planMembers.any((element) =>
-        element.accountId ==
-            int.parse(sharedPreferences.getString('userId')!) &&
+        element.accountId == sharedPreferences.getInt('userId')! &&
         element.status == 'JOINED');
   }
 
   getTempOrder() => _planDetail!.tempOrders!.map((e) {
-        var orderTotal = 0.0;
         final Map<String, dynamic> cart = e['cart'];
-        for (final cart in cart.entries) {
-          orderTotal += products
-                  .firstWhere((element) => element.id.toString() == cart.key)
-                  .price *
-              cart.value;
-        }
         ProductViewModel sampleProduct = products.firstWhere(
             (element) => element.id.toString() == cart.entries.first.key);
-        totalTempOrders += orderTotal * e['serveDates'].length;
         return OrderViewModel(
             id: e['id'],
             details: cart.entries.map((e) {
@@ -205,7 +202,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             }).toList(),
             note: e['note'],
             serveDates: e["serveDates"],
-            total: orderTotal * e['serveDates'].length,
+            total: e['total'].toDouble(),
             createdAt: DateTime.now(),
             supplier: SupplierViewModel(
                 type: sampleProduct.supplierType,
@@ -228,8 +225,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       if (rs != null) {
         setState(() {
           orderList = rs['orders'];
+          _planDetail!.actualGcoinBudget = rs['currentBudget'];
         });
-        _planDetail!.currentGcoinBudget = rs['currentBudget'].toDouble();
       }
     }
     _total = orderList.fold(0, (sum, obj) => sum + obj.total!);
@@ -243,7 +240,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         await _locationService.GetLocationById(_planDetail!.locationId);
     if (location != null) {
       sharedPreferences.setInt('planId', widget.planId);
-      sharedPreferences.setInt("plan_number_of_member", _planDetail!.maxMember);
+      sharedPreferences.setInt(
+          "plan_number_of_member", _planDetail!.maxMemberCount);
       sharedPreferences.setDouble(
           'plan_start_lat', _planDetail!.startLocationLat);
       sharedPreferences.setDouble(
@@ -251,7 +249,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       sharedPreferences.setString(
           'plan_start_date', _planDetail!.startDate.toString());
       sharedPreferences.setString('plan_start_time',
-          '${_planDetail!.departureDate!.hour}:${_planDetail!.departureDate!.minute}');
+          '${_planDetail!.departTime!.hour}:${_planDetail!.departTime!.minute}');
       sharedPreferences.setString(
           'plan_end_date', _planDetail!.endDate.toString());
       sharedPreferences.setString(
@@ -370,24 +368,96 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     foregroundColor: MaterialStatePropertyAll(Colors.white)),
               ),
               actions: [
-                if (isLeader)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: IconButton(
-                      onPressed: updatePlan,
-                      icon: const Icon(
-                        Icons.edit_square,
-                        size: 32,
-                        color: Colors.white,
-                      ),
-                    ),
+                if (_planDetail != null &&
+                    (_planDetail!.status == 'PENDING' ||
+                        _planDetail!.status == 'REGISTERING'))
+                  PopupMenuButton(
+                    itemBuilder: (ctx) => [
+                      if (isLeader && _planDetail!.status == 'PENDING')
+                        const PopupMenuItem(
+                          value: 0,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.edit_square,
+                                color: Colors.blueAccent,
+                                size: 32,
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Text(
+                                'Chỉnh sửa',
+                                style: TextStyle(
+                                    color: Colors.blueAccent, fontSize: 18),
+                              )
+                            ],
+                          ),
+                        ),
+                      if (!isLeader &&
+                          (_planDetail!.status == 'PENDING' ||
+                              _planDetail!.status == 'REGISTERING'))
+                        const PopupMenuItem(
+                          value: 1,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.logout,
+                                color: Colors.amber,
+                                size: 32,
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Text(
+                                'Rời khỏi',
+                                style: TextStyle(
+                                    color: Colors.amber, fontSize: 18),
+                              )
+                            ],
+                          ),
+                        ),
+                      if (isLeader &&
+                          (_planDetail!.status == 'PENDING' ||
+                              _planDetail!.status == 'REGISTERING'))
+                        const PopupMenuItem(
+                          value: 2,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.cancel_outlined,
+                                color: Colors.redAccent,
+                                size: 32,
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Text(
+                                'Huỷ kế hoạch',
+                                style: TextStyle(
+                                    color: Colors.redAccent, fontSize: 18),
+                              )
+                            ],
+                          ),
+                        ),
+                    ],
+                    onSelected: (value) {
+                      switch (value) {
+                        case 0:
+                          break;
+                        case 1:
+                          handleQuitPlan();
+                          break;
+                        case 2:
+                          handleCancelPlan();
+                          break;
+                      }
+                    },
                   )
               ],
             ),
             body: isLoading
-                ? const Center(
-                    child: Text("Đang tải..."),
-                  )
+                ? const PlanDetailLoadingScreen()
                 : RefreshIndicator(
                     onRefresh: () async {
                       await setupData();
@@ -403,7 +473,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                 height: 25.h,
                                 width: double.infinity,
                                 fit: BoxFit.fill,
-                                imageUrl: '$baseBucketImage${_planDetail!.imageUrls[0]}',
+                                imageUrl:
+                                    '$baseBucketImage${_planDetail!.imageUrls[0]}',
                                 placeholder: (context, url) =>
                                     Image.memory(kTransparentImage),
                                 errorWidget: (context, url, error) =>
@@ -664,8 +735,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             height: 16,
           ),
           BaseInformationWidget(
+            type: widget.planType,
             plan: _planDetail!,
             members: _planMembers,
+            refreshData: setupData,
           ),
         ],
       );
@@ -704,7 +777,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           builder: (ctx) => SharePlanScreen(
                 joinMethod: _planDetail!.joinMethod!,
                 isFromHost: _planDetail!.leaderId ==
-                    int.parse(sharedPreferences.getString('userId')!),
+                    sharedPreferences.getInt('userId')!,
                 planMembers: _planMembers,
                 isEnableToJoin: widget.isEnableToJoin,
                 planId: widget.planId,
@@ -750,7 +823,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
 
   onJoinPlan(bool isPublic) async {
     var emerList = [];
-    if (_planDetail!.memberCount == _planDetail!.maxMember) {
+    if (_planDetail!.memberCount == _planDetail!.maxMemberCount) {
       AwesomeDialog(
               context: context,
               animType: AnimType.bottomSlide,
@@ -790,11 +863,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     schedule: json.encode(_planDetail!.schedule),
                     savedContacts: json.encode(emerList),
                     name: _planDetail!.name,
-                    memberLimit: _planDetail!.maxMember,
+                    memberLimit: _planDetail!.maxMemberCount,
                     startDate: _planDetail!.startDate,
                     endDate: _planDetail!.endDate,
                     travelDuration: _planDetail!.travelDuration,
-                    departureDate: _planDetail!.departureDate,
+                    departureDate: _planDetail!.departDate,
                     note: _planDetail!.note,
                   ),
                   locationName: _planDetail!.locationName,
@@ -802,7 +875,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   onCompletePlan: () {},
                   listSurcharges: _planDetail!.surcharges!
                       .map((e) => {
-                            "amount": e.gcoinAmount,
+                            "alreadyDivided":e.alreadyDivided,
+                            "gcoinAmount": e.gcoinAmount,
                             "note": json.encode(e.note)
                           })
                       .toList(),
@@ -862,7 +936,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       'status': true,
       'message': 'Kế hoạch đủ điều kiện để chia sẻ'
     };
-    if (_planDetail!.maxMember == _joinedMember.length) {
+    if (_planDetail!.maxMemberCount == _planMembers.length) {
       return {
         'status': false,
         'message': 'Đã đủ số lượng thành viên của chuyến đi'
@@ -872,7 +946,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onConfirmMember() async {
-    if (_planDetail!.memberCount! < _planDetail!.maxMember) {
+    if (_planDetail!.memberCount! < _planDetail!.maxMemberCount) {
       AwesomeDialog(
               context: context,
               animType: AnimType.bottomSlide,
@@ -898,7 +972,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         ),
                         const Spacer(),
                         Text(
-                          '${_planDetail!.memberCount! < 10 ? '0${_planDetail!.memberCount}' : _planDetail!.memberCount}/${_planDetail!.maxMember < 10 ? '0${_planDetail!.maxMember}' : _planDetail!.maxMember}',
+                          '${_planDetail!.memberCount! < 10 ? '0${_planDetail!.memberCount}' : _planDetail!.memberCount}/${_planDetail!.maxMemberCount < 10 ? '0${_planDetail!.maxMemberCount}' : _planDetail!.maxMemberCount}',
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w500,
@@ -914,7 +988,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         ),
                         const Spacer(),
                         Text(
-                          '${DateFormat('dd/MM/yyyy').format(_planDetail!.departureDate!)} - ${DateFormat('dd/MM/yyyy').format(_planDetail!.endDate!)}',
+                          '${DateFormat('dd/MM/yyyy').format(_planDetail!.departDate!)} - ${DateFormat('dd/MM/yyyy').format(_planDetail!.endDate!)}',
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w500,
@@ -941,10 +1015,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     const SizedBox(
                       height: 20,
                     ),
-                    Text(
-                      'Thanh toán thêm ${currencyFormat.format(_planDetail!.gcoinBudgetPerCapita)}${_planDetail!.maxMember - _planDetail!.memberCount! > 1 ? ' x ${_planDetail!.maxMember - _planDetail!.memberCount!} = ${currencyFormat.format(_planDetail!.gcoinBudgetPerCapita! * (_planDetail!.maxMember - _planDetail!.memberCount!))}' : ''}GCOIN để chốt số lượng thành viên cho chuyến đi',
-                      style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w500),
+                    const Text(
+                      'Hãy cân đối chi phí cho chuyến đi khi đặt dịch vụ. Bạn sẽ phải bù tiền nếu như vượt quá ngân sách',
+                      style:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.w500),
                       textAlign: TextAlign.center,
                     ),
                   ],
@@ -952,19 +1026,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               ),
               btnOkColor: Colors.blue,
               btnOkOnPress: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (ctx) => JoinConfirmPlanScreen(
-                        callback: callbackConfirmMember,
-                        plan: _planDetail!,
-                        isPublic: false,
-                        isConfirm: true)));
+                confirmMember();
               },
               btnOkText: 'Chơi',
               btnCancelColor: Colors.amber,
               btnCancelOnPress: () {},
               btnCancelText: 'Huỷ')
           .show();
-    } else if (_planDetail!.memberCount == _planDetail!.maxMember) {
+    } else if (_planDetail!.memberCount == _planDetail!.maxMemberCount) {
       confirmMember();
     }
   }
@@ -998,8 +1067,140 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       _isEnableToInvite = false;
       _isEnableToOrder = true;
       _isEnableToConfirm = false;
-      _planDetail!.memberCount = _planDetail!.maxMember;
+      _planDetail!.memberCount = _planDetail!.maxMemberCount;
     });
+  }
+
+  handleQuitPlan() {
+    bool isBlock = false;
+    AwesomeDialog(
+            context: context,
+            dialogType: DialogType.question,
+            btnOkColor: Colors.deepOrangeAccent,
+            btnOkText: 'Rời khỏi',
+            btnOkOnPress: () {
+              onQuitPlan(isBlock);
+            },
+            body: StatefulBuilder(
+              builder: (context, setState) => Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Column(
+                  children: [
+                    Text(
+                      'Rời khỏi ${_planDetail!.name}',
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.clip,
+                      style: const TextStyle(
+                          fontFamily: 'NotoSans',
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold),
+                    ),
+                    SizedBox(
+                      height: 2.h,
+                    ),
+                    Row(
+                      children: [
+                        Checkbox(
+                          activeColor: primaryColor,
+                          value: isBlock,
+                          onChanged: (value) {
+                            setState(() {
+                              isBlock = !isBlock;
+                            });
+                          },
+                        ),
+                        SizedBox(
+                          width: 55.w,
+                          child: const Text(
+                            'Ngăn mọi người mời bạn tham gia lại chuyến đi này',
+                            overflow: TextOverflow.clip,
+                            style: TextStyle(
+                                fontFamily: 'NotoSans',
+                                color: Colors.grey,
+                                fontSize: 15),
+                          ),
+                        )
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+            btnCancelText: 'Huỷ',
+            btnCancelColor: Colors.blue,
+            btnCancelOnPress: () {})
+        .show();
+  }
+
+  onQuitPlan(bool isBlock) async {
+    final memberId = _planMembers.firstWhere((element) => element.accountId == sharedPreferences.getInt('userId')).memberId;
+    final rs = await _planService.removeMember(memberId, isBlock);
+    if (rs != 0) {
+      AwesomeDialog(
+              context: context,
+              animType: AnimType.leftSlide,
+              dialogType: DialogType.info,
+              padding: const EdgeInsets.all(12),
+              title: 'Đã rời khỏi chuyến đi',
+              titleTextStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'NotoSans'))
+          .show();
+
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pushAndRemoveUntil(
+            context,
+            PageTransition(
+                child: const TabScreen(pageIndex: 1),
+                type: PageTransitionType.rightToLeft),
+            (route) => false);
+      });
+    }
+  }
+
+  handleCancelPlan(){
+    AwesomeDialog(context: context,
+    animType: AnimType.leftSlide,
+    dialogType: DialogType.question,
+    title: 'Bạn có chắc chắn muốn huỷ kế hoạch "${_planDetail!.name}"',
+    titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
+    padding: const EdgeInsets.all(10),
+    btnOkColor: Colors.deepOrangeAccent,
+    btnOkOnPress: onCancelPlan,
+    btnOkText: 'Có',
+    btnCancelColor: Colors.blue,
+    btnCancelOnPress: () {
+      
+    },
+    btnCancelText: 'Không' 
+    ).show();
+  }
+
+  onCancelPlan()async{
+    int? rs = await _planService.cancelPlan(widget.planId);
+    if(rs != 0){
+      AwesomeDialog(
+              context: context,
+              animType: AnimType.leftSlide,
+              dialogType: DialogType.info,
+              padding: const EdgeInsets.all(12),
+              title: 'Đã huỷ kế hoạch "${_planDetail!.name}"',
+              titleTextStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'NotoSans'))
+          .show();
+
+      Future.delayed(const Duration(seconds: 2), () {
+        Navigator.pushAndRemoveUntil(
+            context,
+            PageTransition(
+                child: const TabScreen(pageIndex: 1),
+                type: PageTransitionType.rightToLeft),
+            (route) => false);
+      });
+    }
   }
 
   onPublicizePlan() async {
