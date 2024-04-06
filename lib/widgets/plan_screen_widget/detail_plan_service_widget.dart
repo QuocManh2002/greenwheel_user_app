@@ -80,13 +80,13 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                     onPressed: () async {
                       if (widget.plan.status == 'READY') {
                         final rs = await _locationService.GetLocationById(
-                            widget.plan.locationId);
+                            widget.plan.locationId!);
                         if (rs != null) {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (ctx) => ListOrderScreen(
                                     availableGcoinAmount:
                                         widget.plan.actualGcoinBudget,
-                                    planId: widget.plan.id,
+                                    planId: widget.plan.id!,
                                     orders: widget.tempOrders,
                                     startDate: widget.plan.startDate!,
                                     callback: widget.onGetOrderList,
@@ -188,9 +188,9 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                     buildAmountInfo(
                         'Ngân sách dự tính:',
                         widget.plan.gcoinBudgetPerCapita! *
-                            widget.plan.maxMemberCount),
+                            widget.plan.maxMemberCount!),
                     buildAmountInfo(
-                        'Ngân sách ban đầu:',
+                        'Ngân sách đã thu:',
                         widget.plan.gcoinBudgetPerCapita! *
                             widget.plan.memberCount!),
                     if (isShowTotal)
@@ -203,28 +203,27 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                                   widget.plan.status == 'REGISTERING'
                               ? 0
                               : widget.total / 100),
-                    buildAmountInfo('Bình quân ban đầu:',
-                        widget.plan.gcoinBudgetPerCapita!),
-                    if (isShowTotal)
-                      buildAmountInfo(
-                          'Bình quân đã chi:',
-                          widget.plan.status == 'PENDING' ||
-                                  widget.plan.status == 'REGISTERING'
-                              ? 0
-                              : ((widget.total / widget.plan.memberCount!) /
-                                      100)
-                                  .ceil()),
+                    // buildAmountInfo('Bình quân ban đầu:',
+                    //     widget.plan.gcoinBudgetPerCapita!),
+                    // if (isShowTotal)
+                    //   buildAmountInfo(
+                    //       'Bình quân đã chi:',
+                    //       widget.plan.status == 'PENDING' ||
+                    //               widget.plan.status == 'REGISTERING'
+                    //           ? 0
+                    //           : ((widget.total / widget.plan.memberCount!) /
+                    //                   100)
+                    //               .ceil()),
                     if (isShowTotal)
                       buildAmountInfo(
                           'Số tiền cần phải bù:',
-                          widget.total / 100 -
-                                      widget.plan.gcoinBudgetPerCapita! *
-                                          widget.plan.memberCount! >
-                                  0
-                              ? widget.total / 100 -
-                                  widget.plan.gcoinBudgetPerCapita! *
-                                      widget.plan.memberCount!
-                              : 0)
+                          widget.plan.maxMemberCount! * widget.plan.gcoinBudgetPerCapita! - 
+                          widget.plan.memberCount! * widget.plan.gcoinBudgetPerCapita!
+                          ),
+                    
+                    // buildAmountInfo('Số tiền hoàn lại:', widget.plan.displayGcoinBudget! / widget.plan.memberCount! * 
+                    // + widget.plan.actualGcoinBudget! - widget.plan.displayGcoinBudget!
+                    // )
                   ],
                 ),
               ),

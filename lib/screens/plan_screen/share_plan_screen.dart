@@ -71,7 +71,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
         _isSearchingLoading = false;
       });
     } else {
-      if (_planMembers.any((member) => member.accountId == customer.id)) {
+      if (_planMembers.any((member) => member.accountId == customer.id && (member.status == 'JOINED' || member.status == 'BLOCKED'))) {
         setState(() {
           _isEnableToInvite = false;
         });
@@ -159,7 +159,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   }
 
   onInvite() async {
-    var rs = await _planService.inviteToPlan(widget.planId, _customer!.id);
+    var rs = await _planService.inviteToPlan(widget.planId, _customer!.id, context);
     if (rs != 0) {
       AwesomeDialog(
               // ignore: use_build_context_synchronously
@@ -175,7 +175,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                     name: _customer!.name,
                     memberId: _customer!.id,
                     phone: _customer!.phone,
-                    accountId: 1,
+                    accountId: _customer!.id,
                     weight: 1,
                     isMale: _customer!.isMale,
                     status: "INVITED"));
@@ -188,11 +188,20 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
     }
   }
 
+  setUpData() async {
+    var mems = await _planService.getPlanMember(widget.planId, 'JOIN', context);
+    if (mems.isNotEmpty) {
+      setState(() {
+        _planMembers = mems;
+      });
+    }
+  }
+
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _planMembers = widget.planMembers;
+    setUpData();
   }
 
   @override
@@ -226,40 +235,39 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
       body: Stack(
         children: [
           Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-              Padding(
-                padding: const EdgeInsets.all(32),
-                child: TextField(
-                  cursorColor: primaryColor,
-                  controller: phoneSearch,
-                  onChanged: (value) {
+            Padding(
+              padding: const EdgeInsets.all(32),
+              child: TextField(
+                cursorColor: primaryColor,
+                controller: phoneSearch,
+                onChanged: (value) {
+                  setState(() {
+                    _isSearch = true;
+                  });
+                  if (value.length == 10) {
+                    searchCustomer();
+                  } else {
+                    _isSearchingLoading = true;
+                  }
+                  if (value.isEmpty) {
                     setState(() {
-                      _isSearch = true;
+                      _isSearch = false;
                     });
-                    if (value.length == 10) {
-                      searchCustomer();
-                    } else {
-                      _isSearchingLoading = true;
-                    }
-                    if (value.isEmpty) {
-                      setState(() {
-                        _isSearch = false;
-                      });
-                    }
-                  },
-                  style: const TextStyle(fontSize: 18),
-                  keyboardType: TextInputType.phone,
-                  decoration: const InputDecoration(
-                    hintText: "Tìm số điện thoại",
-                    focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(14)),
-                        borderSide:
-                            BorderSide(color: primaryColor, width: 1.8)),
-                    enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.all(Radius.circular(14)),
-                        borderSide: BorderSide(color: primaryColor)),
-                  ),
+                  }
+                },
+                style: const TextStyle(fontSize: 18),
+                keyboardType: TextInputType.phone,
+                decoration: const InputDecoration(
+                  hintText: "Tìm số điện thoại",
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(14)),
+                      borderSide: BorderSide(color: primaryColor, width: 1.8)),
+                  enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.all(Radius.circular(14)),
+                      borderSide: BorderSide(color: primaryColor)),
                 ),
               ),
+            ),
             if (widget.joinMethod == 'SCAN')
               Column(
                 children: [
@@ -363,7 +371,9 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                               )
                             : Row(
                                 children: [
-                                  SizedBox(width: 3.w,),
+                                  SizedBox(
+                                    width: 3.w,
+                                  ),
                                   Container(
                                     height: 6.h,
                                     width: 6.h,
@@ -371,12 +381,23 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                                         shape: BoxShape.circle),
                                     clipBehavior: Clip.hardEdge,
                                     child: _customer!.avatarUrl == null
-                                        ? Image.asset(_customer!.isMale
-                                            ? male_default_avatar
-                                            : female_default_avatar, height: 6.h, width: 6.h, fit: BoxFit.cover,)
-                                        : Image.network('$baseBucketImage${_customer!.avatarUrl!}',width: 6.h, height: 6.h, fit: BoxFit.cover),
+                                        ? Image.asset(
+                                            _customer!.isMale
+                                                ? male_default_avatar
+                                                : female_default_avatar,
+                                            height: 6.h,
+                                            width: 6.h,
+                                            fit: BoxFit.cover,
+                                          )
+                                        : Image.network(
+                                            '$baseBucketImage${_customer!.avatarUrl!}',
+                                            width: 6.h,
+                                            height: 6.h,
+                                            fit: BoxFit.cover),
                                   ),
-                                  SizedBox(width: 3.w,),
+                                  SizedBox(
+                                    width: 3.w,
+                                  ),
                                   SizedBox(
                                     width: 40.w,
                                     child: Column(

@@ -5,25 +5,15 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
+import 'package:greenwheel_user_app/view_models/order_detail.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
 import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
 
 class OrderService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
   static GraphQLClient client = config.getClient();
-//           mutation {
-//   createOrder(
-//     dto: {
-//       details: $details
-//       note: ${json.encode(order.note)}
-//       period: ${order.period}
-//       planId: ${order.planId}
-//       servingDates: ${order.servingDates}
-//     }
-//   ) {
-//     id
-//   }
-// }
+
   Future<int> addOrder(OrderCreateViewModel order) async {
     try {
       List<Map<String, dynamic>> details = order.details.map((detail) {
@@ -87,13 +77,11 @@ mutation{
       if (result.hasException) {
         throw Exception(result.exception);
       }
-      final int? transactionId =
-          result.data?['createTopUp']['transactionId'];
+      final int? transactionId = result.data?['createTopUp']['transactionId'];
       if (transactionId == null) {
         return null;
       }
-      final String paymentUrl =
-          result.data?['createTopUp']['paymentUrl'];
+      final String paymentUrl = result.data?['createTopUp']['paymentUrl'];
       TopupRequestViewModel request = TopupRequestViewModel(
           transactionId: transactionId, paymentUrl: paymentUrl);
       return request;
@@ -170,7 +158,6 @@ mutation{
 
   Future<int> createOrder(OrderViewModel order, int planId) async {
     try {
-  
       List<Map<String, dynamic>> details = order.details!.map((detail) {
         return {'key': detail.id, 'value': detail.quantity};
       }).toList();
@@ -189,7 +176,7 @@ mutation{
   }
 }
 """;
-    log(mutationText);
+      log(mutationText);
       final QueryResult result = await client.mutate(MutationOptions(
           fetchPolicy: FetchPolicy.noCache, document: gql(mutationText)));
       if (result.hasException) {
@@ -203,6 +190,31 @@ mutation{
       throw Exception(error);
     }
   }
+
+  List<OrderViewModel> getOrderFromJson(List<dynamic> jsonList) => jsonList
+      .map((e) => OrderViewModel(
+            createdAt: DateTime.parse(e['createdAt']),
+            note: e['note'],
+            details: e['details']
+                .map((detail) => OrderDetailViewModel(
+                    productId: detail['productId'],
+                    price: detail['unitPrice'],
+                    productName: detail['productName'],
+                    unitPrice: detail['unitPrice'],
+                    quantity: detail['quantity']))
+                .toList(),
+            type: e['type'],
+            period: e['period'],
+            total: double.parse(e['total'].toString()),
+            serveDates: e['serveDates'],
+            supplier: SupplierViewModel(
+                id: e['supplierId'],
+                name: e['supplierName'],
+                phone: e['supplierPhone'],
+                thumbnailUrl: e['supplierImageUrl'],
+                address: e['supplierAddress']),
+          ))
+      .toList();
 
   @override
   // TODO: implement iterator

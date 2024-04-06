@@ -5,6 +5,7 @@ import 'package:greenwheel_user_app/screens/main_screen/home.dart';
 import 'package:greenwheel_user_app/screens/notification_screen/notificationscreen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
+import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
 
 class TabScreen extends StatefulWidget {
@@ -56,10 +57,13 @@ class _TabScreenState extends State<TabScreen> {
         activePage = const PlanScreen();
         break;
       case 2:
+        activePage = const TransactionHistoryScreen();
+        break;
+      case 3:
         //switch to Noti page;
         activePage = const NotificationScreen();
         break;
-      case 3:
+      case 4:
         //switch to profie page;
         activePage = const ProfileScreen();
         break;
@@ -84,6 +88,7 @@ class _TabScreenState extends State<TabScreen> {
               label: "Trang chủ"),
           BottomNavigationBarItem(
               icon: Icon(Icons.calendar_month), label: "Kế hoạch"),
+              BottomNavigationBarItem(icon: Icon(Icons.history), label: 'Thanh toán',),
           BottomNavigationBarItem(
               icon: Icon(Icons.notifications), label: "Thông báo"),
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "Hồ sơ")

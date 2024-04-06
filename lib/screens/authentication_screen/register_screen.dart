@@ -1,7 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
@@ -80,14 +79,17 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(
                   height: 8,
                 ),
-                defaultTextFormField(
+                TextFormFieldWithLength(
                   controller: nameController,
                   inputType: TextInputType.name,
                   text: 'Tên người dùng',
                   hinttext: 'Nguyễn Văn A',
+                  maxLength: 30,
                   onValidate: (value) {
                     if (value!.isEmpty) {
                       return "Tên của người dùng không được để trống";
+                    }else if(value.length < 4 || value.length > 30){
+                      return "Tên của người dùng phải có độ dài từ 4-30 kí tự";
                     }
                   },
                 ),

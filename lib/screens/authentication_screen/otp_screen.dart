@@ -4,6 +4,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/login.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
@@ -61,11 +63,12 @@ class _OTPScreenState extends State<OTPScreen> {
                   Container(
                     margin: EdgeInsets.only(top: 4.h),
                     alignment: Alignment.center,
-                    child: Image.asset(
-                      'assets/images/phuot_travel_logo.png',
+                    child: SvgPicture.asset(
+                      app_logo,
                       height: 170,
                     ),
                   ),
+                  SizedBox(height: 2.h,),
                   Container(
                     child: const Text(
                       'Nhập OTP',
@@ -233,6 +236,7 @@ class _OTPScreenState extends State<OTPScreen> {
         log('access: ${model.accessToken}');
         log('refresh: ${model.refreshToken}');
         sharedPreferences.setString('userToken', model.accessToken);
+        sharedPreferences.setString('userRefreshToken', model.refreshToken);
         CustomerViewModel? traveler = await customerService.GetCustomerByPhone(
             '84${widget.phoneNumber.substring(1)}');
         if (traveler == null) {

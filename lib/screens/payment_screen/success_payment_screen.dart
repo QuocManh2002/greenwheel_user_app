@@ -1,16 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SuccessPaymentScreen extends StatelessWidget {
-  const SuccessPaymentScreen({super.key, required this.amount});
+  const SuccessPaymentScreen(
+      {super.key, required this.amount, required this.planId});
   final int amount;
+  final int planId;
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +47,7 @@ class SuccessPaymentScreen extends StatelessWidget {
                   SizedBox(
                     height: 2.h,
                   ),
-                  Image.asset(
+                  SvgPicture.asset(
                     app_logo,
                     height: 5.h,
                     fit: BoxFit.cover,
@@ -132,7 +136,7 @@ class SuccessPaymentScreen extends StatelessWidget {
                   ),
                   RichText(
                     textAlign: TextAlign.center,
-                    text:  TextSpan(
+                    text: TextSpan(
                         text: 'Bạn đã thanh toán thành công số tiền ',
                         style: const TextStyle(
                             fontFamily: 'NotoSans',
@@ -140,11 +144,17 @@ class SuccessPaymentScreen extends StatelessWidget {
                             color: Colors.black87),
                         children: [
                           TextSpan(
-                              text: NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: 'GCOIN').format(amount),
-                              style:const TextStyle(
+                              text: NumberFormat.simpleCurrency(
+                                      locale: 'vi_VN',
+                                      decimalDigits: 0,
+                                      name: 'GCOIN')
+                                  .format(amount),
+                              style: const TextStyle(
                                   fontWeight: FontWeight.bold,
                                   color: primaryColor)),
-                          TextSpan(text: ' ${DateFormat('dd/MM/yyyy').format(DateTime.now())} ${DateFormat.Hm().format(DateTime.now())}')
+                          TextSpan(
+                              text:
+                                  ' ${DateFormat('dd/MM/yyyy').format(DateTime.now())} ${DateFormat.Hm().format(DateTime.now())}')
                         ]),
                   ),
                   SizedBox(
@@ -161,10 +171,11 @@ class SuccessPaymentScreen extends StatelessWidget {
                                       const TabScreen(pageIndex: 0)),
                               (route) => false);
                           Navigator.push(
-                              context,
-                              PageTransition(
-                                  child: const TransactionHistoryScreen(),
-                                  type: PageTransitionType.topToBottom),);
+                            context,
+                            PageTransition(
+                                child: const TransactionHistoryScreen(),
+                                type: PageTransitionType.topToBottom),
+                          );
                         },
                         child: buildButton('Lịch sử giao dịch', Icons.history),
                       )),
@@ -174,14 +185,22 @@ class SuccessPaymentScreen extends StatelessWidget {
                       Expanded(
                           child: InkWell(
                         onTap: () {
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              PageTransition(
-                                  child: const TabScreen(pageIndex: 0),
-                                  type: PageTransitionType.topToBottom),
+                          Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                  builder: (ctx) => const TabScreen(pageIndex: 1,)),
                               (route) => false);
+                          Navigator.push(
+                            context,
+                            PageTransition(
+                                child: DetailPlanNewScreen(
+                                  planId: planId,
+                                  planType: 'JOIN',
+                                  isEnableToJoin: false,
+                                ),
+                                type: PageTransitionType.topToBottom),
+                          );
                         },
-                        child: buildButton('Trang chủ', Icons.home),
+                        child: buildButton('Quay lại', Icons.home),
                       )),
                     ],
                   ),

@@ -130,18 +130,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
         isLoading = false;
       });
     }
-
-    // if (widget.currentCart.isNotEmpty) {
-    //   double tmp = 0;
-    //   if (widget.currentCart.isNotEmpty) {}
-    //   for (var cartItem in widget.currentCart) {
-    //     tmp += cartItem.product.price * cartItem.qty!;
-    //   }
-    //   setState(() {
-    //     items = widget.currentCart;
-    //     total = tmp;
-    //   });
-    // }
     pickupDate = widget.iniPickupDate;
     returnDate = widget.iniReturnDate;
     note = widget.iniNote;
@@ -149,29 +137,14 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     if (widget.serviceType.id == 1) {
       title = "Món ăn";
       if (widget.isFromTempOrder != null && widget.isFromTempOrder!) {
-        List<int> qtys= [];
+        List<int> qtys = [];
         for (final item in widget.currentCart) {
           int index = widget.currentCart.indexOf(item);
-          // if (list
-          //             .firstWhere((element) => element.id == item.product.id)
-          //             .partySize! *
-          //         item.qty! >
-          //     widget.numberOfMember) {
-            // setState(() {
-            //   item.qty = (widget.numberOfMember /
-            //           list
-            //               .firstWhere(
-            //                   (element) => element.id == item.product.id)
-            //               .partySize!)
-            //       .ceil();
-            // });
-            qtys.add(item.qty = (widget.numberOfMember /
-                      list
-                          .firstWhere(
-                              (element) => element.id == item.product.id)
-                          .partySize!)
-                  .ceil());
-          // }
+          qtys.add(item.qty = (widget.numberOfMember /
+                  list
+                      .firstWhere((element) => element.id == item.product.id)
+                      .partySize!)
+              .ceil());
           updateCart(
               list.firstWhere((element) => element.id == item.product.id),
               qtys[index]);
@@ -323,7 +296,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                   child: Row(
                                     children: [
                                       Text(
-                                        '0${widget.supplier.phone!.substring(3)}',
+                                        '0${widget.supplier.phone!.substring(2)}',
                                         style: const TextStyle(
                                             fontSize: 20,
                                             color: Colors.black54),
@@ -415,7 +388,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                             getItemCartByMenuItemId(list[index].id);
                         if (itemCart != null) {
                           // setState(() {
-                            qty = itemCart.qty;
+                          qty = itemCart.qty;
                           // });
                         }
                         return MenuItemCard(
@@ -530,7 +503,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
         total -= existingItem.product.price * existingItem.qty!;
 
         if (qty != 0) {
-            total += prod.price * qty;
+          total += prod.price * qty;
           items[existingItemIndex] = ItemCart(product: prod, qty: qty);
         } else {
           items.removeAt(existingItemIndex);

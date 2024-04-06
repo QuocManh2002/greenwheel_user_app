@@ -1,8 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:greenwheel_user_app/main.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/otp_screen.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:sizer2/sizer2.dart';
@@ -52,11 +52,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             Container(
                               margin: EdgeInsets.only(top: 4.h),
                               alignment: Alignment.center,
-                              child: Image.asset(
-                                'assets/images/phuot_travel_logo.png',
+                              child: SvgPicture.asset(
+                                app_logo,
                                 height: 170,
                               ),
-                            ), // Replace 'your_image_path.png' with your image asset path
+                            ),
+                            SizedBox(height: 2.h,), // Replace 'your_image_path.png' with your image asset path
                             const Text(
                               'Chào mừng đến với Phượt Travel',
                               style: TextStyle(

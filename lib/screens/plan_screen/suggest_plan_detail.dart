@@ -8,7 +8,7 @@ import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/direction_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
@@ -60,7 +60,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
   }
 
   setUpData() async {
-    _planDetail = await _planService.GetPlanById(widget.planId,"");
+    _planDetail = await _planService.GetPlanById(widget.planId,"",);
     List<Widget> listRestaurant = [];
     List<Widget> listMotel = [];
 
@@ -117,7 +117,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
                           height: 35.h,
                           width: double.infinity,
                           fit: BoxFit.cover,
-                          imageUrl: _planDetail!.imageUrls[0],
+                          imageUrl: _planDetail!.imageUrls![0],
                           placeholder: (context, url) =>
                               Image.memory(kTransparentImage),
                           errorWidget: (context, url, error) =>
@@ -252,7 +252,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
                             child: _selectedTab == 0
                                 ? Column(
                                     children: [
-                                      BaseInformationWidget(plan: _planDetail!, members: [],type: '',refreshData: (){},),
+                                      BaseInformationWidget(plan: _planDetail!, members: [],type: '',refreshData: (){},isLeader: false,),
                                       Padding(
                                         padding: const EdgeInsets.symmetric(
                                             horizontal: 24),
@@ -380,7 +380,8 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
                                             SizedBox(
                                               height: 60.h,
                                               child: PLanScheduleWidget(
-                                                schedule: _planDetail!.schedule,
+                                                planId: widget.planId,
+                                                planType: "",
                                                 startDate:
                                                     _planDetail!.startDate!,
                                                 endDate: _planDetail!.endDate!,
@@ -554,15 +555,15 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
         .map((e) => EmergencyContactViewModel().toJson(e))
         .toList();
     sharedPreferences.setInt('plan_combo_date', _comboDate.id - 1);
-    sharedPreferences.setInt('numOfExpPeriod', _planDetail!.numOfExpPeriod);
-    sharedPreferences.setInt('plan_number_of_member', _planDetail!.maxMemberCount);
+    sharedPreferences.setInt('numOfExpPeriod', _planDetail!.numOfExpPeriod!);
+    sharedPreferences.setInt('plan_number_of_member', _planDetail!.maxMemberCount!);
     sharedPreferences.setDouble(
-        'plan_start_lat', _planDetail!.startLocationLat);
+        'plan_start_lat', _planDetail!.startLocationLat!);
     sharedPreferences.setDouble(
-        'plan_start_lng', _planDetail!.startLocationLng);
+        'plan_start_lng', _planDetail!.startLocationLng!);
     var mapInfo = await getDirectionsAPIResponse(
         PointLatLng(
-            _planDetail!.startLocationLat, _planDetail!.startLocationLng),
+            _planDetail!.startLocationLat!, _planDetail!.startLocationLng!),
         PointLatLng(widget.location.latitude, widget.location.longitude));
     if (mapInfo.isNotEmpty) {
       sharedPreferences.setDouble('plan_distance', mapInfo["distance"] / 1000);
@@ -570,7 +571,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
     }
     sharedPreferences.setString('plan_saved_emergency', rsList.toString());
     var test1 = _planService.GetPlanScheduleFromJsonNew(
-        _planDetail!.schedule,
+        _planDetail!.schedule!,
         _planDetail!.startDate!,
         _planDetail!.endDate!.difference(_planDetail!.startDate!).inDays + 1);
     List<dynamic> listrs = [];

@@ -1,5 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +16,7 @@ import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -36,7 +38,7 @@ class CreateNoteSurchargeScreen extends StatefulWidget {
 class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   int _selectedIndex = 0;
   HtmlEditorController controller = HtmlEditorController();
-  List<Map> _listSurchargeObjects = [];
+  List<dynamic> _listSurchargeObjects = [];
   double _totalSurcharge = 0;
   List<Widget> _listSurcharges = [];
   PlanCreate? plan;
@@ -49,7 +51,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // setUpData();
+    setUpData();
   }
 
   setUpData() {
@@ -61,7 +63,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
     return SafeArea(
         child: Scaffold(
       resizeToAvoidBottomInset: false,
-      backgroundColor: lightPrimaryTextColor,
+      backgroundColor: Colors.white,
       appBar: AppBar(
         title: const Text('Ghi chú và phụ thu'),
         leading: BackButton(
@@ -85,7 +87,6 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                 btnOkOnPress: () async {
                   var rs = true;
                   if (rs) {
-                    Utils().clearPlanSharePref();
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
                     Navigator.of(context).pop();
@@ -160,6 +161,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (ctx) => CreatePlanSurcharge(
                             callback: callbackSurcharge,
+                            isCreate: true,
                           )));
                 },
                 icon: const Icon(
@@ -448,22 +450,30 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
     _totalSurcharge = 0;
     if (surchargeText != null) {
       final surcharges = json.decode(surchargeText);
+      _listSurchargeObjects = surcharges.map((e) => {
+        'alreadyDivided': e['alreadyDivided'],
+        'gcoinAmount': e['gcoinAmount'],
+        'note': e['note'],
+      }).toList();
       for (final sur in surcharges) {
         listSurcharges.add(SurchargeCard(
-            amount: sur['gcoinAmount'], note: json.decode(sur['note'])));
+            isEnableToUpdate: true,
+            isCreate: true,
+            surcharge: SurchargeViewModel.fromJsonLocal(sur),
+            callbackSurcharge: callbackSurcharge,
+            ));
         if(sur['alreadyDivided']){
           _totalSurcharge += sur['gcoinAmount'] * memberLimit;
         }else{
           _totalSurcharge += sur['gcoinAmount'];
-        }
-        _listSurchargeObjects.add(sur);
+        }        
       }
     }
     setState(() {
       _listSurcharges = listSurcharges;
     });
-    sharedPreferences.setString(
-        'plan_surcharge', json.encode(_listSurchargeObjects));
+    // sharedPreferences.setString(
+    //     'plan_surcharge', json.encode(_listSurchargeObjects));
   }
 
   completeService() {
@@ -546,17 +556,17 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
     //     },
     //   ).show();
     // } else {
-    if (memberLimit == 1) {
-      Utils().clearPlanSharePref();
-      Navigator.of(context).pop();
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(
-            builder: (ctx) => const TabScreen(
-                  pageIndex: 1,
-                )),
-        (route) => false,
-      );
-    } else {
+    // if (memberLimit == 1) {
+    //   Utils().clearPlanSharePref();
+    //   Navigator.of(context).pop();
+    //   Navigator.of(context).pushAndRemoveUntil(
+    //     MaterialPageRoute(
+    //         builder: (ctx) => const TabScreen(
+    //               pageIndex: 1,
+    //             )),
+    //     (route) => false,
+    //   );
+    // } else {
       final rs = await _planService.createNewPlan(
           plan!, context, _listSurchargeObjects.toString());
       if (rs != 0) {
@@ -583,7 +593,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
               builder: (ctx) =>
                   DetailPlanNewScreen(planId: rs, isEnableToJoin: false, planType: "OWNED",)));
         });
-      }
+      // }
     }
     // }
   }

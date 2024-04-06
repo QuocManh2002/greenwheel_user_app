@@ -1,75 +1,182 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/update_billing_surcharge_screen.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SurchargeCard extends StatelessWidget {
-  const SurchargeCard({super.key, required this.amount, required this.note});
-  final int amount;
-  final String note;
+  const SurchargeCard(
+      {super.key,
+      required this.surcharge,
+      required this.callbackSurcharge,
+      required this.isEnableToUpdate,
+      required this.isCreate});
+  final SurchargeViewModel surcharge;
+  final void Function() callbackSurcharge;
+  final bool isCreate;
+  final bool isEnableToUpdate;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Container(
-          decoration: BoxDecoration(
-              color: Colors.grey.withOpacity(0.2),
-              borderRadius: const BorderRadius.all(Radius.circular(14))),
-          child: Padding(
-            padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
-            child: Row(
-              children: [
-                const SizedBox(
-                  width: 8,
-                ),
-                SizedBox(
-                  width: 55.w,
-                  child: Text(
-                    note,
-                    overflow: TextOverflow.clip,
-                    style: const TextStyle(
-                        fontSize: 20, fontWeight: FontWeight.bold),
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Container(
+        width: 100.w,
+        decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.2),
+            borderRadius: const BorderRadius.all(Radius.circular(14))),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 70.w,
+                    child: Text(
+                      surcharge.note.substring(0,1) == "\"" ?
+                      '${json.decode(surcharge.note)}' : surcharge.note, 
+                      overflow: TextOverflow.clip,
+                      style: const TextStyle(
+                          fontSize: 21, fontWeight: FontWeight.bold),
+                    ),
                   ),
-                ),
-                const Spacer(),
-                Container(
-                  color: Colors.grey,
-                  width: 2,
-                  height: 7.h,
-                ),
-                const SizedBox(
-                  width: 8,
-                ),
-                SizedBox(
-                  width: 23.w,
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Container(
-                        alignment: Alignment.centerRight,
-                        width: 15.w,
-                        child: Text(
-                          '${NumberFormat.currency(locale: 'vi_VN', decimalDigits: 0,symbol: '').format(amount/1000).trim()}k ',
-                          style: const TextStyle(fontSize: 16),
+                  SizedBox(
+                    width: 70.w,
+                    child: Row(
+                      children: [
+                        Text(
+                          NumberFormat.currency(
+                                  locale: 'vi_VN', decimalDigits: 0, symbol: '')
+                              .format(surcharge.gcoinAmount),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
                           overflow: TextOverflow.clip,
                         ),
-                      ),
-                      SizedBox(width: 0.3.w,),
-                      SvgPicture.asset(gcoin_logo, height: 25,),
-                      SizedBox(width: 1.5.w,)
-                    ],
-                  ),
-                )
-              ],
-            ),
+                        SizedBox(
+                          width: 0.3.w,
+                        ),
+                        SvgPicture.asset(
+                          gcoin_logo,
+                          height: 25,
+                        ),
+                        const Spacer()
+                      ],
+                    ),
+                  )
+                ],
+              ),
+              const Spacer(),
+              if(isEnableToUpdate)
+              PopupMenuButton(
+                itemBuilder: (context) => [
+                  if (isCreate)
+                    const PopupMenuItem(
+                        value: 0,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.edit_square,
+                              color: Colors.blueAccent,
+                              size: 25,
+                            ),
+                            SizedBox(
+                              width: 4,
+                            ),
+                            Text(
+                              'Chỉnh sửa',
+                              style: TextStyle(
+                                  fontSize: 17,
+                                  fontFamily: 'NotoSans',
+                                  color: Colors.blueAccent),
+                            ),
+                          ],
+                        )),
+                  if (isCreate)
+                    const PopupMenuItem(
+                        value: 1,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete,
+                              color: Colors.redAccent,
+                              size: 25,
+                            ),
+                            SizedBox(
+                              width: 4,
+                            ),
+                            Text('Xoá',
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontFamily: 'NotoSans',
+                                    color: Colors.redAccent)),
+                          ],
+                        )),
+                  if (!isCreate)
+                    const PopupMenuItem(
+                        value: 2,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.add_a_photo,
+                              color: Colors.blueAccent,
+                              size: 25,
+                            ),
+                            SizedBox(
+                              width: 4,
+                            ),
+                            Text('Cập nhật hoá đơn',
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontFamily: 'NotoSans',
+                                    color: Colors.blueAccent)),
+                          ],
+                        )),
+                ],
+                onSelected: (value) {
+                  switch (value) {
+                    case 0:
+                      Navigator.push(
+                          context,
+                          PageTransition(
+                              child: CreatePlanSurcharge(
+                                callback: callbackSurcharge,
+                                isCreate: false,
+                                surcharge: surcharge,
+                              ),
+                              type: PageTransitionType.rightToLeft));
+                      break;
+                    case 1:
+                      var list = json.decode(
+                          sharedPreferences.getString('plan_surcharge')!);
+                      final index =
+                          list.firstWhere((e) => e['id'] == surcharge.id);
+                      list.remove(index);
+                      sharedPreferences.setString(
+                          'plan_surcharge', json.encode(list));
+                      callbackSurcharge();
+                      break;
+                    case 2:
+                      Navigator.push(context, PageTransition(child: UpdateBillingSurchargeScreen(surcharge: surcharge,), type: PageTransitionType.rightToLeft));
+                      break;
+                  }
+                },
+              )
+            ],
           ),
         ),
-      );
+      ),
+    );
   }
 }

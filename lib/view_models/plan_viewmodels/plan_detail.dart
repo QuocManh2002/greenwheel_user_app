@@ -1,4 +1,3 @@
-
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -6,24 +5,24 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
 import 'package:intl/intl.dart';
 
 class PlanDetail {
-  int id;
+  int? id;
   String? name;
   DateTime? departDate;
   DateTime? departTime;
   DateTime? startDate;
   DateTime? endDate;
   String? joinMethod;
-  List<dynamic> schedule;
-  int maxMemberCount;
-  String status;
-  String locationName;
-  int locationId;
-  double startLocationLat;
-  double startLocationLng;
-  List<dynamic> imageUrls;
+  List<dynamic>? schedule;
+  int? maxMemberCount;
+  String? status;
+  String? locationName;
+  int? locationId;
+  double? startLocationLat;
+  double? startLocationLng;
+  List<dynamic>? imageUrls;
   List<OrderViewModel>? orders;
   List<EmergencyContactViewModel>? savedContacts;
-  int numOfExpPeriod;
+  int? numOfExpPeriod;
   List<PlanMemberViewModel>? members;
   int? gcoinBudgetPerCapita;
   String? travelDuration;
@@ -38,27 +37,26 @@ class PlanDetail {
   String? leaderName;
   int? actualGcoinBudget;
   int? displayGcoinBudget;
-  int? gcoinHostDonated;
 
   PlanDetail(
-      {required this.id,
-      required this.startDate,
-      required this.endDate,
-      required this.schedule,
-      required this.maxMemberCount,
-      required this.status,
-      required this.locationName,
-      required this.locationId,
-      required this.imageUrls,
-      required this.name,
+      {this.id,
+      this.startDate,
+      this.endDate,
+      this.schedule,
+      this.maxMemberCount,
+      this.status,
+      this.locationName,
+      this.locationId,
+      this.imageUrls,
+      this.name,
       this.joinMethod,
       this.savedContacts,
       this.members,
       this.gcoinBudgetPerCapita,
-      required this.startLocationLat,
-      required this.startLocationLng,
-      required this.numOfExpPeriod,
-      required this.departDate,
+      this.startLocationLat,
+      this.startLocationLng,
+      this.numOfExpPeriod,
+      this.departDate,
       this.departTime,
       this.travelDuration,
       this.tempOrders,
@@ -67,7 +65,6 @@ class PlanDetail {
       this.note,
       this.actualGcoinBudget,
       this.displayGcoinBudget,
-      this.gcoinHostDonated,
       this.surcharges,
       this.maxMemberWeight,
       this.departureAddress,
@@ -96,17 +93,23 @@ class PlanDetail {
         joinMethod: json["joinMethod"],
         numOfExpPeriod: json['periodCount'],
         note: json['note'],
-        gcoinHostDonated: json['gcoinHostDonated'],
         actualGcoinBudget: json['actualGcoinBudget'],
         displayGcoinBudget: json['displayGcoinBudget'],
         memberCount: json['memberCount'],
-        regCloseAt: DateTime.parse(json['regCloseAt']),
+        regCloseAt: json['regCloseAt'] == null ? null : DateTime.parse(json['regCloseAt']),
         departureAddress: json['departureAddress'],
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'],
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
         startLocationLng: json["departure"]["coordinates"][0].toDouble(),
-        surcharges: List<SurchargeViewModel>.from(json['surcharges'].map((e) => SurchargeViewModel.fromJson(e))).toList(),
-        members: List<PlanMemberViewModel>.from(json['members'].map((e) => PlanMemberViewModel.fromJson(e))).toList(),
-        savedContacts: List<EmergencyContactViewModel>.from(json['savedContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
+        surcharges: List<SurchargeViewModel>.from(
+                json['surcharges'].map((e) => SurchargeViewModel.fromJsonQuery(e)))
+            .toList(),
+        members: List<PlanMemberViewModel>.from(
+                json['members'].map((e) => PlanMemberViewModel.fromJson(e)))
+            .toList(),
+        savedContacts: List<EmergencyContactViewModel>.from(
+                json['savedContacts'].map(
+                    (e) => EmergencyContactViewModel.fromJsonByLocation(e)))
+            .toList(),
       );
 }

@@ -168,7 +168,8 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
                   SizedBox(
                     height: 60.h,
                     child: PLanScheduleWidget(
-                      schedule: widget.plan.schedule!,
+                     planId: widget.plan.id,
+                     planType: "",
                       startDate: widget.plan.startDate,
                       endDate: widget.plan.endDate,
                     ),

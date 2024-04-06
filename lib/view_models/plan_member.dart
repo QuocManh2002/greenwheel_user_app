@@ -16,7 +16,6 @@ class PlanMemberViewModel {
     int weight;
     String? imagePath;
     List<dynamic>? companions;
-    int? gcoinDonation;
     bool isMale;
 
     PlanMemberViewModel({
@@ -28,7 +27,6 @@ class PlanMemberViewModel {
         this.accountType,
         this.companions,
         this.imagePath,
-        this.gcoinDonation,
         required this.weight,
         required this.isMale
     });
@@ -42,7 +40,6 @@ class PlanMemberViewModel {
         weight: json['weight'],
         imagePath: json['account']['avatarPath'],
         companions: json['companions'],
-        gcoinDonation: json['gcoinDonation'],
         isMale: json['account']['isMale']
     );
 }

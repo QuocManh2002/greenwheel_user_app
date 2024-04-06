@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:sizer2/sizer2.dart';
@@ -26,7 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
     return SafeArea(
       child: Scaffold(
         body: Center(
-          child: Image.asset(app_logo, height: 15.h, fit: BoxFit.cover,),
+          child: SvgPicture.asset(app_logo, height: 15.h, fit: BoxFit.cover,),
         ),
       ));
   }

@@ -5,7 +5,6 @@ import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/home_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:greenwheel_user_app/widgets/home_screen_widget/activity_card.dart';

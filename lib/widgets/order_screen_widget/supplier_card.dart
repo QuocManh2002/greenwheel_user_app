@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -21,6 +22,7 @@ class SupplierCard extends StatelessWidget {
       this.isFromTempOrder,
       this.isOrder,
       this.availableGcoinAmount,
+      this.initSession,
       required this.endDate});
   final DateTime startDate;
   final DateTime endDate;
@@ -32,6 +34,7 @@ class SupplierCard extends StatelessWidget {
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
   final void Function() callbackFunction;
+  final Session? initSession;
 
   @override
   Widget build(BuildContext context) {
@@ -67,6 +70,7 @@ class SupplierCard extends StatelessWidget {
                       serviceType:serviceType,
                       location: location,
                       isOrder: isOrder,
+                      initSession: initSession,
                       availableGcoinAmount: availableGcoinAmount,
                       isFromTempOrder: isFromTempOrder,
                       callbackFunction: callbackFunction,
@@ -127,16 +131,19 @@ class SupplierCard extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.only(left: 8, top: 10),
-                        child: Text(
-                          supplier.name!,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black,
-                            fontFamily: 'NotoSans',
+                      SizedBox(
+                        width: 50.w,
+                        child: Padding(
+                          padding: const EdgeInsets.only(left: 8, top: 10),
+                          child: Text(
+                            supplier.name!,
+                            overflow: TextOverflow.clip,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black,
+                              fontFamily: 'NotoSans',
+                            ),
                           ),
                         ),
                       ),
@@ -160,7 +167,7 @@ class SupplierCard extends StatelessWidget {
                           Padding(
                             padding: EdgeInsets.only(left: 8, top: 0.5.h),
                             child: Text(
-                              '0${supplier.phone!.substring(3)}',
+                              '0${supplier.phone!.substring(2)}',
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 color: Colors.black54,

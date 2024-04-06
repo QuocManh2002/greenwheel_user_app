@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -480,13 +481,13 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           'Phụ thu',
                           style: TextStyle(fontSize: 16),
                         ),
-                        for (final order in widget.listSurcharges!)
+                        for (final sur in widget.listSurcharges!)
                           Row(
                             children: [
                               SizedBox(
                                 width: 50.w,
                                 child: Text(
-                                  '${json.decode(order['note'])}',
+                                  '${json.decode(sur['note'])}',
                                   style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),
@@ -498,12 +499,17 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                 NumberFormat.simpleCurrency(
                                         decimalDigits: 0,
                                         locale: 'vi_VN',
-                                        name: 'GCOIN')
-                                    .format(order['gcoinAmount']),
+                                        name: '')
+                                    .format(
+                                    sur['alreadyDivided'] ?
+                                    sur['gcoinAmount'] * widget.plan!.memberLimit :
+                                    sur['gcoinAmount']
+                                    ),
                                 style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
+                                    fontSize: 17, fontWeight: FontWeight.bold),
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              SvgPicture.asset(gcoin_logo,height:  23)
                             ],
                           )
                       ]),
@@ -532,10 +538,19 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                       children: [
                         if (!widget.isJoin)
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Tổng cộng (đã gồm VAT)',
-                                style: TextStyle(fontSize: 16),
+                             const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                   Text(
+                                    'Tổng cộng',
+                                    style: TextStyle(fontSize: 16),
+                                  ),
+                                 Text('(+10% chênh lệch)',
+                                  style: TextStyle(fontSize: 12),
+                                  )
+                                ],
                               ),
                               const Spacer(),
                               Text(
@@ -545,7 +560,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                         name: "")
                                     .format((total * 1.1).ceil()),
                                 style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold),
+                                    fontSize: 17, fontWeight: FontWeight.bold),
                               ),
                               SvgPicture.asset(
                                 gcoin_logo,
@@ -570,7 +585,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                       name: "")
                                   .format(budgetPerCapita),
                               style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold),
+                                  fontSize: 17, fontWeight: FontWeight.bold),
                             ),
                             SvgPicture.asset(
                               gcoin_logo,
@@ -695,9 +710,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
               child: Row(
                 children: [
                   SizedBox(
-                      width: 13.w,
+                      width: 5.w,
                       child: Text(
-                        'Đơn ${orders.indexOf(order) + 1}',
+                        '${orders.indexOf(order) + 1}. ',
                         style: const TextStyle(
                             fontSize: 17, fontWeight: FontWeight.bold),
                         overflow: TextOverflow.clip,
@@ -712,17 +727,21 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                     ),
                   ),
                   const Spacer(),
-                  Text(
-                    NumberFormat.simpleCurrency(
-                            locale: 'vi_VN', decimalDigits: 0, name: '')
-                        .format(((order.runtimeType == OrderViewModel
-                                    ? order.total
-                                    : order['total']) /
-                                100)
-                            .toInt()),
-                    style: const TextStyle(
-                        fontSize: 17, fontWeight: FontWeight.bold),
-                    overflow: TextOverflow.clip,
+                  Container(
+                    alignment: Alignment.centerRight,
+                    width: 20.w,
+                    child: Text(
+                      NumberFormat.simpleCurrency(
+                              locale: 'vi_VN', decimalDigits: 0, name: '')
+                          .format(((order.runtimeType == OrderViewModel
+                                      ? order.total
+                                      : order['total']) /
+                                  100)
+                              .toInt()),
+                      style: const TextStyle(
+                          fontSize: 17, fontWeight: FontWeight.bold),
+                      overflow: TextOverflow.clip,
+                    ),
                   ),
                   SvgPicture.asset(
                     gcoin_logo,

@@ -35,6 +35,7 @@ class OrderViewModel {
       total: double.parse(json["total"].toString()),
       createdAt: DateTime.parse(json["createdAt"]),
       type: json['type'],
+      details: List<OrderDetailViewModel>.from(json['details'].map((e) => OrderDetailViewModel.fromJson(e))).toList(),
       supplier: SupplierViewModel(
           type: json["provider"]['type'],
           id: json["provider"]["id"],

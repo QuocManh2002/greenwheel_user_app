@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/emergency_list_loading_screen.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_loading_screen.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
@@ -71,9 +73,7 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
   @override
   Widget build(BuildContext context) {
     return isLoading
-        ? const Center(
-            child: Text('Đang tải...'),
-          )
+        ? const EmergencyListLoadingScreen()
         : Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child:

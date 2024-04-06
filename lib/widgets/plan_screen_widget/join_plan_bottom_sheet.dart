@@ -21,7 +21,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
   int weight = 1;
 
   onChangeWeight(bool isAdd) {
-    if (isAdd && weight < widget.plan.maxMemberCount - widget.plan.memberCount!) {
+    if (isAdd && weight < widget.plan.maxMemberCount! - widget.plan.memberCount!) {
       setState(() {
         weight += 1;
       });
@@ -137,7 +137,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
                     SizedBox(
                       width: 60.w,
                       child: Text(
-                        widget.plan.locationName,
+                        widget.plan.locationName!,
                         textAlign: TextAlign.end,
                         overflow: TextOverflow.clip,
                         style: const TextStyle(
@@ -181,7 +181,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
                     SizedBox(
                       width: 30.w,
                       child: Text(
-                        widget.plan.maxMemberCount < 10
+                        widget.plan.maxMemberCount! < 10
                             ? '0${widget.plan.maxMemberCount}'
                             : widget.plan.maxMemberCount.toString(),
                         textAlign: TextAlign.end,

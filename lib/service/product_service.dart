@@ -9,7 +9,6 @@ class ProductService extends Iterable {
   Future<List<ProductViewModel>> getProductsBySupplierId(
       int supplierId, String session) async {
     try {
-      // String sessionEnum = "";
 
       switch (session) {
         case "Buổi sáng":
@@ -25,10 +24,6 @@ class ProductService extends Iterable {
           session = "EVENING";
           break;
       }
-          // variables: {
-          //   "id": supplierId,
-          //   "period": [sessionEnum],
-          // },
 
       final QueryResult result = await client.query(
         QueryOptions(

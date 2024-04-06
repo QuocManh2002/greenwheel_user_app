@@ -11,12 +11,14 @@ import 'package:sizer2/sizer2.dart';
 class PLanScheduleWidget extends StatefulWidget {
   const PLanScheduleWidget(
       {super.key,
-      required this.schedule,
+      required this.planId,
       required this.endDate,
+      required this.planType,
       required this.startDate});
-  final List<dynamic> schedule;
+  final int planId;
   final DateTime startDate;
   final DateTime endDate;
+  final String planType;
 
   @override
   State<PLanScheduleWidget> createState() => _PLanScheduleWidgetState();
@@ -40,20 +42,27 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
     setUpData();
   }
 
-  setUpData() {
-    setState(() {
-      _scheduleList = _planService.GetPlanScheduleFromJsonNew(
-          widget.schedule,
-          widget.startDate,
-          widget.endDate.difference(widget.startDate).inDays + 1);
-    });
-    PlanSchedule? todaySchedule = _scheduleList.firstWhereOrNull((element) =>element.date!.isBefore(DateTime.now()) && element.date!.difference(DateTime.now()).inDays == 0);
-    if(todaySchedule != null){
+  setUpData() async {
+    List<dynamic>? schedule =
+        await _planService.getPlanSchedule(widget.planId, widget.planType,context);
+    if (schedule != null) {
       setState(() {
-      _currentPage = DateTime.now().difference(_scheduleList.first.date!).inDays + 1;
+        _scheduleList = _planService.GetPlanScheduleFromJsonNew(
+            schedule,
+            widget.startDate,
+            widget.endDate.difference(widget.startDate).inDays + 1);
       });
     }
 
+    PlanSchedule? todaySchedule = _scheduleList.firstWhereOrNull((element) =>
+        element.date!.isBefore(DateTime.now()) &&
+        element.date!.difference(DateTime.now()).inDays == 0);
+    if (todaySchedule != null) {
+      setState(() {
+        _currentPage =
+            DateTime.now().difference(_scheduleList.first.date!).inDays + 1;
+      });
+    }
   }
 
   Widget getPageView(int _index) {
@@ -113,12 +122,11 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                     locale: const Locale('vi', 'VN'),
                     builder: (context, child) {
                       return Theme(
-                        data: ThemeData().copyWith(
-                            colorScheme: const ColorScheme.light(
-                                primary: primaryColor,
-                                onPrimary: Colors.white)),
-                        child: child!
-                      );
+                          data: ThemeData().copyWith(
+                              colorScheme: const ColorScheme.light(
+                                  primary: primaryColor,
+                                  onPrimary: Colors.white)),
+                          child: child!);
                     }).then((value) {
                   if (value != null) {
                     _scheduleList.map((e) {

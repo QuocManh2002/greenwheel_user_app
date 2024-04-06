@@ -1,12 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
+import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/empty_plan.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/tab_icon_button.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:sizer2/sizer2.dart';
 
 class PlanScreen extends StatefulWidget {
   const PlanScreen({super.key});
@@ -17,6 +23,7 @@ class PlanScreen extends StatefulWidget {
 
 class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   final PlanService _planService = PlanService();
+  final LocationService _locationService = LocationService();
   List<PlanCardViewModel> _onGoingPlans = [];
   List<PlanCardViewModel> _canceledPlans = [];
   List<PlanCardViewModel> _futuredPlans = [];
@@ -51,7 +58,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
     List<PlanCardViewModel> futurePlans = [];
     List<PlanCardViewModel> myPlans = [];
     List<PlanCardViewModel>? totalPlans =
-        await _planService.getPlanCards(false);
+        await _planService.getPlanCards(false,context);
 
     if (totalPlans != null) {
       for (final plan in totalPlans) {
@@ -91,6 +98,44 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
           style: TextStyle(
               color: Colors.black, fontSize: 24, fontWeight: FontWeight.bold),
         ),
+        actions: [
+          if (sharedPreferences.getInt('plan_location_id') != null)
+            ElevatedButton(
+                style: const ButtonStyle(
+                    backgroundColor: MaterialStatePropertyAll(Colors.white),
+                    foregroundColor: MaterialStatePropertyAll(primaryColor),
+                    shape: MaterialStatePropertyAll(RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(
+                          Radius.circular(12),
+                        ),
+                        side: BorderSide(color: primaryColor, width: 1.5)))),
+                onPressed: () async {
+                  LocationViewModel? location =
+                      await _locationService.GetLocationById(
+                          sharedPreferences.getInt('plan_location_id')!);
+                  if (location != null) {
+                    Navigator.push(
+                        // ignore: use_build_context_synchronously
+                        context,
+                        PageTransition(
+                            child: CreateNewPlanScreen(
+                              isCreate: true,
+                              location: location,
+                            ),
+                            type: PageTransitionType.rightToLeft));
+                  }
+                },
+                child: const Text(
+                  'Bản nháp',
+                  style: TextStyle(
+                      color: primaryColor,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold),
+                )),
+          SizedBox(
+            width: 2.w,
+          )
+        ],
       ),
       body: isLoading
           ? const PlanLoadingScreen()
@@ -200,7 +245,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                               _selectedTab = 4;
                             });
                             List<PlanCardViewModel>? myplans =
-                                await _planService.getPlanCards(true);
+                                await _planService.getPlanCards(true,context);
                             if (myplans != null) {
                               setState(() {
                                 isLoading = false;

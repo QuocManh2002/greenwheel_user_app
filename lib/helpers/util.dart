@@ -55,6 +55,7 @@ class Utils {
     sharedPreferences.remove('initNumOfExpPeriod');
     sharedPreferences.remove('plan_max_member_weight');
     sharedPreferences.remove('plan_location_name');
+    sharedPreferences.remove('plan_location_id');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {
@@ -241,7 +242,7 @@ class Utils {
     if (serveDateIndexes.length == 1) {
       return DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]));
     } else {
-      return '${DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]))} (+${serveDateIndexes.length - 1} ngày)';
+      return '${DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]))} (+${serveDateIndexes.length - 1} N)';
     }
   }
 }

@@ -14,6 +14,7 @@ import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.da
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
@@ -27,10 +28,12 @@ class CreateNewPlanScreen extends StatefulWidget {
       {super.key,
       required this.location,
       required this.isCreate,
+      this.plan,
       this.schedule});
   final LocationViewModel location;
   final bool isCreate;
   List<dynamic>? schedule;
+  PlanDetail? plan;
 
   @override
   State<CreateNewPlanScreen> createState() => _CreateNewPlanScreenState();
@@ -47,31 +50,30 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
   int _currentStep = 0;
   String _stepperText = '';
   int _stepperNumber = 1;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   handleQuitScreen() {
     AwesomeDialog(
       context: context,
       dialogType: DialogType.warning,
       title:
-          'Kế hoạch cho chuyến đi chưa được hoàn tất, vẫn rời khỏi màn hình này ?',
-      titleTextStyle:
-          const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
+          widget.isCreate?
+          'Kế hoạch cho chuyến đi chưa được hoàn tất, vẫn rời khỏi màn hình này ?':
+          'Thay đổi của chuyến đi chưa được lưu, vẫn rời khỏi màn hình này ?'
+          ,
+      titleTextStyle: const TextStyle(
+          fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
       padding: EdgeInsets.symmetric(horizontal: 2.h),
-      desc: 'Kế hoạch sẽ được lưu lại trong bản nháp',
-      descTextStyle: const TextStyle(fontSize: 14, color: Colors.grey, fontFamily: 'NotoSans'),
+      desc:widget.isCreate ? 'Kế hoạch sẽ được lưu lại trong bản nháp':null,
+      descTextStyle: const TextStyle(
+          fontSize: 14, color: Colors.grey, fontFamily: 'NotoSans'),
       btnOkColor: Colors.amber,
       btnOkText: "Rời khỏi",
       btnCancelColor: Colors.red,
       btnCancelText: "Hủy",
       btnCancelOnPress: () {},
       btnOkOnPress: () async {
-        var rs = true;
-        if (rs) {
-          print(sharedPreferences.get('planId'));
-          sharedPreferences.setString('plan_location_name', widget.location.name);
-          sharedPreferences.setInt('plan_location_id', widget.location.id);
-          Navigator.of(context).pop();
-        }
+        Navigator.of(context).pop();
       },
     ).show();
   }
@@ -86,6 +88,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
           _stepperNumber = 1;
           activePage = BaseInformationScreen(
             location: widget.location,
+            plan: widget.plan,
+            isCreate: widget.isCreate,
           );
           break;
         case 1:
@@ -99,6 +103,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
           _stepperText = 'Thông tin chuyến đi';
           _stepperNumber = 3;
           activePage = SelectPlanName(
+            formKey: _formKey,
             location: widget.location,
             isCreate: widget.isCreate,
             isClone: widget.schedule == null ? false : true,
@@ -149,13 +154,17 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
           InkWell(
             onTap: () {
               DateTime? _travelDuration =
+                  widget.isCreate ?
                   sharedPreferences.getDouble('plan_duration_value') != null
                       ? DateTime(0, 0, 0).add(Duration(
                           seconds: (sharedPreferences
                                       .getDouble('plan_duration_value')! *
                                   3600)
                               .toInt()))
-                      : null;
+                      : null
+                      :
+                      DateFormat.Hms().parse(widget.plan!.travelDuration!)
+                      ;
               showModalBottomSheet(
                   context: context,
                   builder: (ctx) => ConfirmPlanBottomSheet(
@@ -163,34 +172,38 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                         isJoin: false,
                         locationName: widget.location.name,
                         isInfo: true,
-                        orderList: json.decode(
+                        orderList: widget.isCreate? json.decode(
                             sharedPreferences.getString('plan_temp_order') ??
-                                '[]'),
-                        listSurcharges: json.decode(
+                                '[]'): widget.plan!.tempOrders,
+                        listSurcharges:
+                        widget.isCreate? json.decode(
                             sharedPreferences.getString('plan_surcharge') ??
-                                '[]'),
+                                '[]') : widget.plan!.surcharges!.map((e) => e.toJson()).toList(),
                         plan: PlanCreate(
-                            endDate: sharedPreferences.getString('plan_end_date') == null
-                                ? null
-                                : DateTime.parse(sharedPreferences
-                                    .getString('plan_end_date')!),
+                            endDate:
+                                sharedPreferences.getString('plan_end_date') == null
+                                    ? null
+                                    : DateTime.parse(sharedPreferences
+                                        .getString('plan_end_date')!),
                             memberLimit: sharedPreferences
                                 .getInt('plan_number_of_member'),
-                            departureDate: sharedPreferences.getString('plan_departureDate') == null
-                                ? null
-                                : DateTime.parse(sharedPreferences
-                                    .getString('plan_departureDate')!),
+                            departureDate:
+                                sharedPreferences.getString('plan_departureDate') ==
+                                        null
+                                    ? null
+                                    : DateTime.parse(sharedPreferences
+                                        .getString('plan_departureDate')!),
                             name: sharedPreferences.getString('plan_name'),
-                            startDate: DateTime.parse(sharedPreferences
-                                .getString('plan_start_date')!),
-                            schedule:
-                                sharedPreferences.getString('plan_schedule'),
-                            note: sharedPreferences.getString('plan_note'),
-                            savedContacts: sharedPreferences
-                                .getString('plan_saved_emergency'),
-                            travelDuration: _travelDuration == null
+                            startDate: sharedPreferences
+                                        .getString('plan_start_date') ==
+                                    null
                                 ? null
-                                : DateFormat.Hm().format(_travelDuration)),
+                                : DateTime.parse(
+                                    sharedPreferences.getString('plan_start_date')!),
+                            schedule: sharedPreferences.getString('plan_schedule'),
+                            note: sharedPreferences.getString('plan_note'),
+                            savedContacts: sharedPreferences.getString('plan_saved_emergency'),
+                            travelDuration: _travelDuration == null ? null : DateFormat.Hm().format(_travelDuration)),
                       ));
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
@@ -328,10 +341,12 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                 getCurrentPage();
                               }
                             } else if (_currentStep == 2) {
-                              setState(() {
-                                _currentStep++;
-                              });
-                              getCurrentPage();
+                              if (_formKey.currentState!.validate()) {
+                                setState(() {
+                                  _currentStep++;
+                                });
+                                getCurrentPage();
+                              }
                             } else if (_currentStep == 3) {
                               List<String>? selectedEmergencyIndexList =
                                   sharedPreferences
@@ -573,8 +588,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                   children: [
                     TextSpan(
                         text: rsText,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.normal))
+                        style: const TextStyle(fontWeight: FontWeight.normal))
                   ]),
             ),
             const SizedBox(
@@ -592,14 +606,18 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
         btnOkText: 'Xác nhận',
         btnOkColor: Colors.blue,
         btnOkOnPress: () {
-          Navigator.push(context, PageTransition(child: SelectServiceScreen(
+          Navigator.push(
+              context,
+              PageTransition(
+                  child: SelectServiceScreen(
                     isOrder:
                         sharedPreferences.getInt('plan_number_of_member')! == 1,
                     location: widget.location,
                     isClone: widget.schedule == null ? false : true,
                     memberLimit:
                         sharedPreferences.getInt('plan_number_of_member')!,
-                  ), type: PageTransitionType.rightToLeft));
+                  ),
+                  type: PageTransitionType.rightToLeft));
         },
         btnCancelColor: Colors.orange,
         btnCancelText: 'Chỉnh sửa',
@@ -613,7 +631,10 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                 alignment: Alignment.center,
                 child: const Text(
                   'Xác nhận lịch trình chuyến đi',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
+                  style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'NotoSans'),
                 ),
               ),
               const SizedBox(

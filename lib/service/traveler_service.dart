@@ -1,19 +1,15 @@
-import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/models/login.dart';
 import 'package:greenwheel_user_app/models/register.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
-import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
 
 class CustomerService {
   GraphQlConfig graphQlConfig = GraphQlConfig();
-  
 
   Future<CustomerViewModel?> GetCustomerByPhone(String phone) async {
     //     defaultAddress
@@ -217,17 +213,13 @@ mutation{
         }
       )
         {
-        nodes {
+       nodes {
       id
-      defaultAddress
-      defaultCoordinate {
-        coordinates
-      }
       name
-      avatarUrl
       isMale
       gcoinBalance
       phone
+      avatarPath
     }
     }
 }
@@ -247,48 +239,6 @@ mutation{
       List<CustomerViewModel> users =
           res.map((users) => CustomerViewModel.fromJson(users)).toList();
       return users;
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<List<Transaction>?> getTransactionList() async {
-    try {
-      GraphQLClient client = graphQlConfig.getClient();
-      QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-{
-  transactions(order: { id: DESC }) {
-    edges {
-      node {
-        id
-        receiverId
-        planMemberId
-        orderId
-        type
-        status
-        gcoinAmount
-        description
-        gateway
-        bankTransCode
-        createdAt
-        senderId
-      }
-    }
-  }
-}
-
-""")));
-      if (result.hasException) {
-        throw Exception(result.exception);
-      }
-      List? res = result.data!['transactions']['edges'];
-      if (res == null || res.isEmpty) {
-        return [];
-      }
-      List<Transaction> rs =
-          res.map((e) => Transaction.fromJson(e['node'])).toList();
-      return rs;
     } catch (error) {
       throw Exception(error);
     }
@@ -324,7 +274,8 @@ mutation{
     }
   }
 
-  Future<bool?> requestTravelerOTP(String phoneNumber, BuildContext context) async {
+  Future<bool?> requestTravelerOTP(
+      String phoneNumber, BuildContext context) async {
     try {
       GraphQLClient client = graphQlConfig.getClient();
 
@@ -338,7 +289,8 @@ mutation{
 """)));
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
-        Utils().handleServerException(rs.parsedResponse.errors.first.message.toString(), context);
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
 
         throw Exception(result.exception!.linkException!);
       }
@@ -377,11 +329,10 @@ mutation auth{
     }
   }
 
-  Future<int> getTravelerBalance(int accountId) async{
-    try{
+  Future<int> getTravelerBalance(int accountId) async {
+    try {
       GraphQLClient client = graphQlConfig.getClient();
-      QueryResult result = await client.query(
-        QueryOptions(document: gql("""
+      QueryResult result = await client.query(QueryOptions(document: gql("""
 {
   accounts(where: {
     id:{
@@ -395,22 +346,42 @@ mutation auth{
     }
   }
 }
-"""),
-    fetchPolicy: FetchPolicy.noCache
-)
-      );
-      if(result.hasException){
+"""), fetchPolicy: FetchPolicy.noCache));
+      if (result.hasException) {
         throw Exception(result.exception);
       }
 
       int? rs = result.data!['accounts']['edges'][0]['node']['gcoinBalance'];
-      if(rs == null){
+      if (rs == null) {
         return 0;
-      }else{
+      } else {
         return rs;
       }
-    }catch (error) {
+    } catch (error) {
       throw Exception(error);
     }
-  } 
+  }
+
+  Future<LoginModel?> refreshToken(String refreshToken) async {
+    try {
+      GraphQLClient client = graphQlConfig.getClient();
+      QueryResult result = await client.mutate(MutationOptions(document: gql("""
+mutation {
+  refreshAuth(refreshToken: "$refreshToken") {
+    accessToken
+    refreshToken
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      final rs = result.data!['refreshAuth'];
+      LoginModel loginModel = LoginModel.fromJson(rs);
+
+      return loginModel;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
 }

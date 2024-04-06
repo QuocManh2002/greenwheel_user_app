@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
@@ -24,7 +25,8 @@ class PlanService {
       PlanCreate model, BuildContext context, String surcharges) async {
     try {
       var schedule = json.decode(model.schedule!);
-      final emerIds = json.decode(model.savedContacts!).map((e) => e['id']).toList();
+      final emerIds =
+          json.decode(model.savedContacts!).map((e) => e['id']).toList();
       log("""
   mutation{
   createPlan(dto: {
@@ -74,7 +76,11 @@ class PlanService {
 """),
       ));
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       } else {
         var rstext = result.data!;
         int planId = rstext['createPlan']['id'];
@@ -131,7 +137,11 @@ class PlanService {
 """)));
 
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        // Utils().handleServerException(
+        //     rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       List? res = result.data!['joinedPlans']['nodes'][0]['orders'];
@@ -150,7 +160,8 @@ class PlanService {
       }
       return {
         'orders': orders,
-        'currentBudget': result.data!['joinedPlans']['nodes'][0]['actualGcoinBudget']
+        'currentBudget': result.data!['joinedPlans']['nodes'][0]
+            ['actualGcoinBudget']
       };
     } catch (error) {
       throw Exception(error);
@@ -159,8 +170,8 @@ class PlanService {
 
   Future<PlanDetail?> GetPlanById(int planId, String type) async {
     try {
-      String planType ='';
-      switch (type){
+      String planType = '';
+      switch (type) {
         case "JOIN":
           planType = 'joinedPlans';
           break;
@@ -174,6 +185,13 @@ class PlanService {
           planType = 'scannablePlans';
           break;
       }
+
+      //       orders{
+      //   details{
+      //     productId
+      //   }
+      // }
+
       QueryResult result = await client.query(QueryOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
@@ -193,26 +211,10 @@ class PlanService {
       gcoinBudgetPerCapita
       actualGcoinBudget
       displayGcoinBudget
-      gcoinHostDonated
       travelDuration
       note
       memberCount
       regCloseAt
-      schedule {
-        events {
-          shortDescription
-          type
-          description
-          duration
-          isStarred
-        }
-      }
-      orders{
-        details{
-          productId
-          
-        }
-      }
       maxMemberCount
       maxMemberWeight
       savedContacts {
@@ -238,7 +240,6 @@ class PlanService {
         status
         weight
         companions
-        gcoinDonation
         account {
           avatarPath
           id
@@ -271,7 +272,11 @@ class PlanService {
       ));
 
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        // Utils().handleServerException(
+        //     rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       List? res = result.data![planType]['nodes'];
@@ -287,7 +292,7 @@ class PlanService {
     }
   }
 
-  Future<List<PlanCardViewModel>?> getPlanCards(bool isOwned) async {
+  Future<List<PlanCardViewModel>?> getPlanCards(bool isOwned, BuildContext context) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -295,6 +300,11 @@ class PlanService {
   ${isOwned ? 'ownedPlans' : 'joinedPlans'}(first: 50
   order: {
   id:DESC
+}
+where: {
+  status: {
+      neq:CANCELED
+     }
 }
   ){
     nodes{
@@ -332,7 +342,11 @@ class PlanService {
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       List? res = result.data![isOwned ? 'ownedPlans' : 'joinedPlans']['nodes'];
@@ -380,6 +394,7 @@ class PlanService {
       List<PlanScheduleItem> eventList = [];
       for (final event in sche['events']) {
         eventList.add(PlanScheduleItem(
+            isStarred: event['isStarred'],
             activityTime: int.parse(
                 json.decode(event['duration']).toString().split(':')[0]),
             description: json.decode(event['description']),
@@ -449,7 +464,7 @@ class PlanService {
     return rs;
   }
 
-  Future<int?> joinPlan(int planId, List<String> names) async {
+  Future<int?> joinPlan(int planId, List<String> names, BuildContext context) async {
     final listName = names.map((e) => json.encode(e)).toList();
     try {
       QueryResult result = await client.mutate(
@@ -464,7 +479,11 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       int? res = result.data!['joinPlan']['id'];
@@ -477,10 +496,11 @@ mutation{
     }
   }
 
-  Future<List<PlanMemberViewModel>> getPlanMember(int planId, String type) async {
+  Future<List<PlanMemberViewModel>> getPlanMember(
+      int planId, String type, BuildContext context) async {
     try {
-      String planType ='';
-      switch (type){
+      String planType = '';
+      switch (type) {
         case "JOIN":
           planType = 'joinedPlans';
           break;
@@ -517,7 +537,11 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       List? res = result.data![planType]['nodes'][0]['members'];
@@ -533,7 +557,7 @@ mutation{
     }
   }
 
-  Future<bool> updateJoinMethod(int planId, String method) async {
+  Future<bool> updateJoinMethod(int planId, String method, BuildContext context) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -547,7 +571,11 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       int? res = result.data!['updateJoinMethod']['id'];
@@ -560,7 +588,7 @@ mutation{
     }
   }
 
-  Future<int> inviteToPlan(int planId, int travelerId) async {
+  Future<int> inviteToPlan(int planId, int travelerId, BuildContext context) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -574,7 +602,11 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+       dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       } else {
         var rstext = result.data!;
         int rs = rstext['inviteToPlan']['id'];
@@ -596,7 +628,7 @@ mutation{
   }
 
   Future<List<SuggestPlanViewModel>> getSuggestPlanByLocation(
-      int locationId) async {
+      int locationId, BuildContext context) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -619,7 +651,11 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+       dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       List? res = result.data!['plans']['nodes'];
@@ -635,7 +671,7 @@ mutation{
     }
   }
 
-  Future<String> publicizePlan(int planId) async {
+  Future<String> publicizePlan(int planId, BuildContext context) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -647,7 +683,11 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       String? res = result.data!['publicizePlan']['status'];
@@ -657,7 +697,7 @@ mutation{
     }
   }
 
-  Future<int> confirmMember(int planId) async {
+  Future<int> confirmMember(int planId, BuildContext context) async {
     try {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -669,7 +709,11 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       int? res = result.data!['confirmMembers']['id'];
@@ -679,7 +723,7 @@ mutation{
     }
   }
 
-  Future<int> removeMember(int memberId, bool isBlock) async {
+  Future<int> removeMember(int memberId, bool isBlock, BuildContext context) async {
     try {
       QueryResult result = await client.mutate(MutationOptions(document: gql("""
 mutation{
@@ -692,7 +736,11 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+       dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
       int? res = result.data!['removeMember']['id'];
       if (res == null) {
@@ -704,7 +752,7 @@ mutation{
     }
   }
 
-  Future<int> cancelPlan(int planId) async{
+  Future<int> cancelPlan(int planId, BuildContext context) async {
     try {
       QueryResult result = await client.mutate(MutationOptions(document: gql("""
 mutation{
@@ -714,13 +762,117 @@ mutation{
 }
 """)));
       if (result.hasException) {
-        throw Exception(result.exception);
+       dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
       int? res = result.data!['cancelPlan']['id'];
       if (res == null) {
         return 0;
       }
       return res;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<String?> updateSurcharge(String imagePath, int surchargeId, BuildContext context) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql("""
+mutation{
+  updateSurcharge(dto: {
+    imageUrl:"$baseBucketImage$imagePath"
+    surchargeId:$surchargeId
+  }){
+    imagePath
+  }
+}
+""")));
+      if (result.hasException) {
+       dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      String? _imagePath = result.data!['updateSurcharge']['imagePath'];
+      if (_imagePath == null) {
+        return null;
+      }
+      return _imagePath;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<dynamic>?> getPlanSchedule(int planId, String type, BuildContext context) async {
+    try {
+      String planType = '';
+      switch (type) {
+        case "JOIN":
+          planType = 'joinedPlans';
+          break;
+        case "OWNED":
+          planType = 'ownedPlans';
+          break;
+        case "INVITATION":
+          planType = 'invitations';
+          break;
+        case "SCAN":
+          planType = 'scannablePlans';
+          break;
+      }
+  log("""
+{
+  $planType(where:{
+    id:{
+      eq:$planId
+    }
+  }){
+    nodes{
+         schedule {
+        events {
+          shortDescription
+          type
+          description
+          duration
+          isStarred
+        }
+      }
+    }
+  }
+}""");
+      QueryResult result = await client.query(QueryOptions(document: gql("""
+{
+  $planType(where:{
+    id:{
+      eq:$planId
+    }
+  }){
+    nodes{
+         schedule {
+        events {
+          shortDescription
+          type
+          description
+          duration
+          isStarred
+        }
+      }
+    }
+  }
+}
+""")));
+      if (result.hasException) {
+       dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      return result.data![planType]['nodes'][0]['schedule'];
     } catch (error) {
       throw Exception(error);
     }

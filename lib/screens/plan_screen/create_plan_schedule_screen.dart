@@ -1,18 +1,17 @@
 import 'dart:convert';
-
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
-import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_service_infor.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
@@ -48,6 +47,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   DateTime startDate = DateTime.now();
   int duration = 0;
   bool _isNotOverDay = false;
+  OrderService _orderService = OrderService();
 
   getTotal(OrderViewModel order) {
     var total = 0.0;
@@ -82,8 +82,8 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
           var finalList = _planService.convertPlanScheduleToJson(testList);
           sharedPreferences.setString('plan_schedule', json.encode(finalList));
         } else {
-          testList =
-              _planService.ConvertPLanJsonToObject(duration, _startDate, _scheduleText);
+          testList = _planService.ConvertPLanJsonToObject(
+              duration, _startDate, _scheduleText);
         }
       } else {
         var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
@@ -275,7 +275,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             location: widget.location,
             selectedIndex: _currentPage.toInt(),
             item: item,
-            // initialTime: const TimeOfDay(hour: 0, minute: 0),
             isNotOverDay: _isNotOverDay,
             startDate: testList.first.date!)));
   }
@@ -294,7 +293,7 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color:  Colors.white,
+      color: Colors.white,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -368,48 +367,32 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                         backgroundColor: MaterialStatePropertyAll(
                             Colors.white.withOpacity(0.7))),
                     onPressed: () async {
-                      final orderList = json.decode(
+                      final orderListJson = json.decode(
                           sharedPreferences.getString('plan_temp_order')!);
-                      List<OrderViewModel> listMotelOrder = [];
-                      List<OrderViewModel> listRestaurantOrder = [];
-                      var total = 0.0;
-                      for (var item in orderList!) {
-                        List<OrderDetailViewModel> details = [];
-                        for (final detail in item['details']) {
-                          details.add(OrderDetailViewModel(
-                              productId: detail['productId'],
-                              price: detail['unitPrice'],
-                              productName: detail['productName'],
-                              unitPrice: detail['unitPrice'],
-                              quantity: detail['quantity']));
-                        }
-                        final temp = OrderViewModel(
-                          note: item['note'],
-                          details: details,
-                          type: item['type'],
-                          period: item['period'],
-                          serveDates: item['servingDates'],
-                          total: double.parse(item['total'].toString()),
-                          createdAt: DateTime.parse(item['createdAt']),
-                          supplier: SupplierViewModel(
-                              id: item['supplierId'],
-                              name: item['supplierName'],
-                              phone: item['supplierPhone'],
-                              thumbnailUrl: item['supplierImageUrl'],
-                              address: item['supplierAddress']),
-                        );
-                        if (item['type'] == 'FOOD') {
-                          listRestaurantOrder.add(temp);
-                        } else {
-                          listMotelOrder.add(temp);
-                        }
-                        total += double.parse(item['total'].toString());
-                      }
+                      final orderList =
+                          _orderService.getOrderFromJson(orderListJson);
+                      final orderListGroupBy =
+                          orderList.groupListsBy((element) => element.type);
+                      List<OrderViewModel> listMotelOrder = orderListGroupBy
+                          .values
+                          .where((element) => element.first.type == 'LODGING')
+                          .first;
+                      List<OrderViewModel> listRestaurantOrder =
+                          orderListGroupBy.values
+                              .where((element) => element.first.type == 'MEAL')
+                              .first;
+                      var total = orderList.fold(0.0,
+                          (previousValue, element) => previousValue + element.total!);
                       showModalBottomSheet(
                           context: context,
                           builder: (ctx) => ConfirmServiceInfor(
-                                listSurcharges: [],
-                                total: total / 100.toDouble(),
+                                listSurcharges: sharedPreferences
+                                            .getString('plan_surcharge') ==
+                                        null
+                                    ? []
+                                    : json.decode(sharedPreferences
+                                        .getString('plan_surcharge')!),
+                                total: (total / 100).toDouble(),
                                 budgetPerCapita: ((total /
                                             sharedPreferences.getInt(
                                                 'plan_number_of_member')!) /
@@ -426,9 +409,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                       size: 23,
                     )),
               const Spacer(),
-              // if (departureDate!
-              //     .add(Duration(days: _currentPage.toInt()))
-              //     .isAfter(DateTime(startDate.year, startDate.month, startDate.day)))
               Padding(
                 padding: const EdgeInsets.only(right: 12),
                 child: ElevatedButton(
@@ -447,8 +427,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                               .date!
                               .add(Duration(days: _currentPage.toInt())));
                       var consumedTime = 0;
-                      // _currentSchedule.items
-                      //     .map((e) => consumedTime += e.activityTime!);
                       for (final item in _currentSchedule.items) {
                         consumedTime += item.activityTime!;
                       }
@@ -462,14 +440,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                                   maxActivityTime: 12 - consumedTime,
                                   startDate: testList[0].date!,
                                   selectedIndex: _currentPage.toInt(),
-                                  // initialTime: _currentSchedule.items.isEmpty
-                                  //     ? TimeOfDay.now()
-                                  //     : TimeOfDay(
-                                  //         hour: _currentSchedule
-                                  //                 .items.last.time!.hour +
-                                  //             1,
-                                  //         minute: _currentSchedule
-                                  //             .items.last.time!.minute),
                                   isNotOverDay: _isNotOverDay,
                                 )));
                       }

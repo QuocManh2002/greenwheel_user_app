@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/notification_list_loading_screen.dart';
-import 'package:greenwheel_user_app/service/traveler_service.dart';
+import 'package:greenwheel_user_app/service/transaction_service.dart';
 import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:greenwheel_user_app/widgets/profile_screen_widget/transaction_card.dart';
 class TransactionHistoryScreen extends StatefulWidget {
@@ -13,7 +13,7 @@ class TransactionHistoryScreen extends StatefulWidget {
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
-  CustomerService _customerService = CustomerService();
+  TransactionService _transactionService = TransactionService();
   List<Transaction>? _transactions = [];
   bool _isLoading = true;
   @override
@@ -25,7 +25,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   }
 
   setUpData() async {
-    _transactions = await _customerService.getTransactionList();
+    _transactions = await _transactionService.getTransactionList();
     if (_transactions != null) {
       setState(() {
         _isLoading = false;

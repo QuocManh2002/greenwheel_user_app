@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/session_card.dart';
@@ -18,7 +19,8 @@ class SelectSessionScreen extends StatefulWidget {
     this.isOrder,
     this.availableGcoinAmount,
     this.isFromTempOrder,
-    required this.callbackFunction
+    required this.callbackFunction,
+    this.initSession,
   });
   final DateTime startDate;
   final DateTime endDate;
@@ -30,6 +32,7 @@ class SelectSessionScreen extends StatefulWidget {
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
   final void Function() callbackFunction;
+  final Session? initSession;
 
   @override
   State<SelectSessionScreen> createState() => _SelectSessionScreenState();
@@ -130,6 +133,7 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
                     numberOfMember: widget.numberOfMember,
                     serviceType: widget.serviceType,
                     supplier: widget.supplier,
+                    initSession: widget.initSession,
                     callbackFunction: widget.callbackFunction,
                   );
                 },

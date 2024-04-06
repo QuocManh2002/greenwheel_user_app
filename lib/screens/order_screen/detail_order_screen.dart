@@ -134,7 +134,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 padding: EdgeInsets.symmetric(
                                     horizontal: 2.h, vertical: 1.5.h),
                                 child: Text(
-                                  '0${widget.order.supplier!.phone!.substring(3)}',
+                                  '0${widget.order.supplier!.phone!.substring(2)}',
                                   style: const TextStyle(
                                       fontSize: 20, color: Colors.black54),
                                 ),

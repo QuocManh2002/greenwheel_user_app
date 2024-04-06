@@ -78,9 +78,14 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   // List<PlanJoinServiceInfor> listFood = [];
   List<dynamic>? newRoomOrderList = [];
   List<dynamic>? newFoodOrderList = [];
-  PlanDetail? _plan =
-      await _planService.GetPlanById(sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
+  PlanDetail? _plan = await _planService.GetPlanById(
+      sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   final rs = await _cusomterService.GetCustomerById(_plan!.leaderId!);
+  final res = await _planService
+      .getOrderCreatePlan(sharedPreferences.getInt('plan_id_pdf')!);
+  if (res != null) {
+    _plan.orders = res['orders'];
+  }
   CustomerViewModel _leader = rs[0];
   final doc = pw.Document(
     title: 'Test Generate PDF',
@@ -98,15 +103,17 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   // List<int> indexRoomOrder = [];
   // List<int> indexFoodOrder = [];
 
-  final serviceMap = _plan.orders!.groupListsBy((e) => e.type);
-  newRoomOrderList = serviceMap.values
-      .where((e) => e.first.type == 'LODGING')
-      .toList()
-      .firstOrNull;
-  newFoodOrderList = serviceMap.values
-      .where((e) => e.first.type == 'MEAL')
-      .toList()
-      .firstOrNull;
+  if (_plan.orders != null) {
+    final serviceMap = _plan.orders!.groupListsBy((e) => e.type);
+    newRoomOrderList = serviceMap.values
+        .where((e) => e.first.type == 'LODGING')
+        .toList()
+        .firstOrNull;
+    newFoodOrderList = serviceMap.values
+        .where((e) => e.first.type == 'MEAL')
+        .toList()
+        .firstOrNull;
+  }
 
   // if (roomOrderList.isNotEmpty) {
   //   for (final order in roomOrderList) {
@@ -183,20 +190,16 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                       ),
                       pw.SizedBox(height: 20),
                       buildInfoRow(
-                          boldTtf, ttf, ' Địa điểm', _plan.locationName),
-                      buildInfoRow(
-                          boldTtf,
-                          ttf,
-                          ' Ngày khởi hành',
-                          DateFormat('dd/MM/yyyy')
-                              .format(_plan.departDate!)),
+                          boldTtf, ttf, ' Địa điểm', _plan.locationName!),
+                      buildInfoRow(boldTtf, ttf, ' Ngày khởi hành',
+                          DateFormat('dd/MM/yyyy').format(_plan.departDate!)),
                       buildInfoRow(boldTtf, ttf, ' Ngày kết thúc',
                           DateFormat('dd/MM/yyyy').format(_plan.endDate!)),
                       buildInfoRow(
                           boldTtf,
                           ttf,
                           ' Số lượng thành viên',
-                          _plan.maxMemberCount < 10
+                          _plan.maxMemberCount! < 10
                               ? '0${_plan.maxMemberCount}'
                               : '${_plan.maxMemberCount}'),
                       pw.SizedBox(height: 20),
@@ -207,7 +210,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                               fontSize: 17,
                               fontWeight: pw.FontWeight.bold)),
                       pw.SizedBox(height: 10),
-                      for (final day in _plan.schedule)
+                      for (final day in _plan.schedule!)
                         pw.Padding(
                             padding: const pw.EdgeInsets.only(bottom: 10),
                             child: pw.Column(
@@ -216,7 +219,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.only(left: 10),
                                   child: pw.Text(
-                                      'NGÀY ${_plan.schedule.indexOf(day) + 1}',
+                                      'NGÀY ${_plan.schedule!.indexOf(day) + 1}',
                                       style: const pw.TextStyle(
                                           fontSize: 15,
                                           color: PdfColor.fromInt(0xffE4080A))),

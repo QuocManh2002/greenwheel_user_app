@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
+import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_loading_screen.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -20,6 +21,7 @@ class ServiceMainScreen extends StatefulWidget {
       this.isOrder,
       this.availableGcoinAmount,
       this.isFromTempOrder,
+      this.initSession,
       required this.callbackFunction});
   final int numberOfMember;
   final ServiceType serviceType;
@@ -30,6 +32,7 @@ class ServiceMainScreen extends StatefulWidget {
   final int? availableGcoinAmount;
   final bool? isFromTempOrder;
   final void Function() callbackFunction;
+  final Session? initSession;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();
@@ -211,6 +214,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                                 supplier: list![index],
                                 serviceType: widget.serviceType,
                                 location: widget.location,
+                                initSession: widget.initSession,
                                 callbackFunction: widget.callbackFunction,
                               );
                             },

@@ -2,7 +2,11 @@ import 'dart:convert';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -19,10 +23,22 @@ class ConfirmServiceInfor extends StatelessWidget {
   final List<OrderViewModel> listFood;
   final double total;
   final double budgetPerCapita;
-  final List<Map> listSurcharges;
+  final List<dynamic> listSurcharges;
 
   @override
   Widget build(BuildContext context) {
+    var totalSurcharge = listSurcharges.fold(
+        0,
+        (previousValue, element) =>
+            previousValue +
+            (element['alreadyDivided']
+                ? int.parse(element['gcoinAmount'].toString()) *
+                    sharedPreferences.getInt('plan_number_of_member')!
+                : int.parse(element['gcoinAmount'].toString())));
+                print(total);
+                print(totalSurcharge);
+                print((totalSurcharge +total) * 1.1 / sharedPreferences.getInt('plan_number_of_member')!);
+                
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 12),
@@ -38,9 +54,9 @@ class ConfirmServiceInfor extends StatelessWidget {
                   borderRadius: const BorderRadius.all(Radius.circular(12))),
             ),
             if (listFood.isNotEmpty)
-            SizedBox(
-              height: 1.h,
-            ),
+              SizedBox(
+                height: 1.h,
+              ),
             if (listFood.isNotEmpty)
               Container(
                 width: 100.w,
@@ -70,14 +86,14 @@ class ConfirmServiceInfor extends StatelessWidget {
                               '${order.supplier!.name} - ${order.details!.length} sản phẩm',
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
+                              overflow: TextOverflow.clip,
                             ))
                     ]),
               ),
-              if (listRest.isNotEmpty)
-            SizedBox(
-              height: 2.h,
-            ),
+            if (listRest.isNotEmpty)
+              SizedBox(
+                height: 1.h,
+              ),
             if (listRest.isNotEmpty)
               Container(
                 width: 100.w,
@@ -107,14 +123,14 @@ class ConfirmServiceInfor extends StatelessWidget {
                               '${order.supplier!.name} - ${order.details!.length} sản phẩm',
                               style: const TextStyle(
                                   fontSize: 18, fontWeight: FontWeight.bold),
-                              overflow: TextOverflow.ellipsis,
+                              overflow: TextOverflow.clip,
                             ))
                     ]),
               ),
-              if (listSurcharges.isNotEmpty)
-            SizedBox(
-              height: 2.h,
-            ),
+            if (listSurcharges.isNotEmpty)
+              SizedBox(
+                height: 1.h,
+              ),
             if (listSurcharges.isNotEmpty)
               Container(
                 width: 100.w,
@@ -137,35 +153,48 @@ class ConfirmServiceInfor extends StatelessWidget {
                         'Phụ thu',
                         style: TextStyle(fontSize: 16),
                       ),
-                      for (final order in listSurcharges)
-                        SizedBox(
-                            width: 80.w,
-                            child: Row(
-                              children: [
-                                SizedBox(
-                                  width: 50.w,
-                                  child: Text(
-                                    '${json.decode(order['note'])}',
-                                    style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold),
-                                    overflow: TextOverflow.clip,
-                                  ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  '${order['gcoinAmount']} GCOIN',
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
-                            ))
+                      for (final sur in listSurcharges)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 50.w,
+                              child: Text(
+                                '${json.decode(sur['note'])}',
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.clip,
+                              ),
+                            ),
+                            const Spacer(),
+                            Container(
+                              alignment: Alignment.centerRight,
+                              width: 20.w,
+                              child: Text(
+                                NumberFormat.simpleCurrency(
+                                        locale: 'vi_VN',
+                                        decimalDigits: 0,
+                                        name: '')
+                                    .format(sur['alreadyDivided']
+                                        ? sur['gcoinAmount'] *
+                                            sharedPreferences
+                                                .getInt('plan_number_of_member')
+                                        : sur['gcoinAmount']),
+                                style: const TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                                overflow: TextOverflow.clip,
+                              ),
+                            ),
+                            SvgPicture.asset(
+                              gcoin_logo,
+                              height: 25,
+                            )
+                          ],
+                        )
                     ]),
               ),
             SizedBox(
-              height: 2.h,
+              height: 1.h,
             ),
             Container(
               width: 100.w,
@@ -191,9 +220,15 @@ class ConfirmServiceInfor extends StatelessWidget {
                         ),
                         const Spacer(),
                         Text(
-                          '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(total)} GCOIN',
+                          NumberFormat.simpleCurrency(
+                                  locale: 'vi_VN', decimalDigits: 0, name: "")
+                              .format((total + totalSurcharge) * 1.1),
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        SvgPicture.asset(
+                          gcoin_logo,
+                          height: 25,
                         )
                       ],
                     ),
@@ -205,9 +240,15 @@ class ConfirmServiceInfor extends StatelessWidget {
                         ),
                         const Spacer(),
                         Text(
-                          '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(budgetPerCapita)} GCOIN',
+                          NumberFormat.simpleCurrency(
+                                  locale: 'vi_VN', decimalDigits: 0, name: "")
+                              .format((total + totalSurcharge) * 1.1 / sharedPreferences.getInt('plan_number_of_member')!),
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
+                        ),
+                        SvgPicture.asset(
+                          gcoin_logo,
+                          height: 25,
                         )
                       ],
                     ),

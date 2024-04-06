@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
@@ -19,7 +20,8 @@ class SessionCard extends StatelessWidget {
     required this.endDate,
     this.isOrder,
     this.availableGcoinAmount,
-    this.isFromTempOrder
+    this.isFromTempOrder,
+    this.initSession,
   });
   final Session session;
   final DateTime startDate;
@@ -32,6 +34,7 @@ class SessionCard extends StatelessWidget {
   final bool? isOrder;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
+  final Session? initSession;
 
   @override
   Widget build(BuildContext context) {
@@ -49,23 +52,92 @@ class SessionCard extends StatelessWidget {
                 backgroundColor: Colors.white),
             onPressed: () async {
               // var service = services.firstWhere((s) => s.name == supplier.type);
-              Navigator.of(context).pop();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (ctx) => ServiceMenuScreen(
-                    isOrder: isOrder,
-                    startDate: startDate,
-                    endDate: endDate,
-                    numberOfMember: numberOfMember,
-                    supplier: supplier,
-                    serviceType: serviceType,
-                    session: session,
-                    isFromTempOrder: isFromTempOrder,
-                    availableGcoinAmount: availableGcoinAmount,
-                    callbackFunction: callbackFunction,
+              if (initSession != null && initSession != session) {
+                AwesomeDialog(
+                        context: context,
+                        animType: AnimType.leftSlide,
+                        dialogType: DialogType.warning,
+                        body: const Padding(
+                          padding:
+                              EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              Text(
+                                'Bạn đang chọn khung giờ phục vụ khác với mô tả của hoạt động',
+                                style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    fontFamily: 'NotoSans'),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                'Điều này có thể làm bạn không tìm được những món ăn mình mong muốn',
+                                style: TextStyle(
+                                    fontSize: 15, fontFamily: 'NotoSans'),
+                                textAlign: TextAlign.center,
+                              ),
+                              SizedBox(
+                                height: 10,
+                              ),
+                              Text(
+                                'Vẫn giữ lựa chọn này ?',
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'NotoSans'),
+                                textAlign: TextAlign.center,
+                              )
+                            ],
+                          ),
+                        ),
+                        btnOkColor: Colors.amber,
+                        btnOkOnPress: () {
+                          Navigator.of(context).pop();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (ctx) => ServiceMenuScreen(
+                                isOrder: isOrder,
+                                startDate: startDate,
+                                endDate: endDate,
+                                numberOfMember: numberOfMember,
+                                supplier: supplier,
+                                serviceType: serviceType,
+                                session: session,
+                                isFromTempOrder: isFromTempOrder,
+                                availableGcoinAmount: availableGcoinAmount,
+                                callbackFunction: callbackFunction,
+                              ),
+                            ),
+                          );
+                        },
+                        btnOkText: 'Vẫn giữ',
+                        btnCancelColor: Colors.blueAccent,
+                        btnCancelOnPress: () {},
+                        btnCancelText: 'Không')
+                    .show();
+              } else {
+                Navigator.of(context).pop();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => ServiceMenuScreen(
+                      isOrder: isOrder,
+                      startDate: startDate,
+                      endDate: endDate,
+                      numberOfMember: numberOfMember,
+                      supplier: supplier,
+                      serviceType: serviceType,
+                      session: session,
+                      isFromTempOrder: isFromTempOrder,
+                      availableGcoinAmount: availableGcoinAmount,
+                      callbackFunction: callbackFunction,
+                    ),
                   ),
-                ),
-              );
+                );
+              }
             },
             child: Row(
               children: [

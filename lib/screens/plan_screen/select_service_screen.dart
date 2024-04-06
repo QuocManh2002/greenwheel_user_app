@@ -4,6 +4,7 @@ import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -78,8 +79,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   void initState() {
     // TODO: implement initState
     super.initState();
-    tabController = TabController(
-        length: memberLimit == 1 ? 2 : 3, vsync: this, initialIndex: 0);
+    tabController = TabController(length:  3, vsync: this, initialIndex: 0);
     setUpData();
   }
 
@@ -422,17 +422,18 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
                             'Tổng cộng: ',
                             style: TextStyle(
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
+                          const Spacer(),
                           Text(
-                            '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(tabIndex == 0 ? totalRest / 100 : tabIndex == 1 ? totalFood / 100 : totalSurcharge / 100)}GCOIN',
+                            NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(tabIndex == 0 ? totalRest / 100 : tabIndex == 1 ? totalFood / 100 : totalSurcharge / 100),
                             style: const TextStyle(fontSize: 18),
                           ),
+                          SvgPicture.asset(gcoin_logo, height: 25,)
                         ],
                       ),
                     ),
@@ -498,12 +499,12 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
         await _planService.GetPlanById(sharedPreferences.getInt('planId')!,"");
     if (plan != null) {
       await _offlineService.savePlanToHive(PlanOfflineViewModel(
-          id: plan.id,
+          id: plan.id!,
           name: plan.name!,
-          imageBase64: await Utils().getImageBase64Encoded(plan.imageUrls[0]),
+          imageBase64: await Utils().getImageBase64Encoded(plan.imageUrls![0]),
           startDate: plan.startDate!,
           endDate: plan.endDate!,
-          memberLimit: plan.maxMemberCount,
+          memberLimit: plan.maxMemberCount!,
           schedule: plan.schedule,
           memberList: [
             PlanOfflineMember(

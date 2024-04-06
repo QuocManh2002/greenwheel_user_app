@@ -1,4 +1,5 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
@@ -16,10 +17,12 @@ class SelectPlanName extends StatefulWidget {
       {super.key,
       required this.location,
       required this.isCreate,
+      required this.formKey,
       required this.isClone});
   final LocationViewModel location;
   final bool isCreate;
   final bool isClone;
+  final GlobalKey<FormState> formKey;
 
   @override
   State<SelectPlanName> createState() => _SelectPlanNameState();
@@ -157,14 +160,25 @@ class _SelectPlanNameState extends State<SelectPlanName> {
             SizedBox(
               height: 2.h,
             ),
-            defaultTextFormField(
-              autofocus: true,
-              padding: const EdgeInsets.only(left: 12),
-              controller: _nameController,
-              inputType: TextInputType.name,
-              onChange: (p0) {
-                sharedPreferences.setString('plan_name', p0!);
-              },
+            Form(
+              key: widget.formKey,
+              child: defaultTextFormField(
+                autofocus: true,
+                padding: const EdgeInsets.only(left: 12),
+                controller: _nameController,
+                inputType: TextInputType.name,
+                maxLength: 20,
+                onChange: (p0) {
+                  sharedPreferences.setString('plan_name', p0!);
+                },
+                onValidate: (value) {
+                  if(value == null || value.length == 0){
+                    return "Tên của chuyến đi không được để trống";
+                  }else if(value.length <3 || value.length > 20){
+                    return "Tên của chuyến đi phải có độ dài từ 3 - 20 kí tự";
+                  }
+                },
+              ),
             ),
             SizedBox(
               height: 3.h,

@@ -35,7 +35,8 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
 
   setUpData() {
     tabController = TabController(length: 2, vsync: this, initialIndex: 0);
-    _totalSurcharge = widget.plan.surcharges!.fold(0, (previousValue, element) => element.gcoinAmount.toDouble());
+    _totalSurcharge = widget.plan.surcharges!
+        .fold(0, (previousValue, element) => element.gcoinAmount.toDouble());
   }
 
   @override
@@ -78,77 +79,98 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                     height: 30.h,
                     child: SingleChildScrollView(
                       physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(children: [
-                        for(final sur in widget.plan.surcharges!)
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8),
-                          child: SurchargeCard(amount: sur.gcoinAmount, note: sur.note),
-                        )
-                      ],),
+                      child: Column(
+                        children: [
+                          for (final sur in widget.plan.surcharges!)
+                            Padding(
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 8),
+                              child: SurchargeCard(
+                                isEnableToUpdate: widget.plan.status != "REGISTERING" && widget.plan.status != 'PENDING',
+                                isCreate: false,
+                                surcharge: sur,
+                                callbackSurcharge: () {},
+                              ),
+                            )
+                        ],
+                      ),
                     ),
                   ),
                   if (_totalSurcharge != 0)
-              Row(
-                children: [
-                  const Text(
-                    'Tổng cộng: ',
-                    style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'NotoSans'),
-                  ),
-                  const Spacer(),
-                  Text(
-                    NumberFormat.simpleCurrency(
-                            locale: 'vi_VN', decimalDigits: 0, name: '')
-                        .format(_totalSurcharge),
-                    style: const TextStyle(
-                      fontFamily: 'NotoSans',
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
+                    Row(
+                      children: [
+                        const Text(
+                          'Tổng cộng: ',
+                          style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                        ),
+                        const Spacer(),
+                        Text(
+                          NumberFormat.simpleCurrency(
+                                  locale: 'vi_VN', decimalDigits: 0, name: '')
+                              .format(_totalSurcharge),
+                          style: const TextStyle(
+                            fontFamily: 'NotoSans',
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SvgPicture.asset(
+                          gcoin_logo,
+                          height: 20,
+                          fit: BoxFit.cover,
+                        ),
+                        SizedBox(
+                          width: 5.w,
+                        )
+                      ],
                     ),
-                  ),
-                  SvgPicture.asset(gcoin_logo, height: 20, fit: BoxFit.cover,)
-                ],
-              ),
-            if ( _totalSurcharge != 0)
-              Row(
-                children: [
-                  const Text(
-                    'Chi phí bình quân: ',
-                    style: TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'NotoSans'),
-                  ),
-                  const Spacer(),
-                  Text(
-                    NumberFormat.simpleCurrency(
-                            locale: 'vi_VN', decimalDigits: 0, name: 'đ')
-                        .format(_totalSurcharge /
-                            widget.plan.maxMemberCount),
-                    style: const TextStyle(
-                      fontFamily: 'NotoSans',
-                      fontSize: 17,
-                      fontWeight: FontWeight.bold,
+                  if (_totalSurcharge != 0)
+                    Row(
+                      children: [
+                        const Text(
+                          'Chi phí bình quân: ',
+                          style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                        ),
+                        const Spacer(),
+                        Text(
+                          NumberFormat.simpleCurrency(
+                                  locale: 'vi_VN', decimalDigits: 0, name: '')
+                              .format(
+                                  _totalSurcharge / widget.plan.maxMemberCount!),
+                          style: const TextStyle(
+                            fontFamily: 'NotoSans',
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        SvgPicture.asset(
+                          gcoin_logo,
+                          height: 20,
+                          fit: BoxFit.cover,
+                        ),
+                        SizedBox(
+                          width: 5.w,
+                        )
+                      ],
                     ),
-                  ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 20,
-                    fit: BoxFit.cover,
-                  )
-                ],
-              ),
                 ],
               ),
               Container(
-                height: 35.h,
+                  height: 25.h,
                   padding: const EdgeInsets.all(8),
                   decoration: const BoxDecoration(
                       color: Color(0xFFf2f2f2),
                       borderRadius: BorderRadius.all(Radius.circular(12))),
-                  child: HtmlWidget(widget.plan.note ?? '')),
+                  child: HtmlWidget(
+                      widget.plan.note == null || widget.plan.note == 'null'
+                          ? 'Không có ghi chú'
+                          : widget.plan.note!)),
             ]),
           )
         ],

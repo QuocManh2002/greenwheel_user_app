@@ -1,23 +1,16 @@
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/login.dart';
+import 'package:greenwheel_user_app/service/traveler_service.dart';
 
 class TokenRefresher {
+  static CustomerService _customerService = CustomerService();
+
   static Future<void> refreshToken() async {
-    // Check if the user is already signed in
-    try{
-      if (auth.currentUser != null) {
-      await auth.currentUser!.getIdToken(true).then(
-            (value) => {
-              sharedPreferences.setString('userToken', value!),
-              print(auth.currentUser),
-              print(value),
-            },
-          ).catchError( (error) {
-            print(error);
-            return error;
-          },);
-    }
-    }catch(e){
-      print(e);
+    String? refreshToken = sharedPreferences.getString('userRefreshToken');
+     LoginModel? loginModel = await _customerService.refreshToken(refreshToken!);
+    if(loginModel != null){
+      sharedPreferences.setString('userToken', loginModel.accessToken);
+      sharedPreferences.setString('userRefreshToken', loginModel.refreshToken);
     }
   }
 }

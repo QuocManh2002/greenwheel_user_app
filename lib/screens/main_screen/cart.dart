@@ -77,6 +77,7 @@ class _CartScreenState extends State<CartScreen> {
   int? planId;
   int quantity = 1;
   int selectedDays = 1;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   TextEditingController noteController = TextEditingController();
   var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
@@ -212,34 +213,34 @@ class _CartScreenState extends State<CartScreen> {
                               shrinkWrap: true,
                               itemCount: list.length,
                               itemBuilder: (context, index) {
-                                return 
-                                // Dismissible(
-                                  // key:
-                                  //     UniqueKey(), // Unique key for each Dismissible item
-                                  // background: Container(
-                                  //   color: Colors
-                                  //       .red, // Background color when swiped
-                                  //   alignment: Alignment.centerRight,
-                                  //   child: const Icon(
-                                  //     Icons.delete,
-                                  //     color: Colors.white,
-                                  //   ),
-                                  // ),
-                                  // onDismissed: (direction) {
-                                  //   // Handle the item removal here
-                                  //   setState(() {
-                                  //     finalTotal -= list[index].product.price *
-                                  //         list[index].qty!;
-                                  //     list.removeAt(index);
-                                  //   });
-                                  // },
-                                  // child: 
-                                  CartItemCard(
-                                    cartItem: list[index],
-                                    updateFinalCart: newUpdateFinalCart,
-                                    days: selectedDays,
-                                    serviceType: widget.serviceType,
-                                  );
+                                return
+                                    // Dismissible(
+                                    // key:
+                                    //     UniqueKey(), // Unique key for each Dismissible item
+                                    // background: Container(
+                                    //   color: Colors
+                                    //       .red, // Background color when swiped
+                                    //   alignment: Alignment.centerRight,
+                                    //   child: const Icon(
+                                    //     Icons.delete,
+                                    //     color: Colors.white,
+                                    //   ),
+                                    // ),
+                                    // onDismissed: (direction) {
+                                    //   // Handle the item removal here
+                                    //   setState(() {
+                                    //     finalTotal -= list[index].product.price *
+                                    //         list[index].qty!;
+                                    //     list.removeAt(index);
+                                    //   });
+                                    // },
+                                    // child:
+                                    CartItemCard(
+                                  cartItem: list[index],
+                                  updateFinalCart: newUpdateFinalCart,
+                                  days: selectedDays,
+                                  serviceType: widget.serviceType,
+                                );
                                 // );
                               },
                             ),
@@ -446,19 +447,30 @@ class _CartScreenState extends State<CartScreen> {
                                 10.0), // Set the border radius
                             color: Colors.grey.withOpacity(0.2),
                           ),
-                          child: TextField(
-                            controller: noteController,
-                            maxLines: null, // Allow for multiple lines of text
-                            decoration: const InputDecoration(
-                              hintText: 'Thêm ghi chú',
-                              border:
-                                  InputBorder.none, // Remove the bottom border
-                              contentPadding:
-                                  EdgeInsets.all(8.0), // Set the padding
-                            ),
-                            style: const TextStyle(
-                              height:
-                                  1.8, // Adjust the line height (e.g., 1.5 for 1.5 times the font size)
+                          child: Form(
+                            key: _formKey,
+                            child: TextFormField(
+                              controller: noteController,
+                              maxLength: 110,
+                              minLines: 3,
+                              maxLines: 3, // Allow for multiple lines of text
+                              decoration: const InputDecoration(
+                                hintText: 'Thêm ghi chú',
+                                counterText: '',
+                                border: InputBorder
+                                    .none, // Remove the bottom border
+                                contentPadding:
+                                    EdgeInsets.all(8.0), // Set the padding
+                              ),
+                              validator: (value) {
+                                if (value!.length > 110) {
+                                  return "Ghi chú không được quá 110 kí tự";
+                                }
+                              },
+                              style: const TextStyle(
+                                height:
+                                    1.8, // Adjust the line height (e.g., 1.5 for 1.5 times the font size)
+                              ),
                             ),
                           ),
                         ),
@@ -591,7 +603,9 @@ class _CartScreenState extends State<CartScreen> {
                             height: 6.h,
                             child: ElevatedButton(
                               onPressed: () async {
-                                addOrder();
+                                if (_formKey.currentState!.validate()) {
+                                  addOrder();
+                                }
                               },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor:
@@ -650,7 +664,7 @@ class _CartScreenState extends State<CartScreen> {
     });
   }
 
-  void newUpdateFinalCart(ItemCart cartItem , int newQty){
+  void newUpdateFinalCart(ItemCart cartItem, int newQty) {
     widget.updateCart(cartItem.product, newQty);
     List<ItemCart> updatedList =
         List.from(list); // Create a copy of the original list
@@ -735,6 +749,7 @@ class _CartScreenState extends State<CartScreen> {
       'note': noteController.text,
       'providerId': widget.supplier.id,
       'createdAt': DateTime.now().toString(),
+      'supplierId': widget.supplier.id,
       'supplierName': widget.supplier.name,
       'supplierPhone': widget.supplier.phone,
       'supplierImageUrl': widget.supplier.thumbnailUrl,
@@ -751,22 +766,25 @@ class _CartScreenState extends State<CartScreen> {
         sharedPreferences.setString('plan_temp_order', json.encode(tempDecode));
       }
       AwesomeDialog(
-        context: context,
-        dialogType: DialogType.success,
-        animType: AnimType.topSlide,
-        showCloseIcon: true,
-        title: widget.isOrder != null && widget.isOrder!
-            ? "Thanh toán thành công"
-            : "Thêm thành công",
-        desc: "Ấn tiếp tục để trở về",
-        btnOkText: "Tiếp tục",
-        btnOkOnPress: () {
-          widget.callbackFunction();
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-          Navigator.of(context).pop();
-        },
-      ).show();
+              context: context,
+              dialogType: DialogType.success,
+              animType: AnimType.topSlide,
+              title: widget.isOrder != null && widget.isOrder!
+                  ? "Thanh toán thành công"
+                  : "Thêm thành công",
+              titleTextStyle: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'NotoSans'))
+          .show();
+
+      Future.delayed(const Duration(seconds: 1), () {
+        widget.callbackFunction();
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+        Navigator.of(context).pop();
+      });
     } else {
       if ((total / 100 * _servingDates.length) > widget.availableGcoinAmount!) {
         AwesomeDialog(
@@ -813,42 +831,42 @@ class _CartScreenState extends State<CartScreen> {
                 btnOkText: 'Ok')
             .show();
       } else {
-          final rs = await orderService.createOrder(
-              OrderViewModel(
-                  createdAt: DateTime.now(),
-                  details: details,
-                  note: noteController.text,
-                  type: widget.serviceType.name,
-                  period: order.period,
-                  serveDates: _servingDates
-                      .map((e) =>
-                          json.encode(e.toLocal().toString().split(' ')[0]))
-                      .toList(),
-                  supplier: widget.supplier),
-              sharedPreferences.getInt('planId')!);
-          if (rs != 0) {
-            AwesomeDialog(
-              // ignore: use_build_context_synchronously
-              context: context,
-              dialogType: DialogType.success,
-              animType: AnimType.topSlide,
-              showCloseIcon: true,
-              title:"Thanh toán thành công",
-              desc: "Ấn tiếp tục để trở về",
-              btnOkText: "Tiếp tục",
-              btnOkOnPress: () {
-                widget.callbackFunction();
-                if(widget.isFromTempOrder == null ){
-                  Navigator.of(context).pop();
-                }
-                // Navigator.of(context).pop();
+        final rs = await orderService.createOrder(
+            OrderViewModel(
+                createdAt: DateTime.now(),
+                details: details,
+                note: noteController.text,
+                type: widget.serviceType.name,
+                period: order.period,
+                serveDates: _servingDates
+                    .map((e) =>
+                        json.encode(e.toLocal().toString().split(' ')[0]))
+                    .toList(),
+                supplier: widget.supplier),
+            sharedPreferences.getInt('planId')!);
+        if (rs != 0) {
+          AwesomeDialog(
+            // ignore: use_build_context_synchronously
+            context: context,
+            dialogType: DialogType.success,
+            animType: AnimType.topSlide,
+            showCloseIcon: true,
+            title: "Thanh toán thành công",
+            desc: "Ấn tiếp tục để trở về",
+            btnOkText: "Tiếp tục",
+            btnOkOnPress: () {
+              widget.callbackFunction();
+              if (widget.isFromTempOrder == null) {
                 Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-                Navigator.of(context).pop();
-              },
-            ).show();
-          }
+              }
+              // Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
+            },
+          ).show();
+        }
       }
     }
   }

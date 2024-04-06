@@ -109,8 +109,9 @@ class PlanScheduleActivity extends StatelessWidget {
                             overflow: TextOverflow.clip,
                           ),
                         ),
-                        item.type != 'Ăn uống' && item.type != 'Check-in'
-                            ? IconButton(
+                        // item.type != 'Ăn uống' && item.type != 'Check-in'
+                        //     ? 
+                            IconButton(
                                 highlightColor: Colors.transparent,
                                 splashColor: Colors.transparent,
                                 onPressed: () {
@@ -119,14 +120,14 @@ class PlanScheduleActivity extends StatelessWidget {
                                 icon: const Icon(
                                   Icons.more_horiz,
                                 ))
-                            : SizedBox(
-                                height: 4.h,
-                                child: Icon(
-                                  item.type == 'Ăn uống'
-                                      ? Icons.restaurant
-                                      : Icons.hotel,
-                                  color: primaryColor,
-                                ))
+                            // : SizedBox(
+                            //     height: 4.h,
+                            //     child: Icon(
+                            //       item.type == 'Ăn uống'
+                            //           ? Icons.restaurant
+                            //           : Icons.hotel,
+                            //       color: primaryColor,
+                            //     ))
                       ],
                     ),
                     Container(

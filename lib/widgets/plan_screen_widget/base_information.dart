@@ -20,11 +20,13 @@ class BaseInformationWidget extends StatefulWidget {
       required this.plan,
       required this.members,
       required this.type,
+      required this.isLeader,
       required this.refreshData});
   final PlanDetail plan;
   List<PlanMemberViewModel> members;
   final String type;
   final void Function() refreshData;
+  final bool isLeader;
 
   @override
   State<BaseInformationWidget> createState() => _BaseInformationWidgetState();
@@ -69,7 +71,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
       travelDurationText += '${tempDuration.minute} phút';
     }
     maxMemberText =
-        '${widget.plan.maxMemberCount < 10 ? '0${widget.plan.maxMemberCount}' : widget.plan.maxMemberCount}';
+        '${widget.plan.maxMemberCount! < 10 ? '0${widget.plan.maxMemberCount}' : widget.plan.maxMemberCount}';
     if (widget.plan.memberCount != 0) {
       memberCountText =
           '${widget.plan.memberCount! < 10 ? '0${widget.plan.memberCount}' : widget.plan.memberCount}';
@@ -81,16 +83,18 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24),
         child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          buildInforWidget('Địa điểm:', widget.plan.locationName),
+          buildInforWidget('Địa điểm:', widget.plan.locationName!),
           SizedBox(
             height: 1.h,
           ),
           buildInforWidget('Trưởng đoàn:', widget.plan.leaderName!),
+          if(widget.plan.regCloseAt != null)
           SizedBox(
             height: 1.h,
           ),
+         if(widget.plan.regCloseAt != null)
           buildInforWidget('Đóng đơn đăng kí:',
-              DateFormat('dd/MM/yy').format(widget.plan.regCloseAt!)),
+              '${DateFormat.Hm().format(widget.plan.regCloseAt!)} ${DateFormat('dd/MM/yy').format(widget.plan.regCloseAt!)}'),
           SizedBox(
             height: 1.h,
           ),
@@ -104,10 +108,10 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           SizedBox(
             height: 1.h,
           ),
-          widget.plan.memberCount == 0
+          widget.plan.memberCount == 0 || !widget.isLeader
               ? buildInforWidget('Thành viên tối đa:', '$maxMemberText người')
               : buildInforWidget(
-                  'Đã tham gia:', '$memberCountText/$maxMemberText người'),
+                  'Đã tham gia:', '$memberCountText/$maxMemberText người' ),
           if (widget.plan.status != 'PENDING')
             SizedBox(
               height: 1.h,
@@ -292,7 +296,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   }
 
   onRemoveMember(int memberId, bool isBlock) async {
-    final rs = await _planService.removeMember(memberId, isBlock);
+    final rs = await _planService.removeMember(memberId, isBlock,context);
     if (rs != 0) {
       AwesomeDialog(
         // ignore: use_build_context_synchronously

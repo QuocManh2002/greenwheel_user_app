@@ -29,14 +29,14 @@ late bool hasConnection;
 late FlutterLocalization localization;
 
 ThemeData theme = ThemeData(
-    brightness: Brightness.light,
-    primaryColor: primaryColor,
-    appBarTheme: const AppBarTheme(
-      color: primaryColor,
-      foregroundColor: Colors.white,
-    ),
-    timePickerTheme: const TimePickerThemeData(dayPeriodColor: primaryColor),
-    );
+  brightness: Brightness.light,
+  primaryColor: primaryColor,
+  appBarTheme: const AppBarTheme(
+    color: primaryColor,
+    foregroundColor: Colors.white,
+  ),
+  timePickerTheme: const TimePickerThemeData(dayPeriodColor: primaryColor),
+);
 @pragma('vm:entry-point')
 Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   await Firebase.initializeApp();
@@ -52,7 +52,8 @@ void main() async {
   await Hive.initFlutter();
   await Hive.openBox('myPlans');
   await FlutterConfig.loadEnvVariables();
-  MapboxOptions.setAccessToken('pk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xuM3AwM2hpMGlzZDJqcGFla2VlejFsOCJ9.gEsXIx57uMGskLDDQYBm4g');
+  MapboxOptions.setAccessToken(
+      'pk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xuM3AwM2hpMGlzZDJqcGFla2VlejFsOCJ9.gEsXIx57uMGskLDDQYBm4g');
   localization = FlutterLocalization.instance;
   // final _myPlans = Hive.box('myPlans');
   // _myPlans.clear();
@@ -73,37 +74,25 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String? userToken = sharedPreferences.getString("userToken");
-    if (userToken != null) {
-      log(userToken);
-      //Call to refreshToken
+    String? refreshToken = sharedPreferences.getString("userRefreshToken");
+    if (refreshToken != null) {
       TokenRefresher.refreshToken();
     }
 
     return Sizer(builder: (context, orientation, deviceType) {
       return MaterialApp(
-        localizationsDelegates:  
-          localization.localizationsDelegates
-          ,
+        localizationsDelegates: localization.localizationsDelegates,
         supportedLocales: const [
-           Locale('vi', 'VN'), // Vietnamese
-           Locale('en', 'US'), // English (fallback)
+          Locale('vi', 'VN'), // Vietnamese
+          Locale('en', 'US'), // English (fallback)
         ],
         locale: const Locale('vi'),
-        home: 
-        hasConnection
-            ? userToken != null
+        home: hasConnection
+            ? refreshToken != null
                 ? const SplashScreen()
-                : 
-                const LoginScreen()
+                : const LoginScreen()
             : const OfflineHomeScreen(),
-        // home: const LoginScreen(),
-        // home: const TopupSuccessfulScreen(data: null),
-        // home: const RegisterScreen(),
         // home: const TestScreen(),
-        // home: const CreateNewPlanScreen(),
-        // home: QRScreen(),
-        // home: SharePlanScreen(),
         theme: theme,
         debugShowCheckedModeBanner: false,
       );

@@ -1,9 +1,12 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/meal_text.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
+import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -48,7 +51,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   DateTime _selectedDate = DateTime.now();
   String? _selectedType;
   bool _isModify = false;
-  TimeOfDay _startTime = TimeOfDay(hour: 12, minute: 0);
   bool _isFoodActivity = false;
   bool _isRoomActivity = false;
   bool _isOrderedActivity = false;
@@ -76,11 +78,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
             (int.parse(_activityTimeController.text) - 1).toString();
       });
     }
-    setState(() {
-      DateTime temp = DateTime(0, 0, 0, 12, 0)
-          .add(Duration(hours: int.parse(_activityTimeController.text)));
-      _startTime = TimeOfDay(hour: temp.hour, minute: temp.minute);
-    });
   }
 
   setUpData() {
@@ -394,18 +391,35 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(height: 2.h,),
+                    SizedBox(
+                      height: 2.h,
+                    ),
                     Row(
                       children: [
-                        IconButton(onPressed: (){
-                          setState(() {
-                            _isStarEvent = !_isStarEvent;
-                          });
-                        }, icon:
-                          _isStarEvent?
-                         const Icon(Icons.star, size: 25, color: Colors.amber,):
-                         const Icon(Icons.star_border_outlined, size: 25, color: Colors.grey,)),
-                         const Text('Hoạt động đặc biệt', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),)
+                        IconButton(
+                            onPressed: () {
+                              setState(() {
+                                _isStarEvent = !_isStarEvent;
+                              });
+                            },
+                            icon: _isStarEvent
+                                ? const Icon(
+                                    Icons.star,
+                                    size: 25,
+                                    color: Colors.amber,
+                                  )
+                                : const Icon(
+                                    Icons.star_border_outlined,
+                                    size: 25,
+                                    color: Colors.grey,
+                                  )),
+                        const Text(
+                          'Hoạt động đặc biệt',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                        )
                       ],
                     ),
                     SizedBox(
@@ -482,6 +496,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         onValidate: (value) {
                           if (value!.isEmpty) {
                             return "Mô tả của hoạt động không được để trống";
+                          }else if(value.length < 2 || value.length >40){
+                            return "Mô tả của hoạt động phải có độ dài từ 2 đến 40 kí tự";
                           }
                         },
                         hinttext: 'Câu cá, tắm suối...'),
@@ -503,6 +519,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         onValidate: (value) {
                           if (value!.isEmpty) {
                             return "Mô tả chi tiết của hoạt động không được để trống";
+                          }else if(value.length > 300){
+                            return "Mô tả chi tiết của hoạt động phải có độ dài từ 1 - 300 kí tự";
                           }
                         },
                         hinttext: 'Câu cá ở sông Đà...'),
@@ -517,7 +535,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                       children: [
                         const Spacer(),
                         Container(
-                          alignment: Alignment.topRight,
+                          alignment: Alignment.center,
                           width: 50.w,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 16, vertical: 8),
@@ -540,6 +558,11 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                       alignment: Alignment.topRight,
                       child: ElevatedButton.icon(
                           onPressed: () {
+                             var temp = mealText.firstWhereOrNull((element) =>
+                            element.any((e) => _shortDescriptionController.text
+                                .toLowerCase()
+                                .contains(e)));
+                            
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (ctx) => ServiceMainScreen(
                                       isOrder: false,
@@ -547,6 +570,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                           ? services[0]
                                           : services[4],
                                       location: widget.location,
+                                      initSession: temp != null ? sessions[mealText.indexOf(temp)] : null,
                                       numberOfMember: sharedPreferences
                                           .getInt('plan_number_of_member')!,
                                       startDate: DateTime.parse(

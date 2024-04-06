@@ -1,6 +1,6 @@
 class Transaction {
   int? id;
-  int? receiverId;
+  int? accountId;
   int? planMemberId;
   int? orderId;
   String? type;
@@ -10,11 +10,11 @@ class Transaction {
   String? gateway;
   String? bankTransCode;
   DateTime? createdAt;
-  int? senderId;
+  int? providerId;
 
   Transaction({
     this.id,
-    this.receiverId,
+    this.providerId,
     this.type,
     this.status,
     this.gcoinAmount,
@@ -22,7 +22,7 @@ class Transaction {
     this.gateway,
     this.bankTransCode,
     this.createdAt,
-    this.senderId,
+    this.accountId,
     this.orderId,
     this.planMemberId
   });
@@ -31,7 +31,7 @@ class Transaction {
         id: json["id"],
         orderId: json['orderId'],
         planMemberId: json['planMemberId'],
-        receiverId: json["receiverId"],
+        providerId: json["providerId"],
         type: json["type"],
         status: json["status"],
         gcoinAmount: json["gcoinAmount"],
@@ -39,12 +39,12 @@ class Transaction {
         gateway: json["gateway"],
         bankTransCode: json["bankTransCode"],
         createdAt: DateTime.parse(json["createdAt"]),
-        senderId: json["senderId"],
+        accountId: json["accountId"],
       );
 
   Map<String, dynamic> toJson() => {
         "id": id,
-        "receiverId": receiverId,
+        "providerId": providerId,
         "type": type,
         "status": status,
         "gcoinAmount": gcoinAmount,
@@ -52,6 +52,6 @@ class Transaction {
         "gateway": gateway,
         "bankTransCode": bankTransCode,
         "createdAt": createdAt,
-        "senderId": senderId,
+        "accountId": accountId,
       };
 }

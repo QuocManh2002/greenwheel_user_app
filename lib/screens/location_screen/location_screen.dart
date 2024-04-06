@@ -15,7 +15,7 @@ import 'package:greenwheel_user_app/screens/authentication_screen/select_default
 import 'package:greenwheel_user_app/screens/loading_screen/location_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/location_screen/add_comment_screen.dart';
 import 'package:greenwheel_user_app/screens/location_screen/all_comment_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_new_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_by_location.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
@@ -490,60 +490,70 @@ class _LocationScreenState extends State<LocationScreen> {
                             alignment: Alignment.center,
                             child: ElevatedButton(
                                 onPressed: () {
-                                  if(default_address != null){
+                                  if (default_address != null) {
                                     String? locationName = sharedPreferences
-                                      .getString('plan_location_name');
-                                  if (locationName != null) {
-                                    AwesomeDialog(
-                                      context: context,
-                                      animType: AnimType.leftSlide,
-                                      dialogType: DialogType.question,
-                                      title:
-                                          'Bạn đang có bản nháp chuyến đi tại ${locationName == location!.name ? 'địa điểm này' : locationName}',
-                                      titleTextStyle: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'NotoSans'),
-                                      desc:
-                                          'Bạn có muốn ghi đè chuyến đi đó không ?',
-                                      descTextStyle: const TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.grey,
-                                          fontFamily: 'NotoSans'),
-                                      btnOkOnPress: () async {
-                                        Utils().clearPlanSharePref();
-                                        Navigator.of(context).push(
-                                            MaterialPageRoute(
-                                                builder: (ctx) =>
-                                                    CreateNewPlanScreen(
-                                                        location: location!,
-                                                        isCreate: true)));
-                                      },
-                                      btnOkColor: Colors.deepOrangeAccent,
-                                      btnOkText: 'Có',
-                                      btnCancelText: 'Không',
-                                      btnCancelColor: Colors.blue,
-                                      btnCancelOnPress: () {
-                                        if (locationName == location!.name) {
+                                        .getString('plan_location_name');
+                                    if (locationName != null) {
+                                      AwesomeDialog(
+                                        context: context,
+                                        animType: AnimType.leftSlide,
+                                        dialogType: DialogType.question,
+                                        title:
+                                            'Bạn đang có bản nháp chuyến đi tại ${locationName == location!.name ? 'địa điểm này' : locationName}',
+                                        titleTextStyle: const TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: 'NotoSans'),
+                                        desc:
+                                            'Bạn có muốn ghi đè chuyến đi đó không ?',
+                                        descTextStyle: const TextStyle(
+                                            fontSize: 16,
+                                            color: Colors.grey,
+                                            fontFamily: 'NotoSans'),
+                                        btnOkOnPress: () async {
+                                          Utils().clearPlanSharePref();
+                                          sharedPreferences.setString(
+                                              'plan_location_name',
+                                              location!.name);
+                                          sharedPreferences.setInt(
+                                              'plan_location_id', location!.id);
                                           Navigator.of(context).push(
                                               MaterialPageRoute(
                                                   builder: (ctx) =>
                                                       CreateNewPlanScreen(
                                                           location: location!,
                                                           isCreate: true)));
-                                        }
-                                      },
-                                    ).show();
+                                        },
+                                        btnOkColor: Colors.deepOrangeAccent,
+                                        btnOkText: 'Có',
+                                        btnCancelText: 'Không',
+                                        btnCancelColor: Colors.blue,
+                                        btnCancelOnPress: () {
+                                          if (locationName == location!.name) {
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (ctx) =>
+                                                        CreateNewPlanScreen(
+                                                            location: location!,
+                                                            isCreate: true)));
+                                          }
+                                        },
+                                      ).show();
+                                    } else {
+                                      sharedPreferences.setString(
+                                              'plan_location_name',
+                                              location!.name);
+                                          sharedPreferences.setInt(
+                                              'plan_location_id', location!.id);
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (ctx) =>
+                                                  CreateNewPlanScreen(
+                                                    location: location!,
+                                                    isCreate: true,
+                                                  )));
+                                    }
                                   } else {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (ctx) =>
-                                                CreateNewPlanScreen(
-                                                  location: location!,
-                                                  isCreate: true,
-                                                )));
-                                  }
-                                  }else{
                                     handleNonDefaultAddress(true);
                                   }
                                 },
@@ -603,8 +613,8 @@ class _LocationScreenState extends State<LocationScreen> {
           title: 'Không tìm thấy địa chỉ mặc định',
           titleTextStyle:
               const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          desc: 
-              'Bạn phải thêm địa chỉ mặc định để ${isCreate? 'tạo kế hoạch':'xem được bản đồ định hướng'}',
+          desc:
+              'Bạn phải thêm địa chỉ mặc định để ${isCreate ? 'tạo kế hoạch' : 'xem được bản đồ định hướng'}',
           descTextStyle: const TextStyle(fontSize: 15, color: Colors.black54),
           btnOkColor: Colors.blue,
           btnOkText: 'Thêm',
