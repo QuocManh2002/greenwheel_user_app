@@ -748,6 +748,7 @@ class _CartScreenState extends State<CartScreen> {
       'type': widget.serviceType.name,
       'note': noteController.text,
       'providerId': widget.supplier.id,
+      'providerStandard': widget.supplier.standard,
       'createdAt': DateTime.now().toString(),
       'supplierId': widget.supplier.id,
       'supplierName': widget.supplier.name,
@@ -851,27 +852,28 @@ class _CartScreenState extends State<CartScreen> {
             dialogType: DialogType.success,
             animType: AnimType.topSlide,
             showCloseIcon: true,
+            padding: const EdgeInsets.all(12),
+            titleTextStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'NotoSans',
+            ),
             title: "Thanh toán thành công",
-            desc: "Ấn tiếp tục để trở về",
-            btnOkText: "Tiếp tục",
-            btnOkOnPress: () {
-              widget.callbackFunction();
-              if (widget.isFromTempOrder == null) {
-                Navigator.of(context).pop();
-              }
-              // Navigator.of(context).pop();
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-              Navigator.of(context).pop();
-            },
           ).show();
+          Future.delayed(const Duration(seconds: 1), () {
+            widget.callbackFunction();
+            if (widget.isFromTempOrder == null) {
+              Navigator.of(context).pop();
+            }
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+            Navigator.of(context).pop();
+          });
         }
       }
     }
   }
-
-  onAddOrder() {}
 
   Future pickDateRange() async {
     Navigator.of(context).push(MaterialPageRoute(

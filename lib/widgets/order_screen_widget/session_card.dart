@@ -2,16 +2,14 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SessionCard extends StatelessWidget {
   const SessionCard({
     super.key,
     required this.session,
-    required this.supplier,
     required this.serviceType,
     required this.location,
     required this.numberOfMember,
@@ -26,7 +24,6 @@ class SessionCard extends StatelessWidget {
   final Session session;
   final DateTime startDate;
   final DateTime endDate;
-  final SupplierViewModel supplier;
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
@@ -51,7 +48,6 @@ class SessionCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              // var service = services.firstWhere((s) => s.name == supplier.type);
               if (initSession != null && initSession != session) {
                 AwesomeDialog(
                         context: context,
@@ -99,14 +95,14 @@ class SessionCard extends StatelessWidget {
                           Navigator.of(context).pop();
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (ctx) => ServiceMenuScreen(
+                              builder: (ctx) => ServiceMainScreen(
+                                initSession: session,
                                 isOrder: isOrder,
                                 startDate: startDate,
+                                location: location,
                                 endDate: endDate,
                                 numberOfMember: numberOfMember,
-                                supplier: supplier,
                                 serviceType: serviceType,
-                                session: session,
                                 isFromTempOrder: isFromTempOrder,
                                 availableGcoinAmount: availableGcoinAmount,
                                 callbackFunction: callbackFunction,
@@ -123,14 +119,14 @@ class SessionCard extends StatelessWidget {
                 Navigator.of(context).pop();
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (ctx) => ServiceMenuScreen(
+                    builder: (ctx) => ServiceMainScreen(
                       isOrder: isOrder,
                       startDate: startDate,
                       endDate: endDate,
+                      location: location,
+                      initSession: session,
                       numberOfMember: numberOfMember,
-                      supplier: supplier,
                       serviceType: serviceType,
-                      session: session,
                       isFromTempOrder: isFromTempOrder,
                       availableGcoinAmount: availableGcoinAmount,
                       callbackFunction: callbackFunction,

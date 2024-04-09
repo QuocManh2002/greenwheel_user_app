@@ -457,6 +457,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       }).toList();
       for (final sur in surcharges) {
         listSurcharges.add(SurchargeCard(
+            maxMemberCount: sharedPreferences.getInt('plan_number_of_member')!,
             isEnableToUpdate: true,
             isCreate: true,
             surcharge: SurchargeViewModel.fromJsonLocal(sur),
@@ -490,7 +491,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
             .toInt()));
     plan = PlanCreate(
         departureAddress: sharedPreferences.getString('plan_start_address'),
-        numOfExpPeriod: sharedPreferences.getInt('numOfExpPeriod'),
+        numOfExpPeriod: sharedPreferences.getInt('initNumOfExpPeriod'),
         locationId: widget.location.id,
         name: sharedPreferences.getString('plan_name'),
         latitude: sharedPreferences.getDouble('plan_start_lat')!,

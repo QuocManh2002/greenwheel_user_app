@@ -55,6 +55,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   List<dynamic> scheduleList = [];
   List<dynamic>? newRoomOrderList = [];
   List<dynamic>? newFoodOrderList = [];
+  List<dynamic>? newRidingOrderList = [];
 
   String travelDurationText = '';
   bool _isAceptedPolicy = false;
@@ -73,9 +74,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     }
     if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty) {
       for (final sur in widget.listSurcharges!) {
-        if(sur['alreadyDivided']){
+        if (sur['alreadyDivided']) {
           total += sur['gcoinAmount'] * widget.plan!.memberLimit;
-        }else{
+        } else {
           total += sur['gcoinAmount'];
         }
       }
@@ -129,19 +130,22 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   buildServiceInfor() {
     final rs = widget.orderList!.groupListsBy(
         (e) => e.runtimeType == OrderViewModel ? e.type : e['type']);
-    newRoomOrderList = rs.values
-        .where((e) => e.firstOrNull.runtimeType == OrderViewModel
-            ? e.first.type == 'LODGING'
-            : e.first['type'] == 'LODGING')
-        .toList()
-        .firstOrNull;
-    newFoodOrderList = rs.values
-        .where((e) => e.firstOrNull.runtimeType == OrderViewModel
-            ? e.first.type == 'MEAL'
-            : e.first['type'] == 'MEAL')
-        .toList()
-        .firstOrNull;
-    print(rs.values);
+    newRoomOrderList = rs.values.firstWhereOrNull((e) =>
+            e.firstOrNull.runtimeType == OrderViewModel
+                ? e.first.type == 'LODGING'
+                : e.first['type'] == 'LODGING') ??
+        [];
+    newFoodOrderList = rs.values.firstWhereOrNull((e) =>
+            e.firstOrNull.runtimeType == OrderViewModel
+                ? e.first.type == 'MEAL'
+                : e.first['type'] == 'MEAL') ??
+        [];
+
+    newRidingOrderList = rs.values.firstWhereOrNull((e) =>
+            e.firstOrNull.runtimeType == OrderViewModel
+                ? e.first.type == 'RIDING'
+                : e.first['type'] == 'RIDING') ??
+        [];
   }
 
   @override
@@ -449,6 +453,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               if (newFoodOrderList != null &&
                                   newFoodOrderList!.isNotEmpty)
                                 buildServiceWidget('MEAL', newFoodOrderList!),
+                                if (newRidingOrderList != null &&
+                                  newRidingOrderList!.isNotEmpty)
+                                buildServiceWidget('RIDING', newRidingOrderList!),
                             ],
                           )
                       ],
@@ -500,16 +507,15 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                         decimalDigits: 0,
                                         locale: 'vi_VN',
                                         name: '')
-                                    .format(
-                                    sur['alreadyDivided'] ?
-                                    sur['gcoinAmount'] * widget.plan!.memberLimit :
-                                    sur['gcoinAmount']
-                                    ),
+                                    .format(sur['alreadyDivided']
+                                        ? sur['gcoinAmount'] *
+                                            widget.plan!.memberLimit
+                                        : sur['gcoinAmount']),
                                 style: const TextStyle(
                                     fontSize: 17, fontWeight: FontWeight.bold),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              SvgPicture.asset(gcoin_logo,height:  23)
+                              SvgPicture.asset(gcoin_logo, height: 23)
                             ],
                           )
                       ]),
@@ -540,15 +546,16 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           Row(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                             const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
+                              const Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                   Text(
+                                  Text(
                                     'Tổng cộng',
                                     style: TextStyle(fontSize: 16),
                                   ),
-                                 Text('(+10% chênh lệch)',
-                                  style: TextStyle(fontSize: 12),
+                                  Text(
+                                    '(+10% chênh lệch)',
+                                    style: TextStyle(fontSize: 12),
                                   )
                                 ],
                               ),
@@ -696,7 +703,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                   color: primaryColor.withOpacity(0.8),
                   borderRadius: const BorderRadius.all(Radius.circular(8))),
               child: Text(
-                type == 'MEAL' ? 'Quán ăn/Nhà hàng' : 'Nhà nghỉ/Khách sạn',
+                type == 'MEAL' ? 'Quán ăn/Nhà hàng' : type == 'LODGING'? 'Nhà nghỉ/Khách sạn' :'Thuê xe',
                 style: const TextStyle(
                     fontSize: 17,
                     color: Colors.white,
@@ -720,7 +727,8 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                   SizedBox(
                     width: 42.w,
                     child: Text(
-                      '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}',
+                      // '${} ${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']}${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}',
+                      buildServiceText(order),
                       style: const TextStyle(
                           fontSize: 17, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.clip,
@@ -752,4 +760,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
             ),
         ],
       );
+
+      buildServiceText(dynamic order){
+        bool isShowPeriod = (order.runtimeType == OrderViewModel && order.type != 'RIDING') || (order.runtimeType != OrderViewModel && order['type'] != 'RIDING');
+        return '${isShowPeriod ? '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ':''}${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}';
+      }
 }

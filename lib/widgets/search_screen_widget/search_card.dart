@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/location_screen/location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
@@ -43,7 +44,7 @@ class SearchCard extends StatelessWidget {
                       child: FadeInImage(
                         height: 15.h,
                         placeholder: MemoryImage(kTransparentImage),
-                        image: NetworkImage(location.imageUrls[0]),
+                        image: NetworkImage('$baseBucketImage${location.imageUrls[0]}'),
                         fit: BoxFit.cover,
                         width: 15.h,
                         filterQuality: FilterQuality.high,

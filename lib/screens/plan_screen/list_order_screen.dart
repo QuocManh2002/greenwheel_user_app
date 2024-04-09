@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
@@ -101,7 +102,7 @@ class ListOrderScreen extends StatelessWidget {
                                     Navigator.of(context)
                                         .push(MaterialPageRoute(
                                             builder: (ctx) => ServiceMainScreen(
-                                                serviceType: services[4],
+                                                serviceType: services[1],
                                                 location: location,
                                                 isOrder: true,
                                                 availableGcoinAmount: availableGcoinAmount,
@@ -173,16 +174,29 @@ class ListOrderScreen extends StatelessWidget {
                                   onTap: () {
                                     Navigator.of(context)
                                         .push(MaterialPageRoute(
-                                            builder: (ctx) => ServiceMainScreen(
-                                                serviceType: services[0],
-                                                isFromTempOrder: false,
-                                                availableGcoinAmount: availableGcoinAmount,
-                                                location: location,
-                                                isOrder: true,
-                                                numberOfMember: memberLimit,
-                                                startDate: startDate,
-                                                endDate: endDate,
-                                                callbackFunction:callback)));
+                                            builder: (ctx) => 
+                                            // ServiceMainScreen(
+                                            //     serviceType: services[0],
+                                            //     isFromTempOrder: false,
+                                            //     availableGcoinAmount: availableGcoinAmount,
+                                            //     location: location,
+                                            //     isOrder: true,
+                                            //     numberOfMember: memberLimit,
+                                            //     startDate: startDate,
+                                            //     endDate: endDate,
+                                            //     callbackFunction:callback)
+                                            SelectSessionScreen(
+                                              isOrder: true,
+                                              availableGcoinAmount: availableGcoinAmount,
+                                              initSession: null,
+                                              serviceType: services[0], 
+                                              location: location, 
+                                              numberOfMember: memberLimit,
+                                               startDate: startDate, 
+                                               endDate: endDate, 
+                                               callbackFunction: callback)
+                                                
+                                                ));
                                   },
                                   child: Container(
                                     height: 12.h,

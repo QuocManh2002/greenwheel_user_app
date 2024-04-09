@@ -11,6 +11,7 @@ import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -44,7 +45,6 @@ class NewScheduleItemScreen extends StatefulWidget {
 class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _dateController = TextEditingController();
   final TextEditingController _activityTimeController = TextEditingController();
   final TextEditingController _shortDescriptionController =
       TextEditingController();
@@ -87,14 +87,9 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
       _selectedType = widget.item!.type;
       _shortDescriptionController.text = widget.item!.shortDescription!;
       _activityTimeController.text = widget.item!.activityTime!.toString();
-      setState(() {
-        _dateController.text =
-            DateFormat.yMMMMEEEEd('vi_VN').format(widget.item!.date!);
-      });
+      _isStarEvent = widget.item!.isStarred!;
     } else {
       setState(() {
-        _dateController.text = DateFormat.yMMMMEEEEd('vi_VN')
-            .format(widget.startDate.add(Duration(days: widget.selectedIndex)));
         _selectedDate =
             widget.startDate.add(Duration(days: widget.selectedIndex));
         _activityTimeController.text = '1';
@@ -187,6 +182,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                     } else {
                       widget.callback(
                           PlanScheduleItem(
+                              isStarred: _isStarEvent,
                               activityTime:
                                   int.parse(_activityTimeController.text),
                               shortDescription:
@@ -496,9 +492,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         onValidate: (value) {
                           if (value!.isEmpty) {
                             return "Mô tả của hoạt động không được để trống";
-                          }else if(value.length < 2 || value.length >40){
+                          } else if (value.length < 2 || value.length > 40) {
                             return "Mô tả của hoạt động phải có độ dài từ 2 đến 40 kí tự";
                           }
+                          return null;
                         },
                         hinttext: 'Câu cá, tắm suối...'),
                     SizedBox(
@@ -519,7 +516,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         onValidate: (value) {
                           if (value!.isEmpty) {
                             return "Mô tả chi tiết của hoạt động không được để trống";
-                          }else if(value.length > 300){
+                          } else if (value.length > 300) {
                             return "Mô tả chi tiết của hoạt động phải có độ dài từ 1 - 300 kí tự";
                           }
                         },
@@ -558,28 +555,61 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                       alignment: Alignment.topRight,
                       child: ElevatedButton.icon(
                           onPressed: () {
-                             var temp = mealText.firstWhereOrNull((element) =>
-                            element.any((e) => _shortDescriptionController.text
-                                .toLowerCase()
-                                .contains(e)));
-                            
+                            var temp = mealText.firstWhereOrNull((element) =>
+                                element.any((e) => _shortDescriptionController
+                                    .text
+                                    .toLowerCase()
+                                    .contains(e)));
+
                             Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => ServiceMainScreen(
-                                      isOrder: false,
-                                      serviceType: _isFoodActivity
-                                          ? services[0]
-                                          : services[4],
-                                      location: widget.location,
-                                      initSession: temp != null ? sessions[mealText.indexOf(temp)] : null,
-                                      numberOfMember: sharedPreferences
-                                          .getInt('plan_number_of_member')!,
-                                      startDate: DateTime.parse(
-                                          sharedPreferences
-                                              .getString('plan_start_date')!),
-                                      endDate: DateTime.parse(sharedPreferences
-                                          .getString('plan_end_date')!),
-                                      callbackFunction: callback,
-                                    )));
+                                builder: (ctx) => _isFoodActivity
+                                    ? temp != null
+                                        ? ServiceMainScreen(
+                                            isOrder: false,
+                                            serviceType: services[0],
+                                            location: widget.location,
+                                            initSession: sessions[
+                                                mealText.indexOf(temp)],
+                                            numberOfMember:
+                                                sharedPreferences.getInt(
+                                                    'plan_number_of_member')!,
+                                            startDate: DateTime.parse(
+                                                sharedPreferences.getString(
+                                                    'plan_start_date')!),
+                                            endDate: DateTime.parse(
+                                                sharedPreferences.getString(
+                                                    'plan_end_date')!),
+                                            callbackFunction: callback,
+                                          )
+                                        : SelectSessionScreen(
+                                            serviceType: services[0],
+                                            isOrder: false,
+                                            location: widget.location,
+                                            numberOfMember:
+                                                sharedPreferences.getInt(
+                                                    'plan_number_of_member')!,
+                                            startDate: DateTime.parse(
+                                                sharedPreferences.getString(
+                                                    'plan_start_date')!),
+                                            endDate: DateTime.parse(
+                                                sharedPreferences.getString(
+                                                    'plan_end_date')!),
+                                            callbackFunction: callback)
+                                    : ServiceMainScreen(
+                                        isOrder: false,
+                                        serviceType: services[1],
+                                        location: widget.location,
+                                        initSession: null,
+                                        numberOfMember: sharedPreferences
+                                            .getInt('plan_number_of_member')!,
+                                        startDate: DateTime.parse(
+                                            sharedPreferences
+                                                .getString('plan_start_date')!),
+                                        endDate: DateTime.parse(
+                                            sharedPreferences
+                                                .getString('plan_end_date')!),
+                                        callbackFunction: callback,
+                                      )));
                           },
                           icon: Icon(
                               _isFoodActivity ? Icons.restaurant : Icons.hotel),

@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
@@ -19,11 +20,13 @@ class SurchargeCard extends StatelessWidget {
       required this.surcharge,
       required this.callbackSurcharge,
       required this.isEnableToUpdate,
+      required this.maxMemberCount,
       required this.isCreate});
   final SurchargeViewModel surcharge;
   final void Function() callbackSurcharge;
   final bool isCreate;
   final bool isEnableToUpdate;
+  final int maxMemberCount;
 
   @override
   Widget build(BuildContext context) {
@@ -59,18 +62,22 @@ class SurchargeCard extends StatelessWidget {
                         Text(
                           NumberFormat.currency(
                                   locale: 'vi_VN', decimalDigits: 0, symbol: '')
-                              .format(surcharge.gcoinAmount),
+                              .format(
+                                surcharge.alreadyDivided?
+                                surcharge.gcoinAmount:
+                                (surcharge.gcoinAmount / maxMemberCount).ceil()
+                                ),
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                           overflow: TextOverflow.clip,
                         ),
-                        SizedBox(
-                          width: 0.3.w,
-                        ),
                         SvgPicture.asset(
                           gcoin_logo,
-                          height: 25,
+                          height: 20,
                         ),
+                        const Text(' /',style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),),
+                        const Icon(Icons.person, color: primaryColor, size: 20,),
                         const Spacer()
                       ],
                     ),

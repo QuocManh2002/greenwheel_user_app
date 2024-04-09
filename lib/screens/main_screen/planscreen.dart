@@ -62,7 +62,10 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
 
     if (totalPlans != null) {
       for (final plan in totalPlans) {
-        if (plan.startDate.isAfter(DateTime.now())) {
+        if(plan.status == 'CANCELED'){
+          canceledPlans.add(plan);
+        }
+        else if (plan.startDate.isAfter(DateTime.now())) {
           futurePlans.add(plan);
         } else if (plan.startDate.isBefore(DateTime.now()) &&
             plan.endDate.isAfter(DateTime.now())) {
@@ -118,7 +121,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                         // ignore: use_build_context_synchronously
                         context,
                         PageTransition(
-                            child: CreateNewPlanScreen(
+                            child: CreatePlanScreen(
                               isCreate: true,
                               location: location,
                             ),

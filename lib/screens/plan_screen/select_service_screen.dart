@@ -13,6 +13,7 @@ import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_note_surcharge_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -57,7 +58,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   List<Widget> _listRestaurant = [];
   List<Widget> _listMotel = [];
   List<Widget> _listVehicleRental = [];
-  List<Widget> _listSurcharges = [];
+  
   DateTime? startDate;
   DateTime? endDate;
   int? numberOfMember;
@@ -66,8 +67,10 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
   List<dynamic>? orderList = [];
   List<OrderViewModel>? listRestaurantOrder = [];
   List<OrderViewModel>? listMotelOrder = [];
+  List<OrderViewModel>? listVehidleRentalOrder = [];
   num totalFood = 0;
   num totalRest = 0;
+  num totalVehicle = 0;
   num totalSurcharge = 0;
   num total = 0;
   String activitiesText = '';
@@ -96,6 +99,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
       orderList = json.decode(orderText);
       List<Widget> listRestaurant = [];
       List<Widget> listMotel = [];
+      List<Widget> listVehicleRental = [];
       listMotelOrder = [];
       listRestaurantOrder = [];
       totalFood = 0;
@@ -119,6 +123,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             total: double.parse(item['total'].toString()),
             createdAt: DateTime.parse(item['createdAt']),
             supplier: SupplierViewModel(
+                standard: item['providerStandard'],
                 id: item['providerId'],
                 name: item['supplierName'],
                 phone: item['supplierPhone'],
@@ -134,7 +139,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           ));
           listRestaurantOrder!.add(temp);
           totalFood += double.parse(item['total'].toString());
-        } else {
+        } else if(item['type'] == 'LODGING') {
           listMotel.add(SupplierOrderCard(
             order: temp,
             startDate: startDate!,
@@ -143,12 +148,23 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
           ));
           listMotelOrder!.add(temp);
           totalRest += double.parse(item['total'].toString());
+        }else {
+          listVehicleRental.add(
+            SupplierOrderCard(
+              callback: (){}, 
+              order: temp, 
+              startDate: startDate!, 
+              isTempOrder: false)
+          );
+          listRestaurantOrder!.add(temp);
+          totalVehicle += double.parse(item['total'].toString());
         }
       }
       if (orderList!.isNotEmpty) {
         setState(() {
           _listMotel = listMotel;
           _listRestaurant = listRestaurant;
+          _listVehicleRental = listVehicleRental;
         });
       }
 
@@ -287,7 +303,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                     startDate: startDate!,
                                     endDate: endDate!,
                                     numberOfMember: numberOfMember!,
-                                    serviceType: services[4],
+                                    serviceType: services[1],
                                     location: widget.location,
                                     isOrder: widget.isOrder,
                                     callbackFunction: callback,
@@ -295,8 +311,19 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                 ));
                                 break;
                               case 1:
+                                // Navigator.of(context).push(MaterialPageRoute(
+                                //   builder: (ctx) => ServiceMainScreen(
+                                //     endDate: endDate!,
+                                //     startDate: startDate!,
+                                //     numberOfMember: numberOfMember!,
+                                //     serviceType: services[0],
+                                //     location: widget.location,
+                                //     isOrder: widget.isOrder,
+                                //     callbackFunction: callback,
+                                //   ),
+                                // ));
                                 Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (ctx) => ServiceMainScreen(
+                                  builder: (ctx) => SelectSessionScreen(
                                     endDate: endDate!,
                                     startDate: startDate!,
                                     numberOfMember: numberOfMember!,
@@ -313,7 +340,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                                     endDate: endDate!,
                                     startDate: startDate!,
                                     numberOfMember: numberOfMember!,
-                                    serviceType: services[5],
+                                    serviceType: services[2],
                                     location: widget.location,
                                     isOrder: widget.isOrder,
                                     callbackFunction: callback,
@@ -346,7 +373,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                       icon: const Icon(Icons.restaurant),
                     ),
                     Tab(
-                      text: "(${_listSurcharges.length})",
+                      text: "(${_listVehicleRental.length})",
                       icon: const Icon(Icons.directions_car),
                     )
                   ]),
@@ -401,9 +428,9 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                           : ListView.builder(
                               physics: const BouncingScrollPhysics(),
                               shrinkWrap: true,
-                              itemCount: _listSurcharges.length,
+                              itemCount: _listVehicleRental.length,
                               itemBuilder: (context, index) {
-                                return _listSurcharges[index];
+                                return _listVehicleRental[index];
                               },
                             ),
                     ]),
@@ -430,7 +457,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
                           ),
                           const Spacer(),
                           Text(
-                            NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(tabIndex == 0 ? totalRest / 100 : tabIndex == 1 ? totalFood / 100 : totalSurcharge / 100),
+                            NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(tabIndex == 0 ? totalRest / 100 : tabIndex == 1 ? totalFood / 100 : totalVehicle / 100),
                             style: const TextStyle(fontSize: 18),
                           ),
                           SvgPicture.asset(gcoin_logo, height: 25,)

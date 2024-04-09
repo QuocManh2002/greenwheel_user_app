@@ -86,6 +86,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                               padding:
                                   const EdgeInsets.symmetric(horizontal: 8),
                               child: SurchargeCard(
+                                maxMemberCount: widget.plan.maxMemberCount!,
                                 isEnableToUpdate: widget.plan.status != "REGISTERING" && widget.plan.status != 'PENDING',
                                 isCreate: false,
                                 surcharge: sur,

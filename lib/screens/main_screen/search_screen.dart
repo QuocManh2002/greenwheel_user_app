@@ -329,9 +329,7 @@ class _SearchScreenState extends State<SearchScreen> {
                       child: Row(
                         children: [
                           // Image that can change size
-                          Image.asset(
-                            'assets/images/map-marker.png',
-                          ),
+                          const Icon(Icons.location_on),
                           // Container with text above and below
                           Container(
                             margin: const EdgeInsets.only(left: 20),

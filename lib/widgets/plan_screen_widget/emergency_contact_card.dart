@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -22,7 +23,7 @@ class EmergencyContactCard extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 6),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
                 padding: EdgeInsets.zero, // Remove default padding
@@ -36,15 +37,53 @@ class EmergencyContactCard extends StatelessWidget {
                   sharedPreferences.getStringList('selectedIndex');
               if (selectedIndex != null) {
                 if (selectedIndex
-                    .any((element) => element == index.toString())) {
-                  selectedIndex.remove(index.toString());
+                    .any((element) => element == emergency.id.toString())) {
+                  if (selectedIndex.length == 1) {
+                    AwesomeDialog(
+                            context: context,
+                            animType: AnimType.leftSlide,
+                            dialogType: DialogType.warning,
+                            title:
+                                'Bạn phải chọn ít nhất 1 liên lạc khẩn cấp cho chuyến đi',
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            titleTextStyle: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NotoSans'),
+                            btnOkColor: Colors.amber,
+                            btnOkOnPress: () {},
+                            btnOkText: 'OK')
+                        .show();
+                  } else {
+                    selectedIndex.remove(emergency.id.toString());
+                  }
                 } else {
-                  selectedIndex.add(index.toString());
+                  if (selectedIndex.length == 5) {
+                    AwesomeDialog(
+                            context: context,
+                            animType: AnimType.leftSlide,
+                            dialogType: DialogType.warning,
+                            title:
+                                'Bạn chỉ có thể chọn tối đa 5 liên lạc khẩn cấp cho chuyến đi',
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 8),
+                            titleTextStyle: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NotoSans'),
+                            btnOkColor: Colors.amber,
+                            btnOkOnPress: () {},
+                            btnOkText: 'OK')
+                        .show();
+                  } else {
+                    selectedIndex.add(emergency.id.toString());
+                  }
                 }
                 sharedPreferences.setStringList('selectedIndex', selectedIndex);
               } else {
                 sharedPreferences
-                    .setStringList('selectedIndex', [index.toString()]);
+                    .setStringList('selectedIndex', [emergency.id.toString()]);
               }
               callback();
             },
@@ -95,7 +134,7 @@ class EmergencyContactCard extends StatelessWidget {
                         width: 1.h,
                       ),
                       Text(
-                        emergency.phone!,
+                        '0${emergency.phone!.substring(2)}',
                         overflow: TextOverflow.ellipsis,
                         style: const TextStyle(
                           fontSize: 16,

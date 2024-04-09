@@ -13,6 +13,7 @@ class OrderViewModel {
   String? period;
   String? type;
   SupplierViewModel? supplier;
+  String? currentStatus;
 
   OrderViewModel({
     this.id,
@@ -25,6 +26,7 @@ class OrderViewModel {
     this.type,
     this.guid,
     this.supplier,
+    this.currentStatus
   });
 
   factory OrderViewModel.fromJson(Map<String, dynamic> json) => OrderViewModel(
@@ -35,13 +37,14 @@ class OrderViewModel {
       total: double.parse(json["total"].toString()),
       createdAt: DateTime.parse(json["createdAt"]),
       type: json['type'],
+      currentStatus: json['currentStatus'],
       details: List<OrderDetailViewModel>.from(json['details'].map((e) => OrderDetailViewModel.fromJson(e))).toList(),
       supplier: SupplierViewModel(
           type: json["provider"]['type'],
           id: json["provider"]["id"],
           name: json["provider"]["name"],
           phone: json["provider"]["phone"],
-          thumbnailUrl: json["provider"]["imageUrl"],
+          thumbnailUrl: json["provider"]["imagePath"],
           address: json["provider"]["address"]),
       period: json['period']);
 

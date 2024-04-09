@@ -51,17 +51,17 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
 
   setUpData() {
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
-  }
-
-  @override
-  Widget build(BuildContext context) {
     final orderGroups =
         widget.orderList!.groupListsBy((element) => element.type);
     roomOrderList = orderGroups['LODGING'] ?? [];
     foodOrderList = orderGroups['MEAL'] ?? [];
-    movingOrderList = orderGroups['MOVING'] ?? [];
+    movingOrderList = orderGroups['RIDING'] ?? [];
     isShowTotal =
         widget.plan.status != 'PENDING' && widget.plan.status != 'REGISTERING';
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -143,6 +143,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 itemCount: roomOrderList.length,
                 itemBuilder: (context, index) {
                   return PlanOrderCard(
+                      callback: widget.onGetOrderList,
                       isShowQuantity: true,
                       order: roomOrderList[index],
                       isLeader: widget.isLeader);
@@ -154,6 +155,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 itemCount: foodOrderList.length,
                 itemBuilder: (context, index) {
                   return PlanOrderCard(
+                      callback: widget.onGetOrderList,
                       isShowQuantity: true,
                       order: foodOrderList[index],
                       isLeader: widget.isLeader);
@@ -165,6 +167,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 itemCount: movingOrderList.length,
                 itemBuilder: (context, index) {
                   return PlanOrderCard(
+                      callback: widget.onGetOrderList,
                       isShowQuantity: true,
                       order: movingOrderList[index],
                       isLeader: widget.isLeader);
@@ -194,8 +197,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                         widget.plan.gcoinBudgetPerCapita! *
                             widget.plan.memberCount!),
                     if (isShowTotal)
-                    buildAmountInfo(
-                        'Ngân sách hiện tại:', widget.plan.actualGcoinBudget!),
+                      buildAmountInfo('Ngân sách hiện tại:',
+                          widget.plan.actualGcoinBudget!),
                     if (isShowTotal)
                       buildAmountInfo(
                           'Đã chi:',
@@ -203,25 +206,15 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                                   widget.plan.status == 'REGISTERING'
                               ? 0
                               : widget.total / 100),
-                    // buildAmountInfo('Bình quân ban đầu:',
-                    //     widget.plan.gcoinBudgetPerCapita!),
-                    // if (isShowTotal)
-                    //   buildAmountInfo(
-                    //       'Bình quân đã chi:',
-                    //       widget.plan.status == 'PENDING' ||
-                    //               widget.plan.status == 'REGISTERING'
-                    //           ? 0
-                    //           : ((widget.total / widget.plan.memberCount!) /
-                    //                   100)
-                    //               .ceil()),
                     if (isShowTotal)
                       buildAmountInfo(
-                          'Số tiền cần phải bù:',
-                          widget.plan.maxMemberCount! * widget.plan.gcoinBudgetPerCapita! - 
-                          widget.plan.memberCount! * widget.plan.gcoinBudgetPerCapita!
-                          ),
-                    
-                    // buildAmountInfo('Số tiền hoàn lại:', widget.plan.displayGcoinBudget! / widget.plan.memberCount! * 
+                          'Số tiền đã bù:',
+                          widget.plan.maxMemberCount! *
+                                  widget.plan.gcoinBudgetPerCapita! -
+                              widget.plan.memberCount! *
+                                  widget.plan.gcoinBudgetPerCapita!),
+
+                    // buildAmountInfo('Số tiền hoàn lại:', widget.plan.displayGcoinBudget! / widget.plan.memberCount! *
                     // + widget.plan.actualGcoinBudget! - widget.plan.displayGcoinBudget!
                     // )
                   ],

@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -44,25 +45,9 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    if (widget.plan.status != 'PENDING') {
-      switch (widget.plan.status) {
-        case 'REGISTERING':
-          status = 'Đang mời';
-          break;
-        case 'READY':
-          status = 'Đã chốt';
-          break;
-        case 'COMPLETED':
-          status = 'Đã hoàn tất';
-          break;
-        case 'CANCELED':
-          status = 'Đã huỷ';
-          break;
-        case 'FLAWED':
-          status = 'Để hỏi lead';
-          break;
-      }
-    }
+    status = plan_statuses
+        .firstWhere((element) => element.engName == widget.plan.status)
+        .name;
     var tempDuration = DateFormat.Hm().parse(widget.plan.travelDuration!);
     if (tempDuration.hour != 0) {
       travelDurationText += '${tempDuration.hour} giờ ';
@@ -88,13 +73,15 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             height: 1.h,
           ),
           buildInforWidget('Trưởng đoàn:', widget.plan.leaderName!),
-          if(widget.plan.regCloseAt != null)
-          SizedBox(
-            height: 1.h,
-          ),
-         if(widget.plan.regCloseAt != null)
-          buildInforWidget('Đóng đơn đăng kí:',
-              '${DateFormat.Hm().format(widget.plan.regCloseAt!)} ${DateFormat('dd/MM/yy').format(widget.plan.regCloseAt!)}'),
+          if (widget.plan.regCloseAt != null &&
+              widget.plan.status == 'REGISTERING')
+            SizedBox(
+              height: 1.h,
+            ),
+          if (widget.plan.regCloseAt != null &&
+              widget.plan.status == 'REGISTERING')
+            buildInforWidget('Đóng đơn đăng kí:',
+                '${DateFormat.Hm().format(widget.plan.regCloseAt!)} ${DateFormat('dd/MM/yy').format(widget.plan.regCloseAt!)}'),
           SizedBox(
             height: 1.h,
           ),
@@ -111,7 +98,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           widget.plan.memberCount == 0 || !widget.isLeader
               ? buildInforWidget('Thành viên tối đa:', '$maxMemberText người')
               : buildInforWidget(
-                  'Đã tham gia:', '$memberCountText/$maxMemberText người' ),
+                  'Đã tham gia:', '$memberCountText/$maxMemberText người'),
           if (widget.plan.status != 'PENDING')
             SizedBox(
               height: 1.h,
@@ -164,8 +151,11 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                 });
               },
               itemBuilder: (context, index) {
-                return EmergencyContactView(
-                  emergency: widget.plan.savedContacts![index],
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 6),
+                  child: EmergencyContactView(
+                    emergency: widget.plan.savedContacts![index],
+                  ),
                 );
               },
             ),
@@ -296,7 +286,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   }
 
   onRemoveMember(int memberId, bool isBlock) async {
-    final rs = await _planService.removeMember(memberId, isBlock,context);
+    final rs = await _planService.removeMember(memberId, isBlock, context);
     if (rs != 0) {
       AwesomeDialog(
         // ignore: use_build_context_synchronously

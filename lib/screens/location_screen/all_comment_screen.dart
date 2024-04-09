@@ -34,8 +34,9 @@ class _AllCommentScreenState extends State<AllCommentScreen> {
   }
 
   setUpData() async {
+    isLoading = true;
     final rs = await _locationService.getComments(widget.destinationId);
-    if (rs.isNotEmpty) {
+    if (rs != null) {
       setState(() {
         commentList = rs;
         isLoading = false;
@@ -63,6 +64,8 @@ class _AllCommentScreenState extends State<AllCommentScreen> {
                         child: SizedBox(
                           height: 70.h,
                           child: ListView.builder(
+                              shrinkWrap: true,
+                              physics: const AlwaysScrollableScrollPhysics(),
                               itemCount: commentList.length,
                               itemBuilder: (ctx, index) => Padding(
                                     padding: const EdgeInsets.only(bottom: 12),
@@ -81,7 +84,7 @@ class _AllCommentScreenState extends State<AllCommentScreen> {
                                       destinationDescription:
                                           widget.destinationDescription,
                                       destinationId: widget.destinationId,
-                                      callback: () {},
+                                      callback: setUpData,
                                       destinationImageUrl:
                                           widget.destinationImageUrl,
                                       destinationName: widget.destinationName,

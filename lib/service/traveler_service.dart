@@ -178,7 +178,7 @@ mutation{
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-mutation{
+mutation {
   travelerSignOut{
     id
   }

@@ -44,7 +44,7 @@ void showSharedToast(final BuildContext context) {
 
 Future<pw.PageTheme> _myPageTheme(PdfPageFormat format) async {
   final logoImage = pw.MemoryImage(
-    (await rootBundle.load(app_logo)).buffer.asUint8List(),
+    (await rootBundle.load('assets/images/logopng.png')).buffer.asUint8List(),
   );
   return pw.PageTheme(
       margin: const pw.EdgeInsets.symmetric(
@@ -80,6 +80,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   List<dynamic>? newFoodOrderList = [];
   PlanDetail? _plan = await _planService.GetPlanById(
       sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
+      _plan!.schedule = await _planService.getPlanSchedule(sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   final rs = await _cusomterService.GetCustomerById(_plan!.leaderId!);
   final res = await _planService
       .getOrderCreatePlan(sharedPreferences.getInt('plan_id_pdf')!);
@@ -153,7 +154,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   // }
 
   final logoImage = pw.MemoryImage(
-    (await rootBundle.load(app_logo)).buffer.asUint8List(),
+    (await rootBundle.load('assets/images/logopng.png')).buffer.asUint8List(),
   );
   final font = await rootBundle.load('assets/fonts/NotoSans-Regular.ttf');
   final boldFont = await rootBundle.load('assets/fonts/NotoSans-Bold.ttf');
@@ -170,7 +171,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
             alignment: pw.Alignment.topLeft,
             logoImage,
             fit: pw.BoxFit.contain,
-            width: 180,
+            width: 100,
           ),
       build: (final context) => [
             pw.Container(

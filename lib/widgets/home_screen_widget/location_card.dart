@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/location_screen/location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -31,16 +31,16 @@ class LocationCard extends StatelessWidget {
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
-                decoration:
-                    BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14)),
+                decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(14)),
                 child: CachedNetworkImage(
                   key: UniqueKey(),
                   height: 20.h,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  imageUrl: '$baseBucketImage${location.imagePaths[0]}',
+                  imageUrl:
+                      '$baseBucketImage/${55.w.ceil()}x${20.h.ceil()}${location.imagePaths[0]}',
                   placeholder: (context, url) =>
                       Image.memory(kTransparentImage),
                   errorWidget: (context, url, error) =>
@@ -49,8 +49,7 @@ class LocationCard extends StatelessWidget {
                     width: double.infinity,
                     fit: BoxFit.cover,
                     placeholder: '',
-                    image:
-                        defaultHomeImage,
+                    image: defaultHomeImage,
                   ),
                 )),
             const Spacer(),
@@ -70,15 +69,23 @@ class LocationCard extends StatelessWidget {
               padding: const EdgeInsets.only(left: 8),
               child: Row(
                 children: [
-                  RatingBar(
-                    rating: 5,
-                    ratingCount: 12,
+                  RatingBar.builder(
+                    initialRating: location.rating.toDouble(),
+                    allowHalfRating: true,
+                    itemCount: 5,
+                    itemSize: 20,
+                    itemBuilder:(context, index) => const Icon(
+                         Icons.star,
+                        color: Colors.amber,
+                      ),
+                    onRatingUpdate: (value) {},
+                    ignoreGestures: true,
                   ),
                   const SizedBox(
                     width: 4,
                   ),
                   const Text(
-                    '${12} Đánh giá',
+                    '0 Đánh giá',
                     style: TextStyle(fontWeight: FontWeight.w600),
                   )
                 ],

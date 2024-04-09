@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
@@ -123,7 +125,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
 
   setUpData() async {
     list = await productService.getProductsBySupplierId(widget.supplier.id,
-        widget.session == null ? widget.period! : widget.session!.name);
+        widget.session == null ? widget.period! : widget.session!.enumName);
 
     if (list.isNotEmpty) {
       setState(() {
@@ -151,7 +153,11 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
         }
       }
     } else {
-      title = "Phòng nghỉ";
+      if (widget.serviceType.id == 2) {
+        title = "Phòng nghỉ";
+      } else {
+        title = 'Thuê phương tiện';
+      }
       findSumCombinations(list, widget.numberOfMember);
       List<ProductViewModel> rs = getResult(_listResult);
       Map gr = rs.groupListsBy((element) => element.id);
@@ -272,52 +278,98 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                 )
                               ],
                             ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  alignment: Alignment.centerLeft,
-                                  padding: EdgeInsets.only(
-                                      top: 2.h,
-                                      right: 2.h,
-                                      left: 2.h,
-                                      bottom: 1.h),
-                                  child: Text(
-                                    widget.supplier.name!,
-                                    style: const TextStyle(
-                                        fontSize: 23,
-                                        fontWeight: FontWeight.bold),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                  horizontal: 4.w, vertical: 1.h),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: Text(
+                                      widget.supplier.name!,
+                                      overflow: TextOverflow.clip,
+                                      style: const TextStyle(
+                                          fontSize: 23,
+                                          fontWeight: FontWeight.bold),
+                                    ),
                                   ),
-                                ),
-                                Container(
-                                  alignment: Alignment.centerLeft,
-                                  padding: EdgeInsets.symmetric(
-                                      horizontal: 2.h, vertical: 1.5.h),
-                                  child: Row(
-                                    children: [
-                                      Text(
-                                        '0${widget.supplier.phone!.substring(2)}',
-                                        style: const TextStyle(
-                                            fontSize: 20,
-                                            color: Colors.black54),
-                                      ),
-                                    ],
+                                  widget.supplier.standard != null
+                                      ? Container(
+                                          padding: EdgeInsets.symmetric(
+                                              vertical: 0.25.h),
+                                          alignment: Alignment.centerLeft,
+                                          child: RatingBar.builder(
+                                              itemCount: 5,
+                                              itemSize: 25,
+                                              initialRating:
+                                                  widget.supplier.standard!,
+                                              allowHalfRating: true,
+                                              ignoreGestures: true,
+                                              unratedColor:
+                                                  Colors.grey.withOpacity(0.5),
+                                              itemBuilder: (context, index) =>
+                                                  const Icon(
+                                                    Icons.star,
+                                                    color: Colors.amber,
+                                                  ),
+                                              onRatingUpdate: (value) {}),
+                                        )
+                                      : SizedBox(
+                                          height: 0.5.h,
+                                        ),
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.phone,
+                                          color: primaryColor,
+                                          size: 20,
+                                        ),
+                                        SizedBox(
+                                          width: 2.w,
+                                        ),
+                                        Text(
+                                          '0${widget.supplier.phone!.substring(2)}',
+                                          style: const TextStyle(
+                                              fontSize: 20,
+                                              color: Colors.black54),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                                Container(
-                                  alignment: Alignment.centerLeft,
-                                  padding: EdgeInsets.only(
-                                      left: 2.h,
-                                      right: 2.h,
-                                      top: 1.5.h,
-                                      bottom: 2.h),
-                                  child: Text(
-                                    widget.supplier.address!,
-                                    style: const TextStyle(
-                                        fontSize: 15, color: Colors.black54),
+                                  SizedBox(
+                                    height: 0.5.h,
                                   ),
-                                ),
-                              ],
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: Row(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Icon(
+                                          Icons.home,
+                                          color: primaryColor,
+                                          size: 20,
+                                        ),
+                                        SizedBox(
+                                          width: 2.w,
+                                        ),
+                                        SizedBox(
+                                          width: 70.w,
+                                          child: Text(
+                                            widget.supplier.address!,
+                                            style: const TextStyle(
+                                                fontSize: 15,
+                                                color: Colors.black54),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             )),
                       ],
                     ),

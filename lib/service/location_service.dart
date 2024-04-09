@@ -1,5 +1,6 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/models/activity.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
@@ -9,7 +10,6 @@ import 'package:greenwheel_user_app/view_models/province.dart';
 class LocationService extends Iterable {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
-
 
   String _capitalize(String word) {
     if (word.isEmpty) return word;
@@ -121,7 +121,7 @@ query search(\$search: String!) {
         nodes{
           id
           description
-          imageUrls
+          imagePaths
           name
           activities
           seasons
@@ -131,20 +131,14 @@ query search(\$search: String!) {
           province{
             id
             name
-            imageUrl
-          }
-          emergencyContacts{
-            name
-            phone
-            address
-            type
+            imagePath
           }
           comments{
             id
             comment
             createdAt
             account{
-              avatarUrl
+              avatarPath
               name
             }
           }
@@ -239,8 +233,9 @@ query search(\$search: String!) {
       if (res == null || res.isEmpty) {
         return [];
       }
-      List<LocationCardViewModel> locations =
-          res.map((location) => LocationCardViewModel.fromJson(location['node'])).toList();
+      List<LocationCardViewModel> locations = res
+          .map((location) => LocationCardViewModel.fromJson(location['node']))
+          .toList();
       return locations;
     } catch (error) {
       throw Exception(error);
@@ -270,7 +265,7 @@ query search(\$search: String!) {
         name
         imagePath
       }
-
+      rating
       comments {
         id
         comment
@@ -307,7 +302,7 @@ query search(\$search: String!) {
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation {
-  commentOnDestination(dto: { comment: "$commentText", destinationId: $destinationId }) {
+  addDestinationComment(dto: { comment: "$commentText", destinationId: $destinationId }) {
     id
   }
 }
@@ -316,7 +311,7 @@ mutation {
         throw Exception(result.exception);
       }
 
-      int? res = result.data!['commentOnDestination']['id'];
+      int? res = result.data!['addDestinationComment']['id'];
       if (res == null || res == 0) {
         return false;
       }
@@ -326,7 +321,7 @@ mutation {
     }
   }
 
-  Future<List<CommentViewModel>> getComments(int destinationId) async {
+  Future<List<CommentViewModel>?> getComments(int destinationId) async {
     try {
       QueryResult result = await client.query(QueryOptions(document: gql("""
 {
@@ -334,7 +329,8 @@ mutation {
     id:{
       eq: $destinationId
     }
-  }){
+  }
+  ){
     nodes{
       comments{
         id
@@ -368,10 +364,9 @@ mutation {
   // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();
 
-  Future<List<LocationCardViewModel>> getLocationCard() async{
-    try{
-      QueryResult result = await client.query(
-        QueryOptions(document: gql("""
+  Future<List<LocationCardViewModel>> getLocationCard() async {
+    try {
+      QueryResult result = await client.query(QueryOptions(document: gql("""
 {
   destinations(where: {
     isVisible:{
@@ -389,18 +384,66 @@ mutation {
     }
   }
 }
-"""))
-      );
-      if(result.hasException){
+""")));
+      if (result.hasException) {
         throw Exception(result.exception);
       }
       List? res = result.data!['destinations']['edges'];
-      if(res == null || res.isEmpty){
+      if (res == null || res.isEmpty) {
         return [];
       }
-      List<LocationCardViewModel> rs = res.map((e) => LocationCardViewModel.fromJson(e['node'])).toList();
+      List<LocationCardViewModel> rs =
+          res.map((e) => LocationCardViewModel.fromJson(e['node'])).toList();
       return rs;
-    }catch(error){
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<LocationCardViewModel>> getLocationsByActivity(
+      Activity activity) async {
+    try {
+      QueryResult result = await client.query(QueryOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
+{
+  destinations(where: {
+    activities:{
+      some:{
+        in:[
+          ${activity.englishName}
+        ]
+      }
+    }
+  }){
+    edges{
+      node{
+        id
+        description
+        name
+        imagePaths
+        rating
+      }
+    }
+  }
+}
+
+"""),
+      ));
+
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+
+      List? res = result.data!['destinations']['edges'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+      List<LocationCardViewModel> locations = res
+          .map((location) => LocationCardViewModel.fromJson(location['node']))
+          .toList();
+      return locations;
+    } catch (error) {
       throw Exception(error);
     }
   }

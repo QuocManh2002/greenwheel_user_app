@@ -1,12 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
-import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -51,55 +54,78 @@ class SupplierCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              // ServiceType service = services[0];
-              // if (supplier.type == "VEHICLE_SHOP") {
-              //   service = services[4];
-              // } 
-              // else {
-              //   service = services.firstWhere((s) => s.name == supplier.type);
-              // }
-              // Navigator.of(context).pop();
-              if (serviceType.id == 1) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => SelectSessionScreen(
-                      startDate: startDate,
-                      endDate: endDate,
-                      numberOfMember: numberOfMember,
-                      supplier: supplier,
-                      serviceType:serviceType,
-                      location: location,
-                      isOrder: isOrder,
-                      initSession: initSession,
-                      availableGcoinAmount: availableGcoinAmount,
-                      isFromTempOrder: isFromTempOrder,
-                      callbackFunction: callbackFunction,
-                    ),
-                  ),
-                );
-              } else if (serviceType.id == 5) {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (ctx) => ServiceMenuScreen(
-                      startDate: startDate,
-                      endDate: endDate,
-                      numberOfMember: numberOfMember,
-                      supplier: supplier,
-                      serviceType:serviceType,
-                      isOrder: isOrder,
-                      session: sessions[1],
-                      isFromTempOrder: isFromTempOrder,
-                      availableGcoinAmount: availableGcoinAmount,
-                      callbackFunction: callbackFunction,
-                    ),
-                  ),
-                );}
-              //  else if (service.id == 4) {
-              //   Navigator.of(context).push(MaterialPageRoute(
-              //       builder: (ctx) => EmergencySupplier(supplier: supplier)));
-              // } else if (service.id == 5) {
-              //   Navigator.of(context).push(MaterialPageRoute(
-              //       builder: (ctx) => EmergencySupplier(supplier: supplier)));
+                    Navigator.push(
+                      context,
+                      PageTransition(
+                          child: ServiceMenuScreen(
+                            startDate: startDate,
+                            endDate: endDate,
+                            period: 'NOON',
+                            numberOfMember: numberOfMember,
+                            supplier: supplier,
+                            serviceType: serviceType,
+                            isOrder: isOrder,
+                            session:serviceType.id == 1 ? initSession : sessions[1],
+                            isFromTempOrder: isFromTempOrder,
+                            availableGcoinAmount: availableGcoinAmount,
+                            callbackFunction: callbackFunction,
+                          ),
+                          type: PageTransitionType.rightToLeft));
+              // switch (serviceType.id) {
+              //   case 1:
+              //     Navigator.push(
+              //         context,
+              //         PageTransition(
+              //             child: SelectSessionScreen(
+              //               startDate: startDate,
+              //               endDate: endDate,
+              //               numberOfMember: numberOfMember,
+              //               serviceType: serviceType,
+              //               location: location,
+              //               isOrder: isOrder,
+              //               initSession: initSession,
+              //               availableGcoinAmount: availableGcoinAmount,
+              //               isFromTempOrder: isFromTempOrder,
+              //               callbackFunction: callbackFunction,
+              //             ),
+              //             type: PageTransitionType.rightToLeft));
+              //     break;
+              //   case 2:
+              //     Navigator.push(
+              //         context,
+              //         PageTransition(
+              //             child: ServiceMenuScreen(
+              //               startDate: startDate,
+              //               endDate: endDate,
+              //               numberOfMember: numberOfMember,
+              //               supplier: supplier,
+              //               serviceType: serviceType,
+              //               isOrder: isOrder,
+              //               session: sessions[1],
+              //               isFromTempOrder: isFromTempOrder,
+              //               availableGcoinAmount: availableGcoinAmount,
+              //               callbackFunction: callbackFunction,
+              //             ),
+              //             type: PageTransitionType.rightToLeft));
+              //     break;
+                
+              //   case 3:
+              //   Navigator.push(
+              //         context,
+              //         PageTransition(
+              //             child: ServiceMenuScreen(
+              //               startDate: startDate,
+              //               endDate: endDate,
+              //               numberOfMember: numberOfMember,
+              //               supplier: supplier,
+              //               serviceType: serviceType,
+              //               isOrder: isOrder,
+              //               session: sessions[1],
+              //               isFromTempOrder: isFromTempOrder,
+              //               availableGcoinAmount: availableGcoinAmount,
+              //               callbackFunction: callbackFunction,
+              //             ),
+              //             type: PageTransitionType.rightToLeft));
               // }
             },
             child: Row(
@@ -116,7 +142,8 @@ class SupplierCard extends StatelessWidget {
                     child: FadeInImage(
                       height: 15.h,
                       placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage('$baseBucketImage${supplier.thumbnailUrl!}'),
+                      image: NetworkImage(
+                          '$baseBucketImage${supplier.thumbnailUrl!}'),
                       fit: BoxFit.cover,
                       width: 15.h,
                       filterQuality: FilterQuality.high,
@@ -147,26 +174,38 @@ class SupplierCard extends StatelessWidget {
                           ),
                         ),
                       ),
+                      if (supplier.standard != null)
+                        Padding(
+                          padding: EdgeInsets.only(left: 8, top: 0.5.h),
+                          child: RatingBar.builder(
+                              itemCount: 5,
+                              itemSize: 20,
+                              initialRating: supplier.standard!,
+                              allowHalfRating: true,
+                              ignoreGestures: true,
+                              unratedColor: Colors.grey.withOpacity(0.5),
+                              itemBuilder: (context, index) => const Icon(
+                                    Icons.star,
+                                    color: Colors.amber,
+                                  ),
+                              onRatingUpdate: (value) {}),
+                        ),
                       const SizedBox(
-                        height: 6,
+                        height: 2,
                       ),
-                      Row(
-                        children: [
-                          Padding(
-                            padding: EdgeInsets.only(left: 8, top: 0.5.h),
-                            child: const Text(
-                              'Số điện thoại: ',
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: Colors.black45,
-                                fontFamily: 'NotoSans',
-                                fontWeight: FontWeight.bold,
-                              ),
+                      Padding(
+                        padding: EdgeInsets.only(left: 8, top: 0.5.h),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.phone,
+                              color: primaryColor,
+                              size: 20,
                             ),
-                          ),
-                          Padding(
-                            padding: EdgeInsets.only(left: 8, top: 0.5.h),
-                            child: Text(
+                            SizedBox(
+                              width: 1.w,
+                            ),
+                            Text(
                               '0${supplier.phone!.substring(2)}',
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
@@ -174,24 +213,36 @@ class SupplierCard extends StatelessWidget {
                                 fontFamily: 'NotoSans',
                               ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       const SizedBox(
-                        height: 6,
+                        height: 2,
                       ),
-                      Container(
-                        width: 55.w,
-                        child: Padding(
-                          padding: EdgeInsets.only(left: 8, top: 0.5.h),
-                          child: Text(
-                            supplier.address!,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontFamily: 'NotoSans',
+                      Padding(
+                        padding: EdgeInsets.only(left: 8, top: 0.5.h),
+                        child: Row(
+                          children: [
+                            const Icon(
+                              Icons.home,
+                              color: primaryColor,
+                              size: 20,
                             ),
-                          ),
+                            SizedBox(
+                              width: 1.w,
+                            ),
+                            SizedBox(
+                              width: 45.w,
+                              child: Text(
+                                supplier.address!,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: Colors.grey,
+                                  fontFamily: 'NotoSans',
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       )
                     ],

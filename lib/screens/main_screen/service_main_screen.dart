@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
@@ -59,17 +61,19 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
         title = "Dịch vụ ăn uống";
         type.add("FOOD");
         break;
-      case 5:
+      case 2:
         title = "Dịch vụ lưu trú";
         type.add("ROOM");
         break;
-      case 6:
+      case 3:
         title = "Dịch vụ cho thuê xe";
         type.add("VEHICLE");
         break;
     }
     list = await supplierService.getSuppliers(
-        widget.location.longitude, widget.location.latitude, type);
+        PointLatLng(widget.location.latitude, widget.location.longitude),
+        type,
+        widget.serviceType.id == 1 ? widget.initSession : sessions[1]);
 
     if (list != null) {
       setState(() {
@@ -183,12 +187,20 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                       ),
                     list!.isEmpty
                         ? Container(
-                          alignment: Alignment.center,
-                          child: Column(
+                            alignment: Alignment.center,
+                            child: Column(
                               children: [
-                                SizedBox(height: 20.h,),
-                                Image.asset(empty_plan, height: 30.h,fit: BoxFit.cover, ),
-                                SizedBox(height: 2.h,),
+                                SizedBox(
+                                  height: 20.h,
+                                ),
+                                Image.asset(
+                                  empty_plan,
+                                  height: 30.h,
+                                  fit: BoxFit.cover,
+                                ),
+                                SizedBox(
+                                  height: 2.h,
+                                ),
                                 const Text(
                                   'Rất tiếc! Hiện dịch vụ không khả dụng',
                                   style: TextStyle(
@@ -199,14 +211,15 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                                 ),
                               ],
                             ),
-                        )
+                          )
                         : ListView.builder(
                             physics: const BouncingScrollPhysics(),
                             shrinkWrap: true,
                             itemCount: list!.length,
                             itemBuilder: (context, index) {
                               return SupplierCard(
-                                availableGcoinAmount: widget.availableGcoinAmount,
+                                availableGcoinAmount:
+                                    widget.availableGcoinAmount,
                                 isOrder: widget.isOrder,
                                 startDate: widget.startDate,
                                 endDate: widget.endDate,

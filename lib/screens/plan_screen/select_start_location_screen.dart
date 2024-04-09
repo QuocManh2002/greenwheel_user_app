@@ -7,6 +7,7 @@ import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/locate_start_location.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/search_location_result_card.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
@@ -14,8 +15,10 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectStartLocationScreen extends StatefulWidget {
-  const SelectStartLocationScreen({super.key, required this.location});
+  const SelectStartLocationScreen({super.key, required this.location, required this.isCreate, this.plan});
   final LocationViewModel location;
+  final PlanDetail? plan;
+  final bool isCreate;
 
   @override
   State<SelectStartLocationScreen> createState() =>
@@ -104,15 +107,24 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    setUpData();
-  }
-
-  setUpData() async {
     defaultAddress = sharedPreferences.getString('defaultAddress');
     final defaultCoordinate =
         sharedPreferences.getStringList('defaultCoordinate');
     defaultLatLng = PointLatLng(double.parse(defaultCoordinate![0]),
         double.parse(defaultCoordinate[1]));
+    if (widget.isCreate) {
+      setUpDataCreate();
+    } else {
+      setUpDataUpdate();
+    }
+  }
+  setUpDataUpdate(){
+    
+    _searchController.text = widget.plan!.departureAddress!;
+    _onSelectLocation(PointLatLng(widget.plan!.startLocationLat!, widget.plan!.startLocationLng!));
+  }
+
+  setUpDataCreate() async {
     double? plan_distance = sharedPreferences.getDouble('plan_distance_value');
     if (plan_distance != null) {
       double? plan_duration =

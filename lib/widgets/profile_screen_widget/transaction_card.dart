@@ -123,7 +123,7 @@ class TransactionCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Text(
-                        '${DateFormat.Hm().format(transaction.createdAt!)} - ${DateFormat('dd/MM/yyyy').format(transaction.createdAt!)}',
+                        '${DateFormat.Hm().format(transaction.createdAt!.add(const Duration(hours: 7)))} - ${DateFormat('dd/MM/yyyy').format(transaction.createdAt!.add(const Duration(hours: 7)))}',
                         style: const TextStyle(
                             fontSize: 15,
                             color: Colors.grey,

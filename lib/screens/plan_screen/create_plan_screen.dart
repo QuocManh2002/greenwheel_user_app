@@ -23,8 +23,8 @@ import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
 // ignore: must_be_immutable
-class CreateNewPlanScreen extends StatefulWidget {
-  CreateNewPlanScreen(
+class CreatePlanScreen extends StatefulWidget {
+  CreatePlanScreen(
       {super.key,
       required this.location,
       required this.isCreate,
@@ -36,10 +36,10 @@ class CreateNewPlanScreen extends StatefulWidget {
   PlanDetail? plan;
 
   @override
-  State<CreateNewPlanScreen> createState() => _CreateNewPlanScreenState();
+  State<CreatePlanScreen> createState() => _CreateNewPlanScreenState();
 }
 
-class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
+class _CreateNewPlanScreenState extends State<CreatePlanScreen> {
   @override
   void initState() {
     // TODO: implement initState
@@ -97,6 +97,8 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
           _stepperNumber = 2;
           activePage = SelectStartLocationScreen(
             location: widget.location,
+            isCreate: widget.isCreate,
+            plan: widget.plan,
           );
           break;
         case 2:
@@ -106,6 +108,7 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
             formKey: _formKey,
             location: widget.location,
             isCreate: widget.isCreate,
+            plan: widget.plan,
             isClone: widget.schedule == null ? false : true,
           );
         case 3:
@@ -181,27 +184,33 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                 '[]') : widget.plan!.surcharges!.map((e) => e.toJson()).toList(),
                         plan: PlanCreate(
                             endDate:
+                            widget.isCreate?
                                 sharedPreferences.getString('plan_end_date') == null
                                     ? null
                                     : DateTime.parse(sharedPreferences
-                                        .getString('plan_end_date')!),
-                            memberLimit: sharedPreferences
-                                .getInt('plan_number_of_member'),
+                                        .getString('plan_end_date')!) : widget.plan!.endDate,
+                            memberLimit:
+                            widget.isCreate ?
+                             sharedPreferences
+                                .getInt('plan_number_of_member') : widget.plan!.maxMemberCount,
                             departureDate:
+                            widget.isCreate?
                                 sharedPreferences.getString('plan_departureDate') ==
                                         null
                                     ? null
                                     : DateTime.parse(sharedPreferences
-                                        .getString('plan_departureDate')!),
-                            name: sharedPreferences.getString('plan_name'),
-                            startDate: sharedPreferences
+                                        .getString('plan_departureDate')!) : widget.plan!.departDate,
+                            name: widget.isCreate? sharedPreferences.getString('plan_name') : widget.plan!.name,
+                            startDate:
+                            widget.isCreate?
+                             sharedPreferences
                                         .getString('plan_start_date') ==
                                     null
                                 ? null
                                 : DateTime.parse(
-                                    sharedPreferences.getString('plan_start_date')!),
-                            schedule: sharedPreferences.getString('plan_schedule'),
-                            note: sharedPreferences.getString('plan_note'),
+                                    sharedPreferences.getString('plan_start_date')!) : widget.plan!.startDate,
+                            schedule: widget.isCreate? sharedPreferences.getString('plan_schedule') : json.encode(widget.plan!.schedule),
+                            note:widget.isCreate? sharedPreferences.getString('plan_note'):widget.plan!.note,
                             savedContacts: sharedPreferences.getString('plan_saved_emergency'),
                             travelDuration: _travelDuration == null ? null : DateFormat.Hm().format(_travelDuration)),
                       ));
@@ -348,11 +357,9 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                 getCurrentPage();
                               }
                             } else if (_currentStep == 3) {
-                              List<String>? selectedEmergencyIndexList =
-                                  sharedPreferences
-                                      .getStringList('selectedIndex');
-                              if (selectedEmergencyIndexList == null ||
-                                  selectedEmergencyIndexList.isEmpty) {
+                              final selectedEmergencyText = sharedPreferences.getString('plan_saved_emergency');
+                              if (selectedEmergencyText == null ||
+                                  json.decode(selectedEmergencyText).isEmpty) {
                                 AwesomeDialog(
                                   context: context,
                                   dialogType: DialogType.warning,
@@ -372,7 +379,29 @@ class _CreateNewPlanScreenState extends State<CreateNewPlanScreen> {
                                   btnOkText: 'Ok',
                                   btnOkOnPress: () {},
                                 ).show();
-                              } else {
+                              } else if(!json.decode(selectedEmergencyText).any((e) => e['type'] == 'EMERGENCY')){
+                                AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.warning,
+                                  body: const Center(
+                                    child: Padding(
+                                      padding: EdgeInsets.all(12),
+                                      child: Text(
+                                        'Bạn phải chọn ít nhất một liên lạc cứu hộ cho chuyến đi',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                  btnOkColor: Colors.orange,
+                                  btnOkText: 'Ok',
+                                  btnOkOnPress: () {},
+                                ).show();
+                              }
+                              
+                               else {
                                 setState(() {
                                   _currentStep += 1;
                                 });

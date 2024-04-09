@@ -14,6 +14,7 @@ import 'package:greenwheel_user_app/screens/profie_screen/update_profile_screen.
 import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
+import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:restart_app/restart_app.dart';
@@ -295,11 +296,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         Navigator.push(
                             context,
                             PageTransition(
-                                child: const DetailPlanNewScreen(
-                                  isEnableToJoin: true,
-                                  planId: 134,
-                                  planType: 'INVITATION',
-                                ),
+                                child: const TestScreen(),
                                 type: PageTransitionType.rightToLeft));
                       }, Icons.vpn_key, 'Thay đổi mật khẩu'),
                       SizedBox(

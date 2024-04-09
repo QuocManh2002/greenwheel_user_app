@@ -1,5 +1,10 @@
+
+import 'dart:developer';
+
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 
@@ -8,61 +13,113 @@ class SupplierService extends Iterable {
   static GraphQLClient client = config.getClient();
 
   Future<List<SupplierViewModel>> getSuppliers(
-      double longitude, double latitude, List<String> types) async {
+      PointLatLng coordinate, List<String> types, Session? session) async {
     try {
-      // List<Map<String, dynamic>> typeConditions = [
-      //   {
-      //     "type": {
-      //       "in": types.map((type) => type).toList(),
-      //     },
-      //   },
-      // ];
-      List<Map<String, dynamic>> typeConditions1 = [
+      log('''
+{
+  providers(
+    where: {
+      and: [
         {
-          "products": {
-            "some": {
-              "type": {"in": types.map((type) => type).toList()}
+          coordinate: {
+            distance: {
+              lte: 10000
+              geometry: {
+                type: Point
+                coordinates: [${coordinate.longitude}, ${coordinate.latitude}]
+              }
             }
           }
-        },
-      ];
-
-      print(typeConditions1);
-
-      String coordinateString = '''
-        coordinate: {
-          distance: {
-            geometry: { type: Point, coordinates: [$longitude, $latitude], crs: 4326 },
-            buffer: 0.09138622285234489,
-            eq: 0
+        }
+        {
+          products: {
+            some: {
+              and: [
+                { type: { eq: ${types.first} } }
+                { periods: { some: { in: ${session!.enumName} } } }
+              ]
+            }
           }
-        },
-      ''';
-
-      print(coordinateString);
+        }
+      ]
+    }
+  ) {
+    edges {
+      node {
+        id
+        name
+        address
+        phone
+        imagePath
+        standard
+        products{
+          id
+          name
+          periods
+          type
+        }
+        coordinate{
+                coordinates
+              }
+      }
+    }
+  }
+}
+''');
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
-          query GetSuppliers {
-            providers(
-              where: {
-                $coordinateString
-                or: $typeConditions1
-              }
-            ) {
-              nodes {
-                id
-                name
-                address
-                phone
-                imagePath
-                coordinate {
-                  coordinates
-                }
+{
+  providers(
+    where: {
+      and: [
+        {
+          coordinate: {
+            distance: {
+              lte: 10000
+              geometry: {
+                type: Point
+                coordinates: [${coordinate.longitude}, ${coordinate.latitude}]
               }
             }
           }
+        }
+        {
+          products: {
+            some: {
+              and: [
+                { type: { eq: ${types.first} } }
+                { periods: { some: { in: ${session.enumName} } } }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ) {
+    edges {
+      node {
+        id
+        name
+        address
+        phone
+        imagePath
+        standard
+        products{
+          id
+          name
+          periods
+          type
+        }
+        coordinate{
+                coordinates
+              }
+      }
+    }
+  }
+}
+
         '''),
         ),
       );
@@ -71,13 +128,13 @@ class SupplierService extends Iterable {
         throw Exception(result.exception.toString());
       }
 
-      final List<dynamic>? res = result.data?['providers']['nodes'];
+      final List<dynamic>? res = result.data?['providers']['edges'];
       if (res == null || res.isEmpty) {
         return <SupplierViewModel>[];
       }
 
       final List<SupplierViewModel> suppliers =
-          res.map((supplier) => SupplierViewModel.fromJson(supplier)).toList();
+          res.map((supplier) => SupplierViewModel.fromJson(supplier['node'])).toList();
       return suppliers;
     } catch (error) {
       throw Exception(error.toString());
@@ -134,34 +191,37 @@ query getSupplierById(\$id: [Int]!) {
   // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();
 
-  Future<List<EmergencyContactViewModel>> getEmergencyContacts(
-      double longitude, double latitude) async {
+  Future<List<EmergencyContactViewModel>?> getEmergencyContacts(
+      PointLatLng coordinate, List<String> types, int lte) async {
     try {
-      String coordinateString = '''
-        coordinate: {
-          distance: {
-            geometry: { type: Point, coordinates: [$longitude, $latitude], crs: 4326 },
-            buffer: 0.09138622285234489,
-            eq: 0
-          }
-        },
-      ''';
       QueryResult result = await client.query(QueryOptions(document: gql("""
 {
-            providers(
-              where: {
-                $coordinateString
-                type:{
-      eq:EMERGENCY
-    }
-              }
-            ) {
+            providers(where: 
+  { 
+    and: [
+      { coordinate: { 
+        distance: { 
+          lte: $lte, 
+          geometry:{
+            type: Point,
+            coordinates: [${coordinate.longitude}, ${coordinate.latitude}]
+          }
+        } 
+      } 
+      }, 
+      {
+        type:{
+          in: $types
+        }
+      }] 
+  }){
               nodes {
                 id
                 name
                 address
                 phone
                 imagePath
+                type
               }
             }
           }

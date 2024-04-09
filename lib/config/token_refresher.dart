@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/login.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
@@ -9,6 +11,7 @@ class TokenRefresher {
     String? refreshToken = sharedPreferences.getString('userRefreshToken');
      LoginModel? loginModel = await _customerService.refreshToken(refreshToken!);
     if(loginModel != null){
+      log(loginModel.accessToken);
       sharedPreferences.setString('userToken', loginModel.accessToken);
       sharedPreferences.setString('userRefreshToken', loginModel.refreshToken);
     }

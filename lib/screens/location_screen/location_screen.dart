@@ -3,6 +3,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/constant.dart';
 import 'package:greenwheel_user_app/core/constants/tags.dart';
@@ -24,7 +25,6 @@ import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/comment_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:greenwheel_user_app/widgets/search_screen_widget/tag.dart';
 import 'package:readmore/readmore.dart';
 import 'package:sizer2/sizer2.dart';
@@ -167,14 +167,15 @@ class _LocationScreenState extends State<LocationScreen> {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(
-                                    left: 12, top: 12, bottom: 16),
-                                child: Row(
-                                  children: [
-                                    RatingBar(rating: 5),
-                                    const Text(' ${12} đánh giá')
-                                  ],
-                                ),
+                                padding: const EdgeInsets.only(left: 12, bottom: 10, top: 6),
+                                child: RatingBar.builder(
+                                  initialRating: location!.rating == null ? 0:location!.rating!.toDouble(),
+                                  itemSize: 20,
+                                  itemCount: 5,
+                                  itemBuilder: (context, index) =>const Icon(Icons.star_outline, color: Colors.amber,),
+                                   onRatingUpdate: (value) {
+                                     
+                                   },),
                               ),
                               buildDivider(),
                               const SizedBox(
@@ -353,12 +354,14 @@ class _LocationScreenState extends State<LocationScreen> {
                                           ),
                                           Row(
                                             children: [
-                                              Padding(
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                        vertical: 4),
-                                                child: RatingBar(rating: 5),
-                                              ),
+                                          RatingBar.builder(
+                                initialRating: location!.rating == null ? 0:location!.rating!.toDouble(),
+                                itemSize: 20,
+                                itemCount: 5,
+                                itemBuilder: (context, index) =>const Icon(Icons.star_outline, color: Colors.amber,),
+                                 onRatingUpdate: (value) {
+                                   
+                                 },),
                                               const SizedBox(
                                                 width: 2,
                                               ),
@@ -520,7 +523,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                           Navigator.of(context).push(
                                               MaterialPageRoute(
                                                   builder: (ctx) =>
-                                                      CreateNewPlanScreen(
+                                                      CreatePlanScreen(
                                                           location: location!,
                                                           isCreate: true)));
                                         },
@@ -533,7 +536,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                             Navigator.of(context).push(
                                                 MaterialPageRoute(
                                                     builder: (ctx) =>
-                                                        CreateNewPlanScreen(
+                                                        CreatePlanScreen(
                                                             location: location!,
                                                             isCreate: true)));
                                           }
@@ -548,7 +551,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (ctx) =>
-                                                  CreateNewPlanScreen(
+                                                  CreatePlanScreen(
                                                     location: location!,
                                                     isCreate: true,
                                                   )));
@@ -600,9 +603,11 @@ class _LocationScreenState extends State<LocationScreen> {
 
   callbackAddComment() async {
     var comments = await _locationService.getComments(location!.id);
-    setState(() {
+    if(comments != null){
+      setState(() {
       _comments = comments;
     });
+    }
   }
 
   handleNonDefaultAddress(bool isCreate) => AwesomeDialog(

@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
@@ -215,6 +217,86 @@ mutation{
                 address: e['supplierAddress']),
           ))
       .toList();
+
+  Future<int?> cancelOrder(
+      int orderId, BuildContext context, String reason) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql('''
+mutation {
+  cancelOrder(dto: { orderId: $orderId, reason: "$reason", channel: null }) {
+    id
+  }
+}
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+        throw Exception(result.exception!.linkException!);
+      }
+      return result.data!['cancelOrder']['id'];
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<OrderViewModel>?> getOrderListByPlanId(int planId, BuildContext context)async{
+    try{
+      QueryResult result = await client.query(
+        QueryOptions(document: gql('''
+{
+  orders(where: { planId: { eq: $planId } }) {
+    edges {
+      node {
+        id
+        planId
+        total
+        serveDates
+        note
+        createdAt
+        period
+        type
+        provider {
+          type
+          id
+          phone
+          name
+          imagePath
+          address
+        }
+        details {
+          id
+          price
+          quantity
+          product {
+            id
+            name
+            type
+            price
+          }
+        }
+      }
+    }
+  }
+}
+
+'''))
+      );
+      if(result.hasException){
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+        throw Exception(result.exception!.linkException!);
+      }
+      List? res = result.data!['orders']['edges'];
+      if(res == null || res.isEmpty){
+        return [];
+      }
+      return res.map((e) => OrderViewModel.fromJson(e['node'])).toList();
+    }catch (error) {
+      throw Exception(error);
+    }
+  }
 
   @override
   // TODO: implement iterator

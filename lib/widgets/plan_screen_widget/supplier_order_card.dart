@@ -83,30 +83,22 @@ class SupplierOrderCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const SizedBox(
-                    height: 12,
+                    height: 6,
                   ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 45.w,
-                        child: Text(order.supplier!.name!,
-                            overflow: TextOverflow.ellipsis,
-                            maxLines: 2,
-                            style: const TextStyle(
-                                fontSize: 18, fontWeight: FontWeight.bold)),
-                      ),
-                      const Spacer(),
-                      if(order.id != null)
-                      const Icon(Icons.check_circle, color: primaryColor, size: 30,)
-                    ],
+                  SizedBox(
+                    width: 45.w,
+                    child: Text(order.supplier!.name!,
+                        overflow: TextOverflow.clip,
+                        maxLines: 2,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(
-                    height: 8,
+                    height: 6,
                   ),
                   Text("Đã đặt ${order.details!.length.toString()} sản phẩm"),
                   const SizedBox(
-                    height: 8,
+                    height: 6,
                   ),
                   Text(
                     "Tổng: ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(order.total)}VND",

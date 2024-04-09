@@ -11,11 +11,13 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_detail_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/history_order_screen.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_surcharge_note.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/join_confirm_plan_screen.dart';
@@ -146,8 +148,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   getPlanMember() async {
-    final memberList =
-        await _planService.getPlanMember(widget.planId, widget.planType, context);
+    final memberList = await _planService.getPlanMember(
+        widget.planId, widget.planType, context);
     _planMembers = [];
     for (final mem in memberList) {
       if (mem.status == 'JOINED') {
@@ -219,7 +221,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       if (rs != null) {
         setState(() {
           orderList = rs['orders'];
-          _planDetail!.actualGcoinBudget = rs['currentBudget'];
+          _planDetail!.actualGcoinBudget = rs['currentBudget'].toInt();
         });
       }
     }
@@ -232,31 +234,40 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   updatePlan() async {
     final location =
         await _locationService.GetLocationById(_planDetail!.locationId!);
-    if (location != null) {
-      
+    final schedule =
+        await _planService.getPlanSchedule(widget.planId, widget.planType);
+    if (location != null && schedule != null) {
+      final rs = Utils().getNumOfExpPeriod(
+          null,
+          _planDetail!.numOfExpPeriod!,
+          _planDetail!.departTime!,
+          DateFormat.Hms().parse(_planDetail!.travelDuration!),
+          false);
       PlanDetail _plan = PlanDetail(
-        tempOrders: tempOrders,
-        surcharges: _planDetail!.surcharges,
-        travelDuration: _planDetail!.travelDuration,
-        departDate: _planDetail!.departDate,
-        departTime: _planDetail!.departTime,
-        departureAddress: _planDetail!.departureAddress,
-        id: _planDetail!.id,
-        locationId: _planDetail!.locationId,
-        locationName: _planDetail!.locationName,
-        maxMemberCount: _planDetail!.maxMemberCount,
-        maxMemberWeight: _planDetail!.maxMemberWeight,
-        name: _planDetail!.name,
-        savedContacts: _planDetail!.savedContacts,
-        note: _planDetail!.note,
-        startDate: _planDetail!.startDate,
-        startLocationLat: _planDetail!.startLocationLat,
-        startLocationLng: _planDetail!.startLocationLng,
-        schedule: _planDetail!.schedule
-      );
+          tempOrders: tempOrders,
+          surcharges: _planDetail!.surcharges,
+          travelDuration: _planDetail!.travelDuration,
+          departDate: _planDetail!.departDate,
+          departTime: _planDetail!.departTime,
+          departureAddress: _planDetail!.departureAddress,
+          id: _planDetail!.id,
+          locationId: _planDetail!.locationId,
+          locationName: _planDetail!.locationName,
+          maxMemberCount: _planDetail!.maxMemberCount,
+          maxMemberWeight: _planDetail!.maxMemberWeight,
+          name: _planDetail!.name,
+          savedContacts: _planDetail!.savedContacts,
+          note: _planDetail!.note,
+          endDate: _planDetail!.endDate,
+          startDate: _planDetail!.startDate,
+          startLocationLat: _planDetail!.startLocationLat,
+          startLocationLng: _planDetail!.startLocationLng,
+          numOfExpPeriod: rs['numOfExpPeriod'],
+          schedule: schedule);
+
       Navigator.of(context).pop();
       Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => CreateNewPlanScreen(
+          builder: (ctx) => CreatePlanScreen(
                 location: location,
                 isCreate: false,
                 plan: _plan,
@@ -331,6 +342,58 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   Colors.amber.withOpacity(0.8),
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.amber),
+                          if (isLeader &&
+                              DateTime.now().isBefore(_planDetail!.endDate!) &&
+                              DateTime.now().isAfter(_planDetail!.departDate!
+                                  .add(Duration(
+                                      hours: _planDetail!.departTime!.hour))
+                                  .add(Duration(
+                                      minutes: _planDetail!.departTime!.minute))
+                                  .add(Duration(
+                                      hours: DateFormat.Hm()
+                                          .parse(_planDetail!.travelDuration!)
+                                          .hour))
+                                  .add(Duration(
+                                      minutes: DateFormat.Hm()
+                                          .parse(_planDetail!.travelDuration!)
+                                          .minute))))
+                            SpeedDialChild(
+                                child: const Icon(Icons.check),
+                                labelStyle: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                                onTap: () async {
+                                  var coordinate =
+                                      await _planService.getCurrentLocation();
+                                  if (coordinate != null) {
+                                    final rs = await _planService.verifyPlan(
+                                        widget.planId, coordinate, context);
+                                    if (rs != null) {
+                                      AwesomeDialog(
+                                              context: context,
+                                              animType: AnimType.leftSlide,
+                                              dialogType: DialogType.success,
+                                              title: 'Đã xác nhận kế hoạch',
+                                              padding: const EdgeInsets.all(12),
+                                              titleTextStyle: const TextStyle(
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontFamily: 'NotoSans'))
+                                          .show();
+                                      setupData();
+                                      Future.delayed(const Duration(seconds: 1),
+                                          () {
+                                        Navigator.of(context).pop();
+                                      });
+                                    }
+                                  }
+                                },
+                                label: 'Xác nhận kế hoạch',
+                                labelBackgroundColor:
+                                    primaryColor.withOpacity(0.8),
+                                foregroundColor: Colors.white,
+                                backgroundColor: primaryColor),
                         ],
                       )
                     : _isAlreadyJoin
@@ -338,7 +401,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             shape: const CircleBorder(),
                             backgroundColor: primaryColor,
                             foregroundColor: Colors.white,
-                            child: const Icon(Icons.share),
+                            child: const Icon(Icons.check),
                             onPressed: () {
                               sharedPreferences.setInt(
                                   'plan_id_pdf', _planDetail!.id!);
@@ -362,93 +425,116 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     foregroundColor: MaterialStatePropertyAll(Colors.white)),
               ),
               actions: [
-                if (_planDetail != null &&
-                    (_planDetail!.status == 'PENDING' ||
-                        _planDetail!.status == 'REGISTERING'))
-                  PopupMenuButton(
-                    itemBuilder: (ctx) => [
-                      if (isLeader && _planDetail!.status == 'PENDING')
-                        const PopupMenuItem(
-                          value: 0,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.edit_square,
-                                color: Colors.blueAccent,
-                                size: 32,
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Text(
-                                'Chỉnh sửa',
-                                style: TextStyle(
-                                    color: Colors.blueAccent, fontSize: 18),
-                              )
-                            ],
-                          ),
+                PopupMenuButton(
+                  itemBuilder: (ctx) => [
+                    if (isLeader && _planDetail!.status == 'PENDING')
+                      const PopupMenuItem(
+                        value: 0,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.edit_square,
+                              color: Colors.blueAccent,
+                              size: 32,
+                            ),
+                            SizedBox(
+                              width: 8,
+                            ),
+                            Text(
+                              'Chỉnh sửa',
+                              style: TextStyle(
+                                  color: Colors.blueAccent, fontSize: 18),
+                            )
+                          ],
                         ),
-                      if (!isLeader &&
-                          (_planDetail!.status == 'PENDING' ||
-                              _planDetail!.status == 'REGISTERING'))
-                        const PopupMenuItem(
-                          value: 1,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.logout,
-                                color: Colors.amber,
-                                size: 32,
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Text(
-                                'Rời khỏi',
-                                style: TextStyle(
-                                    color: Colors.amber, fontSize: 18),
-                              )
-                            ],
-                          ),
+                      ),
+                    if (!isLeader &&
+                        (_planDetail!.status == 'PENDING' ||
+                            _planDetail!.status == 'REGISTERING'))
+                      const PopupMenuItem(
+                        value: 1,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.logout,
+                              color: Colors.amber,
+                              size: 32,
+                            ),
+                            SizedBox(
+                              width: 8,
+                            ),
+                            Text(
+                              'Rời khỏi',
+                              style:
+                                  TextStyle(color: Colors.amber, fontSize: 18),
+                            )
+                          ],
                         ),
-                      if (isLeader &&
-                          (_planDetail!.status == 'PENDING' ||
-                              _planDetail!.status == 'REGISTERING'))
-                        const PopupMenuItem(
-                          value: 2,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.cancel_outlined,
-                                color: Colors.redAccent,
-                                size: 32,
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Text(
-                                'Huỷ kế hoạch',
-                                style: TextStyle(
-                                    color: Colors.redAccent, fontSize: 18),
-                              )
-                            ],
-                          ),
+                      ),
+                    if (isLeader &&
+                        (_planDetail!.status == 'PENDING' ||
+                            _planDetail!.status == 'REGISTERING'))
+                      const PopupMenuItem(
+                        value: 2,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.cancel_outlined,
+                              color: Colors.redAccent,
+                              size: 32,
+                            ),
+                            SizedBox(
+                              width: 8,
+                            ),
+                            Text(
+                              'Huỷ kế hoạch',
+                              style: TextStyle(
+                                  color: Colors.redAccent, fontSize: 18),
+                            )
+                          ],
                         ),
-                    ],
-                    onSelected: (value) {
-                      switch (value) {
-                        case 0:
-                          updatePlan();
-                          break;
-                        case 1:
-                          handleQuitPlan();
-                          break;
-                        case 2:
-                          handleCancelPlan();
-                          break;
-                      }
-                    },
-                  )
+                      ),
+                    if (isLeader &&
+                        _planDetail!.status != 'PENDING' &&
+                        _planDetail!.status != 'REGISTERING')
+                      const PopupMenuItem(
+                        value: 3,
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.history,
+                              color: Colors.blueAccent,
+                              size: 32,
+                            ),
+                            SizedBox(
+                              width: 8,
+                            ),
+                            Text(
+                              'Lịch sử đơn hàng',
+                              style: TextStyle(
+                                  color: Colors.blueAccent, fontSize: 18),
+                            )
+                          ],
+                        ),
+                      ),
+                  ],
+                  onSelected: (value) {
+                    switch (value) {
+                      case 0:
+                        updatePlan();
+                        break;
+                      case 1:
+                        handleQuitPlan();
+                        break;
+                      case 2:
+                        handleCancelPlan();
+                        break;
+                      case 3:
+                        handleHistoryOrder();
+                        break;
+                    }
+                  },
+                )
               ],
             ),
             body: isLoading
@@ -724,7 +810,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       tempOrders: tempOrders,
       orderList: orderList,
       total: total,
-      onGetOrderList: getOrderList);
+      onGetOrderList: setupData);
 
   buildInforWidget() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -851,84 +937,92 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               btnOkText: 'OK')
           .show();
     } else {
-      final int balance = await _customerService.getTravelerBalance(sharedPreferences.getInt('userId')!);
-      if(balance >= _planDetail!.gcoinBudgetPerCapita!){
-for (final emer in _planDetail!.savedContacts!) {
-        emerList.add({
-          "name": emer.name,
-          "phone": emer.phone,
-          "address": emer.address,
-          "imageUrl": emer.imageUrl,
-          "type": emer.type
-        });
-      }
-       List<dynamic>? _schedule =
-          await _planService.getPlanSchedule(widget.planId, widget.planType,context);
-      if (_schedule != null) {
-        final rs = await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (BuildContext context) => SizedBox(
-                  height: 90.h,
-                  child: ConfirmPlanBottomSheet(
-                    isInfo: false,
-                    isFromHost: isLeader,
-                    plan: PlanCreate(
-                      departureAddress: _planDetail!.departureAddress,
-                      schedule: json.encode(_schedule),
-                      savedContacts: json.encode(emerList),
-                      name: _planDetail!.name,
-                      memberLimit: _planDetail!.maxMemberCount,
-                      startDate: _planDetail!.startDate,
-                      endDate: _planDetail!.endDate,
-                      travelDuration: _planDetail!.travelDuration,
-                      departureDate: _planDetail!.departDate,
-                      note: _planDetail!.note,
-                    ),
-                    locationName: _planDetail!.locationName!,
-                    orderList: tempOrders,
-                    onCompletePlan: () {},
-                    listSurcharges: _planDetail!.surcharges!
-                        .map((e) => e.toJson())
-                        .toList(),
-                    isJoin: true,
-                    onJoinPlan: () {
-                      confirmJoin(isPublic);
-                    },
-                    onCancel: () {
-                      Navigator.of(context).pop();
-                      setState(() {
-                        _isPublic = false;
-                      });
-                    },
-                  ),
-                ));
-        if (rs == null) {
-          setState(() {
-            _isPublic = false;
+      final int balance = await _customerService
+          .getTravelerBalance(sharedPreferences.getInt('userId')!);
+      if (balance >= _planDetail!.gcoinBudgetPerCapita!) {
+        for (final emer in _planDetail!.savedContacts!) {
+          emerList.add({
+            "name": emer.name,
+            "phone": emer.phone,
+            "address": emer.address,
+            "imageUrl": emer.imageUrl,
+            "type": emer.type
           });
         }
+        List<dynamic>? _schedule =
+            await _planService.getPlanSchedule(widget.planId, widget.planType);
+        if (_schedule != null) {
+          final rs = await showModalBottomSheet(
+              context: context,
+              isScrollControlled: true,
+              builder: (BuildContext context) => SizedBox(
+                    height: 90.h,
+                    child: ConfirmPlanBottomSheet(
+                      isInfo: false,
+                      isFromHost: isLeader,
+                      plan: PlanCreate(
+                        departureAddress: _planDetail!.departureAddress,
+                        schedule: json.encode(_schedule),
+                        savedContacts: json.encode(emerList),
+                        name: _planDetail!.name,
+                        memberLimit: _planDetail!.maxMemberCount,
+                        startDate: _planDetail!.startDate,
+                        endDate: _planDetail!.endDate,
+                        travelDuration: _planDetail!.travelDuration,
+                        departureDate: _planDetail!.departDate,
+                        note: _planDetail!.note,
+                      ),
+                      locationName: _planDetail!.locationName!,
+                      orderList: tempOrders,
+                      onCompletePlan: () {},
+                      listSurcharges: _planDetail!.surcharges!
+                          .map((e) => e.toJson())
+                          .toList(),
+                      isJoin: true,
+                      onJoinPlan: () {
+                        confirmJoin(isPublic);
+                      },
+                      onCancel: () {
+                        Navigator.of(context).pop();
+                        setState(() {
+                          _isPublic = false;
+                        });
+                      },
+                    ),
+                  ));
+          if (rs == null) {
+            setState(() {
+              _isPublic = false;
+            });
+          }
+        }
+      } else {
+        AwesomeDialog(
+                context: context,
+                animType: AnimType.leftSlide,
+                dialogType: DialogType.error,
+                title: 'Số dư của bạn không đủ để tham gia kế hoạch này',
+                titleTextStyle: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'NotoSans'),
+                desc: 'Vui lòng nạp thêm GCOIN',
+                descTextStyle: const TextStyle(
+                    fontSize: 17, fontFamily: 'NotoSans', color: Colors.grey),
+                btnOkColor: Colors.red,
+                btnOkOnPress: () {
+                  Navigator.push(
+                      context,
+                      PageTransition(
+                          child: const TabScreen(pageIndex: 4),
+                          type: PageTransitionType.rightToLeft));
+                },
+                btnOkText: 'Nạp thêm',
+                btnCancelColor: Colors.amber,
+                btnCancelOnPress: () {},
+                btnCancelText: 'Huỷ')
+            .show();
       }
-      }else{
-        AwesomeDialog(context: context,
-          animType: AnimType.leftSlide,
-          dialogType: DialogType.error,
-          title: 'Số dư của bạn không đủ để tham gia kế hoạch này',
-          titleTextStyle: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
-          desc: 'Vui lòng nạp thêm GCOIN',
-          descTextStyle: const TextStyle(fontSize: 17, fontFamily: 'NotoSans', color: Colors.grey),
-          btnOkColor: Colors.red,
-          btnOkOnPress: (){
-            Navigator.push(context, PageTransition(child: const TabScreen(pageIndex: 4), type: PageTransitionType.rightToLeft));
-          },
-          btnOkText: 'Nạp thêm',
-          btnCancelColor: Colors.amber,
-          btnCancelOnPress: (){},
-          btnCancelText: 'Huỷ'
-        ).show();
-      }
-      
-     
     }
   }
 
@@ -1081,7 +1175,7 @@ for (final emer in _planDetail!.savedContacts!) {
   }
 
   confirmMember() async {
-    final rs = await _planService.confirmMember(widget.planId,context);
+    final rs = await _planService.confirmMember(widget.planId, context);
     if (rs != 0) {
       AwesomeDialog(
         context: context,
@@ -1219,7 +1313,7 @@ for (final emer in _planDetail!.savedContacts!) {
   }
 
   onCancelPlan() async {
-    int? rs = await _planService.cancelPlan(widget.planId,context);
+    int? rs = await _planService.cancelPlan(widget.planId, context);
     if (rs != 0) {
       AwesomeDialog(
               context: context,
@@ -1276,8 +1370,8 @@ for (final emer in _planDetail!.savedContacts!) {
       if (_planDetail!.joinMethod == 'NONE') {
         handlePublicizePlan(false, null);
       } else {
-        final rs =
-            await _planService.updateJoinMethod(_planDetail!.id!, 'NONE',context);
+        final rs = await _planService.updateJoinMethod(
+            _planDetail!.id!, 'NONE', context);
         if (rs) {
           setState(() {
             _planDetail!.joinMethod = 'NONE';
@@ -1368,7 +1462,7 @@ for (final emer in _planDetail!.savedContacts!) {
                           child: InkWell(
                         onTap: () async {
                           final rs = await _planService.updateJoinMethod(
-                              _planDetail!.id!, 'SCAN',context);
+                              _planDetail!.id!, 'SCAN', context);
                           if (rs) {
                             setState(() {
                               _planDetail!.joinMethod = 'SCAN';
@@ -1422,5 +1516,15 @@ for (final emer in _planDetail!.savedContacts!) {
                 ],
               ),
             ));
+  }
+
+  handleHistoryOrder() {
+    Navigator.push(
+        context,
+        PageTransition(
+            child: HistoryOrderScreen(
+              planId: widget.planId,
+            ),
+            type: PageTransitionType.rightToLeft));
   }
 }

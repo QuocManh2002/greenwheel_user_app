@@ -34,7 +34,7 @@ class Transaction {
         providerId: json["providerId"],
         type: json["type"],
         status: json["status"],
-        gcoinAmount: json["gcoinAmount"],
+        gcoinAmount: json["gcoinAmount"].toInt(),
         description: json["description"],
         gateway: json["gateway"],
         bankTransCode: json["bankTransCode"],

@@ -1,6 +1,5 @@
 
 import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 
 class LocationViewModel {
@@ -15,8 +14,8 @@ class LocationViewModel {
   double longitude;
   String address;
   ProvinceViewModel province;
-  List<EmergencyContactViewModel>? emergencyContacts;
   List<CommentViewModel>? comments;
+  int? rating;
 
   LocationViewModel(
       {required this.id,
@@ -31,7 +30,7 @@ class LocationViewModel {
       required this.address,
       required this.province,
       this.comments,
-      this.emergencyContacts,});
+      this.rating,});
 
   factory LocationViewModel.fromJson(Map<String, dynamic> json) =>
       LocationViewModel(
@@ -45,8 +44,8 @@ class LocationViewModel {
           latitude: json["coordinate"]["coordinates"][1].toDouble(),
           longitude: json["coordinate"]["coordinates"][0].toDouble(),
           address: json["address"],
+          rating: json['rating'],
           province: ProvinceViewModel.fromJson(json["province"]),
           comments: List<CommentViewModel>.from(json['comments'].map((e) => CommentViewModel.fromJson(e))).toList(),
-          // emergencyContacts: List<EmergencyContactViewModel>.from(json['emergencyContacts'].map((e) => EmergencyContactViewModel.fromJsonByLocation(e))).toList(),
           );
 }

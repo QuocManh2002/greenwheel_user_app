@@ -7,6 +7,7 @@ class SupplierViewModel {
   double? longitude;
   double? latitude;
   String? type;
+  double? standard;
 
   SupplierViewModel({
     required this.id,
@@ -16,6 +17,7 @@ class SupplierViewModel {
     required this.address,
     this.longitude,
     this.latitude,
+    this.standard,
     this.type,
   });
 
@@ -27,6 +29,7 @@ class SupplierViewModel {
         thumbnailUrl: json["imagePath"],
         address: json["address"],
         type: json['type'],
+        standard: json['standard'] == null ? null : double.parse(json['standard'].toString()),
         latitude: json["coordinate"]["coordinates"][1],
         longitude: json["coordinate"]["coordinates"][0],
       );

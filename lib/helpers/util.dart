@@ -1,13 +1,13 @@
 import 'dart:convert';
-
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:dart_jts/dart_jts.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
-import 'package:dart_jts/dart_jts.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 class Utils {
@@ -204,13 +204,13 @@ class Utils {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.bounceInOut,
-      height: 0.5,
+      height: 0,
       margin: const EdgeInsets.only(left: 16),
       width: currentIndex == index ? 35 : 12,
       decoration: BoxDecoration(
           color: currentIndex == index
-              ? Colors.grey
-              : Colors.grey.withOpacity(0.7),
+              ? primaryColor
+              : primaryColor.withOpacity(0.7),
           borderRadius: const BorderRadius.all(Radius.circular(12)),
           boxShadow: const [
             BoxShadow(
@@ -234,7 +234,7 @@ class Utils {
       case "RESTAURANT":
         return 'nhà hàng';
       case "VEHICLE_RENTAL":
-        return "cho thuê xe";
+        return "Thuê xe";
     }
   }
 
@@ -245,4 +245,28 @@ class Utils {
       return '${DateFormat('dd/MM').format(DateTime.parse(serveDateIndexes[0]))} (+${serveDateIndexes.length - 1} N)';
     }
   }
+
+  getNumOfExpPeriod(DateTime? arrivedTime, int initNumOfExpPeriod,
+      DateTime startTime, DateTime? travelDuration, bool isCreate) {
+    final _startTime = DateTime(0, 0, 0, startTime.hour, startTime.minute);
+    final _arrivedTime = arrivedTime ??
+        _startTime
+            .add(Duration(hours: travelDuration!.hour))
+            .add(Duration(minutes: travelDuration.minute));
+    if (_arrivedTime.isAfter(DateTime(0, 0, 0, 16, 0)) &&
+        _arrivedTime.isBefore(DateTime(0, 0, 1, 6, 0))) {
+      if (_arrivedTime.isBefore(DateTime(0, 0, 0, 20, 0))) {
+        return {
+          'numOfExpPeriod':
+              isCreate ? initNumOfExpPeriod + 1 : initNumOfExpPeriod - 1,
+          'isOverDate': false
+        };
+      } else {
+        return {'numOfExpPeriod': initNumOfExpPeriod, 'isOverDate': true};
+      }
+    } else {
+      return {'numOfExpPeriod': initNumOfExpPeriod, 'isOverDate': false};
+    }
+  }
+
 }

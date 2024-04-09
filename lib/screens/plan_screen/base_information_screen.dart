@@ -92,18 +92,40 @@ class _BaseInformationState extends State<BaseInformationScreen> {
             (int.parse(_maxMemberWeightController.text) - 1).toString();
       });
     }
-    sharedPreferences.setInt('plan_max_member_weight',
-        int.parse(_maxMemberWeightController.text) + 1);
+    if (widget.isCreate) {
+      sharedPreferences.setInt('plan_max_member_weight',
+          int.parse(_maxMemberWeightController.text) + 1);
+    } else {
+      widget.plan!.maxMemberWeight =
+          int.parse(_maxMemberWeightController.text) + 1;
+    }
   }
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    setUpData();
+    if (widget.isCreate) {
+      setUpDataCreate();
+    } else {
+      setUpDataUpdate();
+    }
   }
 
-  setUpData() {
+  setUpDataUpdate() {
+    _memberController.text = widget.plan!.maxMemberCount!.toString();
+    _maxMemberWeightController.text = widget.plan!.maxMemberWeight!.toString();
+    _selectedCombo = listComboDate
+            .firstWhere(
+                (element) => element.duration == widget.plan!.numOfExpPeriod!)
+            .id -
+        1;
+    _scrollController =
+        FixedExtentScrollController(initialItem: _selectedCombo);
+    maxMemberWeight = getMaxMemberWeight(widget.plan!.maxMemberCount!);
+  }
+
+  setUpDataCreate() {
     int? member = sharedPreferences.getInt('plan_number_of_member');
     int? numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
     int? _maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
@@ -195,11 +217,18 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                         setState(() {
                           _selectedCombo = value;
                         });
-                        sharedPreferences.setInt('plan_combo_date', value);
-                        sharedPreferences.setInt(
-                            'initNumOfExpPeriod',
-                            listComboDate[value].numberOfDay +
-                                listComboDate[value].numberOfNight);
+                        if (widget.isCreate) {
+                          sharedPreferences.setInt('plan_combo_date', value);
+                          sharedPreferences.setInt(
+                              'initNumOfExpPeriod',
+                              listComboDate[value].numberOfDay +
+                                  listComboDate[value].numberOfNight);
+                        } else {
+                          widget.plan!.numOfExpPeriod =
+                              listComboDate[value].numberOfDay +
+                                  listComboDate[value].numberOfNight;
+                        }
+
                         Future.delayed(
                           const Duration(seconds: 2),
                           () {
@@ -265,7 +294,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                   color: primaryColor,
                   iconSize: 30,
                   onPressed: () {
-                    if (int.parse(_memberController.text) > 1) {
+                    if (int.parse(_memberController.text) > 2) {
                       onChangeQuantity("subtract");
                     }
                   },
@@ -359,7 +388,7 @@ class _BaseInformationState extends State<BaseInformationScreen> {
                     color: primaryColor,
                     iconSize: 30,
                     onPressed: () {
-                      if (int.parse(_maxMemberWeightController.text) > 1) {
+                      if (int.parse(_maxMemberWeightController.text) > 0) {
                         onChangeMaxWeightMember("subtract");
                       }
                     },

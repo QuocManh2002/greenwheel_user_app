@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/models/activity.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_loading_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
 import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:greenwheel_user_app/widgets/search_screen_widget/filter_location_card.dart';
 
 class FilterLocationScreen extends StatefulWidget {
-  const FilterLocationScreen({super.key, required this.province});
-  final ProvinceViewModel province;
+  const FilterLocationScreen({super.key, this.province, this.activity});
+  final ProvinceViewModel? province;
+  final Activity? activity;
   @override
   State<FilterLocationScreen> createState() => _FilterLocationScreenState();
 }
@@ -26,13 +28,21 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
 
   _setupData() async {
     locationModels = null;
-    locationModels =
-        await _locationService.getLocationsByProvinceId(widget.province.id);
-    if (locationModels != null) {
-      print(locationModels);
-      setState(() {
-        isLoading = false;
-      });
+    if (widget.province != null) {
+      locationModels =
+          await _locationService.getLocationsByProvinceId(widget.province!.id);
+      if (locationModels != null) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }else{
+      locationModels = await _locationService.getLocationsByActivity(widget.activity!);
+      if (locationModels != null) {
+        setState(() {
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -41,21 +51,22 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
-        leading: BackButton(
-          onPressed: (){
-            Navigator.of(context).pop();
-          },
-          style:const ButtonStyle(foregroundColor: MaterialStatePropertyAll(Colors.white)),
-        ),
+          leading: BackButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: const ButtonStyle(
+                foregroundColor: MaterialStatePropertyAll(Colors.white)),
+          ),
           title: Text(
-        widget.province.name,
-        style: const TextStyle(color: Colors.white,
-            fontFamily: 'NotoSans', fontWeight: FontWeight.bold),
-      )),
+            widget.province != null ? widget.province!.name : widget.activity!.name,
+            style: const TextStyle(
+                color: Colors.white,
+                fontFamily: 'NotoSans',
+                fontWeight: FontWeight.bold),
+          )),
       body: isLoading
-          ? const Center(
-              child: Text("Loading..."),
-            )
+          ? const ServiceSupplierLoadingScreen()
           : Padding(
               padding: const EdgeInsets.all(16),
               child: SingleChildScrollView(

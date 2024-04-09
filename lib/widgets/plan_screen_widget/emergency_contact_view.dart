@@ -33,7 +33,7 @@ class EmergencyContactView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 SizedBox(
-                  width: 66.w,
+                  width: 60.w,
                   child: Text(
                     emergency.name ?? 'Không có thông tin',
                     overflow: TextOverflow.ellipsis,
@@ -79,7 +79,7 @@ class EmergencyContactView extends StatelessWidget {
                       width: 1.h,
                     ),
                     SizedBox(
-                      width: 58.w,
+                      width: 50.w,
                       child: Text(
                         emergency.address == null
                             ? 'Không có thông tin'

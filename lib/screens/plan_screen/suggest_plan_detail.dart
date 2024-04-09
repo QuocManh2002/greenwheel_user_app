@@ -591,7 +591,7 @@ class _SuggestPlanDetailScreenState extends State<SuggestPlanDetailScreen>
     sharedPreferences.setInt('sourceId', widget.planId);
     print(_planDetail!.schedule);
     Navigator.of(context).push(MaterialPageRoute(
-        builder: (ctx) => CreateNewPlanScreen(
+        builder: (ctx) => CreatePlanScreen(
               location: widget.location,
               isCreate: true,
               schedule: _planDetail!.schedule,

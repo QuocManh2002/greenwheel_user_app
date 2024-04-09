@@ -116,7 +116,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             .add(item);
       });
       var finalList = _planService.convertPlanScheduleToJson(testList);
-      print(finalList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
     } else {
       setState(() {
@@ -131,7 +130,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
       });
       var finalList = _planService.convertPlanScheduleToJson(testList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
-      print(finalList);
       Navigator.of(context).pop();
     }
   }
@@ -373,16 +371,18 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                           _orderService.getOrderFromJson(orderListJson);
                       final orderListGroupBy =
                           orderList.groupListsBy((element) => element.type);
-                      List<OrderViewModel> listMotelOrder = orderListGroupBy
-                          .values
-                          .where((element) => element.first.type == 'LODGING')
-                          .first;
+                      List<OrderViewModel> listMotelOrder =
+                          orderListGroupBy.values.firstWhereOrNull((element) =>
+                                  element.first.type == 'LODGING') ??
+                              [];
                       List<OrderViewModel> listRestaurantOrder =
-                          orderListGroupBy.values
-                              .where((element) => element.first.type == 'MEAL')
-                              .first;
-                      var total = orderList.fold(0.0,
-                          (previousValue, element) => previousValue + element.total!);
+                          orderListGroupBy.values.firstWhereOrNull(
+                                  (element) => element.first.type == 'MEAL') ??
+                              [];
+                      var total = orderList.fold(
+                          0.0,
+                          (previousValue, element) =>
+                              previousValue + element.total!);
                       showModalBottomSheet(
                           context: context,
                           builder: (ctx) => ConfirmServiceInfor(

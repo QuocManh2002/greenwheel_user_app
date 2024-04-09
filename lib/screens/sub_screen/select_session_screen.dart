@@ -3,14 +3,12 @@ import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/session_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectSessionScreen extends StatefulWidget {
   const SelectSessionScreen({
     super.key,
-    required this.supplier,
     required this.serviceType,
     required this.location,
     required this.numberOfMember,
@@ -24,7 +22,6 @@ class SelectSessionScreen extends StatefulWidget {
   });
   final DateTime startDate;
   final DateTime endDate;
-  final SupplierViewModel supplier;
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
@@ -46,7 +43,9 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
     setUpData();
   }
 
-  setUpData() async {}
+  setUpData() async {
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,22 +94,22 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Padding(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                child: RichText(
-                    text: TextSpan(
-                        text: widget.supplier.name,
-                        style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black),
-                        children: const [
-                      TextSpan(text: ' có 4 khung giờ phục vụ khách hàng', style: TextStyle(
-                        fontWeight: FontWeight.normal
-                      ))
-                    ])),
-              ),
+              // Padding(
+              //   padding:
+              //       const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+              //   child: RichText(
+              //       text: TextSpan(
+              //           text: widget.supplier.name,
+              //           style: const TextStyle(
+              //               fontSize: 20,
+              //               fontWeight: FontWeight.bold,
+              //               color: Colors.black),
+              //           children: const [
+              //         TextSpan(text: ' có 4 khung giờ phục vụ khách hàng', style: TextStyle(
+              //           fontWeight: FontWeight.normal
+              //         ))
+              //       ])),
+              // ),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                 child: Text(
@@ -132,7 +131,6 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
                     location: widget.location,
                     numberOfMember: widget.numberOfMember,
                     serviceType: widget.serviceType,
-                    supplier: widget.supplier,
                     initSession: widget.initSession,
                     callbackFunction: widget.callbackFunction,
                   );

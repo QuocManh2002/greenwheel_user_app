@@ -44,7 +44,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
 
   setUpData() async {
     List<dynamic>? schedule =
-        await _planService.getPlanSchedule(widget.planId, widget.planType,context);
+        await _planService.getPlanSchedule(widget.planId, widget.planType);
     if (schedule != null) {
       setState(() {
         _scheduleList = _planService.GetPlanScheduleFromJsonNew(

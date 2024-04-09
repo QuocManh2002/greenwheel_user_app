@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
@@ -9,6 +10,7 @@ import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
+import 'package:greenwheel_user_app/widgets/order_screen_widget/cancel_order_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -68,6 +70,48 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         child: Scaffold(
       appBar: AppBar(
         title: const Text('Chi tiết đơn hàng'),
+        actions: [
+          PopupMenuButton(
+            itemBuilder: (context) => [
+             const PopupMenuItem(
+              value: 0,
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.remove_shopping_cart_outlined,
+                      color: Colors.redAccent,
+                      size: 25,
+                    ),
+                    SizedBox(width: 8,),
+                    Text(
+                      'Huỷ đơn hàng',
+                      style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'NotoSans',
+                          color: Colors.redAccent),
+                    )
+                  ],
+                ),
+              )
+            ],
+            onSelected: (value) {
+              if(value == 0){
+                showModalBottomSheet(
+                  context: context, 
+                  isDismissible: true,
+                  builder: (context) => CancelOrderBottomSheet(
+                    orderCreatedAt: widget.order.createdAt!,
+                    total: widget.order.total!.toInt(),
+                    callback: widget.callback,
+                    orderId: widget.order.id!,),);
+              }
+            },
+          ),
+          SizedBox(
+            width: 2.w,
+          )
+        ],
       ),
       body: Column(
         children: [
@@ -101,69 +145,93 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               )
                             ],
                           ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Container(
-                                alignment: Alignment.centerLeft,
-                                padding: EdgeInsets.only(
-                                    top: 2.h,
-                                    right: 2.h,
-                                    left: 2.h,
-                                    bottom: 1.h),
-                                child: Text(
-                                  widget.order.supplier!.name!,
-                                  style: const TextStyle(
-                                      fontSize: 23,
-                                      fontWeight: FontWeight.bold),
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                horizontal: 2.h, vertical: 1.5.h),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding:
+                                      EdgeInsets.symmetric(vertical: 0.5.h),
+                                  child: Text(
+                                    widget.order.supplier!.name!,
+                                    style: const TextStyle(
+                                        fontSize: 23,
+                                        fontWeight: FontWeight.bold),
+                                  ),
                                 ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey.withOpacity(0.7),
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(12))),
-                                  height: 0.2.h,
+                                if (widget.order.supplier!.standard != null)
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 0.2.h),
+                                    child: RatingBar.builder(
+                                        unratedColor:
+                                            Colors.grey.withOpacity(0.5),
+                                        itemBuilder: (context, index) =>
+                                            const Icon(
+                                              Icons.star,
+                                              color: Colors.amber,
+                                            ),
+                                        initialRating:
+                                            widget.order.supplier!.standard!,
+                                        itemSize: 25,
+                                        ignoreGestures: true,
+                                        itemCount: 5,
+                                        onRatingUpdate: (value) {}),
+                                  ),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding:
+                                      EdgeInsets.symmetric(vertical: 0.5.h),
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.phone,
+                                          color: primaryColor, size: 20),
+                                      SizedBox(
+                                        width: 1.w,
+                                      ),
+                                      Text(
+                                        '0${widget.order.supplier!.phone!.substring(2)}',
+                                        style: const TextStyle(
+                                            fontSize: 20,
+                                            color: Colors.black54),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Container(
-                                alignment: Alignment.centerLeft,
-                                padding: EdgeInsets.symmetric(
-                                    horizontal: 2.h, vertical: 1.5.h),
-                                child: Text(
-                                  '0${widget.order.supplier!.phone!.substring(2)}',
-                                  style: const TextStyle(
-                                      fontSize: 20, color: Colors.black54),
+                                Container(
+                                  alignment: Alignment.centerLeft,
+                                  padding:
+                                      EdgeInsets.symmetric(vertical: 0.5.h),
+                                  child: Row(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Icon(
+                                        Icons.home,
+                                        color: primaryColor,
+                                        size: 20,
+                                      ),
+                                      SizedBox(
+                                        width: 2.w,
+                                      ),
+                                      SizedBox(
+                                        width: 70.w,
+                                        child: Text(
+                                          widget.order.supplier!.address!,
+                                          style: const TextStyle(
+                                              fontSize: 15,
+                                              color: Colors.black54),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                              Padding(
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 16),
-                                child: Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey.withOpacity(0.7),
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(12))),
-                                  height: 0.2.h,
-                                ),
-                              ),
-                              Container(
-                                alignment: Alignment.centerLeft,
-                                padding: EdgeInsets.only(
-                                    left: 2.h,
-                                    right: 2.h,
-                                    top: 1.5.h,
-                                    bottom: 2.h),
-                                child: Text(
-                                  widget.order.supplier!.address!,
-                                  style: const TextStyle(
-                                      fontSize: 15, color: Colors.black54),
-                                ),
-                              ),
-                            ],
+                              ],
+                            ),
                           )),
                     ],
                   ),
@@ -394,7 +462,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       const Spacer(),
                                       Text(
                                         NumberFormat.simpleCurrency(
-                                                locale: 'en-US',
+                                                locale: 'vi_VN',
                                                 decimalDigits: 0,
                                                 name: "")
                                             .format(detail.unitPrice),
@@ -424,7 +492,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ),
                               const Spacer(),
                               Text(
-                                '${NumberFormat.simpleCurrency(locale: 'en-US', decimalDigits: 0, name: "").format(widget.order.total)} VND',
+                                '${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.order.total)}VND',
                                 style: const TextStyle(
                                     fontSize: 15, fontWeight: FontWeight.bold),
                               )
@@ -447,27 +515,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
             ElevatedButton(
                 style: elevatedButtonStyle,
                 onPressed: () async {
-                  // final rs = await _orderService.createOrder(
-                  //     widget.order, widget.planId!);
-                  // if (rs != 0) {
-                  //   // ignore: use_build_context_synchronously
-                  //   AwesomeDialog(
-                  //           context: context,
-                  //           animType: AnimType.leftSlide,
-                  //           dialogType: DialogType.success,
-                  //           title: 'Tạo đơn hàng thành công',
-                  //           padding: const EdgeInsets.symmetric(
-                  //               horizontal: 12, vertical: 6),
-                  //           titleTextStyle: const TextStyle(
-                  //               fontSize: 20, fontWeight: FontWeight.bold))
-                  //       .show();
-                  //   Future.delayed(const Duration(seconds: 2), () {
-                  //     widget.callback(widget.order.guid);
-                  //     Navigator.of(context).pop();
-                  //     Navigator.of(context).pop();
-                  //     Navigator.of(context).pop();
-                  //   });
-                  // }
                   Session? session;
                   switch (widget.order.period) {
                     case 'MORNING':
@@ -528,6 +575,4 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       ),
     ));
   }
-
-  getInitIds() {}
 }

@@ -9,18 +9,50 @@ class EmergencyListLoadingScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return SingleChildScrollView(
         physics: const AlwaysScrollableScrollPhysics(),
-        child: SizedBox(
-          height: 80.h,
-          child: ListView.builder(
-            physics: const AlwaysScrollableScrollPhysics(),
-            shrinkWrap: true,
-            itemCount: 5,
-            itemBuilder: (context, index) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
-              child: ShimmerWidget.rectangularWithBorderRadius(
-                  width: 100.w, height: 15.h),
+        child: Column(
+          children: [
+            SizedBox(height: 2.h,),
+            Row(
+              children: [
+                const SizedBox(
+                  width: 24,
+                ),
+                Expanded(
+                    child: ShimmerWidget.rectangularWithBorderRadius(
+                        width: 100.w, height: 8.h)),
+                const SizedBox(
+                  width: 10,
+                ),
+                Expanded(
+                    child: ShimmerWidget.rectangularWithBorderRadius(
+                        width: 100.w, height: 8.h)),
+                const SizedBox(
+                  width: 10,
+                ),
+                Expanded(
+                    child: ShimmerWidget.rectangularWithBorderRadius(
+                        width: 100.w, height: 8.h)),
+                const SizedBox(
+                  width: 24,
+                ),
+              ],
             ),
-          ),
+            SizedBox(height: 1.h,),
+            SizedBox(
+              height: 80.h,
+              child: ListView.builder(
+                physics: const AlwaysScrollableScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: 4,
+                itemBuilder: (context, index) => Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+                  child: ShimmerWidget.rectangularWithBorderRadius(
+                      width: 100.w, height: 15.h),
+                ),
+              ),
+            ),
+          ],
         ));
   }
 }
