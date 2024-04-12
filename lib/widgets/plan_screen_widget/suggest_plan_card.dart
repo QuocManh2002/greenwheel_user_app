@@ -1,14 +1,19 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/suggest_plan.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SuggestPlanCard extends StatelessWidget {
   const SuggestPlanCard(
-      {super.key, required this.plan, required this.imageUrl, required this.location});
+      {super.key,
+      required this.plan,
+      required this.imageUrl,
+      required this.location});
   final SuggestPlanViewModel plan;
   final String imageUrl;
   final LocationViewModel location;
@@ -17,7 +22,16 @@ class SuggestPlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SuggestPlanDetailScreen(planId: plan.id, leaderName: plan.leaderName,location: location,)));
+        // Navigator.of(context).push(MaterialPageRoute(builder: (ctx) => SuggestPlanDetailScreen(planId: plan.id, leaderName: plan.leaderName,location: location,)));
+        Navigator.push(
+            context,
+            PageTransition(
+                child: DetailPlanNewScreen(
+                  isEnableToJoin: false,
+                  planId: plan.id,
+                  planType: 'PUBLISH',
+                ),
+                type: PageTransitionType.rightToLeft));
       },
       child: Padding(
         padding: const EdgeInsets.only(bottom: 8),

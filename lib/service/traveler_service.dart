@@ -1,8 +1,13 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/login.dart';
 import 'package:greenwheel_user_app/models/register.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
@@ -87,13 +92,12 @@ mutation{
   Future<RegisterModel?> registerTraveler(RegisterViewModel model) async {
     GraphQLClient client = graphQlConfig.getClient();
     try {
-      QueryResult result = await client.mutate(
-          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''
-mutation register{
+      log('''mutation register{
   travelerRegister(dto: {
     deviceToken:"${model.deviceToken}"
     isMale:${model.isMale}
     name:"${model.name}" 
+    avatarUrl: ${model.avatarUrl == null ? null : json.encode('$baseBucketImage${model.avatarUrl}')}
   }){
     authResult{
       accessToken
@@ -101,6 +105,34 @@ mutation register{
     }
     account{
       id
+      name
+      isMale
+      gcoinBalance
+      phone
+      avatarPath
+    }
+  }
+}''');
+      QueryResult result = await client.mutate(
+          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''
+mutation register{
+  travelerRegister(dto: {
+    deviceToken:"${model.deviceToken}"
+    isMale:${model.isMale}
+    name:"${model.name}" 
+    avatarUrl: ${model.avatarUrl == null ? null : json.encode('$baseBucketImage${model.avatarUrl}')}
+  }){
+    authResult{
+      accessToken
+      refreshToken
+    }
+    account{
+      id
+      name
+      isMale
+      gcoinBalance
+      phone
+      avatarPath
     }
   }
 }
@@ -383,5 +415,19 @@ mutation {
     } catch (error) {
       throw Exception(error);
     }
+  }
+
+  void saveAccountToSharePref(CustomerViewModel traveler) {
+    if (traveler.defaultAddress != null && traveler.defaultCoordinate != null) {
+      Utils().SaveDefaultAddressToSharedPref(
+          traveler.defaultAddress!, traveler.defaultCoordinate!);
+    }
+    if (traveler.avatarUrl != null && traveler.avatarUrl!.isNotEmpty) {
+      sharedPreferences.setString('userAvatarPath', traveler.avatarUrl!);
+    }
+    sharedPreferences.setInt('userId', traveler.id);
+    sharedPreferences.setString('userPhone', traveler.phone);
+    sharedPreferences.setString('userName', traveler.name);
+    sharedPreferences.setInt('userBalance', traveler.balance.toInt());
   }
 }

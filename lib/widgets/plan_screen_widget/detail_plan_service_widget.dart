@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/list_order_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
@@ -53,9 +54,9 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     final orderGroups =
         widget.orderList!.groupListsBy((element) => element.type);
-    roomOrderList = orderGroups['LODGING'] ?? [];
-    foodOrderList = orderGroups['MEAL'] ?? [];
-    movingOrderList = orderGroups['RIDING'] ?? [];
+    roomOrderList = orderGroups[services[1].name] ?? [];
+    foodOrderList = orderGroups[services[0].name] ?? [];
+    movingOrderList = orderGroups[services[2].name] ?? [];
     isShowTotal =
         widget.plan.status != 'PENDING' && widget.plan.status != 'REGISTERING';
   }
@@ -89,7 +90,9 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                                     planId: widget.plan.id!,
                                     orders: widget.tempOrders,
                                     startDate: widget.plan.startDate!,
-                                    callback: widget.onGetOrderList,
+                                    callback: (p0) {
+                                      
+                                    },
                                     endDate: widget.plan.endDate!,
                                     memberLimit: widget.plan.memberCount!,
                                     location: rs,
@@ -205,7 +208,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                           widget.plan.status == 'PENDING' ||
                                   widget.plan.status == 'REGISTERING'
                               ? 0
-                              : widget.total / 100),
+                              : widget.total / 1000),
                     if (isShowTotal)
                       buildAmountInfo(
                           'Số tiền đã bù:',

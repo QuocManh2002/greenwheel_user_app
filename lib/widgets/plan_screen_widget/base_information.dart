@@ -73,20 +73,20 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             height: 1.h,
           ),
           buildInforWidget('Trưởng đoàn:', widget.plan.leaderName!),
-          if (widget.plan.regCloseAt != null &&
+          if (widget.plan.utcRegCloseAt != null &&
               widget.plan.status == 'REGISTERING')
             SizedBox(
               height: 1.h,
             ),
-          if (widget.plan.regCloseAt != null &&
+          if (widget.plan.utcRegCloseAt != null &&
               widget.plan.status == 'REGISTERING')
             buildInforWidget('Đóng đơn đăng kí:',
-                '${DateFormat.Hm().format(widget.plan.regCloseAt!)} ${DateFormat('dd/MM/yy').format(widget.plan.regCloseAt!)}'),
+                '${DateFormat.Hm().format(widget.plan.utcRegCloseAt!.toLocal())} ${DateFormat('dd/MM/yy').format(widget.plan.utcRegCloseAt!.toLocal())}'),
           SizedBox(
             height: 1.h,
           ),
           buildInforWidget('Bắt đầu:',
-              '${DateFormat.Hm().format(widget.plan.departTime!)} ${DateFormat('dd/MM/yy').format(widget.plan.departDate!)}'),
+              '${DateFormat.Hm().format(widget.plan.utcDepartAt!.toLocal())} ${DateFormat('dd/MM/yy').format(widget.plan.utcDepartAt!.toLocal())}'),
           SizedBox(
             height: 1.h,
           ),

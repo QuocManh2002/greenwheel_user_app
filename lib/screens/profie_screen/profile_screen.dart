@@ -7,7 +7,6 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/profile_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/qr_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/update_profile_screen.dart';
@@ -124,7 +123,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         height: 8,
                                       ),
                                       Text(
-                                        "0${_customer!.phone.substring(3)}",
+                                        "0${_customer!.phone.substring(2)}",
                                         style: const TextStyle(
                                           fontSize: 18,
                                         ),

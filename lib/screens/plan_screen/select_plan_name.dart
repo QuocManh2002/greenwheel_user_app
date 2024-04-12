@@ -48,7 +48,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     dynamic rs;
     final departureDate = widget.isCreate
         ? DateTime.parse(sharedPreferences.getString('plan_departureDate')!)
-        : widget.plan!.departDate;
+        : widget.plan!.utcDepartAt;
     if (widget.isCreate) {
       final initialDateTime =
           DateTime.parse(sharedPreferences.getString('plan_start_time')!);
@@ -64,7 +64,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
       rs = Utils().getNumOfExpPeriod(
           null,
           widget.plan!.numOfExpPeriod!,
-          widget.plan!.departTime!,
+          widget.plan!.utcDepartAt!,
           DateFormat.Hms().parse(widget.plan!.travelDuration!),
           true);
     }
@@ -143,9 +143,9 @@ class _SelectPlanNameState extends State<SelectPlanName> {
     _initComboDate = listComboDate.firstWhere(
         (element) => element.duration == widget.plan!.numOfExpPeriod);
     _nameController.text = widget.plan!.name!;
-    _timeController.text = DateFormat.Hm().format(widget.plan!.departTime!);
+    _timeController.text = DateFormat.Hm().format(widget.plan!.utcDepartAt!);
     _dateController.text =
-        DateFormat('dd/MM/yyyy').format(widget.plan!.departDate!);
+        DateFormat('dd/MM/yyyy').format(widget.plan!.utcDepartAt!);
     numberOfDay = _initComboDate.numberOfDay;
     numberOfNight = _initComboDate.numberOfNight;
     handleChangeComboDate();
@@ -294,7 +294,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                                   .add(Duration(days: duration - 1));
                             });
                           } else {
-                            widget.plan!.departDate = newDay;
+                            widget.plan!.utcDepartAt = newDay;
                           }
 
                           handleChangeComboDate();
@@ -388,7 +388,7 @@ class _SelectPlanNameState extends State<SelectPlanName> {
                                       .toString());
                             } else {
                               setState(() {
-                                widget.plan!.departTime =
+                                widget.plan!.utcDepartAt =
                                     DateFormat.Hm().parse(_timeController.text);
                               });
                             }

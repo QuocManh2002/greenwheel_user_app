@@ -169,6 +169,7 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
                     height: 60.h,
                     child: PLanScheduleWidget(
                      planId: widget.plan.id,
+                     schedule: [],
                      planType: "",
                       startDate: widget.plan.startDate,
                       endDate: widget.plan.endDate,

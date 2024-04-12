@@ -80,7 +80,6 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   List<dynamic>? newFoodOrderList = [];
   PlanDetail? _plan = await _planService.GetPlanById(
       sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
-      _plan!.schedule = await _planService.getPlanSchedule(sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   final rs = await _cusomterService.GetCustomerById(_plan!.leaderId!);
   final res = await _planService
       .getOrderCreatePlan(sharedPreferences.getInt('plan_id_pdf')!);
@@ -193,7 +192,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                       buildInfoRow(
                           boldTtf, ttf, ' Địa điểm', _plan.locationName!),
                       buildInfoRow(boldTtf, ttf, ' Ngày khởi hành',
-                          DateFormat('dd/MM/yyyy').format(_plan.departDate!)),
+                          DateFormat('dd/MM/yyyy').format(_plan.utcDepartAt!)),
                       buildInfoRow(boldTtf, ttf, ' Ngày kết thúc',
                           DateFormat('dd/MM/yyyy').format(_plan.endDate!)),
                       buildInfoRow(
@@ -231,7 +230,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                                         crossAxisAlignment:
                                             pw.CrossAxisAlignment.start,
                                         children: [
-                                          for (final event in day['events'])
+                                          for (final event in day)
                                             pw.Text(
                                                 '- ${event['shortDescription']}',
                                                 style: pw.TextStyle(

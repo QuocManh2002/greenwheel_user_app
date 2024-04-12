@@ -17,7 +17,7 @@ class CreatePlanSurcharge extends StatefulWidget {
       this.surcharge,
       required this.callback,
       required this.isCreate});
-  final void Function() callback;
+  final void Function(dynamic) callback;
   final bool isCreate;
   final SurchargeViewModel? surcharge;
   @override
@@ -50,7 +50,7 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
             'plan_surcharge', json.encode(surchargeList));
       }
       Navigator.of(context).pop();
-      widget.callback();
+      widget.callback(surchargeObject);
     }
   }
 
@@ -68,7 +68,7 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
 
       sharedPreferences.setString('plan_surcharge', json.encode(list));
       Navigator.of(context).pop();
-      widget.callback();
+      widget.callback(null);
 
 
 
@@ -181,7 +181,7 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
                 SizedBox(
                   width: 70.w,
                   child: const Text(
-                    'Đã chia đều cho các thành viên',
+                    'Cho mỗi thành viên',
                     overflow: TextOverflow.clip,
                     style: TextStyle(fontSize: 17, fontFamily: 'NotoSans'),
                   ),
@@ -194,7 +194,7 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
             ElevatedButton.icon(
               onPressed: widget.isCreate
                   ? onCreateSurcharge
-                  : ("${_noteController.text}" !=
+                  : (_noteController.text !=
                               json.decode(widget.surcharge!.note) ||
                         amount != widget.surcharge!.gcoinAmount ||
                           alreadyDivided != widget.surcharge!.alreadyDivided)

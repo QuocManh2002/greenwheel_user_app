@@ -24,7 +24,6 @@ class JoinConfirmPlanScreen extends StatefulWidget {
       this.callback,
       required this.isView,
       this.onPublicizePlan,
-
       required this.isConfirm});
   final PlanDetail plan;
   final bool isPublic;
@@ -244,7 +243,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                             SizedBox(
                               width: 60.w,
                               child: Text(
-                                '${DateFormat('dd/MM/yyyy').format(widget.plan.departDate!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan.endDate!)}',
+                                '${DateFormat('dd/MM/yyyy').format(widget.plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan.endDate!)}',
                                 textAlign: TextAlign.end,
                                 overflow: TextOverflow.clip,
                                 style: const TextStyle(
@@ -280,31 +279,33 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                             )
                           ],
                         ),
-                        buildDivider(),
-                        Row(
-                          children: [
-                            const Text(
-                              'Số người đi cùng tối đa',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.grey),
-                            ),
-                            const Spacer(),
-                            SizedBox(
-                              width: 30.w,
-                              child: Text(
-                                widget.plan.maxMemberWeight! < 11 && widget.plan.maxMemberWeight! > 1
-                                    ? '0${widget.plan.maxMemberWeight! - 1}'
-                                    : '${widget.plan.maxMemberWeight! -1}',
-                                textAlign: TextAlign.end,
-                                overflow: TextOverflow.clip,
-                                style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.black),
+                        if (widget.plan.maxMemberWeight! > 1) buildDivider(),
+                        if (widget.plan.maxMemberWeight! > 1)
+                          Row(
+                            children: [
+                              const Text(
+                                'Số người đi cùng tối đa',
+                                style:
+                                    TextStyle(fontSize: 16, color: Colors.grey),
                               ),
-                            )
-                          ],
-                        ),
+                              const Spacer(),
+                              SizedBox(
+                                width: 30.w,
+                                child: Text(
+                                  widget.plan.maxMemberWeight! < 11 &&
+                                          widget.plan.maxMemberWeight! > 1
+                                      ? '0${widget.plan.maxMemberWeight! - 1}'
+                                      : '${widget.plan.maxMemberWeight! - 1}',
+                                  textAlign: TextAlign.end,
+                                  overflow: TextOverflow.clip,
+                                  style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.black),
+                                ),
+                              )
+                            ],
+                          ),
                         SizedBox(
                           height: 1.h,
                         )
@@ -403,7 +404,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                     TextStyle(fontSize: 16, color: Colors.grey),
                               ),
                               const Spacer(),
-                              if (!widget.isConfirm && widget.plan.maxMemberWeight != 1)
+                              if (!widget.isConfirm &&
+                                  widget.plan.maxMemberWeight != 1)
                                 InkWell(
                                   overlayColor: const MaterialStatePropertyAll(
                                       Colors.transparent),
@@ -422,13 +424,17 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                               ),
                               Container(
                                 decoration: BoxDecoration(
-                                    border: widget.isConfirm || widget.plan.maxMemberWeight == 1
+                                    border: widget.isConfirm ||
+                                            widget.plan.maxMemberWeight == 1
                                         ? const Border()
                                         : Border.all(
                                             color: Colors.grey, width: 1.5),
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(8))),
-                                alignment: widget.plan.maxMemberWeight == 1 || widget.isConfirm ? Alignment.centerRight : Alignment.center,
+                                alignment: widget.plan.maxMemberWeight == 1 ||
+                                        widget.isConfirm
+                                    ? Alignment.centerRight
+                                    : Alignment.center,
                                 width: 6.h,
                                 child: Text(
                                   weight.toString(),
@@ -440,7 +446,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                               SizedBox(
                                 width: 0.5.h,
                               ),
-                              if (!widget.isConfirm && widget.plan.maxMemberWeight != 1)
+                              if (!widget.isConfirm &&
+                                  widget.plan.maxMemberWeight != 1)
                                 InkWell(
                                   overlayColor: const MaterialStatePropertyAll(
                                       Colors.transparent),
@@ -568,9 +575,11 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   }
 
   handleInputInformation() {
-    if(companionNames.isNotEmpty){
-      if(weight - 1 < companionNames.length){
-        companionNames = companionNames.splitAfterIndexed((index, element) => index == weight -2).first;
+    if (companionNames.isNotEmpty) {
+      if (weight - 1 < companionNames.length) {
+        companionNames = companionNames
+            .splitAfterIndexed((index, element) => index == weight - 2)
+            .first;
       }
     }
     Navigator.push(
@@ -691,7 +700,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             btnOkColor: Colors.blue,
             btnOkText: 'Chơi',
             btnOkOnPress: () async {
-              final rs = await _planService.confirmMember(widget.plan.id!, context);
+              final rs =
+                  await _planService.confirmMember(widget.plan.id!, context);
               if (rs != 0) {
                 AwesomeDialog(
                   // ignore: use_build_context_synchronously

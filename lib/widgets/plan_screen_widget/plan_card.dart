@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -40,7 +41,7 @@ class PlanCard extends StatelessWidget {
             builder: (ctx) => DetailPlanNewScreen(
                   planId: plan.id,
                   isEnableToJoin: false,
-                  planType: isOwned ? 'OWNED':'JOIN',
+                  planType: isOwned ? 'OWNED' : 'JOIN',
                 )));
       },
       child: Container(
@@ -68,16 +69,17 @@ class PlanCard extends StatelessWidget {
               Container(
                 decoration:
                     BoxDecoration(borderRadius: BorderRadius.circular(14)),
-                child: Hero(
-                    tag: plan.id,
-                    child: FadeInImage(
-                      height: 15.h,
-                      placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage('$baseBucketImage${plan.location.imageUrls[0]}'),
-                      fit: BoxFit.cover,
-                      width: 15.h,
-                      filterQuality: FilterQuality.high,
-                    )),
+                child: CachedNetworkImage(
+                  key: UniqueKey(),
+                  fit: BoxFit.cover,
+                  height: 15.h,
+                  width: 15.h,
+                  errorWidget: (context, url, error) =>
+                      Image.network(defaultHomeImage),
+                  placeholder: (context, url) =>
+                      Image.memory(kTransparentImage),
+                  imageUrl: '$baseBucketImage${plan.location.imageUrls[0]}',
+                ),
               ),
               const SizedBox(
                 width: 8,

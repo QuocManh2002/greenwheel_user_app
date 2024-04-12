@@ -98,7 +98,7 @@ class TransactionService {
             destination{
               name
             }
-            departDate
+            utcDepartAt
             endDate
             maxMemberCount
             memberCount

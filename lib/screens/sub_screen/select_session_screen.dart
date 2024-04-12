@@ -7,19 +7,19 @@ import 'package:greenwheel_user_app/widgets/order_screen_widget/session_card.dar
 import 'package:sizer2/sizer2.dart';
 
 class SelectSessionScreen extends StatefulWidget {
-  const SelectSessionScreen({
-    super.key,
-    required this.serviceType,
-    required this.location,
-    required this.numberOfMember,
-    required this.startDate,
-    required this.endDate,
-    this.isOrder,
-    this.availableGcoinAmount,
-    this.isFromTempOrder,
-    required this.callbackFunction,
-    this.initSession,
-  });
+  const SelectSessionScreen(
+      {super.key,
+      required this.serviceType,
+      required this.location,
+      required this.numberOfMember,
+      required this.startDate,
+      required this.endDate,
+      this.isOrder,
+      this.availableGcoinAmount,
+      this.isFromTempOrder,
+      required this.callbackFunction,
+      this.initSession,
+      this.isEndAtNoon});
   final DateTime startDate;
   final DateTime endDate;
   final ServiceType serviceType;
@@ -28,8 +28,9 @@ class SelectSessionScreen extends StatefulWidget {
   final bool? isOrder;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
-  final void Function() callbackFunction;
+  final void Function(dynamic) callbackFunction;
   final Session? initSession;
+  final bool? isEndAtNoon;
 
   @override
   State<SelectSessionScreen> createState() => _SelectSessionScreenState();
@@ -43,9 +44,7 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
     setUpData();
   }
 
-  setUpData() async {
-
-  }
+  setUpData() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -120,12 +119,20 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
               ListView.builder(
                 physics: const BouncingScrollPhysics(),
                 shrinkWrap: true,
-                itemCount: sessions.length,
+                itemCount: widget.isEndAtNoon != null && widget.isEndAtNoon!
+                    ? 2
+                    : widget.initSession != null
+                        ? sessions.length -
+                            sessions.indexOf(widget.initSession!)
+                        : sessions.length,
                 itemBuilder: (context, index) {
                   return SessionCard(
                     availableGcoinAmount: widget.availableGcoinAmount,
                     isOrder: widget.isOrder,
-                    session: sessions[index],
+                    session: widget.initSession != null
+                        ? sessions[
+                            index + sessions.indexOf(widget.initSession!)]
+                        : sessions[index],
                     endDate: widget.endDate,
                     startDate: widget.startDate,
                     location: widget.location,

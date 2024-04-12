@@ -36,7 +36,7 @@ class SupplierCard extends StatelessWidget {
   final bool? isOrder;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
-  final void Function() callbackFunction;
+  final void Function(dynamic tempOrder) callbackFunction;
   final Session? initSession;
 
   @override

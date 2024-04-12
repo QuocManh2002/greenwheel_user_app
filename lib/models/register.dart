@@ -1,15 +1,17 @@
+import 'package:greenwheel_user_app/view_models/customer.dart';
+
 class RegisterModel {
   String accessToken;
   String refreshToken;
-  int accountId;
+  CustomerViewModel traveler;
 
   RegisterModel(
       {required this.accessToken,
-      required this.accountId,
+      required this.traveler,
       required this.refreshToken});
 
   factory RegisterModel.fromJson(Map<String, dynamic> json) => RegisterModel(
-      accountId: json['account']['id'],
+      traveler: CustomerViewModel.fromJson(json['account']),
       accessToken: json['authResult']['accessToken'],
       refreshToken: json['authResult']['refreshToken']);
 }

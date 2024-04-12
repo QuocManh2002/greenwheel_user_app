@@ -11,7 +11,7 @@ import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_note_surcharge_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_note_surcharge_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/service/offline_service.dart';
@@ -90,10 +90,10 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
     startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     numberOfMember = sharedPreferences.getInt('plan_number_of_member');
-    callback();
+    callback(null);
   }
 
-  callback() {
+  callback(dynamic tempOrder) {
     final orderText = sharedPreferences.getString('plan_temp_order');
     if (orderText != null) {
       orderList = json.decode(orderText);
@@ -135,7 +135,7 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             order: temp,
             startDate: startDate!,
             isTempOrder: false,
-            callback: () {},
+            callback: (d) {},
           ));
           listRestaurantOrder!.add(temp);
           totalFood += double.parse(item['total'].toString());
@@ -144,14 +144,14 @@ class _SelectServiceScreenState extends State<SelectServiceScreen>
             order: temp,
             startDate: startDate!,
             isTempOrder: false,
-            callback: () {},
+            callback: (d) {},
           ));
           listMotelOrder!.add(temp);
           totalRest += double.parse(item['total'].toString());
         }else {
           listVehicleRental.add(
             SupplierOrderCard(
-              callback: (){}, 
+              callback: (d){}, 
               order: temp, 
               startDate: startDate!, 
               isTempOrder: false)

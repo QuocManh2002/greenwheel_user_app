@@ -6,20 +6,28 @@ const List<Session> sessions = [
       name: "Buổi sáng",
       range: "06:00 SA - 10:00 SA",
       image: morning,
+      from: 6,
+      to: 10,
       enumName: "MORNING"),
   Session(
       name: "Buổi trưa",
       range: "10:00 SA - 14:00 CH",
       image: noon,
+      from: 10,
+      to: 14,
       enumName: "NOON"),
   Session(
       name: "Buổi chiều",
       range: "14:00 CH - 18:00 CH",
       image: afternoon,
+      from: 14,
+      to: 18,
       enumName: "AFTERNOON"),
   Session(
       name: "Buổi tối",
       range: "18:00 CH - 22:00 CH",
       image: evening,
+      from: 18,
+      to: 22,
       enumName: "EVENING"),
 ];

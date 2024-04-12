@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/login.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
@@ -68,7 +69,9 @@ class _OTPScreenState extends State<OTPScreen> {
                       height: 170,
                     ),
                   ),
-                  SizedBox(height: 2.h,),
+                  SizedBox(
+                    height: 2.h,
+                  ),
                   Container(
                     child: const Text(
                       'Nhập OTP',
@@ -247,6 +250,14 @@ class _OTPScreenState extends State<OTPScreen> {
                   type: PageTransitionType.rightToLeft),
               (ctx) => false);
         } else {
+          if (traveler.defaultAddress != null &&
+              traveler.defaultCoordinate != null) {
+            Utils().SaveDefaultAddressToSharedPref(
+                traveler.defaultAddress!, traveler.defaultCoordinate!);
+          }
+          if (traveler.avatarUrl != null && traveler.avatarUrl!.isNotEmpty) {
+            sharedPreferences.setString('userAvatarPath', traveler.avatarUrl!);
+          }
           sharedPreferences.setInt('userId', traveler.id);
           sharedPreferences.setString('userPhone', traveler.phone);
           sharedPreferences.setString('userName', traveler.name);

@@ -7,7 +7,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan_surcharge.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/update_billing_surcharge_screen.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
 import 'package:intl/intl.dart';
@@ -23,7 +23,7 @@ class SurchargeCard extends StatelessWidget {
       required this.maxMemberCount,
       required this.isCreate});
   final SurchargeViewModel surcharge;
-  final void Function() callbackSurcharge;
+  final void Function(dynamic) callbackSurcharge;
   final bool isCreate;
   final bool isEnableToUpdate;
   final int maxMemberCount;
@@ -172,7 +172,7 @@ class SurchargeCard extends StatelessWidget {
                       list.remove(index);
                       sharedPreferences.setString(
                           'plan_surcharge', json.encode(list));
-                      callbackSurcharge();
+                      callbackSurcharge(null);
                       break;
                     case 2:
                       Navigator.push(context, PageTransition(child: UpdateBillingSurchargeScreen(surcharge: surcharge,), type: PageTransitionType.rightToLeft));

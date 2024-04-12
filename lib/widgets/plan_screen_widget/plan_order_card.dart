@@ -132,7 +132,7 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                   Text(
                     NumberFormat.simpleCurrency(
                             locale: 'vi_VN', decimalDigits: 0, name: '')
-                        .format(widget.order.total! / 100),
+                        .format(widget.order.total! / 1000),
                     style: const TextStyle(
                         fontSize: 17,
                         fontWeight: FontWeight.bold,

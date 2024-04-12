@@ -1,7 +1,13 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/image_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
@@ -9,6 +15,7 @@ import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:sizer2/sizer2.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -19,14 +26,10 @@ class RegisterScreen extends StatefulWidget {
 
 class _RegisterScreenState extends State<RegisterScreen> {
   TextEditingController nameController = TextEditingController();
-  TextEditingController emailController = TextEditingController();
-  TextEditingController addressController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  PointLatLng? _selectedAddressLatLng;
   bool isMale = true;
-  DateTime selectedDate = DateTime.now();
   bool isPolicyAccept = false;
-  final CustomerService _customerService = CustomerService();
+  String? avatarPath;
 
   @override
   void initState() {
@@ -39,8 +42,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
     // TODO: implement dispose
     super.dispose();
     nameController.dispose();
-    emailController.dispose();
-    addressController.dispose();
   }
 
   @override
@@ -74,10 +75,46 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   style: TextStyle(fontSize: 16),
                 ),
                 const SizedBox(
-                  height: 16,
-                ),
-                const SizedBox(
                   height: 8,
+                ),
+                Container(
+                  alignment: Alignment.center,
+                  child: InkWell(
+                    splashColor: Colors.transparent,
+                    onTap: () async {
+                      final _avatarPath =
+                          await ImageHandler().handlePickImage(context);
+                      if (_avatarPath != null) {
+                        setState(() {
+                          avatarPath = _avatarPath;
+                        });
+                      }
+                    },
+                    child: Container(
+                      height: 40.w,
+                      width: 40.w,
+                      clipBehavior: Clip.hardEdge,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(color: primaryColor, width: 1.5)),
+                      child: CachedNetworkImage(
+                        imageUrl: '$baseBucketImage$avatarPath',
+                        height: 40.w,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) =>
+                            Image.memory(kTransparentImage),
+                        width: double.infinity,
+                        key: UniqueKey(),
+                        errorWidget: (context, url, error) => SvgPicture.asset(
+                          no_image,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 3.h,
                 ),
                 TextFormFieldWithLength(
                   controller: nameController,
@@ -88,7 +125,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   onValidate: (value) {
                     if (value!.isEmpty) {
                       return "Tên của người dùng không được để trống";
-                    }else if(value.length < 4 || value.length > 30){
+                    } else if (value.length < 4 || value.length > 30) {
                       return "Tên của người dùng phải có độ dài từ 4-30 kí tự";
                     }
                   },
@@ -261,35 +298,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
         var rs = await _newService.registerTraveler(RegisterViewModel(
             deviceToken: sharedPreferences.getString('deviceToken')!,
             isMale: isMale,
+            avatarUrl: avatarPath,
             name: nameController.text));
-        if (rs != null ) {
+        if (rs != null) {
+          _newService.saveAccountToSharePref(rs.traveler);
+          sharedPreferences.setString('userRefreshToken', rs.refreshToken);
           sharedPreferences.setString('userToken', rs.accessToken);
-          // ignore: use_build_context_synchronously
           Restart.restartApp(); // ignore: use_build_context_synchronously
-          // Navigator.of(context).pushAndRemoveUntil(
-          //     MaterialPageRoute(builder: (ctx) => const SplashScreen()),
-          //     (route) => false);
         }
       }
     }
   }
-
-  // callback(SearchStartLocationResult? selectedAddress,
-  //     PointLatLng? selectedLatLng) async {
-  //   if (selectedAddress != null) {
-  //     setState(() {
-  //       addressController.text = selectedAddress.address;
-  //       _selectedAddressLatLng =
-  //           PointLatLng(selectedAddress.lat, selectedAddress.lng);
-  //     });
-  //   } else {
-  //     var result = await getPlaceDetail(selectedLatLng!);
-  //     if (result != null) {
-  //       setState(() {
-  //         _selectedAddressLatLng = selectedLatLng;
-  //         addressController.text = result['results'][0]['formatted_address'];
-  //       });
-  //     }
-  //   }
-  // }
 }

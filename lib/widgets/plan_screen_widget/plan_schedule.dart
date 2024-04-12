@@ -11,11 +11,13 @@ import 'package:sizer2/sizer2.dart';
 class PLanScheduleWidget extends StatefulWidget {
   const PLanScheduleWidget(
       {super.key,
+      required this.schedule,
       required this.planId,
       required this.endDate,
       required this.planType,
       required this.startDate});
   final int planId;
+  final List<dynamic> schedule;
   final DateTime startDate;
   final DateTime endDate;
   final String planType;
@@ -27,8 +29,8 @@ class PLanScheduleWidget extends StatefulWidget {
 class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
   double _currentPage = 0;
   final PageController _pageController = PageController(initialPage: 0);
-  PlanService _planService = PlanService();
   List<PlanSchedule> _scheduleList = [];
+  final PlanService _planService = PlanService();
 
   @override
   void initState() {
@@ -43,16 +45,13 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
   }
 
   setUpData() async {
-    List<dynamic>? schedule =
-        await _planService.getPlanSchedule(widget.planId, widget.planType);
-    if (schedule != null) {
+
       setState(() {
         _scheduleList = _planService.GetPlanScheduleFromJsonNew(
-            schedule,
+            widget.schedule,
             widget.startDate,
             widget.endDate.difference(widget.startDate).inDays + 1);
       });
-    }
 
     PlanSchedule? todaySchedule = _scheduleList.firstWhereOrNull((element) =>
         element.date!.isBefore(DateTime.now()) &&

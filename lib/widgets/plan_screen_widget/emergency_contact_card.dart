@@ -38,13 +38,13 @@ class EmergencyContactCard extends StatelessWidget {
               if (selectedIndex != null) {
                 if (selectedIndex
                     .any((element) => element == emergency.id.toString())) {
-                  if (selectedIndex.length == 1) {
+                  if (selectedIndex.length == 1 && emergency.type == 'EMERGENCY') {
                     AwesomeDialog(
                             context: context,
                             animType: AnimType.leftSlide,
                             dialogType: DialogType.warning,
                             title:
-                                'Bạn phải chọn ít nhất 1 liên lạc khẩn cấp cho chuyến đi',
+                                'Bạn phải chọn ít nhất 1 liên lạc cứu hộ cho chuyến đi',
                             padding: const EdgeInsets.symmetric(
                                 horizontal: 14, vertical: 8),
                             titleTextStyle: const TextStyle(

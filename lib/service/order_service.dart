@@ -5,9 +5,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
+import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
+import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
 import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
@@ -15,6 +17,7 @@ import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
 class OrderService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
   static GraphQLClient client = config.getClient();
+  final ProductService _productService = ProductService();
 
   Future<int> addOrder(OrderCreateViewModel order) async {
     try {
@@ -24,7 +27,6 @@ class OrderService extends Iterable {
           'value': detail['quantity'],
         };
       }).toList();
-      print(details);
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
@@ -210,11 +212,11 @@ mutation{
             total: double.parse(e['total'].toString()),
             serveDates: e['serveDates'],
             supplier: SupplierViewModel(
-                id: e['supplierId'],
-                name: e['supplierName'],
-                phone: e['supplierPhone'],
-                thumbnailUrl: e['supplierImageUrl'],
-                address: e['supplierAddress']),
+                id: e['providerId'],
+                name: e['providerName'],
+                phone: e['providerPhone'],
+                thumbnailUrl: e['providerImageUrl'],
+                address: e['providerAddress']),
           ))
       .toList();
 
@@ -240,10 +242,10 @@ mutation {
     }
   }
 
-  Future<List<OrderViewModel>?> getOrderListByPlanId(int planId, BuildContext context)async{
-    try{
-      QueryResult result = await client.query(
-        QueryOptions(document: gql('''
+  Future<List<OrderViewModel>?> getOrderListByPlanId(
+      int planId, BuildContext context) async {
+    try {
+      QueryResult result = await client.query(QueryOptions(document: gql('''
 {
   orders(where: { planId: { eq: $planId } }) {
     edges {
@@ -280,21 +282,134 @@ mutation {
   }
 }
 
-'''))
-      );
-      if(result.hasException){
+''')));
+      if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
             rs.parsedResponse.errors.first.message.toString(), context);
         throw Exception(result.exception!.linkException!);
       }
       List? res = result.data!['orders']['edges'];
-      if(res == null || res.isEmpty){
+      if (res == null || res.isEmpty) {
         return [];
       }
       return res.map((e) => OrderViewModel.fromJson(e['node'])).toList();
-    }catch (error) {
+    } catch (error) {
       throw Exception(error);
+    }
+  }
+
+  dynamic convertToTempOrder(
+          SupplierViewModel supplier,
+          String note,
+          String type,
+          List<Map> details,
+          String period,
+          List<String> serveDates,
+          int total) =>
+      {
+        'total': total,
+        'serveDates': serveDates,
+        'period': period,
+        'details': details,
+        'type': type,
+        'note': note.isEmpty ? null : note,
+        'providerId': supplier.id,
+        'providerStandard': supplier.standard,
+        'createdAt': DateTime.now().toString(),
+        'providerName': supplier.name,
+        'providerPhone': supplier.phone,
+        'providerImageUrl': supplier.thumbnailUrl,
+        'providerAddress': supplier.address
+      };
+
+  Future<List<OrderViewModel>?> getTempOrderFromSchedule(
+      List<dynamic> schedule, DateTime startDate) async {
+    List<dynamic> orderList = [];
+    List<int> ids = [];
+    int i = 0;
+    for (final day in schedule) {
+      for (final activity in day) {
+        if (activity['tempOrder'] != null) {
+          final orderKey =
+              '${activity['tempOrder']['cart']} ${activity['tempOrder']['period']}';
+
+          if (!orderList.any((element) =>
+              '${element['order']['cart']} ${element['order']['period']}' ==
+              orderKey)) {
+            orderList.add({
+              'order': activity['tempOrder'],
+              'serveDates': [i]
+            });
+          } else {
+            final temp = orderList.firstWhere((element) =>
+                '${element['order']['cart']} ${element['order']['period']}' ==
+                orderKey)['serveDates'];
+
+            orderList.firstWhere((element) =>
+                '${element['order']['cart']} ${element['order']['period']}' ==
+                orderKey)['serveDates'] = [...temp, i];
+          }
+        }
+      }
+      i++;
+    }
+    for (final order in orderList) {
+      for (final id in order['order']['cart'].keys.toList()) {
+        if (!ids.contains(id)) {
+          ids.add(int.parse(id));
+        }
+      }
+    }
+    List<ProductViewModel>? products =
+        await _productService.getListProduct(ids);
+
+    return orderList.map((e) {
+      ProductViewModel sampleProduct = products.firstWhere((element) =>
+          element.id.toString() == e['order']['cart'].entries.first.key);
+      return OrderViewModel(
+          details: e['order']['cart'].entries.map((e) {
+            final product = products
+                .firstWhere((element) => element.id.toString() == e.key);
+            return OrderDetailViewModel(
+                id: product.id,
+                productId: product.id,
+                productName: product.name,
+                price: product.price.toDouble(),
+                unitPrice: product.price.toDouble(),
+                quantity: e.value);
+          }).toList(),
+          note: e['note'],
+          serveDates: e["serveDates"]
+              .map((e) =>
+                  startDate.add(Duration(days: e)).toString().split(' ')[0])
+              .toList(),
+          total: e['order']['total'].toDouble(),
+          createdAt: DateTime.now(),
+          supplier: SupplierViewModel(
+              type: sampleProduct.supplierType,
+              id: sampleProduct.supplierId!,
+              name: sampleProduct.supplierName,
+              phone: sampleProduct.supplierPhone,
+              thumbnailUrl: sampleProduct.supplierThumbnailUrl,
+              address: sampleProduct.supplierAddress),
+          type: getOrdeType(sampleProduct.supplierType!),
+          period: e['order']['period']);
+    }).toList();
+  }
+
+  getOrdeType(String supplierType) {
+    switch (supplierType) {
+      case "FOOD_STALL":
+        return "EAT";
+      case "RESTAURANT":
+        return "EAT";
+      case "HOTEL":
+        return "CHECKIN";
+      case "MOTEL":
+        return "CHECKIN";
+      case "VEHICLE_RENTAL":
+        return 'VISIT';
     }
   }
 

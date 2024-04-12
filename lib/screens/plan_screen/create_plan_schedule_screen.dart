@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/new_schedule_item_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/new_schedule_item_screen.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -273,7 +273,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
             location: widget.location,
             selectedIndex: _currentPage.toInt(),
             item: item,
-            isNotOverDay: _isNotOverDay,
             startDate: testList.first.date!)));
   }
 
@@ -440,7 +439,6 @@ class _CreatePlanScheduleScreenState extends State<CreatePlanScheduleScreen> {
                                   maxActivityTime: 12 - consumedTime,
                                   startDate: testList[0].date!,
                                   selectedIndex: _currentPage.toInt(),
-                                  isNotOverDay: _isNotOverDay,
                                 )));
                       }
                     },

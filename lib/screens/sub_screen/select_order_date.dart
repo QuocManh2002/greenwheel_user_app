@@ -57,7 +57,9 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
       setState(() {
         holidays = rs;
         isLoading = false;
+        _selectedDays = [widget.startDate];
       });
+      _selectedDays = widget.selectedDate != null ? widget.selectedDate! : [widget.startDate];
     }
   }
 

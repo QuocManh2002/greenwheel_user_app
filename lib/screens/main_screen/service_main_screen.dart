@@ -33,7 +33,7 @@ class ServiceMainScreen extends StatefulWidget {
   final bool? isOrder;
   final int? availableGcoinAmount;
   final bool? isFromTempOrder;
-  final void Function() callbackFunction;
+  final void Function(dynamic tempOrder) callbackFunction;
   final Session? initSession;
 
   @override

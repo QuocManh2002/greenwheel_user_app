@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/pdf_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/holiday.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_note_surcharge_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_note_surcharge_screen.dart';
 import 'package:greenwheel_user_app/service/config_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';

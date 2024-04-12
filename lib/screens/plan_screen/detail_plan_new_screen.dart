@@ -18,6 +18,7 @@ import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/history_order_screen.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_surcharge_note.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/join_confirm_plan_screen.dart';
@@ -68,6 +69,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   LocationService _locationService = LocationService();
   ProductService _productService = ProductService();
   CustomerService _customerService = CustomerService();
+  OrderService _orderService = OrderService();
   PlanDetail? _planDetail;
   List<PlanMemberViewModel> _planMembers = [];
   double total = 0;
@@ -76,7 +78,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   bool _isEnableToInvite = false;
   bool _isEnableToOrder = false;
   List<ProductViewModel> products = [];
-  List<OrderViewModel> tempOrders = [];
+  List<OrderViewModel>? tempOrders = [];
   List<OrderViewModel> orderList = [];
   bool isLeader = false;
   Widget? activeWidget;
@@ -106,17 +108,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         _planDetail = plan;
         isLoading = false;
       });
-      for (final order in _planDetail!.tempOrders!) {
-        Map<String, dynamic> cart = order['cart'];
-        for (final proId in cart.keys.toList()) {
-          if (!productIds.contains(proId)) {
-            productIds.add(int.parse(proId));
-          }
-        }
-      }
       isLeader = sharedPreferences.getInt('userId') == _planDetail!.leaderId;
       products = await _productService.getListProduct(productIds);
-      tempOrders = await getTempOrder();
+      // tempOrders = await getTempOrder();
+      tempOrders = await _orderService.getTempOrderFromSchedule(
+          _planDetail!.schedule!, _planDetail!.startDate!);
       _isPublic = _planDetail!.joinMethod != 'NONE';
       _isEnableToInvite = _planDetail!.status == 'REGISTERING';
       getOrderList();
@@ -129,8 +125,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       _isEnableToConfirm = _planDetail!.status != 'READY';
     }
     var tempDuration = DateFormat.Hm().parse(_planDetail!.travelDuration!);
-    final startTime = DateTime(0, 0, 0, _planDetail!.departTime!.hour,
-        _planDetail!.departTime!.minute, 0);
+    final startTime = DateTime(0, 0, 0, _planDetail!.utcDepartAt!.hour,
+        _planDetail!.utcDepartAt!.minute, 0);
     final arrivedTime = startTime
         .add(Duration(hours: tempDuration.hour))
         .add(Duration(minutes: tempDuration.minute));
@@ -215,7 +211,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     var _total = 0.0;
     if (_planDetail!.status == 'REGISTERING' ||
         _planDetail!.status == 'PENDING') {
-      orderList = tempOrders;
+      orderList = tempOrders!;
     } else {
       final rs = await _planService.getOrderCreatePlan(widget.planId);
       if (rs != null) {
@@ -240,15 +236,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       final rs = Utils().getNumOfExpPeriod(
           null,
           _planDetail!.numOfExpPeriod!,
-          _planDetail!.departTime!,
+          _planDetail!.utcDepartAt!,
           DateFormat.Hms().parse(_planDetail!.travelDuration!),
           false);
       PlanDetail _plan = PlanDetail(
           tempOrders: tempOrders,
           surcharges: _planDetail!.surcharges,
           travelDuration: _planDetail!.travelDuration,
-          departDate: _planDetail!.departDate,
-          departTime: _planDetail!.departTime,
+          utcDepartAt: _planDetail!.utcDepartAt,
           departureAddress: _planDetail!.departureAddress,
           id: _planDetail!.id,
           locationId: _planDetail!.locationId,
@@ -263,7 +258,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           startLocationLat: _planDetail!.startLocationLat,
           startLocationLng: _planDetail!.startLocationLng,
           numOfExpPeriod: rs['numOfExpPeriod'],
-          schedule: schedule);
+          schedule: _planDetail!.schedule);
 
       Navigator.of(context).pop();
       Navigator.of(context).push(MaterialPageRoute(
@@ -342,13 +337,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   Colors.amber.withOpacity(0.8),
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.amber),
-                          if (isLeader &&
-                              DateTime.now().isBefore(_planDetail!.endDate!) &&
-                              DateTime.now().isAfter(_planDetail!.departDate!
-                                  .add(Duration(
-                                      hours: _planDetail!.departTime!.hour))
-                                  .add(Duration(
-                                      minutes: _planDetail!.departTime!.minute))
+                          if (DateTime.now().isBefore(_planDetail!.endDate!) &&
+                              DateTime.now().isAfter(_planDetail!.utcDepartAt!
                                   .add(Duration(
                                       hours: DateFormat.Hm()
                                           .parse(_planDetail!.travelDuration!)
@@ -390,6 +380,40 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   }
                                 },
                                 label: 'Xác nhận kế hoạch',
+                                labelBackgroundColor:
+                                    primaryColor.withOpacity(0.8),
+                                foregroundColor: Colors.white,
+                                backgroundColor: primaryColor),
+                          if (_planDetail!.status == 'VERIFIED')
+                            SpeedDialChild(
+                                child: const Icon(Icons.check),
+                                labelStyle: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                                onTap: () async {
+                                  final rs = await _planService.publishPlan(
+                                      widget.planId, context);
+                                  if (rs != null) {
+                                    AwesomeDialog(
+                                            context: context,
+                                            animType: AnimType.leftSlide,
+                                            dialogType: DialogType.success,
+                                            title: 'Đã xuất bản kế hoạch',
+                                            padding: const EdgeInsets.all(12),
+                                            titleTextStyle: const TextStyle(
+                                                fontSize: 20,
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'NotoSans'))
+                                        .show();
+                                    setupData();
+                                    Future.delayed(const Duration(seconds: 1),
+                                        () {
+                                      Navigator.of(context).pop();
+                                    });
+                                  }
+                                },
+                                label: 'Xuất bản kế hoạch',
                                 labelBackgroundColor:
                                     primaryColor.withOpacity(0.8),
                                 foregroundColor: Colors.white,
@@ -807,7 +831,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   buildServiceWidget() => DetailPlanServiceWidget(
       plan: _planDetail!,
       isLeader: isLeader,
-      tempOrders: tempOrders,
+      tempOrders: tempOrders!,
       orderList: orderList,
       total: total,
       onGetOrderList: setupData);
@@ -858,6 +882,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               child: PLanScheduleWidget(
                 planId: widget.planId,
                 planType: widget.planType,
+                schedule: _planDetail!.schedule!,
                 startDate: _planDetail!.startDate!,
                 endDate: _planDetail!.endDate!,
               ),
@@ -949,53 +974,53 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             "type": emer.type
           });
         }
-        List<dynamic>? _schedule =
-            await _planService.getPlanSchedule(widget.planId, widget.planType);
-        if (_schedule != null) {
-          final rs = await showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (BuildContext context) => SizedBox(
-                    height: 90.h,
-                    child: ConfirmPlanBottomSheet(
-                      isInfo: false,
-                      isFromHost: isLeader,
-                      plan: PlanCreate(
-                        departureAddress: _planDetail!.departureAddress,
-                        schedule: json.encode(_schedule),
-                        savedContacts: json.encode(emerList),
-                        name: _planDetail!.name,
-                        memberLimit: _planDetail!.maxMemberCount,
-                        startDate: _planDetail!.startDate,
-                        endDate: _planDetail!.endDate,
-                        travelDuration: _planDetail!.travelDuration,
-                        departureDate: _planDetail!.departDate,
-                        note: _planDetail!.note,
-                      ),
-                      locationName: _planDetail!.locationName!,
-                      orderList: tempOrders,
-                      onCompletePlan: () {},
-                      listSurcharges: _planDetail!.surcharges!
-                          .map((e) => e.toJson())
-                          .toList(),
-                      isJoin: true,
-                      onJoinPlan: () {
-                        confirmJoin(isPublic);
-                      },
-                      onCancel: () {
-                        Navigator.of(context).pop();
-                        setState(() {
-                          _isPublic = false;
-                        });
-                      },
+        // List<dynamic>? _schedule =
+        //     await _planService.getPlanSchedule(widget.planId, widget.planType);
+        // if (_schedule != null) {
+        final rs = await showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (BuildContext context) => SizedBox(
+                  height: 90.h,
+                  child: ConfirmPlanBottomSheet(
+                    isInfo: false,
+                    isFromHost: isLeader,
+                    plan: PlanCreate(
+                      departureAddress: _planDetail!.departureAddress,
+                      schedule: json.encode(_planDetail!.schedule),
+                      savedContacts: json.encode(emerList),
+                      name: _planDetail!.name,
+                      memberLimit: _planDetail!.maxMemberCount,
+                      startDate: _planDetail!.startDate,
+                      endDate: _planDetail!.endDate,
+                      travelDuration: _planDetail!.travelDuration,
+                      departureDate: _planDetail!.utcDepartAt,
+                      note: _planDetail!.note,
                     ),
-                  ));
-          if (rs == null) {
-            setState(() {
-              _isPublic = false;
-            });
-          }
+                    locationName: _planDetail!.locationName!,
+                    orderList: tempOrders,
+                    onCompletePlan: () {},
+                    listSurcharges: _planDetail!.surcharges!
+                        .map((e) => e.toJson())
+                        .toList(),
+                    isJoin: true,
+                    onJoinPlan: () {
+                      confirmJoin(isPublic);
+                    },
+                    onCancel: () {
+                      Navigator.of(context).pop();
+                      setState(() {
+                        _isPublic = false;
+                      });
+                    },
+                  ),
+                ));
+        if (rs == null) {
+          setState(() {
+            _isPublic = false;
+          });
         }
+        // }
       } else {
         AwesomeDialog(
                 context: context,
@@ -1115,7 +1140,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         ),
                         const Spacer(),
                         Text(
-                          '${DateFormat('dd/MM/yyyy').format(_planDetail!.departDate!)} - ${DateFormat('dd/MM/yyyy').format(_planDetail!.endDate!)}',
+                          '${DateFormat('dd/MM/yyyy').format(_planDetail!.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(_planDetail!.endDate!)}',
                           style: const TextStyle(
                             fontSize: 17,
                             fontWeight: FontWeight.w500,

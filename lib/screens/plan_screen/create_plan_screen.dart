@@ -8,7 +8,7 @@ import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/base_information_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_schedule_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_service.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_emergency_service.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_plan_name.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/select_start_location_screen.dart';
@@ -199,7 +199,7 @@ class _CreateNewPlanScreenState extends State<CreatePlanScreen> {
                                         null
                                     ? null
                                     : DateTime.parse(sharedPreferences
-                                        .getString('plan_departureDate')!) : widget.plan!.departDate,
+                                        .getString('plan_departureDate')!) : widget.plan!.utcDepartAt,
                             name: widget.isCreate? sharedPreferences.getString('plan_name') : widget.plan!.name,
                             startDate:
                             widget.isCreate?

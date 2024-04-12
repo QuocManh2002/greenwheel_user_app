@@ -66,10 +66,12 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   getTotal() {
     total = 0;
     for (final order in widget.orderList!) {
-      if (order.runtimeType == OrderViewModel) {
-        total += order.total / 100;
-      } else {
-        total += order['total'] / 100;
+      if (order != null) {
+        if (order.runtimeType == OrderViewModel) {
+          total += order.total / 1000;
+        } else {
+          total += order['total'] / 1000;
+        }
       }
     }
     if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty) {
@@ -89,7 +91,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     scheduleList = json.decode(widget.plan!.schedule!);
     for (final event in scheduleList) {
       List<String> _eventTextList = [];
-      for (final act in event['events']) {
+      for (final act in event) {
         if (act['shortDescription'].toString().substring(0, 1) == '\"') {
           _eventTextList.add(json.decode(act['shortDescription']));
         } else {
@@ -132,19 +134,19 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         (e) => e.runtimeType == OrderViewModel ? e.type : e['type']);
     newRoomOrderList = rs.values.firstWhereOrNull((e) =>
             e.firstOrNull.runtimeType == OrderViewModel
-                ? e.first.type == 'LODGING'
-                : e.first['type'] == 'LODGING') ??
+                ? e.first.type == 'CHECKIN'
+                : e.first['type'] == 'CHECKIN') ??
         [];
     newFoodOrderList = rs.values.firstWhereOrNull((e) =>
             e.firstOrNull.runtimeType == OrderViewModel
-                ? e.first.type == 'MEAL'
-                : e.first['type'] == 'MEAL') ??
+                ? e.first.type == 'EAT'
+                : e.first['type'] == 'EAT') ??
         [];
 
     newRidingOrderList = rs.values.firstWhereOrNull((e) =>
             e.firstOrNull.runtimeType == OrderViewModel
-                ? e.first.type == 'RIDING'
-                : e.first['type'] == 'RIDING') ??
+                ? e.first.type == 'VISIT'
+                : e.first['type'] == 'VISIT') ??
         [];
   }
 
@@ -449,13 +451,14 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               if (newRoomOrderList != null &&
                                   newRoomOrderList!.isNotEmpty)
                                 buildServiceWidget(
-                                    'LODGING', newRoomOrderList!),
+                                    'CHECKIN', newRoomOrderList!),
                               if (newFoodOrderList != null &&
                                   newFoodOrderList!.isNotEmpty)
-                                buildServiceWidget('MEAL', newFoodOrderList!),
-                                if (newRidingOrderList != null &&
+                                buildServiceWidget('EAT', newFoodOrderList!),
+                              if (newRidingOrderList != null &&
                                   newRidingOrderList!.isNotEmpty)
-                                buildServiceWidget('RIDING', newRidingOrderList!),
+                                buildServiceWidget(
+                                    'VISIT', newRidingOrderList!),
                             ],
                           )
                       ],
@@ -542,47 +545,57 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (!widget.isJoin)
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Tổng cộng',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                  Text(
-                                    '(+10% chênh lệch)',
-                                    style: TextStyle(fontSize: 12),
-                                  )
-                                ],
-                              ),
-                              const Spacer(),
-                              Text(
-                                NumberFormat.simpleCurrency(
-                                        locale: 'vi_VN',
-                                        decimalDigits: 0,
-                                        name: "")
-                                    .format((total * 1.1).ceil()),
-                                style: const TextStyle(
-                                    fontSize: 17, fontWeight: FontWeight.bold),
-                              ),
-                              SvgPicture.asset(
-                                gcoin_logo,
-                                height: 23,
-                              )
-                            ],
-                          ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tổng cộng',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  '(+10% chênh lệch)',
+                                  style: TextStyle(fontSize: 12),
+                                )
+                              ],
+                            ),
+                            const Spacer(),
+                            Text(
+                              NumberFormat.simpleCurrency(
+                                      locale: 'vi_VN',
+                                      decimalDigits: 0,
+                                      name: "")
+                                  .format((total * 1.1)),
+                              style: const TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.bold),
+                            ),
+                            SvgPicture.asset(
+                              gcoin_logo,
+                              height: 23,
+                            )
+                          ],
+                        ),
                         SizedBox(
                           height: 0.3.h,
                         ),
                         Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Chi phí cho chuyến đi',
-                              style: TextStyle(fontSize: 16),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Chi phí cho chuyến đi',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  '(Cho mỗi người)',
+                                  style: TextStyle(
+                                      fontSize: 12, fontFamily: 'NotoSans'),
+                                )
+                              ],
                             ),
                             const Spacer(),
                             Text(
@@ -703,7 +716,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                   color: primaryColor.withOpacity(0.8),
                   borderRadius: const BorderRadius.all(Radius.circular(8))),
               child: Text(
-                type == 'MEAL' ? 'Quán ăn/Nhà hàng' : type == 'LODGING'? 'Nhà nghỉ/Khách sạn' :'Thuê xe',
+                type == 'EAT'
+                    ? 'Quán ăn/Nhà hàng'
+                    : type == 'CHECKIN'
+                        ? 'Nhà nghỉ/Khách sạn'
+                        : 'Thuê xe',
                 style: const TextStyle(
                     fontSize: 17,
                     color: Colors.white,
@@ -744,7 +761,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           .format(((order.runtimeType == OrderViewModel
                                       ? order.total
                                       : order['total']) /
-                                  100)
+                                  1000)
                               .toInt()),
                       style: const TextStyle(
                           fontSize: 17, fontWeight: FontWeight.bold),
@@ -761,8 +778,10 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         ],
       );
 
-      buildServiceText(dynamic order){
-        bool isShowPeriod = (order.runtimeType == OrderViewModel && order.type != 'RIDING') || (order.runtimeType != OrderViewModel && order['type'] != 'RIDING');
-        return '${isShowPeriod ? '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ':''}${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}';
-      }
+  buildServiceText(dynamic order) {
+    bool isShowPeriod =
+        (order.runtimeType == OrderViewModel && order.type != 'RIDING') ||
+            (order.runtimeType != OrderViewModel && order['type'] != 'RIDING');
+    return '${isShowPeriod ? '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ' : ''}${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}';
+  }
 }

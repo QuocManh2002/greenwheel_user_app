@@ -17,7 +17,7 @@ class CancelOrderBottomSheet extends StatefulWidget {
   final int orderId;
   final DateTime orderCreatedAt;
   final int total;
-  final void Function() callback;
+  final void Function(dynamic) callback;
 
   @override
   State<CancelOrderBottomSheet> createState() => _CancelOrderBottomSheetState();
@@ -215,7 +215,7 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                 children: [
                   const Text('Hoàn lại:', style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),),
                   const Spacer(),
-                  Text(NumberFormat.simpleCurrency(name: '', decimalDigits: 0, locale: 'vi_VN').format(refundAmount/100), 
+                  Text(NumberFormat.simpleCurrency(name: '', decimalDigits: 0, locale: 'vi_VN').format(refundAmount/1000), 
                   style: const TextStyle(
                     fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'
                   ),
@@ -268,7 +268,7 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                             fontWeight: FontWeight.bold,
                             fontFamily: 'NotoSans',
                           )).show();
-                      widget.callback();
+                      widget.callback(null);
                       Future.delayed(const Duration(seconds: 1), () {
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();

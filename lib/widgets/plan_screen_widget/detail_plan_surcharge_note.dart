@@ -90,7 +90,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                                 isEnableToUpdate: widget.plan.status != "REGISTERING" && widget.plan.status != 'PENDING',
                                 isCreate: false,
                                 surcharge: sur,
-                                callbackSurcharge: () {},
+                                callbackSurcharge: (dynamic) {},
                               ),
                             )
                         ],

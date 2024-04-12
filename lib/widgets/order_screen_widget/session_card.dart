@@ -27,7 +27,7 @@ class SessionCard extends StatelessWidget {
   final ServiceType serviceType;
   final LocationViewModel location;
   final int numberOfMember;
-  final void Function() callbackFunction;
+  final void Function(dynamic) callbackFunction;
   final bool? isOrder;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;

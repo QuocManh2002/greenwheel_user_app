@@ -2,13 +2,10 @@ import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_co
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
-import 'package:intl/intl.dart';
 
 class PlanDetail {
   int? id;
   String? name;
-  DateTime? departDate;
-  DateTime? departTime;
   DateTime? startDate;
   DateTime? endDate;
   String? joinMethod;
@@ -33,11 +30,14 @@ class PlanDetail {
   List<SurchargeViewModel>? surcharges;
   int? maxMemberWeight;
   String? departureAddress;
-  DateTime? regCloseAt;
   String? leaderName;
   int? actualGcoinBudget;
   int? displayGcoinBudget;
   int? actualNumOfExpPeriod;
+  DateTime? utcRegCloseAt;
+  DateTime? utcDepartAt;
+  DateTime? utcStartAt;
+  DateTime? utcEndAt;
 
   PlanDetail(
       {this.id,
@@ -57,8 +57,6 @@ class PlanDetail {
       this.startLocationLat,
       this.startLocationLng,
       this.numOfExpPeriod,
-      this.departDate,
-      this.departTime,
       this.travelDuration,
       this.tempOrders,
       this.leaderId,
@@ -69,18 +67,23 @@ class PlanDetail {
       this.surcharges,
       this.maxMemberWeight,
       this.departureAddress,
-      this.regCloseAt,
       this.leaderName,
       this.actualNumOfExpPeriod,
+      this.utcDepartAt,
+      this.utcEndAt,
+      this.utcRegCloseAt,
+      this.utcStartAt,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
+        utcDepartAt: DateTime.parse(json['utcDepartAt']),
+        utcEndAt: DateTime.parse(json['utcEndAt']),
+        utcRegCloseAt: json['utcRegCloseAt'] == null ? null : DateTime.parse(json['utcRegCloseAt']),
+        utcStartAt: DateTime.parse(json['utcStartAt']),
         id: json["id"],
         name: json["name"],
         leaderName: json['account']['name'],
         tempOrders: json['tempOrders'],
-        departDate: DateTime.parse(json['departDate']),
-        departTime: DateFormat.Hms().parse(json['departTime']),
         startDate: DateTime.parse(json["startDate"]),
         endDate: DateTime.parse(json["endDate"]),
         schedule: json["schedule"],
@@ -98,14 +101,12 @@ class PlanDetail {
         actualGcoinBudget: json['actualGcoinBudget'].toInt(),
         displayGcoinBudget: json['displayGcoinBudget'].toInt(),
         memberCount: json['memberCount'],
-        regCloseAt: json['regCloseAt'] == null ? null : DateTime.parse(json['regCloseAt']),
         departureAddress: json['departureAddress'],
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'].toInt(),
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
         startLocationLng: json["departure"]["coordinates"][0].toDouble(),
-        surcharges: List<SurchargeViewModel>.from(
-                json['surcharges'].map((e) => SurchargeViewModel.fromJsonQuery(e)))
-            .toList(),
+        surcharges: List<SurchargeViewModel>.from(json['surcharges']
+            .map((e) => SurchargeViewModel.fromJsonQuery(e))).toList(),
         members: List<PlanMemberViewModel>.from(
                 json['members'].map((e) => PlanMemberViewModel.fromJson(e)))
             .toList(),

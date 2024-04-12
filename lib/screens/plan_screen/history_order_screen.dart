@@ -65,7 +65,7 @@ class _HistoryOrderScreenState extends State<HistoryOrderScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               child: SupplierOrderCard(
-                callback: (){}, 
+                callback: (d){}, 
                 order: order, 
                 startDate: DateTime.now(), 
                 isTempOrder: false),

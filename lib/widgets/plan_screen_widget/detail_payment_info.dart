@@ -224,7 +224,7 @@ class DetailPaymentInfo extends StatelessWidget {
                   SizedBox(
                     width: 60.w,
                     child: buildTextWidget(
-                        '${DateFormat.Hm().format(transactionDetail.transaction!.createdAt!)} ${DateFormat('dd/MM/yyyy').format(transactionDetail.transaction!.createdAt!)}'),
+                        '${DateFormat.Hm().format(transactionDetail.transaction!.createdAt!.toLocal())} ${DateFormat('dd/MM/yyyy').format(transactionDetail.transaction!.createdAt!.toLocal())}'),
                   )
                 ],
               ),
@@ -271,7 +271,7 @@ class DetailPaymentInfo extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Số thành viên của nhóm bạn',
+                          'Số thành viên',
                           style: TextStyle(
                               fontFamily: 'NotoSans',
                               fontSize: 15,

@@ -53,7 +53,7 @@ class ServiceMenuScreen extends StatefulWidget {
   final String? period;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
-  final void Function() callbackFunction;
+  final void Function(dynamic tempOrder) callbackFunction;
   final String? orderGuid;
 
   @override

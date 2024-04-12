@@ -16,6 +16,7 @@ import 'package:greenwheel_user_app/screens/authentication_screen/select_default
 import 'package:greenwheel_user_app/screens/loading_screen/location_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/location_screen/add_comment_screen.dart';
 import 'package:greenwheel_user_app/screens/location_screen/all_comment_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_by_location.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
@@ -106,7 +107,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                 errorWidget:
                                                     (context, url, error) =>
                                                         Image.network(
-                                                  'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                                                  defaultHomeImage,
                                                   height: 25.h,
                                                   fit: BoxFit.cover,
                                                 ),
@@ -167,15 +168,21 @@ class _LocationScreenState extends State<LocationScreen> {
                                 ),
                               ),
                               Padding(
-                                padding: const EdgeInsets.only(left: 12, bottom: 10, top: 6),
+                                padding: const EdgeInsets.only(
+                                    left: 12, bottom: 10, top: 6),
                                 child: RatingBar.builder(
-                                  initialRating: location!.rating == null ? 0:location!.rating!.toDouble(),
+                                  initialRating: location!.rating == null
+                                      ? 0
+                                      : location!.rating!.toDouble(),
                                   itemSize: 20,
                                   itemCount: 5,
-                                  itemBuilder: (context, index) =>const Icon(Icons.star_outline, color: Colors.amber,),
-                                   onRatingUpdate: (value) {
-                                     
-                                   },),
+                                  ignoreGestures: true,
+                                  itemBuilder: (context, index) => const Icon(
+                                    Icons.star_outline,
+                                    color: Colors.amber,
+                                  ),
+                                  onRatingUpdate: (value) {},
+                                ),
                               ),
                               buildDivider(),
                               const SizedBox(
@@ -354,14 +361,21 @@ class _LocationScreenState extends State<LocationScreen> {
                                           ),
                                           Row(
                                             children: [
-                                          RatingBar.builder(
-                                initialRating: location!.rating == null ? 0:location!.rating!.toDouble(),
-                                itemSize: 20,
-                                itemCount: 5,
-                                itemBuilder: (context, index) =>const Icon(Icons.star_outline, color: Colors.amber,),
-                                 onRatingUpdate: (value) {
-                                   
-                                 },),
+                                              RatingBar.builder(
+                                                initialRating:
+                                                    location!.rating == null
+                                                        ? 0
+                                                        : location!.rating!
+                                                            .toDouble(),
+                                                itemSize: 20,
+                                                itemCount: 5,
+                                                itemBuilder: (context, index) =>
+                                                    const Icon(
+                                                  Icons.star_outline,
+                                                  color: Colors.amber,
+                                                ),
+                                                onRatingUpdate: (value) {},
+                                              ),
                                               const SizedBox(
                                                 width: 2,
                                               ),
@@ -523,9 +537,10 @@ class _LocationScreenState extends State<LocationScreen> {
                                           Navigator.of(context).push(
                                               MaterialPageRoute(
                                                   builder: (ctx) =>
-                                                      CreatePlanScreen(
+                                                      SelectComboDateScreen(
+                                                          isCreate: true,
                                                           location: location!,
-                                                          isCreate: true)));
+                                                        )));
                                         },
                                         btnOkColor: Colors.deepOrangeAccent,
                                         btnOkText: 'Có',
@@ -536,24 +551,24 @@ class _LocationScreenState extends State<LocationScreen> {
                                             Navigator.of(context).push(
                                                 MaterialPageRoute(
                                                     builder: (ctx) =>
-                                                        CreatePlanScreen(
-                                                            location: location!,
-                                                            isCreate: true)));
+                                                        SelectComboDateScreen(
+                                                          isCreate: true,
+                                                          location: location!,
+                                                        )));
                                           }
                                         },
                                       ).show();
                                     } else {
                                       sharedPreferences.setString(
-                                              'plan_location_name',
-                                              location!.name);
-                                          sharedPreferences.setInt(
-                                              'plan_location_id', location!.id);
+                                          'plan_location_name', location!.name);
+                                      sharedPreferences.setInt(
+                                          'plan_location_id', location!.id);
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (ctx) =>
-                                                  CreatePlanScreen(
-                                                    location: location!,
+                                                  SelectComboDateScreen(
                                                     isCreate: true,
+                                                    location: location!,
                                                   )));
                                     }
                                   } else {
@@ -599,14 +614,15 @@ class _LocationScreenState extends State<LocationScreen> {
         selectedAddress == null
             ? selectedLatLng!
             : PointLatLng(selectedAddress.lat, selectedAddress.lng));
+    
   }
 
   callbackAddComment() async {
     var comments = await _locationService.getComments(location!.id);
-    if(comments != null){
+    if (comments != null) {
       setState(() {
-      _comments = comments;
-    });
+        _comments = comments;
+      });
     }
   }
 

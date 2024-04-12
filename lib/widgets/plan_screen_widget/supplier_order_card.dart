@@ -17,7 +17,7 @@ class SupplierOrderCard extends StatelessWidget {
   final DateTime? endDate;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
-  final void Function() callback;
+  final void Function(dynamic) callback;
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +38,9 @@ class SupplierOrderCard extends StatelessWidget {
                   isFromTempOrder: isFromTempOrder,
                   isTempOrder: isTempOrder,
                   planId: planId,
-                  callback: callback,
+                  callback: () {
+                    
+                  },
                 )));
       },
       child: Container(

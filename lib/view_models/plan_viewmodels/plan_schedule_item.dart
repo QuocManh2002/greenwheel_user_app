@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
@@ -16,6 +17,7 @@ class PlanScheduleItem {
   final String? shortDescription;
   final int? activityTime;
   final bool? isStarred;
+  final dynamic tempOrder;
 
   PlanScheduleItem(
       {String? id,
@@ -26,6 +28,7 @@ class PlanScheduleItem {
       this.orderId,
       this.activityTime,
       this.isStarred,
+      this.tempOrder,
       this.type})
       : id = id ?? uuid.v4();
 

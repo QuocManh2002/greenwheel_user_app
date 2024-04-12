@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -9,6 +10,7 @@ import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/cancel_order_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -46,6 +48,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool isExpanded = false;
   List<DateTime> _servingDates = [];
   String _servingTime = '';
+  List<OrderDetailViewModel> details = [];
+
   // OrderService _orderService = OrderService();
 
   @override
@@ -62,6 +66,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
         .range;
+        final tmp =
+        widget.order.details!.groupListsBy((element) => element.productId);
+    for (final temp in tmp.values) {
+      details.add(temp.first);
+    }
   }
 
   @override
@@ -103,7 +112,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   builder: (context) => CancelOrderBottomSheet(
                     orderCreatedAt: widget.order.createdAt!,
                     total: widget.order.total!.toInt(),
-                    callback: widget.callback,
+                    callback: (p0) {
+                      
+                    },
                     orderId: widget.order.id!,),);
               }
             },
@@ -439,11 +450,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           const SizedBox(
                             height: 12,
                           ),
-                          for (final detail in widget.order.details!)
+                          for (final detail in details)
                             Column(
                               children: [
                                 Padding(
-                                  padding: EdgeInsets.symmetric(vertical: 16),
+                                  padding: const EdgeInsets.symmetric(vertical: 16),
                                   child: Row(
                                     children: [
                                       Text(
@@ -564,7 +575,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           period: widget.order.period,
                           startDate: widget.startDate,
                           isOrder: true,
-                          callbackFunction: widget.callback)));
+                          callbackFunction: (tempOrder) {
+                            
+                          },)));
                 },
                 child: const Text('Xác nhận đơn hàng mẫu')),
           if (widget.isTempOrder)

@@ -56,6 +56,7 @@ class Utils {
     sharedPreferences.remove('plan_max_member_weight');
     sharedPreferences.remove('plan_location_name');
     sharedPreferences.remove('plan_location_id');
+    sharedPreferences.remove('plan_arrivedTime');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {
@@ -269,4 +270,14 @@ class Utils {
     }
   }
 
+  isEndAtNoon() {
+    final DateTime _arrivedTime =
+        DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!);
+    var dayEqualNight =
+        sharedPreferences.getInt('initNumOfExpPeriod')! % 2 == 0;
+    var arrivedAtNight = _arrivedTime.hour >= 20;
+    var arrivedAtEvening = !arrivedAtNight && _arrivedTime.hour >= 16;
+    return (arrivedAtEvening && dayEqualNight) ||
+        (!arrivedAtEvening && !dayEqualNight);
+  }
 }

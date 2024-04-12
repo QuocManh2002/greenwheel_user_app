@@ -20,8 +20,8 @@ class TransactionDetailViewModel {
                       ['gcoinBudgetPerCapita'],
                   locationName: json['planMember']['plan']['destination']
                       ['name'],
-                  departDate:
-                      DateTime.parse(json['planMember']['plan']['departDate']),
+                  utcDepartAt:
+                      DateTime.parse(json['planMember']['plan']['utcDepartAt']),
                   endDate:
                       DateTime.parse(json['planMember']['plan']['endDate']),
                   maxMemberCount: json['planMember']['plan']['maxMemberCount'],

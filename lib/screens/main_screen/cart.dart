@@ -53,7 +53,7 @@ class CartScreen extends StatefulWidget {
   final Session session;
   final bool? isOrder;
   final bool? isFromTempOrder;
-  final void Function() callbackFunction;
+  final void Function(dynamic tempOrder) callbackFunction;
   final bool? isChangeCart;
   final String? orderGuid;
   final void Function(ProductViewModel prod, int qty) updateCart;
@@ -577,7 +577,7 @@ class _CartScreenState extends State<CartScreen> {
                                   ],
                                 ),
                                 Text(
-                                  currencyFormat.format((finalTotal / 100) *
+                                  currencyFormat.format((finalTotal / 1000) *
                                       (_servingDates.isEmpty
                                           ? 1
                                           : _servingDates
@@ -739,33 +739,16 @@ class _CartScreenState extends State<CartScreen> {
         'price': item.product.price.toDouble()
       });
     }
-
-    final tempOrder = {
-      'total': total * _servingDates.length,
-      'serveDates': _serveDates,
-      'period': order.period,
-      'details': detailsMap,
-      'type': widget.serviceType.name,
-      'note': noteController.text,
-      'providerId': widget.supplier.id,
-      'providerStandard': widget.supplier.standard,
-      'createdAt': DateTime.now().toString(),
-      'supplierId': widget.supplier.id,
-      'supplierName': widget.supplier.name,
-      'supplierPhone': widget.supplier.phone,
-      'supplierImageUrl': widget.supplier.thumbnailUrl,
-      'supplierAddress': widget.supplier.address
-    };
+    final tempOrder = orderService.convertToTempOrder(
+        supplier!,
+        noteController.text,
+        widget.serviceType.name,
+        detailsMap,
+        order.period,
+        _serveDates,
+        total * _servingDates.length);
     if (!widget.isOrder!) {
-      var temp = sharedPreferences.getString('plan_temp_order');
-      if (temp == null) {
-        final tempEncode = json.encode([tempOrder]);
-        sharedPreferences.setString('plan_temp_order', tempEncode);
-      } else {
-        final tempDecode = json.decode(temp);
-        tempDecode.add(tempOrder);
-        sharedPreferences.setString('plan_temp_order', json.encode(tempDecode));
-      }
+      
       AwesomeDialog(
               context: context,
               dialogType: DialogType.success,
@@ -780,7 +763,7 @@ class _CartScreenState extends State<CartScreen> {
           .show();
 
       Future.delayed(const Duration(seconds: 1), () {
-        widget.callbackFunction();
+        widget.callbackFunction(tempOrder);
         Navigator.of(context).pop();
         Navigator.of(context).pop();
         Navigator.of(context).pop();
@@ -861,7 +844,7 @@ class _CartScreenState extends State<CartScreen> {
             title: "Thanh toán thành công",
           ).show();
           Future.delayed(const Duration(seconds: 1), () {
-            widget.callbackFunction();
+            widget.callbackFunction(null);
             if (widget.isFromTempOrder == null) {
               Navigator.of(context).pop();
             }

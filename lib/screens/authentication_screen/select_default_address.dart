@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/goong_request.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
@@ -11,8 +12,10 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectDefaultAddress extends StatefulWidget {
-  const SelectDefaultAddress({super.key, required this.callback});
-  final void Function(SearchStartLocationResult? selectedLocation, PointLatLng? selectLatLng ) callback;
+  const SelectDefaultAddress(
+      {super.key, required this.callback});
+  final void Function(SearchStartLocationResult? selectedLocation,
+      PointLatLng? selectLatLng) callback;
 
   @override
   State<SelectDefaultAddress> createState() => _SelectDefaultAddressState();
@@ -31,8 +34,6 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
   bool _isSelected = false;
   SearchStartLocationResult? _selectedSearchResult;
   PointLatLng? _selectedLatLng;
-
-
 
   _onMapCreated(MapboxMap mapboxMap) {
     _mapboxMap = mapboxMap;
@@ -241,10 +242,10 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
           style: TextStyle(color: Colors.white),
         ),
         leading: BackButton(
-          onPressed: (){
+          onPressed: () {
             Navigator.of(context).pop();
           },
-          style:const ButtonStyle(
+          style: const ButtonStyle(
               foregroundColor: MaterialStatePropertyAll(Colors.white)),
         ),
       ),
@@ -262,7 +263,7 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
             textureView: false,
             onLongTapListener: (coordinate) async {
               if (_circleAnnotationSelected != null) {
-               await _circleAnnotationSelected!.deleteAll();
+                await _circleAnnotationSelected!.deleteAll();
               }
               _selectedSearchResult = null;
               _selectedLatLng = PointLatLng(coordinate.x, coordinate.y);
@@ -308,28 +309,38 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
                   ),
                 ),
               )),
-
-          if(_isSelected)
+          if (_isSelected)
             Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 2.h),
-                child: Container(
-                  margin:const EdgeInsets.only(bottom: 50),
-                  child: ElevatedButton(
-                    style: elevatedButtonStyle,
-                    onPressed: (){
-                      if(_selectedSearchResult != null){
-                        widget.callback(_selectedSearchResult!, null);
-                      }else{
-                        widget.callback(null, _selectedLatLng!);
-                      }
-                      Navigator.of(context).pop();
-                    }, child:const Text('Lưu')),
-                ),
-              ))    ,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2.h),
+                  child: Container(
+                    margin: const EdgeInsets.only(bottom: 50),
+                    child: ElevatedButton(
+                        style: elevatedButtonStyle,
+                        onPressed: () {
+                          if (_selectedSearchResult != null) {
+                            widget.callback(_selectedSearchResult!, null);
+                          } else {
+                            widget.callback(null, _selectedLatLng!);
+                          }
+                          // switch (widget.type) {
+                          //   case 0:
+                          //     Navigator.of(context).pop();
+                          //     Navigator.push(context, )
+                          //     break;
+                          //   case 1:
+                          //     break;
+                          //   case 2:
+                          //     break;
+                          // }
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('Lưu')),
+                  ),
+                )),
           if (_isShowResult)
             Positioned(
                 left: 0,
@@ -344,7 +355,7 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
                         InkWell(
                           onTap: () async {
                             if (_circleAnnotationSelected != null) {
-                            await  _circleAnnotationSelected!.deleteAll();
+                              await _circleAnnotationSelected!.deleteAll();
                             }
                             await _onSelectLocation(
                                 PointLatLng(rs.lat, rs.lng));
