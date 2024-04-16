@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/models/activity.dart';
@@ -103,13 +105,12 @@ class LocationService extends Iterable {
 ''';
       }
 
-      QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-query search(\$search: String!) {
+      log('''
+{
     destinations
     (
       first: 100, 
-      searchTerm: \$search,
+      searchTerm: "$search"
       where: {
         $seasons
         $activities
@@ -128,24 +129,52 @@ query search(\$search: String!) {
           topographic
           coordinate{coordinates}
           address
+          rating
           province{
             id
             name
             imagePath
           }
-          comments{
+        }
+    }
+}
+''');
+
+      QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+{
+    destinations
+    (
+      first: 100, 
+      searchTerm: "$search"
+      where: {
+        $seasons
+        $activities
+        $topographic
+        $provinces
+      }
+      )
+        {
+        nodes{
+          id
+          description
+          imagePaths
+          name
+          activities
+          seasons
+          topographic
+          rating
+          coordinate{coordinates}
+          address
+          province{
             id
-            comment
-            createdAt
-            account{
-              avatarPath
-              name
-            }
+            name
+            imagePath
           }
         }
     }
 }
-"""), variables: {"search": capitalizedSearch}));
+"""), ));
 
       if (result.hasException) {
         throw Exception(result.exception);
@@ -266,19 +295,20 @@ query search(\$search: String!) {
         imagePath
       }
       rating
-      comments {
-        id
-        comment
-        createdAt
-        account {
-          name
-        }
-      }
+
     }
   }
 }
 
 """)));
+      // comments {
+      //   id
+      //   comment
+      //   createdAt
+      //   account {
+      //     name
+      //   }
+      // }
 
       if (result.hasException) {
         throw Exception(result.exception);
@@ -443,6 +473,33 @@ mutation {
           .map((location) => LocationCardViewModel.fromJson(location['node']))
           .toList();
       return locations;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int>? getNumberOfPublishedPlan(int destinationId) async {
+    try {
+      QueryResult result = await client.query(QueryOptions(document: gql('''
+{
+  publishedPlans(where: {
+    destinationId:{
+      eq:$destinationId
+    }
+  }) {
+    edges {
+      node {
+        id
+      }
+    }
+  }
+}
+''')));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      List? res = result.data!['publishedPlans']['edges'];
+      return res!.length;
     } catch (error) {
       throw Exception(error);
     }

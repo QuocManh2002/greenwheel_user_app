@@ -19,7 +19,7 @@ class OrderService extends Iterable {
   static GraphQLClient client = config.getClient();
   final ProductService _productService = ProductService();
 
-  Future<int> addOrder(OrderCreateViewModel order) async {
+  Future<int> addOrder(OrderCreateViewModel order, BuildContext context) async {
     try {
       List<Map<String, dynamic>> details = order.details.map((detail) {
         return {
@@ -49,7 +49,11 @@ mutation{
       );
 
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
 
       final int orderId = result.data?['createOrder']["id"];
@@ -160,7 +164,8 @@ mutation{
     return orders;
   }
 
-  Future<int> createOrder(OrderViewModel order, int planId) async {
+  Future<int> createOrder(
+      OrderViewModel order, int planId, BuildContext context) async {
     try {
       List<Map<String, dynamic>> details = order.details!.map((detail) {
         return {'key': detail.id, 'value': detail.quantity};
@@ -184,7 +189,11 @@ mutation{
       final QueryResult result = await client.mutate(MutationOptions(
           fetchPolicy: FetchPolicy.noCache, document: gql(mutationText)));
       if (result.hasException) {
-        throw Exception(result.exception);
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       } else {
         var rstext = result.data!;
         int orderId = rstext['createOrder']['id'];
@@ -355,36 +364,56 @@ mutation {
       i++;
     }
     for (final order in orderList) {
-      for (final id in order['order']['cart'].keys.toList()) {
-        if (!ids.contains(id)) {
-          ids.add(int.parse(id));
+      if (order['order']['cart'].runtimeType == List<dynamic>) {
+        for (final id in order['order']['cart']) {
+          if (!ids.contains(int.parse(id['key'].toString()))) {
+            ids.add(int.parse(id['key'].toString()));
+          }
+        }
+      } else {
+        for (final id in order['order']['cart'].keys.toList()) {
+          if (!ids.contains(id)) {
+            ids.add(int.parse(id));
+          }
         }
       }
     }
     List<ProductViewModel>? products =
         await _productService.getListProduct(ids);
 
-    return orderList.map((e) {
+    return orderList.map((order) {
       ProductViewModel sampleProduct = products.firstWhere((element) =>
-          element.id.toString() == e['order']['cart'].entries.first.key);
+          element.id.toString() ==
+          (order['order']['cart'].runtimeType == List
+              ? order['order']['cart'].first['key'].toString()
+              : order['order']['cart'].entries.first.key));
       return OrderViewModel(
-          details: e['order']['cart'].entries.map((e) {
-            final product = products
-                .firstWhere((element) => element.id.toString() == e.key);
+          details: (order['order']['cart'].runtimeType == List
+                  ? order['order']['cart']
+                  : order['order']['cart'].entries)
+              .map((detail) {
+            final product = products.firstWhere((element) =>
+                element.id.toString() ==
+                (detail.runtimeType.toString() == '_Map<String, dynamic>'
+                    ? detail['key'].toString()
+                    : detail.key));
             return OrderDetailViewModel(
                 id: product.id,
                 productId: product.id,
                 productName: product.name,
                 price: product.price.toDouble(),
                 unitPrice: product.price.toDouble(),
-                quantity: e.value);
+                quantity:
+                    detail.runtimeType.toString() == '_Map<String, dynamic>'
+                        ? detail['value']
+                        : detail.value);
           }).toList(),
-          note: e['note'],
-          serveDates: e["serveDates"]
-              .map((e) =>
-                  startDate.add(Duration(days: e)).toString().split(' ')[0])
+          note: order['note'],
+          serveDates: order["serveDates"]
+              .map((day) =>
+                  startDate.add(Duration(days: day)).toString().split(' ')[0])
               .toList(),
-          total: e['order']['total'].toDouble(),
+          total: order['order']['total'].toDouble(),
           createdAt: DateTime.now(),
           supplier: SupplierViewModel(
               type: sampleProduct.supplierType,
@@ -394,7 +423,7 @@ mutation {
               thumbnailUrl: sampleProduct.supplierThumbnailUrl,
               address: sampleProduct.supplierAddress),
           type: getOrdeType(sampleProduct.supplierType!),
-          period: e['order']['period']);
+          period: order['order']['period']);
     }).toList();
   }
 

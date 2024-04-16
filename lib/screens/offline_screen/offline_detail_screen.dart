@@ -19,7 +19,7 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
-        title:const Text('Chi tiết kế hoạch'),
+        title: const Text('Chi tiết kế hoạch'),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -168,9 +168,10 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
                   SizedBox(
                     height: 60.h,
                     child: PLanScheduleWidget(
-                     planId: widget.plan.id,
-                     schedule: [],
-                     planType: "",
+                      isLeader: true,
+                      planId: widget.plan.id,
+                      schedule: [],
+                      planType: "",
                       startDate: widget.plan.startDate,
                       endDate: widget.plan.endDate,
                     ),

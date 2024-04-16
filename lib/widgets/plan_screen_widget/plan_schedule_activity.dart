@@ -43,11 +43,30 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
         isLoading = false;
       });
     } else if (widget.item.tempOrder['cart'] != null) {
-      List<dynamic> cart = widget.item.tempOrder['cart'];
-      for (final proId in cart) {
-        if (!ids.contains(proId['key'])) {
-          ids.add(proId['key']);
+      // List<dynamic> cart = widget.item.tempOrder['cart'];
+      // for (final proId in cart) {
+      //   if (!ids.contains(proId['key'])) {
+      //     ids.add(proId['key']);
+      //   }
+      // }
+      dynamic cart = widget.item.tempOrder['cart'];
+      // for (final proId in cart.entries) {
+      //   if (!ids.contains(int.parse(proId.key))) {
+      //     ids.add(int.parse(proId.key));
+      //   }
+      // }
+      if(cart.runtimeType == List<dynamic> ){
+        for (final proId in cart) {
+        if (!ids.contains(int.parse(proId['key'].toString()))) {
+          ids.add(int.parse(proId['key'].toString()));
         }
+      }
+      }else{
+        for (final proId in cart.entries) {
+        if (!ids.contains(int.parse(proId.key))) {
+          ids.add(int.parse(proId.key));
+        }
+      }
       }
       products = await _productService.getListProduct(ids);
       if (products != null) {
@@ -181,7 +200,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                         if (widget.item.tempOrder['cart'] !=
                                             null)
                                           for (final detail
-                                              in widget.item.tempOrder['cart'])
+                                              in widget.item.tempOrder['cart'].entries)
                                             Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment
@@ -195,7 +214,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                     products!
                                                         .firstWhere((element) =>
                                                             element.id ==
-                                                            detail['key'])
+                                                            int.parse(detail.key))
                                                         .name,
                                                     style: const TextStyle(
                                                         fontSize: 18,
@@ -208,7 +227,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                 SizedBox(
                                                   width: 15.w,
                                                   child: Text(
-                                                    detail['value'].toString(),
+                                                    detail.value.toString(),
                                                     textAlign: TextAlign.end,
                                                     style: const TextStyle(
                                                         fontSize: 18,
@@ -276,7 +295,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
             }
           },
           child: Padding(
-            padding: const EdgeInsets.only(top: 12, left: 12, right: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             child: Container(
               width: 100.w,
               clipBehavior: Clip.hardEdge,

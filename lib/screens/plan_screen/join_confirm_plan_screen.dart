@@ -7,7 +7,7 @@ import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/transaction_detail_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/input_companion_name_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/input_companion_name_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';

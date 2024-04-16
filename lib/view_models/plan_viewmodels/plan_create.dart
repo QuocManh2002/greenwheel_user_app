@@ -1,40 +1,44 @@
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+
 class PlanCreate {
-  final int? locationId;
-  final double? latitude;
-  final double? longitude;
-  final DateTime? startDate;
-  final DateTime? endDate;
-  final DateTime? closeRegDate;
-  final int? memberLimit;
-  final String? name;
-  final String? schedule;
+  int? locationId;
+  String? locationName;
+  PointLatLng? departCoordinate;
+  String? departAddress;
+  DateTime? departAt;
+  DateTime? endDate;
+  DateTime? closeRegDate;
+  DateTime? startDate;
+  int? maxMemberCount;
+  String? name;
+  String? schedule;
   String? savedContacts;
+  List<dynamic>? surcharges;
   int? numOfExpPeriod;
-  final DateTime? departureDate;
-  int? gcoinBudget;
   String? travelDuration;
-  String? tempOrders;
   String? note;
   int? maxMemberWeight;
-  String? departureAddress;
+  List<String>? savedContactIds;
+  DateTime? arrivedAt;
 
   PlanCreate(
       {this.locationId,
+      this.departAddress,
+      this.departCoordinate,
+      this.locationName,
+      this.departAt,
+      this.surcharges,
       this.startDate,
       this.endDate,
-      this.latitude,
       this.closeRegDate,
-      this.longitude,
-      this.memberLimit,
+      this.maxMemberCount,
       this.name,
       this.schedule,
       this.numOfExpPeriod,
-      this.departureDate,
-      this.gcoinBudget,
       this.travelDuration,
-      this.tempOrders,
       this.note,
       this.maxMemberWeight,
-      this.departureAddress,
+      this.savedContactIds,
+      this.arrivedAt,
       this.savedContacts});
 }

@@ -63,7 +63,7 @@ class LocationCard extends StatelessWidget {
               ),
             ),
             const SizedBox(
-              height: 4,
+              height: 2,
             ),
             Padding(
               padding: const EdgeInsets.only(left: 8),

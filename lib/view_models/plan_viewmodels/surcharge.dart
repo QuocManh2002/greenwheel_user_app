@@ -8,13 +8,13 @@ class SurchargeViewModel {
   String? id;
   bool alreadyDivided;
   String? imagePath;
-  int gcoinAmount;
+  int amount;
   String note;
   SurchargeViewModel(
       {String? id,
       required this.alreadyDivided,
       this.imagePath,
-      required this.gcoinAmount,
+      required this.amount,
       required this.note})
       : id = id ?? uuid.v4();
 
@@ -23,7 +23,7 @@ class SurchargeViewModel {
           id: json['id'].toString(),
           imagePath: json['imagePath'],
           alreadyDivided: json['alreadyDivided'],
-          gcoinAmount: json['gcoinAmount'],
+          amount: json['amount'],
           note: "${json['note']}"
           
           );
@@ -33,7 +33,7 @@ class SurchargeViewModel {
           id: json['id'].toString(),
           imagePath: json['imagePath'],
           alreadyDivided: json['alreadyDivided'],
-          gcoinAmount: json['gcoinAmount'],
+          amount: json['amount'],
           note: json['note']);
 
 
@@ -41,7 +41,7 @@ class SurchargeViewModel {
         'id': id,
         'alreadyDivided': alreadyDivided,
         'imagePath': imagePath,
-        'gcoinAmount': gcoinAmount,
+        'amount': amount,
         'note': json.encode(note),
       };
 }

@@ -252,6 +252,7 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
                     } else if (value.length > 30) {
                       return 'Tên thành viên không quá 40 kí tự';
                     }
+                    return null;
                   },
                   inputType: TextInputType.name),
             ),
@@ -330,6 +331,7 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
                         } else if (value.length > 30) {
                           return 'Tên thành viên không quá 40 kí tự';
                         }
+                        return null;
                       },
                       inputType: TextInputType.name),
                 ),

@@ -17,10 +17,12 @@ class ConfirmServiceInfor extends StatelessWidget {
       required this.listRest,
       required this.listFood,
       required this.budgetPerCapita,
+      required this.listVehicle,
       required this.total,
       required this.listSurcharges});
   final List<OrderViewModel> listRest;
   final List<OrderViewModel> listFood;
+  final List<OrderViewModel> listVehicle;
   final double total;
   final double budgetPerCapita;
   final List<dynamic> listSurcharges;
@@ -35,9 +37,6 @@ class ConfirmServiceInfor extends StatelessWidget {
                 ? int.parse(element['gcoinAmount'].toString()) *
                     sharedPreferences.getInt('plan_number_of_member')!
                 : int.parse(element['gcoinAmount'].toString())));
-                print(total);
-                print(totalSurcharge);
-                print((totalSurcharge +total) * 1.1 / sharedPreferences.getInt('plan_number_of_member')!);
                 
     return SingleChildScrollView(
       child: Padding(
@@ -117,6 +116,43 @@ class ConfirmServiceInfor extends StatelessWidget {
                         style: TextStyle(fontSize: 16),
                       ),
                       for (final order in listRest)
+                        SizedBox(
+                            width: 80.w,
+                            child: Text(
+                              '${order.supplier!.name} - ${order.details!.length} sản phẩm',
+                              style: const TextStyle(
+                                  fontSize: 18, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.clip,
+                            ))
+                    ]),
+              ),
+            if (listVehicle.isNotEmpty)
+              SizedBox(
+                height: 1.h,
+              ),
+            if (listVehicle.isNotEmpty)
+              Container(
+                width: 100.w,
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                    boxShadow: const [
+                      BoxShadow(
+                        blurRadius: 3,
+                        color: Colors.black12,
+                        offset: Offset(1, 3),
+                      )
+                    ],
+                    color: Colors.white.withOpacity(0.97),
+                    borderRadius: const BorderRadius.all(Radius.circular(8))),
+                child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Thuê phương tiện',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      for (final order in listFood)
                         SizedBox(
                             width: 80.w,
                             child: Text(

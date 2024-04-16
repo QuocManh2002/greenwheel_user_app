@@ -1,11 +1,17 @@
 import 'dart:convert';
+import 'dart:math';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:dart_jts/dart_jts.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
@@ -72,14 +78,6 @@ class Utils {
   }
 
   bool checkTimeAfterNow1Hour(TimeOfDay time, DateTime dateTime) {
-    print(dateTime
-        .add(Duration(hours: time.hour))
-        .add(Duration(minutes: time.minute)));
-    print(DateTime.now().add(const Duration(minutes: 59)));
-    print(dateTime
-        .add(Duration(hours: time.hour))
-        .add(Duration(minutes: time.minute))
-        .isAfter(DateTime.now().add(const Duration(minutes: 59))));
     return dateTime
         .add(Duration(hours: time.hour))
         .add(Duration(minutes: time.minute))
@@ -270,14 +268,168 @@ class Utils {
     }
   }
 
-  isEndAtNoon() {
-    final DateTime _arrivedTime =
-        DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!);
-    var dayEqualNight =
-        sharedPreferences.getInt('initNumOfExpPeriod')! % 2 == 0;
+  isEndAtNoon(PlanCreate? plan) {
+    final DateTime _arrivedTime = plan == null
+        ? DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!)
+        : plan.arrivedAt!;
+    var dayEqualNight = (plan == null
+                ? sharedPreferences.getInt('numOfExpPeriod')!
+                : plan.numOfExpPeriod)! %
+            2 ==
+        0;
     var arrivedAtNight = _arrivedTime.hour >= 20;
     var arrivedAtEvening = !arrivedAtNight && _arrivedTime.hour >= 16;
     return (arrivedAtEvening && dayEqualNight) ||
         (!arrivedAtEvening && !dayEqualNight);
+  }
+
+  double ceilToDecimal(double number, int decimalPlaces) {
+    double scale = pow(10, decimalPlaces).toDouble();
+    return (number * scale).ceil() / scale;
+  }
+
+  handleUpdatePlanDuration(
+      void Function() onOk, void Function() onCancel, BuildContext context) {
+    AwesomeDialog(
+            context: context,
+            animType: AnimType.leftSlide,
+            dialogType: DialogType.warning,
+            title: 'Thay đổi quan trọng',
+            titleTextStyle: const TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'NotoSans'),
+            desc:
+                'Thay đổi này ảnh hưởng đến lịch trình và các thành phần quan trọng của chuyến đi. Đồng ý với thay đổi, chúng tôi sẽ xoá toàn bộ lịch trình và các thành phần liên quan',
+            descTextStyle: const TextStyle(
+              fontSize: 16,
+              color: Colors.grey,
+              fontFamily: 'NotoSans',
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            btnOkText: 'Đồng ý',
+            btnOkColor: Colors.amber,
+            btnOkOnPress: () {
+              sharedPreferences.remove('plan_schedule');
+              sharedPreferences.remove('plan_surcharge');
+              sharedPreferences.remove('plan_temp_order');
+              onOk();
+            },
+            btnCancelColor: Colors.blueAccent,
+            btnCancelOnPress: onCancel,
+            btnCancelText: 'Huỷ')
+        .show();
+  }
+
+  isConsecutiveDates(List<DateTime> dates) {
+    if (dates.length <= 1) {
+      return true;
+    }
+
+    for (int i = 1; i < dates.length; i++) {
+      DateTime current = dates[i];
+      DateTime previous = dates[i - 1];
+      if (current.difference(previous).inDays != 1) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  getArrivedTimeFromLocal() {
+    final initialDateTime =
+        DateTime.parse(sharedPreferences.getString('plan_start_time')!);
+    final startTime =
+        DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
+    final arrivedTime = startTime.add(Duration(
+        seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+            .ceil()));
+    return arrivedTime;
+  }
+
+  setUpDataClonePlan(PlanDetail plan) {
+    sharedPreferences.setInt('planId', plan.id!);
+
+    sharedPreferences.setInt('plan_number_of_member', plan.maxMemberCount!);
+
+    sharedPreferences.setInt(
+        'plan_combo_date',
+        listComboDate
+                .firstWhere(
+                    (element) => element.duration == plan.numOfExpPeriod)
+                .id -
+            1);
+
+    sharedPreferences.setDouble('plan_start_lat', plan.startLocationLat!);
+
+    sharedPreferences.setDouble('plan_start_lng', plan.startLocationLng!);
+
+    sharedPreferences.setString('plan_start_address', plan.departureAddress!);
+
+    sharedPreferences.setStringList('selectedIndex',
+        plan.savedContacts!.map((e) => e.id.toString()).toList());
+
+    sharedPreferences.setString('plan_note', plan.note ?? 'null');
+
+    sharedPreferences.setBool('notAskScheduleAgain', false);
+
+    sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
+
+    sharedPreferences.setInt('plan_max_member_weight', plan.maxMemberWeight!);
+
+    sharedPreferences.setString('plan_location_name', plan.locationName!);
+
+    sharedPreferences.setInt('plan_location_id', plan.locationId!);
+
+    sharedPreferences.setString('plan_name', plan.name!);
+
+    sharedPreferences.setString('plan_schedule', json.encode(plan.schedule));
+
+    sharedPreferences.setString('plan_surcharge',
+        json.encode(plan.surcharges!.map((e) => e.toJson()).toList()));
+  }
+
+  handleAlreadyDraft(BuildContext context, LocationViewModel location,
+      String locationName, bool isClone, PlanDetail? plan) {
+    AwesomeDialog(
+      context: context,
+      animType: AnimType.leftSlide,
+      dialogType: DialogType.question,
+      title:
+          'Bạn đang có bản nháp chuyến đi tại ${locationName == location.name ? 'địa điểm này' : locationName}',
+      titleTextStyle: const TextStyle(
+          fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
+      desc: 'Bạn có muốn ghi đè chuyến đi đó không ?',
+      descTextStyle: const TextStyle(
+          fontSize: 16, color: Colors.grey, fontFamily: 'NotoSans'),
+      btnOkOnPress: () async {
+        Utils().clearPlanSharePref();
+        sharedPreferences.setString('plan_location_name', location.name);
+        sharedPreferences.setInt('plan_location_id', location.id);
+        if (isClone) {
+          setUpDataClonePlan(plan!);
+        }
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => SelectComboDateScreen(
+                  isCreate: true,
+                  location: location,
+                  isClone: isClone,
+                )));
+      },
+      btnOkColor: Colors.deepOrangeAccent,
+      btnOkText: 'Có',
+      btnCancelText: 'Không',
+      btnCancelColor: Colors.blue,
+      btnCancelOnPress: () {
+        if (locationName == location.name) {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (ctx) => SelectComboDateScreen(
+                    isCreate: true,
+                    location: location,
+                    isClone: isClone,
+                  )));
+        }
+      },
+    ).show();
   }
 }

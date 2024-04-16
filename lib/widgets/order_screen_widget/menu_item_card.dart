@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -9,14 +10,13 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:intl/intl.dart';
 
 class MenuItemCard extends StatefulWidget {
-  const MenuItemCard({
-    super.key,
-    required this.product,
-    required this.updateCart,
-    this.quantity,
-    required this.numberOfMember,
-    required this.serviceType
-  });
+  const MenuItemCard(
+      {super.key,
+      required this.product,
+      required this.updateCart,
+      this.quantity,
+      required this.numberOfMember,
+      required this.serviceType});
   final ProductViewModel product;
   final Function updateCart;
   final int? quantity;
@@ -30,7 +30,7 @@ class MenuItemCard extends StatefulWidget {
 class _MenuItemCardState extends State<MenuItemCard> {
   var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
   bool isQuantity = false;
-  bool isFoodOrder = false;
+  bool isFoodOrVehicleOrder = false;
 
   @override
   void initState() {
@@ -41,7 +41,8 @@ class _MenuItemCardState extends State<MenuItemCard> {
         isQuantity = true;
       });
     }
-    isFoodOrder = widget.serviceType.id == 1;
+    isFoodOrVehicleOrder =
+        widget.serviceType.id == 1 || widget.serviceType.id == 3;
   }
 
   @override
@@ -72,11 +73,15 @@ class _MenuItemCardState extends State<MenuItemCard> {
                       topLeft: Radius.circular(8),
                       bottomLeft: Radius.circular(8),
                     ),
-                    child: FadeInImage(
+                    child: CachedNetworkImage(
                       height: 15.h,
-                      placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage('$baseBucketImage${widget.product.thumbnailUrl!}'),
+                      placeholder: (context, url) =>
+                          Image.memory(kTransparentImage),
+                      imageUrl:
+                          '$baseBucketImage${widget.product.thumbnailUrl!}',
                       fit: BoxFit.cover,
+                      errorWidget: (context, url, error) =>
+                          Image.asset(empty_plan),
                       width: 15.h,
                       filterQuality: FilterQuality.high,
                     ),
@@ -188,12 +193,16 @@ class _MenuItemCardState extends State<MenuItemCard> {
                                     backgroundColor: Colors.green),
                                 onPressed: () async {
                                   setState(() {
-                                    if (isFoodOrder && !isQuantity) {
-                                      widget.updateCart(widget.product, (widget.numberOfMember / widget.product.partySize!).ceil());
+                                    if (isFoodOrVehicleOrder && !isQuantity) {
+                                      widget.updateCart(
+                                          widget.product,
+                                          (widget.numberOfMember /
+                                                  widget.product.partySize!)
+                                              .ceil());
                                     } else {
                                       widget.updateCart(widget.product, 1);
                                     }
-                                      isQuantity = true;
+                                    isQuantity = true;
                                   });
                                 },
                                 icon: const Icon(

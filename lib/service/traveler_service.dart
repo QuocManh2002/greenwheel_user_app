@@ -37,6 +37,10 @@ class CustomerService {
       gcoinBalance
       phone
       avatarPath
+      address
+      coordinate{
+        coordinates
+      }
     }
   }
 }
@@ -278,13 +282,24 @@ mutation {
 
   Future<int?> updateTravelerProfile(CustomerViewModel model) async {
     try {
+      log('''mutation{
+  travelerUpdate(dto:{
+    avatarUrl:${model.avatarUrl == null ? null : json.encode(model.avatarUrl)}
+    address:"${model.defaultAddress}"
+    coordinate:[${model.defaultCoordinate!.longitude},${model.defaultCoordinate!.latitude}]
+    isMale:${model.isMale}
+    name:"${model.name}"
+  }){
+    id
+  }
+}''');
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(MutationOptions(document: gql('''
 mutation{
-  updateTravelerProfile(dto:{
-    avatarUrl:"${model.avatarUrl}"
-    defaultAddress:"${model.defaultAddress}"
-    defaultCoordinate:[${model.defaultCoordinate!.longitude},${model.defaultCoordinate!.latitude}]
+  travelerUpdate(dto:{
+    avatarUrl:${model.avatarUrl == null ? null : json.encode('$baseBucketImage${model.avatarUrl}')}
+    address:"${model.defaultAddress}"
+    coordinate:[${model.defaultCoordinate!.longitude},${model.defaultCoordinate!.latitude}]
     isMale:${model.isMale}
     name:"${model.name}"
   }){
@@ -295,7 +310,7 @@ mutation{
       if (result.hasException) {
         throw Exception(result.exception);
       }
-      final int? rs = result.data!['updateTravelerProfile']['id'];
+      final int? rs = result.data!['travelerUpdate']['id'];
       if (rs == null) {
         return null;
       } else {
@@ -383,7 +398,7 @@ mutation auth{
         throw Exception(result.exception);
       }
 
-      int? rs = result.data!['accounts']['edges'][0]['node']['gcoinBalance'];
+      int? rs = result.data!['accounts']['edges'][0]['node']['gcoinBalance'].toInt();
       if (rs == null) {
         return 0;
       } else {

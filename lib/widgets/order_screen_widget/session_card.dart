@@ -20,6 +20,7 @@ class SessionCard extends StatelessWidget {
     this.availableGcoinAmount,
     this.isFromTempOrder,
     this.initSession,
+    this.isEndAtNoon
   });
   final Session session;
   final DateTime startDate;
@@ -30,6 +31,7 @@ class SessionCard extends StatelessWidget {
   final void Function(dynamic) callbackFunction;
   final bool? isOrder;
   final bool? isFromTempOrder;
+  final bool? isEndAtNoon;
   final int? availableGcoinAmount;
   final Session? initSession;
 
@@ -48,7 +50,7 @@ class SessionCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              if (initSession != null && initSession != session) {
+              if (isEndAtNoon == null && initSession != null && initSession != session) {
                 AwesomeDialog(
                         context: context,
                         animType: AnimType.leftSlide,

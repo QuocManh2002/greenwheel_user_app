@@ -6,6 +6,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -16,10 +17,11 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_detail_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/history_order_screen.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
+import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_surcharge_note.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/join_confirm_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/plan_pdf_view_screen.dart';
@@ -51,12 +53,14 @@ class DetailPlanNewScreen extends StatefulWidget {
       {super.key,
       required this.planId,
       this.isFromHost,
+      this.isClone,
       required this.planType,
       required this.isEnableToJoin});
   final int planId;
   final bool isEnableToJoin;
   final bool? isFromHost;
   final String planType;
+  final bool? isClone;
 
   @override
   State<DetailPlanNewScreen> createState() => _DetailPlanScreenState();
@@ -110,7 +114,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       });
       isLeader = sharedPreferences.getInt('userId') == _planDetail!.leaderId;
       products = await _productService.getListProduct(productIds);
-      // tempOrders = await getTempOrder();
       tempOrders = await _orderService.getTempOrderFromSchedule(
           _planDetail!.schedule!, _planDetail!.startDate!);
       _isPublic = _planDetail!.joinMethod != 'NONE';
@@ -122,7 +125,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           isLoading = false;
         });
       }
-      _isEnableToConfirm = _planDetail!.status != 'READY';
+      _isEnableToConfirm = _planDetail!.status == 'REGISTERING';
     }
     var tempDuration = DateFormat.Hm().parse(_planDetail!.travelDuration!);
     final startTime = DateTime(0, 0, 0, _planDetail!.utcDepartAt!.hour,
@@ -130,17 +133,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     final arrivedTime = startTime
         .add(Duration(hours: tempDuration.hour))
         .add(Duration(minutes: tempDuration.minute));
-    var cmd;
-    if (arrivedTime.isAfter(DateTime(0, 0, 0, 16, 0)) &&
-        arrivedTime.isBefore(DateTime(0, 0, 1, 6, 0))) {
-      cmd = listComboDate.firstWhere(
-          (element) => element.duration == _planDetail!.numOfExpPeriod! - 1);
-      comboDateText = '${cmd.numberOfDay} ngày ${cmd.numberOfNight + 1} đêm';
-    } else {
-      cmd = listComboDate.firstWhere(
-          (element) => element.duration == _planDetail!.numOfExpPeriod);
-      comboDateText = '${cmd.numberOfDay} ngày ${cmd.numberOfNight} đêm';
-    }
+    final rs = Utils().getNumOfExpPeriod(
+        arrivedTime, _planDetail!.numOfExpPeriod!, startTime, null, true);
+    var comboDate = listComboDate.firstWhere(
+        (element) => element.duration == _planDetail!.numOfExpPeriod!);
+    comboDateText =
+        '${comboDate.numberOfDay} ngày ${rs['numOfExpPeriod'] != _planDetail!.numOfExpPeriod ? comboDate.numberOfNight + 1 : comboDate.numberOfNight} đêm';
   }
 
   getPlanMember() async {
@@ -213,7 +211,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         _planDetail!.status == 'PENDING') {
       orderList = tempOrders!;
     } else {
-      final rs = await _planService.getOrderCreatePlan(widget.planId);
+      final rs =
+          await _planService.getOrderCreatePlan(widget.planId, widget.planType);
       if (rs != null) {
         setState(() {
           orderList = rs['orders'];
@@ -230,43 +229,41 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   updatePlan() async {
     final location =
         await _locationService.GetLocationById(_planDetail!.locationId!);
-    final schedule =
-        await _planService.getPlanSchedule(widget.planId, widget.planType);
-    if (location != null && schedule != null) {
-      final rs = Utils().getNumOfExpPeriod(
-          null,
-          _planDetail!.numOfExpPeriod!,
-          _planDetail!.utcDepartAt!,
-          DateFormat.Hms().parse(_planDetail!.travelDuration!),
-          false);
-      PlanDetail _plan = PlanDetail(
-          tempOrders: tempOrders,
+    if (location != null) {
+      PlanCreate _plan = PlanCreate(
           surcharges: _planDetail!.surcharges,
           travelDuration: _planDetail!.travelDuration,
-          utcDepartAt: _planDetail!.utcDepartAt,
-          departureAddress: _planDetail!.departureAddress,
-          id: _planDetail!.id,
+          departAt: _planDetail!.utcDepartAt,
+          departAddress: _planDetail!.departureAddress,
           locationId: _planDetail!.locationId,
           locationName: _planDetail!.locationName,
           maxMemberCount: _planDetail!.maxMemberCount,
           maxMemberWeight: _planDetail!.maxMemberWeight,
           name: _planDetail!.name,
-          savedContacts: _planDetail!.savedContacts,
+          savedContacts: json.encode(_planDetail!.savedContacts!
+              .map((e) => EmergencyContactViewModel().toJson(e))
+              .toList()),
           note: _planDetail!.note,
           endDate: _planDetail!.endDate,
           startDate: _planDetail!.startDate,
-          startLocationLat: _planDetail!.startLocationLat,
-          startLocationLng: _planDetail!.startLocationLng,
-          numOfExpPeriod: rs['numOfExpPeriod'],
-          schedule: _planDetail!.schedule);
-
+          departCoordinate: PointLatLng(
+              _planDetail!.startLocationLat!, _planDetail!.startLocationLng!),
+          numOfExpPeriod: _planDetail!.numOfExpPeriod,
+          savedContactIds: [],
+          arrivedAt: _planDetail!.utcStartAt,
+          schedule: json.encode(_planDetail!.schedule));
+      sharedPreferences.setInt('planId', widget.planId);
       Navigator.of(context).pop();
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (ctx) => CreatePlanScreen(
-                location: location,
+      Navigator.push(
+          context,
+          PageTransition(
+              child: SelectComboDateScreen(
                 isCreate: false,
+                location: location,
                 plan: _plan,
-              )));
+                isClone: false,
+              ),
+              type: PageTransitionType.rightToLeft));
     }
   }
 
@@ -285,40 +282,43 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         foregroundColor: Colors.white,
                         activeBackgroundColor: redColor.withOpacity(0.9),
                         children: [
-                          SpeedDialChild(
-                              child: const Icon(Icons.send),
-                              labelStyle: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                              label: 'Mời',
-                              onTap: _isEnableToInvite ? onInvite : () {},
-                              labelBackgroundColor: _isEnableToInvite
-                                  ? Colors.blue.withOpacity(0.8)
-                                  : Colors.white30,
-                              foregroundColor: Colors.white,
-                              backgroundColor: _isEnableToInvite
-                                  ? Colors.blue
-                                  : Colors.white38),
-                          SpeedDialChild(
-                              child: const Icon(
-                                Icons.check_circle_outline,
-                                size: 30,
-                              ),
-                              label: 'Chốt',
-                              onTap:
-                                  _isEnableToConfirm ? onConfirmMember : () {},
-                              labelStyle: const TextStyle(
-                                fontSize: 18,
-                                color: Colors.white,
-                              ),
-                              labelBackgroundColor: _isEnableToConfirm
-                                  ? primaryColor.withOpacity(0.8)
-                                  : Colors.white30,
-                              foregroundColor: Colors.white,
-                              backgroundColor: _isEnableToConfirm
-                                  ? primaryColor
-                                  : Colors.white38),
+                          if (_isEnableToInvite)
+                            SpeedDialChild(
+                                child: const Icon(Icons.send),
+                                labelStyle: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                                label: 'Mời',
+                                onTap: _isEnableToInvite ? onInvite : () {},
+                                labelBackgroundColor: _isEnableToInvite
+                                    ? Colors.blue.withOpacity(0.8)
+                                    : Colors.white30,
+                                foregroundColor: Colors.white,
+                                backgroundColor: _isEnableToInvite
+                                    ? Colors.blue
+                                    : const Color.fromARGB(97, 15, 7, 7)),
+                          if (_isEnableToConfirm)
+                            SpeedDialChild(
+                                child: const Icon(
+                                  Icons.check_circle_outline,
+                                  size: 30,
+                                ),
+                                label: 'Chốt',
+                                onTap: _isEnableToConfirm
+                                    ? onConfirmMember
+                                    : () {},
+                                labelStyle: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.white,
+                                ),
+                                labelBackgroundColor: _isEnableToConfirm
+                                    ? primaryColor.withOpacity(0.8)
+                                    : Colors.white30,
+                                foregroundColor: Colors.white,
+                                backgroundColor: _isEnableToConfirm
+                                    ? primaryColor
+                                    : Colors.white38),
                           SpeedDialChild(
                               child: const Icon(Icons.share),
                               labelStyle: const TextStyle(
@@ -354,12 +354,26 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   color: Colors.white,
                                 ),
                                 onTap: () async {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      content: SizedBox(
+                                        height: 10.h,
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
+                                            color: primaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
                                   var coordinate =
                                       await _planService.getCurrentLocation();
                                   if (coordinate != null) {
                                     final rs = await _planService.verifyPlan(
                                         widget.planId, coordinate, context);
                                     if (rs != null) {
+                                      Navigator.of(context).pop();
                                       AwesomeDialog(
                                               context: context,
                                               animType: AnimType.leftSlide,
@@ -384,17 +398,31 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                     primaryColor.withOpacity(0.8),
                                 foregroundColor: Colors.white,
                                 backgroundColor: primaryColor),
-                          if (_planDetail!.status == 'VERIFIED')
+                          if (_planDetail!.status == 'COMPLETED')
                             SpeedDialChild(
-                                child: const Icon(Icons.check),
+                                child: const Icon(Icons.print),
                                 labelStyle: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.white,
                                 ),
                                 onTap: () async {
+                                  showDialog(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      content: SizedBox(
+                                        height: 10.h,
+                                        child:const Center(
+                                          child:  CircularProgressIndicator(
+                                            color: primaryColor,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  );
                                   final rs = await _planService.publishPlan(
                                       widget.planId, context);
                                   if (rs != null) {
+                                    Navigator.of(context).pop();
                                     AwesomeDialog(
                                             context: context,
                                             animType: AnimType.leftSlide,
@@ -425,7 +453,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             shape: const CircleBorder(),
                             backgroundColor: primaryColor,
                             foregroundColor: Colors.white,
-                            child: const Icon(Icons.check),
+                            child: const Icon(Icons.share),
                             onPressed: () {
                               sharedPreferences.setInt(
                                   'plan_id_pdf', _planDetail!.id!);
@@ -816,8 +844,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                           )),
                         ),
                         if ((widget.isFromHost == null || widget.isFromHost!) &&
-                            widget.isEnableToJoin &&
-                            !_isAlreadyJoin)
+                                widget.isEnableToJoin &&
+                                !_isAlreadyJoin ||
+                            widget.planType == 'PUBLISH')
                           buildNewFooter()
                       ],
                     ),
@@ -833,6 +862,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       isLeader: isLeader,
       tempOrders: tempOrders!,
       orderList: orderList,
+      planType: widget.planType,
       total: total,
       onGetOrderList: setupData);
 
@@ -853,11 +883,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             height: 16,
           ),
           BaseInformationWidget(
-            type: widget.planType,
             plan: _planDetail!,
             members: _planMembers,
             refreshData: setupData,
             isLeader: isLeader,
+            planType: widget.planType,
           ),
         ],
       );
@@ -881,6 +911,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               height: 60.h,
               child: PLanScheduleWidget(
                 planId: widget.planId,
+                isLeader: isLeader,
                 planType: widget.planType,
                 schedule: _planDetail!.schedule!,
                 startDate: _planDetail!.startDate!,
@@ -986,15 +1017,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     isInfo: false,
                     isFromHost: isLeader,
                     plan: PlanCreate(
-                      departureAddress: _planDetail!.departureAddress,
+                      departAddress: _planDetail!.departureAddress,
                       schedule: json.encode(_planDetail!.schedule),
                       savedContacts: json.encode(emerList),
                       name: _planDetail!.name,
-                      memberLimit: _planDetail!.maxMemberCount,
+                      maxMemberCount: _planDetail!.maxMemberCount,
                       startDate: _planDetail!.startDate,
                       endDate: _planDetail!.endDate,
                       travelDuration: _planDetail!.travelDuration,
-                      departureDate: _planDetail!.utcDepartAt,
+                      departAt: _planDetail!.utcDepartAt,
                       note: _planDetail!.note,
                     ),
                     locationName: _planDetail!.locationName!,
@@ -1069,16 +1100,23 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             height: 6.h,
             child: ElevatedButton(
               onPressed: () {
-                if (!_isAlreadyJoin) {
-                  onJoinPlan(false);
+                if (widget.planType == 'PUBLISH') {
+                  onClonePlan();
+                } else {
+                  if (!_isAlreadyJoin) {
+                    onJoinPlan(false);
+                  }
                 }
               },
               style: elevatedButtonStyle.copyWith(
                   backgroundColor: MaterialStatePropertyAll(
                       _isAlreadyJoin ? Colors.grey : primaryColor)),
-              child: const Text(
-                "Tham gia kế hoạch",
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              child: Text(
+                widget.planType == 'PUBLISH'
+                    ? "Sao chép kế hoạch"
+                    : "Tham gia kế hoạch",
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
             )),
       );
@@ -1551,5 +1589,36 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               planId: widget.planId,
             ),
             type: PageTransitionType.rightToLeft));
+  }
+
+  onClonePlan() async {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        content: SizedBox(
+          height: 10.h,
+          child: const Center(
+            child: CircularProgressIndicator(
+              color: primaryColor,
+            ),
+          ),
+        ),
+      ),
+    );
+    final location =
+        await _locationService.GetLocationById(_planDetail!.locationId!);
+    String? locationName = sharedPreferences.getString('plan_location_name');
+    if (locationName != null) {
+      Navigator.of(context).pop();
+      Utils().handleAlreadyDraft(context, location!, locationName, true, _planDetail);
+    } else {
+      Utils().setUpDataClonePlan(_planDetail!);
+      Navigator.of(context).pop();
+      Navigator.push(
+          context,
+          PageTransition(
+              child: SelectComboDateScreen(location: location!, isCreate: true, isClone: true,),
+              type: PageTransitionType.rightToLeft));
+    }
   }
 }

@@ -9,7 +9,7 @@ import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_emerg
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
@@ -19,10 +19,11 @@ import 'package:sizer2/sizer2.dart';
 
 class SelectStartDateScreen extends StatefulWidget {
   const SelectStartDateScreen(
-      {super.key, required this.isCreate, this.plan, required this.location});
+      {super.key, required this.isCreate, this.plan, required this.location, required this.isClone});
   final bool isCreate;
-  final PlanDetail? plan;
+  final PlanCreate? plan;
   final LocationViewModel location;
+  final bool isClone;
 
   @override
   State<SelectStartDateScreen> createState() => _SelectStartDateState();
@@ -47,78 +48,90 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
     dynamic rs;
     final departureDate = widget.isCreate
         ? DateTime.parse(sharedPreferences.getString('plan_departureDate')!)
-        : widget.plan!.utcDepartAt;
+        : widget.plan!.departAt!.toLocal();
     if (widget.isCreate) {
-      final initialDateTime =
-          DateTime.parse(sharedPreferences.getString('plan_start_time')!);
-      final startTime =
-          DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
-      final arrivedTime = startTime.add(Duration(
-          seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-              .ceil()));
+      final arrivedTime = Utils().getArrivedTimeFromLocal();
       sharedPreferences.setString('plan_arrivedTime', arrivedTime.toString());
       rs = Utils().getNumOfExpPeriod(
-          arrivedTime, _initComboDate.duration.toInt(), startTime, null, true);
+          arrivedTime,
+          _initComboDate.duration.toInt(),
+          DateFormat.Hm().parse(_timeController.text),
+          null,
+          true);
     } else {
       rs = Utils().getNumOfExpPeriod(
           null,
           widget.plan!.numOfExpPeriod!,
-          widget.plan!.utcDepartAt!,
+          widget.plan!.departAt!.toLocal(),
           DateFormat.Hms().parse(widget.plan!.travelDuration!),
           true);
     }
 
     isOverDate = rs['isOverDate'];
-    if (rs['isOverDate'] ||
-        rs['numOfExpPeriod'] != _initComboDate.duration.toInt()) {
-      if (rs['isOverDate']) {
-        if (widget.isCreate) {
-          sharedPreferences.setString(
-              'plan_start_date',
-              departureDate!
-                  .add(const Duration(days: 1))
-                  .toLocal()
-                  .toString()
-                  .split(' ')[0]);
-        } else {
-          setState(() {
-            widget.plan!.startDate =
-                departureDate!.add(const Duration(days: 1));
-          });
-        }
-      }
-      setState(() {
-        numberOfNight = _initComboDate.numberOfNight + 1;
-        _endDate =
-            departureDate!.add(Duration(days: _initComboDate.numberOfDay));
-      });
-      if (widget.isCreate) {
+    if (rs['isOverDate']) {
+      if (widget.plan == null) {
         sharedPreferences.setString(
-            'plan_end_date', _endDate.toString().split(' ')[0]);
+            'plan_start_date',
+            DateFormat('dd/MM/yyyy')
+                .parse(_dateController.text)
+                .add(const Duration(days: 1))
+                .toString()
+                .split(' ')[0]);
+
+        numberOfNight = _initComboDate.numberOfNight + 1;
+        _endDate = DateFormat('dd/MM/yyyy')
+            .parse(_dateController.text)
+            .add(Duration(days: (_initComboDate.duration / 2).ceil()));
       } else {
-        setState(() {
-          widget.plan!.endDate = _endDate;
-        });
+        widget.plan!.startDate = DateFormat('dd/MM/yyyy')
+            .parse(_dateController.text)
+            .add(const Duration(days: 1))
+            .add(Duration(hours: _selectTime.hour))
+            .add(Duration(minutes: _selectTime.minute));
       }
     } else {
-      setState(() {
-        numberOfNight = _initComboDate.numberOfNight;
-        _endDate =
-            departureDate!.add(Duration(days: _initComboDate.numberOfDay - 1));
-      });
-      if (widget.isCreate) {
-        sharedPreferences.setString(
-            'plan_end_date', _endDate.toString().split(' ')[0]);
+      if (rs['numOfExpPeriod'] != _initComboDate.duration.toInt()) {
+        setState(() {
+          numberOfNight = _initComboDate.numberOfNight + 1;
+        });
+        _endDate = DateFormat('dd/MM/yyyy')
+            .parse(_dateController.text)
+            .add(Duration(days: (_initComboDate.duration / 2).ceil()));
       } else {
-        widget.plan!.endDate = _endDate;
+        setState(() {
+          numberOfNight = _initComboDate.numberOfNight;
+        });
+        _endDate = DateFormat('dd/MM/yyyy')
+            .parse(_dateController.text)
+            .add(Duration(days: (_initComboDate.duration / 2 - 1).ceil()));
+      }
+      if (widget.plan == null) {
+        sharedPreferences.setString(
+            'plan_start_date',
+            DateFormat('dd/MM/yyyy')
+                .parse(_dateController.text)
+                .toString()
+                .split(' ')[0]);
+      } else {
+        widget.plan!.startDate = DateFormat('dd/MM/yyyy')
+            .parse(_dateController.text)
+            .add(Duration(hours: _selectTime.hour))
+            .add(Duration(minutes: _selectTime.minute));
       }
     }
+    if (widget.plan == null) {
+      sharedPreferences.setString(
+          'plan_end_date', _endDate.toString().split(' ')[0]);
+    } else {
+      widget.plan!.endDate = _endDate;
+    }
+
     if (rs['numOfExpPeriod'] != _initComboDate.duration.toInt()) {
       if (widget.isCreate) {
         sharedPreferences.setInt('numOfExpPeriod', numberOfDay + numberOfNight);
       } else {
         setState(() {
-          widget.plan!.actualGcoinBudget = numberOfDay + numberOfNight;
+          widget.plan!.numOfExpPeriod = numberOfDay + numberOfNight;
         });
       }
     } else {
@@ -142,11 +155,13 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
     _initComboDate = listComboDate.firstWhere(
         (element) => element.duration == widget.plan!.numOfExpPeriod);
     _nameController.text = widget.plan!.name!;
-    _timeController.text = DateFormat.Hm().format(widget.plan!.utcDepartAt!);
+    _timeController.text =
+        DateFormat.Hm().format(widget.plan!.departAt!.toLocal());
     _dateController.text =
-        DateFormat('dd/MM/yyyy').format(widget.plan!.utcDepartAt!);
+        DateFormat('dd/MM/yyyy').format(widget.plan!.departAt!.toLocal());
     numberOfDay = _initComboDate.numberOfDay;
     numberOfNight = _initComboDate.numberOfNight;
+    
     handleChangeComboDate();
   }
 
@@ -216,7 +231,8 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
         actions: [
           InkWell(
             onTap: () {
-              _planService.handleShowPlanInformation(context, widget.location);
+              _planService.handleShowPlanInformation(
+                  context, widget.location, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -251,8 +267,12 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                 controller: _nameController,
                 inputType: TextInputType.name,
                 maxLength: 30,
-                onChange: (p0) {
-                  sharedPreferences.setString('plan_name', p0!);
+                onChange: (value) {
+                  if (widget.plan == null) {
+                    sharedPreferences.setString('plan_name', value!);
+                  } else {
+                    widget.plan!.name = value;
+                  }
                 },
                 onValidate: (value) {
                   if (value == null || value.isEmpty) {
@@ -260,6 +280,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                   } else if (value.length < 3 || value.length > 30) {
                     return "Tên của chuyến đi phải có độ dài từ 3 - 30 kí tự";
                   }
+                  return null;
                 },
               ),
             ),
@@ -322,9 +343,12 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                   .add(Duration(days: duration - 1));
                             });
                           } else {
-                            widget.plan!.utcDepartAt = newDay;
+                            final startTime =
+                                DateFormat.Hm().parse(_timeController.text);
+                            widget.plan!.departAt = newDay
+                                .add(Duration(hours: startTime.hour))
+                                .add(Duration(minutes: startTime.minute));
                           }
-
                           handleChangeComboDate();
                         }
                       },
@@ -333,6 +357,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                         if (value!.isEmpty) {
                           return "Ngày của hoạt động không được để trống";
                         }
+                        return null;
                       }),
                 ),
                 SizedBox(
@@ -380,7 +405,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                   padding: EdgeInsets.symmetric(horizontal: 16),
                                   child: Center(
                                     child: Text(
-                                      'Thời gian của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
+                                      'Thời gian xuất phát của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
                                       style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
@@ -405,20 +430,27 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                             _timeController.text = DateFormat.Hm().format(
                                 DateTime(0, 0, 0, value.hour, value.minute));
                             if (widget.isCreate) {
-                              setState(() {
-                                _selectTime = value;
-                              });
                               sharedPreferences.setString(
                                   'plan_start_time',
                                   DateTime(0, 0, 0, value.hour, value.minute)
                                       .toString());
                             } else {
                               setState(() {
-                                widget.plan!.utcDepartAt =
+                                final departTime =
                                     DateFormat.Hm().parse(_timeController.text);
+                                final departDate = DateFormat('dd/MM/yyyy')
+                                    .parse(_dateController.text);
+                                widget.plan!.departAt = DateTime(
+                                    departDate.year,
+                                    departDate.month,
+                                    departDate.day,
+                                    departTime.hour,
+                                    departTime.minute);
                               });
                             }
-
+                            setState(() {
+                              _selectTime = value;
+                            });
                             handleChangeComboDate();
                           }
                         });
@@ -427,6 +459,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                         if (value!.isEmpty) {
                           return "Ngày của hoạt động không được để trống";
                         }
+                        return null;
                       },
                       prefixIcon: const Icon(Icons.watch_later_outlined)),
                 ),
@@ -445,6 +478,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
             const Text(
               'Bao gồm thời gian di chuyển từ địa điểm xuất phát',
               style: TextStyle(fontSize: 16, color: Colors.grey),
+              textAlign: TextAlign.center,
             ),
             SizedBox(
               height: 3.h,
@@ -507,8 +541,12 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                   Navigator.push(
                       context,
                       PageTransition(
-                          child:
-                              SelectEmergencyService(location: widget.location),
+                          child: SelectEmergencyService(
+                            location: widget.location,
+                            isCreate: widget.isCreate,
+                            plan: widget.plan,
+                            isClone: widget.isClone,
+                          ),
                           type: PageTransitionType.rightToLeft));
                 }
               },

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -11,7 +13,7 @@ import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_start
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
@@ -20,10 +22,11 @@ import 'package:sizer2/sizer2.dart';
 
 class SelectComboDateScreen extends StatefulWidget {
   const SelectComboDateScreen(
-      {super.key, required this.location, required this.isCreate, this.plan});
+      {super.key, required this.location, required this.isCreate, this.plan, required this.isClone});
   final bool isCreate;
-  final PlanDetail? plan;
+  final PlanCreate? plan;
   final LocationViewModel location;
+  final bool isClone;
 
   @override
   State<SelectComboDateScreen> createState() => _SelectComboDateScreenState();
@@ -38,15 +41,34 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   TextEditingController _maxMemberWeightController = TextEditingController();
   int maxMemberWeight = 1;
   final PlanService _planService = PlanService();
+  int _previousSelection = 0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    setUpData();
+    if (widget.isCreate && widget.plan == null) {
+      setUpDataCreate();
+    } else {
+      setUpDataUpdate();
+    }
   }
 
-  setUpData() async {
+  setUpDataUpdate() async {
+    _selectedCombo = listComboDate
+            .firstWhere(
+                (element) => element.duration == widget.plan!.numOfExpPeriod)
+            .id -
+        1;
+    _scrollController =
+        FixedExtentScrollController(initialItem: _selectedCombo);
+    _memberController.text = widget.plan!.maxMemberCount.toString();
+    _maxMemberWeightController.text =
+        (widget.plan!.maxMemberWeight! - 1).toString();
+    maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
+  }
+
+  setUpDataCreate() async {
     int? member = sharedPreferences.getInt('plan_number_of_member');
     int? numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
     int? _maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
@@ -76,20 +98,13 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       });
     }
     sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id - 1);
-    if (widget.isCreate) {
-      if (member != null) {
-        setState(() {
-          _memberController.text = member.toString();
-        });
-        maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
-      } else {
-        sharedPreferences.setInt('plan_number_of_member', 2);
-      }
-    } else {
+    if (member != null) {
       setState(() {
-        _memberController.text = widget.plan!.maxMemberCount.toString();
+        _memberController.text = member.toString();
       });
       maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
+    } else {
+      sharedPreferences.setInt('plan_number_of_member', 2);
     }
 
     if (_maxMemberWeight != null && _maxMemberWeight > 0) {
@@ -169,6 +184,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         title: const Text('Lên kế hoạch'),
         leading: BackButton(
@@ -181,7 +197,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
         actions: [
           InkWell(
             onTap: () {
-              _planService.handleShowPlanInformation(context, widget.location);
+              _planService.handleShowPlanInformation(
+                  context, widget.location, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -228,15 +245,74 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                             CupertinoPickerDefaultSelectionOverlay(
                                 background: primaryColor.withOpacity(0.12)),
                         onSelectedItemChanged: (value) {
-                          setState(() {
-                            _selectedCombo = value;
-                          });
                           if (widget.isCreate) {
-                            sharedPreferences.setInt('plan_combo_date', value);
-                            sharedPreferences.setInt(
-                                'initNumOfExpPeriod',
-                                listComboDate[value].numberOfDay +
-                                    listComboDate[value].numberOfNight);
+                            if (sharedPreferences.getString('plan_schedule') !=
+                                    null &&
+                                (listComboDate[value].duration / 2).ceil() <
+                                    json
+                                        .decode(sharedPreferences
+                                            .getString('plan_schedule')!)
+                                        .length) {
+                              AwesomeDialog(
+                                      context: context,
+                                      animType: AnimType.leftSlide,
+                                      dialogType: DialogType.warning,
+                                      title: 'Thay đổi quan trọng',
+                                      titleTextStyle: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'NotoSans'),
+                                      desc:
+                                          'Thay đổi này ảnh hưởng đến lịch trình và các thành phần quan trọng của chuyến đi. Đồng ý với thay đổi, chúng tôi sẽ xoá toàn bộ lịch trình và các thành phần liên quan',
+                                      descTextStyle: const TextStyle(
+                                        fontSize: 16,
+                                        color: Colors.grey,
+                                        fontFamily: 'NotoSans',
+                                      ),
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 12),
+                                      btnOkText: 'Đồng ý',
+                                      btnOkColor: Colors.amber,
+                                      btnOkOnPress: () {
+                                        sharedPreferences.remove('plan_schedule');
+                                        sharedPreferences.remove('plan_surcharge');
+                                        sharedPreferences.remove('plan_temp_order');
+                                        setState(() {
+                                          _selectedCombo = value;
+                                        });
+                                        _previousSelection = value;
+                                        sharedPreferences.setInt(
+                                            'plan_combo_date', value);
+                                        sharedPreferences.setInt(
+                                            'initNumOfExpPeriod',
+                                            listComboDate[value].numberOfDay +
+                                                listComboDate[value]
+                                                    .numberOfNight);
+                                      },
+                                      btnCancelColor: Colors.blueAccent,
+                                      btnCancelOnPress: () {
+                                        setState(() {
+                                          _selectedCombo = _previousSelection;
+                                          _scrollController =
+                                              FixedExtentScrollController(
+                                                  initialItem:
+                                                      _previousSelection);
+                                        });
+                                      },
+                                      btnCancelText: 'Huỷ')
+                                  .show();
+                            } else {
+                              setState(() {
+                                _selectedCombo = value;
+                              });
+                              _previousSelection = value;
+                              sharedPreferences.setInt(
+                                  'plan_combo_date', value);
+                              sharedPreferences.setInt(
+                                  'initNumOfExpPeriod',
+                                  listComboDate[value].numberOfDay +
+                                      listComboDate[value].numberOfNight);
+                            }
                           } else {
                             widget.plan!.numOfExpPeriod =
                                 listComboDate[value].numberOfDay +
@@ -319,6 +395,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                     child: defaultTextFormField(
                         maxLength: 2,
                         padding: const EdgeInsets.all(16),
+                        isNumber: true,
                         onTap: () {
                           setState(() {
                             _isSelecting = false;
@@ -327,7 +404,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                         onChange: (value) {
                           if (value == null || value.isEmpty) {
                             sharedPreferences.setInt(
-                                'plan_number_of_member', 0);
+                                'plan_number_of_member', 2);
                             Fluttertoast.showToast(
                                 msg: "Số lượng thành viên không được để trống",
                                 toastLength: Toast.LENGTH_SHORT,
@@ -341,7 +418,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                 int.tryParse(_memberController.text);
                             if (selectedNumber == null) {
                               sharedPreferences.setInt(
-                                  'plan_number_of_member', 0);
+                                  'plan_number_of_member', 2);
                               Fluttertoast.showToast(
                                   msg: "Số lượng thành viên không hợp lệ",
                                   toastLength: Toast.LENGTH_SHORT,
@@ -353,9 +430,9 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                             } else {
                               if (selectedNumber < 2 || selectedNumber > 20) {
                                 sharedPreferences.setInt(
-                                    'plan_number_of_member', 0);
+                                    'plan_number_of_member', 2);
                                 Fluttertoast.showToast(
-                                    msg: "Số lượng thành viên không hợp lệ",
+                                    msg: "Số lượng thành viên phải từ 2 - 20",
                                     toastLength: Toast.LENGTH_SHORT,
                                     gravity: ToastGravity.CENTER,
                                     timeInSecForIosWeb: 1,
@@ -417,6 +494,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                       height: 5.h,
                       child: defaultTextFormField(
                           maxLength: 2,
+                          isNumber: true,
                           padding: const EdgeInsets.all(16),
                           onTap: () {
                             setState(() {
@@ -426,7 +504,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                           onChange: (value) {
                             if (value == null || value.isEmpty) {
                               sharedPreferences.setInt(
-                                  'plan_max_member_weight', 0);
+                                  'plan_max_member_weight', 1);
                               Fluttertoast.showToast(
                                   msg:
                                       "Số lượng người đi cùng không được để trống",
@@ -441,7 +519,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                   int.tryParse(_maxMemberWeightController.text);
                               if (selectedNumber == null) {
                                 sharedPreferences.setInt(
-                                    'plan_max_member_weight', 0);
+                                    'plan_max_member_weight', 1);
                                 Fluttertoast.showToast(
                                     msg: "Số lượng người đi cùng không hợp lệ",
                                     toastLength: Toast.LENGTH_SHORT,
@@ -454,10 +532,10 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                 if (selectedNumber < 0 ||
                                     selectedNumber > maxMemberWeight - 1) {
                                   sharedPreferences.setInt(
-                                      'plan_max_member_weight', 0);
+                                      'plan_max_member_weight', 1);
                                   Fluttertoast.showToast(
                                       msg:
-                                          "Số lượng người đi cùng không hợp lệ",
+                                          "Số lượng người đi cùng phải từ 0 - ${maxMemberWeight - 1}",
                                       toastLength: Toast.LENGTH_SHORT,
                                       gravity: ToastGravity.CENTER,
                                       timeInSecForIosWeb: 1,
@@ -467,7 +545,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                 } else {
                                   sharedPreferences.setInt(
                                       'plan_max_member_weight',
-                                      int.parse(value));
+                                      int.parse(value) + 1);
                                 }
                               }
                             }
@@ -543,6 +621,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                               isCreate: widget.isCreate,
                               plan: widget.plan,
                               location: widget.location,
+                              isClone: widget.isClone,
                             ),
                             type: PageTransitionType.rightToLeft));
                   }

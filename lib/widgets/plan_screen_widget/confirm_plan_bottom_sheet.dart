@@ -7,6 +7,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
@@ -68,23 +69,25 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     for (final order in widget.orderList!) {
       if (order != null) {
         if (order.runtimeType == OrderViewModel) {
-          total += order.total / 1000;
+          total += order.total * order.serveDates.length;
         } else {
-          total += order['total'] / 1000;
+          total += order['total'] * order['serveDates'].length;
         }
       }
     }
     if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty) {
       for (final sur in widget.listSurcharges!) {
         if (sur['alreadyDivided']) {
-          total += sur['gcoinAmount'] * widget.plan!.memberLimit;
+          total += sur['amount'] * widget.plan!.maxMemberCount;
         } else {
-          total += sur['gcoinAmount'];
+          total += sur['amount'];
         }
       }
     }
 
-    budgetPerCapita = ((total * 1.1 / widget.plan!.memberLimit!)).floor();
+    budgetPerCapita = ((num.parse((total * 1.1).toStringAsFixed(5)).ceil() /
+            widget.plan!.maxMemberCount!))
+        .ceil();
   }
 
   buildListScheduleText() {
@@ -129,7 +132,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     setUpData();
   }
 
-  buildServiceInfor() {
+  buildServiceInfor() async {
     final rs = widget.orderList!.groupListsBy(
         (e) => e.runtimeType == OrderViewModel ? e.type : e['type']);
     newRoomOrderList = rs.values.firstWhereOrNull((e) =>
@@ -174,16 +177,16 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
               if (widget.plan!.name != null)
                 BottomSheetContainerWidget(
                     title: 'Tên chuyến đi', content: widget.plan!.name!),
-              if (widget.plan!.memberLimit != null)
+              if (widget.plan!.maxMemberCount != null)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.memberLimit != null)
+              if (widget.plan!.maxMemberCount != null)
                 BottomSheetContainerWidget(
                     title: 'Số lượng thành viên',
-                    content: widget.plan!.memberLimit! < 10
-                        ? '0${widget.plan!.memberLimit!}'
-                        : widget.plan!.memberLimit!.toString()),
+                    content: widget.plan!.maxMemberCount! < 10
+                        ? '0${widget.plan!.maxMemberCount!}'
+                        : widget.plan!.maxMemberCount!.toString()),
               SizedBox(
                 height: 1.h,
               ),
@@ -193,11 +196,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.departureDate != null)
+              if (widget.plan!.departAt != null)
                 BottomSheetContainerWidget(
                     title: 'Thời gian chuyến đi',
                     content:
-                        '${DateFormat('dd/MM/yyyy').format(widget.plan!.departureDate!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan!.endDate!)}'),
+                        '${DateFormat('dd/MM/yyyy').format(widget.plan!.departAt!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan!.endDate!)}'),
               if (widget.plan!.travelDuration != null)
                 SizedBox(
                   height: 1.h,
@@ -205,19 +208,21 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
               if (widget.plan!.travelDuration != null)
                 BottomSheetContainerWidget(
                     title: 'Thời gian di chuyển', content: travelDurationText),
-              if (widget.plan!.departureAddress != null)
+              if (widget.plan!.departAddress != null)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.departureAddress != null)
+              if (widget.plan!.departAddress != null)
                 BottomSheetContainerWidget(
                     title: 'Địa điểm xuất phát',
-                    content: widget.plan!.departureAddress!),
-              if (widget.plan!.savedContacts != null)
+                    content: widget.plan!.departAddress!),
+              if (widget.plan!.savedContacts != null &&
+                  emergencyList.isNotEmpty)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.savedContacts != null)
+              if (widget.plan!.savedContacts != null &&
+                  emergencyList.isNotEmpty)
                 Container(
                     width: 100.w,
                     padding:
@@ -258,7 +263,8 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.schedule != null)
+              if (widget.plan!.schedule != null &&
+                  scheduleTextList.any((element) => element.isNotEmpty))
                 Container(
                   width: 100.w,
                   padding:
@@ -301,47 +307,49 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                         ),
                         if (_isShowSchedule)
                           for (final day in scheduleList)
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Padding(
-                                  padding:
-                                      const EdgeInsets.only(top: 4, left: 8),
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                        color: primaryColor.withOpacity(0.8),
-                                        borderRadius: const BorderRadius.all(
-                                            Radius.circular(8))),
-                                    child: Text(
-                                      'Ngày ${scheduleList.indexOf(day) + 1}',
-                                      style: const TextStyle(
-                                          fontSize: 17,
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w500),
+                            if (day.isNotEmpty)
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Padding(
+                                    padding:
+                                        const EdgeInsets.only(top: 4, left: 8),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                          color: primaryColor.withOpacity(0.8),
+                                          borderRadius: const BorderRadius.all(
+                                              Radius.circular(8))),
+                                      child: Text(
+                                        'Ngày ${scheduleList.indexOf(day) + 1}',
+                                        style: const TextStyle(
+                                            fontSize: 17,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w500),
+                                      ),
                                     ),
                                   ),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    for (final event in scheduleTextList[
-                                        scheduleList.indexOf(day)])
-                                      Padding(
-                                        padding:
-                                            const EdgeInsets.only(left: 16),
-                                        child: Text(
-                                          event,
-                                          style: const TextStyle(
-                                              fontSize: 17,
-                                              fontWeight: FontWeight.bold),
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      for (final event in scheduleTextList[
+                                          scheduleList.indexOf(day)])
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 16),
+                                          child: Text(
+                                            event,
+                                            style: const TextStyle(
+                                                fontSize: 17,
+                                                fontWeight: FontWeight.bold),
+                                          ),
                                         ),
-                                      ),
-                                  ],
-                                )
-                              ],
-                            ),
+                                    ],
+                                  )
+                                ],
+                              ),
                       ]),
                 ),
               if (widget.plan!.note != null &&
@@ -429,8 +437,8 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             children: [
                               Text(
                                 widget.isJoin
-                                    ? 'Dịch vụ chuyến đi'
-                                    : 'Kinh phí dự trù',
+                                    ? 'Dịch vụ chuyến đi (Đ)'
+                                    : 'Kinh phí dự trù (Đ)',
                                 style: const TextStyle(fontSize: 16),
                               ),
                               const Spacer(),
@@ -488,7 +496,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Phụ thu',
+                          'Phụ thu (Đ)',
                           style: TextStyle(fontSize: 16),
                         ),
                         for (final sur in widget.listSurcharges!)
@@ -497,7 +505,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               SizedBox(
                                 width: 50.w,
                                 child: Text(
-                                  '${json.decode(sur['note'])}',
+                                  '${sur['note'].toString().substring(0, 1) == '\"' ? '${json.decode(sur['note'])}' : sur['note']}',
                                   style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),
@@ -509,16 +517,16 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                 NumberFormat.simpleCurrency(
                                         decimalDigits: 0,
                                         locale: 'vi_VN',
-                                        name: '')
-                                    .format(sur['alreadyDivided']
-                                        ? sur['gcoinAmount'] *
-                                            widget.plan!.memberLimit
-                                        : sur['gcoinAmount']),
+                                        name: 'K')
+                                    .format((sur['alreadyDivided']
+                                            ? sur['amount'] *
+                                                widget.plan!.maxMemberCount
+                                            : sur['amount']) /
+                                        GlobalConstant().VND_CONVERT_RATE),
                                 style: const TextStyle(
-                                    fontSize: 17, fontWeight: FontWeight.bold),
+                                    fontSize: 15, fontWeight: FontWeight.bold),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              SvgPicture.asset(gcoin_logo, height: 23)
                             ],
                           )
                       ]),
@@ -548,33 +556,76 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Tổng cộng',
-                                  style: TextStyle(fontSize: 16),
-                                ),
-                                Text(
-                                  '(+10% chênh lệch)',
-                                  style: TextStyle(fontSize: 12),
-                                )
-                              ],
+                            const Text(
+                              'Tiền dịch vụ (Đ)',
+                              style: TextStyle(fontSize: 16),
                             ),
                             const Spacer(),
                             Text(
                               NumberFormat.simpleCurrency(
                                       locale: 'vi_VN',
                                       decimalDigits: 0,
-                                      name: "")
-                                  .format((total * 1.1)),
+                                      name: "K")
+                                  .format(total /
+                                      GlobalConstant().VND_CONVERT_RATE),
                               style: const TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold),
+                                  fontSize: 15, fontWeight: FontWeight.bold),
                             ),
-                            SvgPicture.asset(
-                              gcoin_logo,
-                              height: 23,
-                            )
+                          ],
+                        ),
+                        SizedBox(
+                          height: 0.3.h,
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Chênh lệch (10%)',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            const Spacer(),
+                            Text(
+                              NumberFormat.simpleCurrency(
+                                      locale: 'vi_VN',
+                                      decimalDigits: 0,
+                                      name: "K")
+                                  .format((total * 0.1) /
+                                      GlobalConstant().VND_CONVERT_RATE),
+                              style: const TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 0.3.h,
+                        ),
+                        const Divider(
+                          color: Colors.black54,
+                          height: 1.5,
+                        ),
+                        SizedBox(
+                          height: 0.3.h,
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Tổng cộng (Đ)',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                            const Spacer(),
+                            Text(
+                              NumberFormat.simpleCurrency(
+                                      locale: 'vi_VN',
+                                      decimalDigits: 0,
+                                      name: "K")
+                                  .format(num.parse(
+                                              (total * 1.1).toStringAsFixed(5))
+                                          .ceil() /
+                                      GlobalConstant().VND_CONVERT_RATE),
+                              style: const TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
                           ],
                         ),
                         SizedBox(
@@ -587,13 +638,55 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Chi phí cho chuyến đi',
+                                  'Chi phí cho chuyến đi (Đ)',
                                   style: TextStyle(fontSize: 16),
                                 ),
                                 Text(
                                   '(Cho mỗi người)',
                                   style: TextStyle(
-                                      fontSize: 12, fontFamily: 'NotoSans'),
+                                      fontSize: 11, fontFamily: 'NotoSans'),
+                                )
+                              ],
+                            ),
+                            const Spacer(),
+                            Text(
+                              NumberFormat.simpleCurrency(
+                                      locale: 'vi_VN',
+                                      decimalDigits: 0,
+                                      name: "K")
+                                  .format(budgetPerCapita /
+                                      GlobalConstant().VND_CONVERT_RATE),
+                              style: const TextStyle(
+                                  fontSize: 15, fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 0.3.h,
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Giá trị quy đổi ',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    SvgPicture.asset(
+                                      gcoin_logo,
+                                      height: 15,
+                                    )
+                                  ],
+                                ),
+                                const Text(
+                                  '(Cho mỗi người)',
+                                  style: TextStyle(
+                                      fontSize: 11, fontFamily: 'NotoSans'),
                                 )
                               ],
                             ),
@@ -603,13 +696,14 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                       locale: 'vi_VN',
                                       decimalDigits: 0,
                                       name: "")
-                                  .format(budgetPerCapita),
+                                  .format(budgetPerCapita /
+                                      GlobalConstant().VND_CONVERT_RATE),
                               style: const TextStyle(
-                                  fontSize: 17, fontWeight: FontWeight.bold),
+                                  fontSize: 15, fontWeight: FontWeight.bold),
                             ),
                             SvgPicture.asset(
                               gcoin_logo,
-                              height: 23,
+                              height: 20,
                             )
                           ],
                         ),
@@ -732,6 +826,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
             Padding(
               padding: const EdgeInsets.only(left: 16),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
                       width: 5.w,
@@ -741,37 +836,35 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             fontSize: 17, fontWeight: FontWeight.bold),
                         overflow: TextOverflow.clip,
                       )),
-                  SizedBox(
-                    width: 42.w,
-                    child: Text(
-                      // '${} ${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']}${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}',
-                      buildServiceText(order),
-                      style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.clip,
-                    ),
-                  ),
+                  // SizedBox(
+                  //   width: 42.w,
+                  //   child: Text(
+                  //     buildServiceText(order),
+                  //     style: const TextStyle(
+                  //         fontSize: 17, fontWeight: FontWeight.bold),
+                  //     overflow: TextOverflow.clip,
+                  //   ),
+                  // ),
+                  buildServiceText(order),
                   const Spacer(),
                   Container(
                     alignment: Alignment.centerRight,
                     width: 20.w,
                     child: Text(
                       NumberFormat.simpleCurrency(
-                              locale: 'vi_VN', decimalDigits: 0, name: '')
+                              locale: 'vi_VN', decimalDigits: 0, name: 'K')
                           .format(((order.runtimeType == OrderViewModel
-                                      ? order.total
-                                      : order['total']) /
-                                  1000)
-                              .toInt()),
+                                      ? (order.total) *
+                                          (order.serveDates.length)
+                                      : order['total'] *
+                                          order['serveDates'].length))
+                                  .toInt() /
+                              GlobalConstant().VND_CONVERT_RATE),
                       style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.bold),
+                          fontSize: 15, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.clip,
                     ),
                   ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 23,
-                  )
                 ],
               ),
             ),
@@ -782,6 +875,27 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     bool isShowPeriod =
         (order.runtimeType == OrderViewModel && order.type != 'RIDING') ||
             (order.runtimeType != OrderViewModel && order['type'] != 'RIDING');
-    return '${isShowPeriod ? '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ' : ''}${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}';
+    final periodString = Utils().getPeriodString(
+        order.runtimeType == OrderViewModel
+            ? order.period
+            : order['period'])['text'];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        for (final day in order.runtimeType == OrderViewModel
+            ? order.serveDates
+            : order['serveDates'])
+          SizedBox(
+            width: 40.w,
+            child: Text(
+              '${isShowPeriod ? periodString : ''} ${DateFormat('dd/MM').format(DateTime.parse(day.toString()))}',
+              style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+              overflow: TextOverflow.clip,
+            ),
+          )
+      ],
+    );
+    // return '${isShowPeriod ? '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ' : ''}${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}';
   }
 }

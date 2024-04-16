@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/location_screen/location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -37,19 +37,22 @@ class FilterLocationCard extends StatelessWidget {
           clipBehavior: Clip.hardEdge,
           elevation: 2,
           child: Row(children: [
-            Container( 
+            Container(
                 decoration:
                     BoxDecoration(borderRadius: BorderRadius.circular(14)),
                 child: CachedNetworkImage(
-                  height: 15.h,
-                  width: 15.h,
-                  fit: BoxFit.cover,
-                  imageUrl: '$baseBucketImage${location.imagePaths[0]}',
-                  placeholder: (context, url) =>
-                      Image.memory(kTransparentImage),
-                  errorWidget: (context, url, error) =>
-                  Image.network('https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0', height: 15.h, width: 15.h, fit: BoxFit.cover,)
-                )),
+                    height: 15.h,
+                    width: 15.h,
+                    fit: BoxFit.cover,
+                    imageUrl: '$baseBucketImage${location.imagePaths[0]}',
+                    placeholder: (context, url) =>
+                        Image.memory(kTransparentImage),
+                    errorWidget: (context, url, error) => Image.network(
+                          'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
+                          height: 15.h,
+                          width: 15.h,
+                          fit: BoxFit.cover,
+                        ))),
             const SizedBox(
               width: 8,
             ),
@@ -69,7 +72,18 @@ class FilterLocationCard extends StatelessWidget {
                   const SizedBox(
                     height: 8,
                   ),
-                  RatingBar(rating: 5),
+                  RatingBar.builder(
+                      ignoreGestures: true,
+                      itemSize: 20,
+                      allowHalfRating: true,
+                      itemCount: 5,
+                      initialRating: location.rating.toDouble(),
+                      maxRating: 5,
+                      itemBuilder: (context, index) => const Icon(
+                            Icons.star,
+                            color: Colors.amber,
+                          ),
+                      onRatingUpdate: (_) {}),
                   const SizedBox(
                     height: 8,
                   ),

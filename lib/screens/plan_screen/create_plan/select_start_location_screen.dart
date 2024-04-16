@@ -10,7 +10,7 @@ import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_start
 import 'package:greenwheel_user_app/screens/plan_screen/locate_start_location.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/search_location_result_card.dart';
@@ -21,10 +21,11 @@ import 'package:sizer2/sizer2.dart';
 
 class SelectStartLocationScreen extends StatefulWidget {
   const SelectStartLocationScreen(
-      {super.key, required this.isCreate, this.plan, required this.location});
+      {super.key, required this.isCreate, this.plan, required this.location, required this.isClone});
   final bool isCreate;
-  final PlanDetail? plan;
+  final PlanCreate? plan;
   final LocationViewModel location;
+  final bool isClone;
 
   @override
   State<SelectStartLocationScreen> createState() =>
@@ -58,20 +59,20 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   _getRouteInfo() async {
     var jsonResponse = await getRouteInfo(_selectedLocation!,
         PointLatLng(widget.location.latitude, widget.location.longitude));
-    if(jsonResponse != null ){
+    if (jsonResponse != null) {
       setState(() {
-      durationText = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
-      distanceText = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
-      durationValue =
-          jsonResponse['routes'][0]['legs'][0]['duration']['value'] / 3600;
-      distanceValue =
-          jsonResponse['routes'][0]['legs'][0]['distance']['value'] / 1000;
-    });
+        durationText = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
+        distanceText = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
+        durationValue =
+            jsonResponse['routes'][0]['legs'][0]['duration']['value'] / 3600;
+        distanceValue =
+            jsonResponse['routes'][0]['legs'][0]['distance']['value'] / 1000;
+      });
 
-    sharedPreferences.setString('plan_duration_text', durationText);
-    sharedPreferences.setString('plan_distance_text', distanceText);
-    sharedPreferences.setDouble('plan_duration_value', durationValue);
-    sharedPreferences.setDouble('plan_distance_value', distanceValue);
+      sharedPreferences.setString('plan_duration_text', durationText);
+      sharedPreferences.setString('plan_distance_text', distanceText);
+      sharedPreferences.setDouble('plan_duration_value', durationValue);
+      sharedPreferences.setDouble('plan_distance_value', distanceValue);
     }
   }
 
@@ -129,9 +130,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   setUpDataUpdate() {
-    _searchController.text = widget.plan!.departureAddress!;
-    _onSelectLocation(PointLatLng(
-        widget.plan!.startLocationLat!, widget.plan!.startLocationLng!));
+    _searchController.text = widget.plan!.departAddress!;
+    _onSelectLocation(widget.plan!.departCoordinate!);
   }
 
   setUpDataCreate() async {
@@ -148,10 +148,16 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     if (startLat != null) {
       double? startLng = sharedPreferences.getDouble('plan_start_lng');
       _selectedLocation = PointLatLng(startLat, startLng!);
-      distanceText = sharedPreferences.getString('plan_distance_text')!;
-      distanceValue = sharedPreferences.getDouble('plan_distance_value');
-      durationText = sharedPreferences.getString('plan_duration_text')!;
-      durationValue = sharedPreferences.getDouble('plan_duration_value');
+      String? tempText = sharedPreferences.getString('plan_distance_text');
+      if (tempText != null) {
+        distanceText = sharedPreferences.getString('plan_distance_text')!;
+        distanceValue = sharedPreferences.getDouble('plan_distance_value');
+        durationText = sharedPreferences.getString('plan_duration_text')!;
+        durationValue = sharedPreferences.getDouble('plan_duration_value');
+      } else {
+        _onSelectLocation(_selectedLocation!);
+      }
+
       setState(() {
         _searchController.text =
             sharedPreferences.getString('plan_start_address')!;
@@ -285,7 +291,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         actions: [
           InkWell(
             onTap: () {
-              _planService.handleShowPlanInformation(context, widget.location);
+              _planService.handleShowPlanInformation(
+                  context, widget.location, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -579,7 +586,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                       ),
                       const Spacer(),
                       Text(
-                        '$durationText',
+                        durationText,
                         style: const TextStyle(fontSize: 15),
                       ),
                       SizedBox(
@@ -644,6 +651,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                             isCreate: widget.isCreate,
                             location: widget.location,
                             plan: widget.plan,
+                            isClone: widget.isClone,
                           ),
                           type: PageTransitionType.rightToLeft));
                 }

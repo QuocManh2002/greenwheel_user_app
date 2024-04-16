@@ -1,5 +1,3 @@
-import 'dart:convert';
-import 'dart:developer';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -128,6 +126,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     } else if (value.length < 4 || value.length > 30) {
                       return "Tên của người dùng phải có độ dài từ 4-30 kí tự";
                     }
+                    return null;
                   },
                 ),
                 const SizedBox(

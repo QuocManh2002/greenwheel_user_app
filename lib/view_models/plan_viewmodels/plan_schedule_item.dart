@@ -1,7 +1,6 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 

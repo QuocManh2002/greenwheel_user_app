@@ -1,8 +1,10 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
@@ -17,10 +19,12 @@ class PlanOrderCard extends StatefulWidget {
       {super.key,
       required this.isShowQuantity,
       required this.order,
+      this.planStatus,
       required this.callback,
       required this.isLeader});
   final OrderViewModel order;
   final bool isLeader;
+  final String? planStatus;
   final bool isShowQuantity;
   final void Function() callback;
 
@@ -48,16 +52,17 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: InkWell(
         onTap: () {
-          if(widget.isLeader){
+          if (widget.isLeader) {
             Navigator.push(
-              context,
-              PageTransition(
-                  child: OrderDetailScreen(
-                      order: widget.order,
-                      startDate: DateTime.now(),
-                      callback: widget.callback,
-                      isTempOrder: false),
-                  type: PageTransitionType.rightToLeft));
+                context,
+                PageTransition(
+                    child: OrderDetailScreen(
+                        order: widget.order,
+                        planStatus: widget.planStatus,
+                        startDate: DateTime.now(),
+                        callback: widget.callback,
+                        isTempOrder: false),
+                    type: PageTransitionType.rightToLeft));
           }
         },
         child: Container(
@@ -81,9 +86,9 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                         borderRadius:
                             const BorderRadius.all(Radius.circular(8))),
                     child: Text(
-                      widget.order.type == 'RIDING'
+                      widget.order.type == services[2].name
                           ? '${Utils().getSupplierType(widget.order.supplier!.type!)}'
-                          : '${widget.order.type == 'LODGING' ? 'Nghỉ tại ' : 'Dùng bữa tại '}${Utils().getSupplierType(widget.order.supplier!.type!)}',
+                          : '${widget.order.type == services[1].name ? 'Nghỉ tại ' : 'Dùng bữa tại '}${Utils().getSupplierType(widget.order.supplier!.type!)}',
                       style: const TextStyle(
                           fontSize: 17,
                           color: Colors.white,
@@ -113,34 +118,42 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                 height: 0.5.h,
               ),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
                     width: 2.w,
                   ),
-                  SizedBox(
-                    width: 45.w,
-                    child: Text(
-                      '${widget.order.type != 'RIDING' ? '${Utils().getPeriodString(widget.order.period!)['text']} ' :'' }${Utils().buildServingDatesText(widget.order.serveDates!)}',
-                      style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.w700,
-                        fontFamily: 'NotoSans',
-                      ),
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      for (final day in widget.order.serveDates!)
+                        SizedBox(
+                          width: 45.w,
+                          child: Text(
+                            '${widget.order.type != 'RIDING' ? '${Utils().getPeriodString(widget.order.period!)['text']} ' : ''}${DateFormat('dd/MM').format(DateTime.parse(day))}',
+                            style: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'NotoSans',
+                            ),
+                          ),
+                        ),
+                    ],
                   ),
                   const Spacer(),
-                  Text(
-                    NumberFormat.simpleCurrency(
-                            locale: 'vi_VN', decimalDigits: 0, name: '')
-                        .format(widget.order.total! / 1000),
-                    style: const TextStyle(
-                        fontSize: 17,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'NotoSans'),
-                  ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 25,
+                  SizedBox(
+                    width: 30.w,
+                    child: Text(
+                      NumberFormat.simpleCurrency(
+                              locale: 'vi_VN', decimalDigits: 0, name: 'Đ')
+                          .format(widget.order.total!),
+                      overflow: TextOverflow.clip,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'NotoSans'),
+                    ),
                   )
                 ],
               ),

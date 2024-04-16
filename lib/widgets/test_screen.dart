@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/pdf_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -14,6 +15,7 @@ import 'package:greenwheel_user_app/view_models/province.dart';
 import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:sizer2/sizer2.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 class TestScreen extends StatefulWidget {
@@ -24,104 +26,90 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
-  PrintingInfo? printingInfo;
-  PlanService _planService = PlanService();
-  PlanDetail? _planDetail;
-  ConfigService _configService = ConfigService();
-  List<Holiday> holidays = [];
-  bool isLoading = true;
-  List<DateTime> _selectedDays = [];
+  List<int> list = [1];
+  bool isLongTap = false;
+
+  late OverlayEntry _overlayEntry;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
-    setUpData();
+    _overlayEntry = OverlayEntry(builder: (context) => _buildOverlay());
   }
 
-  setUpData() async {
-    final rs = await _configService.getConfig();
-    if (rs != null) {
-      setState(() {
-        holidays = rs;
-        isLoading = false;
-      });
-    }
+  @override
+  void dispose() {
+    _overlayEntry.dispose();
+    super.dispose();
+  }
+
+  Widget _buildOverlay() {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Positioned(
+          top: 20,
+          bottom: 0,
+          right: 0,
+          left: 0,
+          child: ElevatedButton(
+            onPressed: () {
+              print('Button Above Pressed');
+            },
+            child: Text('Button Above'),
+          ),
+        ),
+        SizedBox(height: 3.h,),
+        ElevatedButton(
+          onPressed: () {
+            print('Button Below Pressed');
+          },
+          child: Text('Button Below'),
+        ),
+      ],
+    );
   }
 
   @override
   Widget build(BuildContext context) {
-
     return SafeArea(
         child: Scaffold(
-      appBar: AppBar(),
-      body: isLoading
-          ? const Center(
-              child: Text('loading'),
-            )
-          : SfDateRangePicker(
-              onSelectionChanged: (dateRangePickerSelectionChangedArgs) {
-                _selectedDays = dateRangePickerSelectionChangedArgs.value;
-              },
-              confirmText: "XÁC NHẬN",
-              backgroundColor: Colors.white,
-              headerStyle: const DateRangePickerHeaderStyle(
-                  backgroundColor: Colors.white),
-              selectionColor: Colors.white,
-              cancelText: 'HUỶ',
-              minDate: DateTime(2024),
-              maxDate: DateTime(2026),
-              showActionButtons: true,
-              selectionShape: DateRangePickerSelectionShape.rectangle,
-          todayHighlightColor: primaryColor,
-              cellBuilder: (context, cellDetails) {
-                final bool _isHoliday = isHoliday(cellDetails.date);
-                final bool _isSelectedDay = isSelectedDay(cellDetails.date);
-                return Container(
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: _isHoliday
-                        ? Border.all(
-                            color: Colors.redAccent,
-                            width: 2,
-                          )
-                        : const Border(),
-                    color:_isSelectedDay
-                            ? primaryColor
-                            : Colors.white,
+            appBar: AppBar(),
+            body: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                for (final num in list)
+                  GestureDetector(
+                    onLongPress: () {
+                      setState(() {
+                        isLongTap = true;
+                      });
+                      Overlay.of(context).insert(_overlayEntry);
+                    },
+                    onLongPressEnd: (_) {
+                      setState(() {
+                        isLongTap = false;
+                      });
+                      _overlayEntry.remove();
+                    },
+                    child: Container(
+                      width: 80.w,
+                      height: 10.w,
+                      alignment: Alignment.center,
+                      decoration:
+                          const BoxDecoration(color: lightPrimaryTextColor),
+                      child: Text(
+                        num.toString(),
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        cellDetails.date.day.toString(),
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontFamily: 'NotoSans',
-                            color: _isSelectedDay ? Colors.white : Colors.black),
-                      )
-                    ],
-                  ),
-                );
-              },
-              onCancel: () {
-                Navigator.of(context).pop();
-              },
-              selectionMode: DateRangePickerSelectionMode.multiple,
-            ),
-    ));
-  }
-
-  isHoliday(DateTime date) {
-    return holidays.any((element) =>
-        element.from.isBefore(date) && element.to.isAfter(date) ||
-        date.isAtSameMomentAs(element.from) ||
-        date.isAtSameMomentAs(element.to));
-  }
-
-  isSelectedDay(DateTime date) {
-    return _selectedDays.contains(date);
+              ],
+            )));
   }
 }

@@ -82,7 +82,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
       sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   final rs = await _cusomterService.GetCustomerById(_plan!.leaderId!);
   final res = await _planService
-      .getOrderCreatePlan(sharedPreferences.getInt('plan_id_pdf')!);
+      .getOrderCreatePlan(sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   if (res != null) {
     _plan.orders = res['orders'];
   }

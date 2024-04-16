@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 
 Widget defaultTextFormField(
@@ -20,11 +21,15 @@ Widget defaultTextFormField(
         EdgeInsets? padding,
         bool? autofocus,
         int? maxLength,
+        bool? isNumber,
         bool readonly = false}) =>
     TextFormField(
-      autofocus: autofocus ?? false,
-      textAlignVertical: TextAlignVertical.top,
-
+        autofocus: autofocus ?? false,
+        textAlignVertical: TextAlignVertical.top,
+        inputFormatters: <TextInputFormatter>[
+          if (isNumber != null && isNumber)
+            FilteringTextInputFormatter.digitsOnly,
+        ],
         controller: controller,
         maxLength: maxLength ?? 60,
         keyboardType: inputType,
@@ -52,16 +57,14 @@ Widget defaultTextFormField(
                 const TextStyle(color: Colors.grey, fontSize: 20),
             focusedBorder: OutlineInputBorder(
                 borderSide: BorderSide(
-                  color: primaryColor,
-                  width: borderSize == null ? 1 : borderSize.toDouble()
-                ),
-                borderRadius:const BorderRadius.all(Radius.circular(14))),
+                    color: primaryColor,
+                    width: borderSize == null ? 1 : borderSize.toDouble()),
+                borderRadius: const BorderRadius.all(Radius.circular(14))),
             border: OutlineInputBorder(
                 borderSide: BorderSide(
-                  color: Colors.grey,
-                  width: borderSize == null ? 1 : borderSize.toDouble()
-                ),
-                borderRadius:const BorderRadius.all(Radius.circular(14)))),
+                    color: Colors.grey,
+                    width: borderSize == null ? 1 : borderSize.toDouble()),
+                borderRadius: const BorderRadius.all(Radius.circular(14)))),
         validator: onValidate);
 
 Widget TextFormFieldWithLength(
@@ -99,7 +102,8 @@ Widget TextFormFieldWithLength(
         decoration: InputDecoration(
             labelText: text,
             counterText: '',
-            contentPadding:const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
             hintText: hinttext ?? null,
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
@@ -119,5 +123,3 @@ Widget TextFormFieldWithLength(
                 ),
                 borderRadius: BorderRadius.all(Radius.circular(14)))),
         validator: onValidate);
-
-        

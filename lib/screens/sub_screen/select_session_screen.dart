@@ -30,6 +30,7 @@ class SelectSessionScreen extends StatefulWidget {
   final int? availableGcoinAmount;
   final void Function(dynamic) callbackFunction;
   final Session? initSession;
+
   final bool? isEndAtNoon;
 
   @override
@@ -121,24 +122,29 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
                 shrinkWrap: true,
                 itemCount: widget.isEndAtNoon != null && widget.isEndAtNoon!
                     ? 2
-                    : widget.initSession != null
-                        ? sessions.length -
-                            sessions.indexOf(widget.initSession!)
-                        : sessions.length,
+                    : widget.isEndAtNoon != null && !widget.isEndAtNoon!
+                        ? 4
+                        : widget.initSession != null
+                            ? sessions.length -
+                                sessions.indexOf(widget.initSession!)
+                            : sessions.length,
                 itemBuilder: (context, index) {
                   return SessionCard(
                     availableGcoinAmount: widget.availableGcoinAmount,
                     isOrder: widget.isOrder,
-                    session: widget.initSession != null
-                        ? sessions[
-                            index + sessions.indexOf(widget.initSession!)]
-                        : sessions[index],
+                    session: widget.isEndAtNoon != null && widget.isEndAtNoon!
+                        ? sessions[index]
+                        : widget.initSession != null
+                            ? sessions[
+                                index + sessions.indexOf(widget.initSession!)]
+                            : sessions[index],
                     endDate: widget.endDate,
                     startDate: widget.startDate,
                     location: widget.location,
                     numberOfMember: widget.numberOfMember,
                     serviceType: widget.serviceType,
                     initSession: widget.initSession,
+                    isEndAtNoon: widget.isEndAtNoon,
                     callbackFunction: widget.callbackFunction,
                   );
                 },

@@ -16,7 +16,7 @@ class PlanScheduleTitle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 18.w,
+      width: 20.w,
       decoration: BoxDecoration(
           color: isSelected ? primaryColor : Colors.white,
           boxShadow: const [

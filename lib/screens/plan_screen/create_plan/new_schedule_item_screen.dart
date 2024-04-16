@@ -5,14 +5,13 @@ import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/meal_text.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/session.dart';
@@ -20,6 +19,7 @@ import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
@@ -35,6 +35,7 @@ class NewScheduleItemScreen extends StatefulWidget {
       required this.selectedIndex,
       required this.maxActivityTime,
       required this.location,
+      this.plan,
       this.item});
   final void Function(
       PlanScheduleItem item, bool isCreate, PlanScheduleItem? oldItem) callback;
@@ -43,6 +44,7 @@ class NewScheduleItemScreen extends StatefulWidget {
   final int selectedIndex;
   final int maxActivityTime;
   final LocationViewModel location;
+  final PlanCreate? plan;
 
   @override
   State<NewScheduleItemScreen> createState() => _NewScheduleItemScreenState();
@@ -63,12 +65,13 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   bool _isVisitActivity = false;
   bool _isStarEvent = false;
   bool? _isEndAtNoon;
+  bool _isFirstDay = false;
+  bool _isEndDay = false;
+  DateTime? arrivedTime;
 
-  int numberOfMember = sharedPreferences.getInt('plan_number_of_member')!;
-  DateTime startDate =
-      DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-  DateTime endDate =
-      DateTime.parse(sharedPreferences.getString('plan_end_date')!);
+  int? numberOfMember;
+  DateTime? startDate;
+  DateTime? endDate;
 
   dynamic tempOrder;
   dynamic surcharge;
@@ -78,6 +81,26 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    if (widget.plan == null) {
+      setUpDataCreate();
+    } else {
+      setUpDataUpdate();
+    }
+  }
+
+  setUpDataUpdate() {
+    numberOfMember = widget.plan!.maxMemberCount;
+    startDate = widget.plan!.startDate;
+    endDate = widget.plan!.endDate;
+
+    if (widget.selectedIndex == 0) {
+      startSession = sessions.firstWhereOrNull((element) =>
+          element.from <= widget.plan!.arrivedAt!.hour &&
+          element.to > widget.plan!.arrivedAt!.hour);
+    } else if (widget.selectedIndex >=
+        (widget.plan!.numOfExpPeriod! / 2).ceil() - 1) {
+      _isEndAtNoon = Utils().isEndAtNoon(widget.plan);
+    }
     setUpData();
   }
 
@@ -98,24 +121,22 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
     }
   }
 
-  setUpData() {
+  setUpDataCreate() {
+    numberOfMember = sharedPreferences.getInt('plan_number_of_member')!;
+    startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+    endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
     if (widget.selectedIndex == 0) {
-      final initialDateTime =
-          DateTime.parse(sharedPreferences.getString('plan_start_time')!);
-      final startTime =
-          DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
-      final arrivedTime = startTime.add(Duration(
-          seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-              .ceil()));
+      final arrivedTime = Utils().getArrivedTimeFromLocal();
       startSession = sessions.firstWhereOrNull((element) =>
           element.from <= arrivedTime.hour && element.to > arrivedTime.hour);
-      print(arrivedTime);
-      print(startSession);
-    } else if (widget.selectedIndex >=
-        (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil() - 1) {
-      _isEndAtNoon = Utils().isEndAtNoon();
     }
+    setUpData();
+  }
 
+  setUpData() {
+    _isFirstDay = widget.selectedIndex == 0;
+    _isEndDay = widget.selectedIndex >=
+        (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil() - 1;
     if (widget.item != null) {
       _selectedDate = widget.item!.date!;
       _descriptionController.text = widget.item!.description!;
@@ -123,6 +144,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
       _shortDescriptionController.text = widget.item!.shortDescription!;
       _activityTimeController.text = widget.item!.activityTime!.toString();
       _isStarEvent = widget.item!.isStarred!;
+      tempOrder = widget.item!.tempOrder;
     } else {
       setState(() {
         _selectedDate =
@@ -201,15 +223,22 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                     } else {
                       if (tempOrder != null) {
                         saveTempOrder();
-
-                        for (final day in tempOrder['serveDates']) {
+                        DateTime? endDate;
+                        if (widget.plan == null) {
+                          endDate = DateTime.parse(
+                              sharedPreferences.getString('plan_end_date')!);
+                        } else {
+                          endDate = widget.plan!.endDate;
+                        }
+                        if (_selectedType == 'Check-in') {
                           widget.callback(
                               PlanScheduleItem(
                                   isStarred: _isStarEvent,
                                   shortDescription:
                                       _shortDescriptionController.text,
                                   description: _descriptionController.text,
-                                  date: DateTime.parse(day.toString()),
+                                  date: DateTime.parse(
+                                      tempOrder['serveDates'].first.toString()),
                                   tempOrder: tempOrder,
                                   activityTime:
                                       int.parse(_activityTimeController.text),
@@ -217,6 +246,45 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   id: widget.item?.id),
                               widget.item == null,
                               widget.item);
+                          widget.callback(
+                              PlanScheduleItem(
+                                  isStarred: _isStarEvent,
+                                  shortDescription: 'Check-out',
+                                  description: 'Check-out nhà nghỉ/khách sạn',
+                                  date: DateTime.parse(
+                                              tempOrder['serveDates'].last) ==
+                                          endDate
+                                      ? DateTime.parse(tempOrder['serveDates']
+                                          .last
+                                          .toString())
+                                      : DateTime.parse(tempOrder['serveDates']
+                                              .last
+                                              .toString())
+                                          .add(const Duration(days: 1)),
+                                  tempOrder: tempOrder,
+                                  activityTime:
+                                      int.parse(_activityTimeController.text),
+                                  type: 'Check-out',
+                                  id: widget.item?.id),
+                              widget.item == null,
+                              widget.item);
+                        } else {
+                          for (final day in tempOrder['serveDates']) {
+                            widget.callback(
+                                PlanScheduleItem(
+                                    isStarred: _isStarEvent,
+                                    shortDescription:
+                                        _shortDescriptionController.text,
+                                    description: _descriptionController.text,
+                                    date: DateTime.parse(day.toString()),
+                                    tempOrder: tempOrder,
+                                    activityTime:
+                                        int.parse(_activityTimeController.text),
+                                    type: _selectedType,
+                                    id: widget.item?.id),
+                                widget.item == null,
+                                widget.item);
+                          }
                         }
                       } else {
                         widget.callback(
@@ -521,7 +589,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                       TextFormFieldWithLength(
                           controller: _shortDescriptionController,
                           inputType: TextInputType.text,
-                          maxLength: 40,
+                          maxLength: GlobalConstant()
+                              .ACTIVITY_SHORT_DESCRIPTION_MAX_LENGTH,
                           maxline: 2,
                           minline: 2,
                           text: 'Mô tả',
@@ -533,8 +602,13 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           onValidate: (value) {
                             if (value!.isEmpty) {
                               return "Mô tả của hoạt động không được để trống";
-                            } else if (value.length < 2 || value.length > 40) {
-                              return "Mô tả của hoạt động phải có độ dài từ 2 đến 40 kí tự";
+                            } else if (value.length <
+                                    GlobalConstant()
+                                        .ACTIVITY_SHORT_DESCRIPTION_MIN_LENGTH ||
+                                value.length >
+                                    GlobalConstant()
+                                        .ACTIVITY_SHORT_DESCRIPTION_MAX_LENGTH) {
+                              return "Mô tả của hoạt động phải có độ dài từ ${GlobalConstant().ACTIVITY_SHORT_DESCRIPTION_MIN_LENGTH} đến ${GlobalConstant().ACTIVITY_SHORT_DESCRIPTION_MAX_LENGTH} kí tự";
                             }
                             return null;
                           },
@@ -545,7 +619,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                       TextFormFieldWithLength(
                           controller: _descriptionController,
                           inputType: TextInputType.text,
-                          maxLength: 300,
+                          maxLength:
+                              GlobalConstant().ACTIVITY_DESCRIPTION_MAX_LENGTH,
                           maxline: 6,
                           minline: 6,
                           text: 'Mô tả chi tiết',
@@ -557,8 +632,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           onValidate: (value) {
                             if (value!.isEmpty) {
                               return "Mô tả chi tiết của hoạt động không được để trống";
-                            } else if (value.length > 300) {
-                              return "Mô tả chi tiết của hoạt động phải có độ dài từ 1 - 300 kí tự";
+                            } else if (value.length >
+                                GlobalConstant()
+                                    .ACTIVITY_DESCRIPTION_MAX_LENGTH) {
+                              return "Mô tả chi tiết của hoạt động phải có độ dài từ ${GlobalConstant().ACTIVITY_DESCRIPTION_MIN_LENGTH} - ${GlobalConstant().ACTIVITY_DESCRIPTION_MAX_LENGTH} kí tự";
                             }
                             return null;
                           },
@@ -645,20 +722,16 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         NumberFormat.simpleCurrency(
                                                 locale: 'vi_VN',
                                                 decimalDigits: 0,
-                                                name: '')
-                                            .format(surcharge['gcoinAmount']),
+                                                name: 'Đ')
+                                            .format(surcharge['amount']),
                                         style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                             fontFamily: 'NotoSans'),
                                       ),
-                                      SvgPicture.asset(
-                                        gcoin_logo,
-                                        height: 20,
-                                      ),
                                       if (surcharge['alreadyDivided'])
                                         const Text(
-                                          '/',
+                                          ' /',
                                           style: TextStyle(
                                               fontSize: 18,
                                               fontWeight: FontWeight.bold,
@@ -684,6 +757,48 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             SizedBox(
                               height: 0.5.h,
                             ),
+                            if (tempOrder != null &&
+                                _selectedType == 'Check-in')
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Ngày phục vụ',
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontFamily: 'NotoSans',
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Column(
+                                    children: [
+                                      for (final day in tempOrder['serveDates'])
+                                        SizedBox(
+                                          width: 40.w,
+                                          child: Text(
+                                            DateFormat('dd/MM')
+                                                .format(DateTime.parse(day)),
+                                            overflow: TextOverflow.clip,
+                                            textAlign: TextAlign.end,
+                                            style: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'NotoSans'),
+                                          ),
+                                        )
+                                    ],
+                                  )
+                                ],
+                              ),
+                            if (tempOrder != null &&
+                                _selectedType == 'Check-in')
+                              Padding(
+                                padding: EdgeInsets.symmetric(vertical: 0.5.h),
+                                child: const Divider(
+                                  color: Colors.black54,
+                                  height: 1.5,
+                                ),
+                              ),
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
@@ -702,7 +817,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                               locale: 'vi_VN',
                                               decimalDigits: 0,
                                               name: 'Đ')
-                                          .format(tempOrder['total']),
+                                          .format( tempOrder['total']),
                                       style: const TextStyle(
                                           fontSize: 18,
                                           fontFamily: 'NotoSans',
@@ -718,12 +833,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       NumberFormat.simpleCurrency(
                                               locale: 'vi_VN',
                                               decimalDigits: 0,
-                                              name: '')
+                                              name: 'Đ')
                                           .format(surcharge['alreadyDivided']
-                                              ? surcharge['gcoinAmount'] *
+                                              ? surcharge['amount'] *
                                                   sharedPreferences.getInt(
                                                       'plan_number_of_member')!
-                                              : surcharge['gcoinAmount']),
+                                              : surcharge['amount']),
                                       style: const TextStyle(
                                           fontSize: 20,
                                           fontFamily: 'NotoSans',
@@ -731,11 +846,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       textAlign: TextAlign.end,
                                     ),
                                   ),
-                                if (surcharge != null)
-                                  SvgPicture.asset(
-                                    gcoin_logo,
-                                    height: 20,
-                                  )
                               ],
                             )
                           ],
@@ -789,74 +899,62 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                                 .toLowerCase()
                                                 .contains(e)));
                                     if (temp == null) {
-                                      navigateToServiceSessionScreen();
-                                    } else if (_isEndAtNoon != null &&
-                                        _isEndAtNoon! &&
-                                        mealText.indexOf(temp) > 1) {
-                                      AwesomeDialog(
-                                              context: context,
-                                              animType: AnimType.leftSlide,
-                                              dialogType: DialogType.warning,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 10),
-                                              title:
-                                                  'Mô tả hoạt động không phù hợp với thời gian kết thúc của chuyến đi',
-                                              titleTextStyle: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'NotoSans',
-                                              ),
-                                              desc: 'Vẫn giữ mô tả này?',
-                                              descTextStyle: const TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.grey),
-                                              btnOkColor: Colors.amber,
-                                              btnOkText: 'Có',
-                                              btnOkOnPress: () {
-                                                navigateToServiceSessionScreen();
-                                              },
-                                              btnCancelColor: Colors.blueAccent,
-                                              btnCancelOnPress: () {},
-                                              btnCancelText: 'Không')
-                                          .show();
-                                    } else if (widget.selectedIndex == 0 &&
-                                        startSession != null &&
-                                        mealText.indexOf(temp) <
-                                            sessions.indexOf(startSession!)) {
-                                      AwesomeDialog(
-                                              context: context,
-                                              animType: AnimType.leftSlide,
-                                              dialogType: DialogType.warning,
-                                              padding:
-                                                  const EdgeInsets.symmetric(
-                                                      horizontal: 10),
-                                              title:
-                                                  'Mô tả hoạt động không phù hợp với thời gian đến nơi của chuyến đi',
-                                              titleTextStyle: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'NotoSans',
-                                              ),
-                                              desc: 'Vẫn giữ mô tả này?',
-                                              descTextStyle: const TextStyle(
-                                                  fontSize: 16,
-                                                  color: Colors.grey),
-                                              btnOkColor: Colors.amber,
-                                              btnOkText: 'Có',
-                                              btnOkOnPress: () {
-                                                navigateToServiceSessionScreen();
-                                              },
-                                              btnCancelColor: Colors.blueAccent,
-                                              btnCancelOnPress: () {},
-                                              btnCancelText: 'Không')
-                                          .show();
+                                      final _startSession =
+                                          getStartEndSession();
+                                      navigateToServiceSessionScreen(
+                                          _startSession);
                                     } else {
-                                      navigateToServiceMainScreen(
-                                          sessions[mealText.indexOf(temp)]);
+                                      final _startEndSessionIndex = sessions
+                                          .indexOf(getStartEndSession());
+                                      final mealTextIndex =
+                                          mealText.indexOf(temp);
+                                      if (_isFirstDay) {
+                                        if (mealTextIndex <
+                                            _startEndSessionIndex) {
+                                          handleInvalidActivityBasedOnStartTime(
+                                              () {
+                                            navigateToServiceSessionScreen(
+                                                sessions[
+                                                    _startEndSessionIndex]);
+                                          }, () {});
+                                        } else if (mealTextIndex >=
+                                            _startEndSessionIndex) {
+                                          navigateToServiceMainScreen(
+                                              sessions[mealTextIndex]);
+                                        }
+                                      } else if (_isEndDay) {
+                                        if (mealTextIndex >
+                                            _startEndSessionIndex) {
+                                          handleInvalidActivityBasedOnEndTime(
+                                              () {
+                                            navigateToServiceSessionScreen(
+                                                null);
+                                          }, () {});
+                                        } else {
+                                          navigateToServiceMainScreen(
+                                              sessions[mealTextIndex]);
+                                        }
+                                      } else {
+                                        navigateToServiceMainScreen(
+                                            sessions[mealTextIndex]);
+                                      }
                                     }
+                                  } else if (_isRoomActivity) {
+                                    final _startEndSessionIndex =
+                                        sessions.indexOf(getStartEndSession());
+                                    // if (_isFirstDay &&
+                                    //     _startEndSessionIndex > 1) {
+                                    //   handleInvalidActivityBasedOnStartTime(
+                                    //       () {}, () {});
+                                    // } else {
+                                    navigateToServiceMainScreen(
+                                        sessions[_startEndSessionIndex]);
+                                    // }
                                   } else {
-                                    navigateToServiceMainScreen(null);
+                                    final _startEndSessionIndex =
+                                        sessions.indexOf(getStartEndSession());
+                                    navigateToServiceMainScreen(
+                                        sessions[_startEndSessionIndex]);
                                   }
                                 },
                                 icon: Icon(_isFoodActivity
@@ -908,15 +1006,15 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                       : services[2],
               location: widget.location,
               initSession: initSession,
-              numberOfMember: numberOfMember,
+              numberOfMember: numberOfMember!,
               startDate: _selectedDate,
-              endDate: endDate,
+              endDate: endDate!,
               callbackFunction: callback,
             ),
             type: PageTransitionType.rightToLeft));
   }
 
-  navigateToServiceSessionScreen() {
+  navigateToServiceSessionScreen(Session? _startSession) {
     Navigator.push(
         context,
         PageTransition(
@@ -924,12 +1022,90 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                 serviceType: services[0],
                 isOrder: false,
                 location: widget.location,
-                numberOfMember: numberOfMember,
+                numberOfMember: numberOfMember!,
                 isEndAtNoon: _isEndAtNoon,
-                initSession: startSession,
+                initSession: _startSession,
                 startDate: _selectedDate,
-                endDate: endDate,
+                endDate: endDate!,
                 callbackFunction: callback),
             type: PageTransitionType.rightToLeft));
+  }
+
+  handleInvalidActivityBasedOnStartTime(
+      void Function() onOk, void Function() onCancel) {
+    AwesomeDialog(
+            context: context,
+            animType: AnimType.leftSlide,
+            dialogType: DialogType.warning,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            title:
+                'Mô tả hoạt động không phù hợp với thời gian đến nơi của chuyến đi',
+            titleTextStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'NotoSans',
+            ),
+            desc: 'Vẫn giữ mô tả này?',
+            descTextStyle: const TextStyle(fontSize: 16, color: Colors.grey),
+            btnOkColor: Colors.amber,
+            btnOkText: 'Có',
+            btnOkOnPress: onOk,
+            btnCancelColor: Colors.blueAccent,
+            btnCancelOnPress: onCancel,
+            btnCancelText: 'Không')
+        .show();
+  }
+
+  handleInvalidActivityBasedOnEndTime(
+      void Function() onOk, void Function() onCancel) {
+    AwesomeDialog(
+            context: context,
+            animType: AnimType.leftSlide,
+            dialogType: DialogType.warning,
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            title:
+                'Mô tả hoạt động không phù hợp với thời gian kết thúc của chuyến đi',
+            titleTextStyle: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'NotoSans',
+            ),
+            desc: 'Vẫn giữ mô tả này?',
+            descTextStyle: const TextStyle(fontSize: 16, color: Colors.grey),
+            btnOkColor: Colors.amber,
+            btnOkText: 'Có',
+            btnOkOnPress: onOk,
+            btnCancelColor: Colors.blueAccent,
+            btnCancelOnPress: onCancel,
+            btnCancelText: 'Không')
+        .show();
+  }
+
+  getStartEndSession() {
+    if (_isFirstDay) {
+      final initialDateTime =
+          DateTime.parse(sharedPreferences.getString('plan_start_time')!);
+      final startTime =
+          DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
+      final arrivedTime = startTime.add(Duration(
+          seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+              .ceil()));
+      startSession = sessions.firstWhereOrNull((element) =>
+          element.from <= arrivedTime.hour && element.to > arrivedTime.hour);
+      return startSession ?? sessions[0];
+    } else if (_isEndDay) {
+      if (_isFoodActivity) {
+        _isEndAtNoon = Utils().isEndAtNoon(widget.plan);
+        if (_isEndAtNoon!) {
+          return sessions[1];
+        } else {
+          return sessions[3];
+        }
+      } else {
+        return sessions[0];
+      }
+    } else {
+      return sessions[0];
+    }
   }
 }

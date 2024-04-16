@@ -14,6 +14,7 @@ import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -23,8 +24,16 @@ import 'package:sizer2/sizer2.dart';
 import '../../../widgets/plan_screen_widget/craete_plan_header.dart';
 
 class SelectEmergencyService extends StatefulWidget {
-  const SelectEmergencyService({super.key, required this.location});
+  const SelectEmergencyService(
+      {super.key,
+      required this.isCreate,
+      this.plan,
+      required this.location,
+      required this.isClone});
   final LocationViewModel location;
+  final bool isCreate;
+  final PlanCreate? plan;
+  final bool isClone;
 
   @override
   State<SelectEmergencyService> createState() => _SelectEmergencyServiceState();
@@ -50,6 +59,20 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
     // TODO: implement initState
     super.initState();
     setUpData();
+  }
+
+  setUpDataUpdate() async {
+    // _selectedIndex =
+    //     widget.plan!.savedContacts!.map((e) => e.id.toString()).toList();
+    _selectedIndex = widget.plan!.savedContactIds ?? [];
+    getSelectedContact(_selectedIndex!);
+  }
+
+  setUpDataCreate() async {
+    _selectedIndex = sharedPreferences.getStringList('selectedIndex') ?? [];
+    if (_selectedIndex != null) {
+      getSelectedContact(_selectedIndex!);
+    }
   }
 
   setUpData() async {
@@ -85,30 +108,38 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
     vehicleContacts!.addAll(_repairContacts);
 
     _tabController = TabController(length: 3, vsync: this);
-    _selectedIndex = sharedPreferences.getStringList('selectedIndex') ?? [];
-    if (_selectedIndex != null) {
-      getSelectedContact(_selectedIndex!);
+    if (widget.isCreate) {
+      setUpDataCreate();
+    } else {
+      setUpDataUpdate();
     }
   }
 
   callback() {
-    _selectedIndex = sharedPreferences.getStringList('selectedIndex');
+    _selectedIndex = widget.plan == null
+        ? sharedPreferences.getStringList('selectedIndex')
+        : widget.plan!.savedContactIds;
     getSelectedContact(_selectedIndex!);
   }
 
   getSelectedContact(List<String> selectedIndexes) {
     setState(() {
       selectedEmergencyContacts = [];
-      for (final index in selectedIndexes) {
-        selectedEmergencyContacts!.add(totalContacts!
-            .firstWhere((element) => element.id == int.parse(index)));
+      for (var index =0 ; index < selectedIndexes.length; index ++) {
+        final contact = totalContacts!
+            .firstWhereOrNull((element) => element.id == int.parse(selectedIndexes[index]));
+        if (contact == null) {
+          selectedIndexes.removeAt(index);
+          sharedPreferences.setStringList('selectedIndex', selectedIndexes);
+        } else {
+          selectedEmergencyContacts!.add(contact);
+        }
       }
 
       rsList = selectedEmergencyContacts!
           .map((e) => EmergencyContactViewModel().toJson(e))
           .toList();
     });
-    print(rsList);
     sharedPreferences.setString('plan_saved_emergency', json.encode(rsList));
   }
 
@@ -131,7 +162,8 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
         actions: [
           InkWell(
             onTap: () {
-              _planService.handleShowPlanInformation(context, widget.location);
+              _planService.handleShowPlanInformation(
+                  context, widget.location, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -210,6 +242,7 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
                                       emergency: emergencyContacts![index],
                                       index: index,
                                       callback: callback,
+                                      plan: widget.plan,
                                       isSelected: _selectedIndex!.any(
                                           (element) =>
                                               element ==
@@ -233,6 +266,7 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
                                       emergency: vehicleContacts![index],
                                       index: index,
                                       callback: callback,
+                                      plan: widget.plan,
                                       isSelected: _selectedIndex!.any(
                                           (element) =>
                                               element ==
@@ -256,6 +290,7 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
                                       emergency: groceryContacts![index],
                                       index: index,
                                       callback: callback,
+                                      plan: widget.plan,
                                       isSelected: _selectedIndex!.any(
                                           (element) =>
                                               element ==
@@ -299,28 +334,29 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
               onPressed: () {
                 if (!selectedEmergencyContacts!
                     .any((element) => element.type == 'EMERGENCY')) {
-                      AwesomeDialog(context: context,
-                      animType: AnimType.leftSlide,
-                      dialogType: DialogType.warning,
-                      title: 'Bạn phải chọn ít nhất 1 liên lạc cứu hộ cho chuyến đi',
-                      titleTextStyle: const TextStyle(
-                        fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      btnOkColor: Colors.amber,
-                      btnOkOnPress: () {
-                        
-                      },
-                      btnOkText: 'OK'
-                      ).show();
-                  
-                }else{
+                  AwesomeDialog(
+                          context: context,
+                          animType: AnimType.leftSlide,
+                          dialogType: DialogType.warning,
+                          title:
+                              'Bạn phải chọn ít nhất 1 liên lạc cứu hộ cho chuyến đi',
+                          titleTextStyle: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          btnOkColor: Colors.amber,
+                          btnOkOnPress: () {},
+                          btnOkText: 'OK')
+                      .show();
+                } else {
                   Navigator.push(
                       context,
                       PageTransition(
                           child: SelectPlanScheduleScreen(
-                              isClone: false,
-                              isCreate: true,
+                              isClone: widget.isClone,
+                              plan: widget.plan,
+                              isCreate: widget.isCreate,
                               location: widget.location),
                           type: PageTransitionType.rightToLeft));
                 }

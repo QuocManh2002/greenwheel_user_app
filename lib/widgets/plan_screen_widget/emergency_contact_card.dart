@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:sizer2/sizer2.dart';
 
 class EmergencyContactCard extends StatelessWidget {
@@ -11,12 +12,14 @@ class EmergencyContactCard extends StatelessWidget {
       {super.key,
       required this.emergency,
       required this.index,
+      this.plan,
       required this.callback,
       required this.isSelected});
   final EmergencyContactViewModel emergency;
   final int index;
   final void Function() callback;
   final bool isSelected;
+  final PlanCreate? plan;
 
   @override
   Widget build(BuildContext context) {
@@ -33,12 +36,14 @@ class EmergencyContactCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              List<String>? selectedIndex =
-                  sharedPreferences.getStringList('selectedIndex');
+              List<String>? selectedIndex = plan == null
+                  ? sharedPreferences.getStringList('selectedIndex')
+                  : plan!.savedContactIds;
               if (selectedIndex != null) {
                 if (selectedIndex
                     .any((element) => element == emergency.id.toString())) {
-                  if (selectedIndex.length == 1 && emergency.type == 'EMERGENCY') {
+                  if (selectedIndex.length == 1 &&
+                      emergency.type == 'EMERGENCY') {
                     AwesomeDialog(
                             context: context,
                             animType: AnimType.leftSlide,
@@ -80,7 +85,12 @@ class EmergencyContactCard extends StatelessWidget {
                     selectedIndex.add(emergency.id.toString());
                   }
                 }
-                sharedPreferences.setStringList('selectedIndex', selectedIndex);
+                if (plan == null) {
+                  sharedPreferences.setStringList(
+                      'selectedIndex', selectedIndex);
+                } else {
+                  plan!.savedContactIds = selectedIndex;
+                }
               } else {
                 sharedPreferences
                     .setStringList('selectedIndex', [emergency.id.toString()]);

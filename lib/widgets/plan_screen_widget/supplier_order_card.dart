@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
@@ -8,7 +7,17 @@ import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class SupplierOrderCard extends StatelessWidget {
-  const SupplierOrderCard({super.key,this.isFromTempOrder,this.availableGcoinAmount, this.memberLimit, this.endDate, required this.callback, required this.order, required this.startDate, required this.isTempOrder, this.planId});
+  const SupplierOrderCard(
+      {super.key,
+      this.isFromTempOrder,
+      this.availableGcoinAmount,
+      this.memberLimit,
+      this.endDate,
+      required this.callback,
+      required this.order,
+      required this.startDate,
+      required this.isTempOrder,
+      this.planId});
   final OrderViewModel order;
   final DateTime startDate;
   final bool isTempOrder;
@@ -39,7 +48,7 @@ class SupplierOrderCard extends StatelessWidget {
                   isTempOrder: isTempOrder,
                   planId: planId,
                   callback: () {
-                    
+                    callback(null);
                   },
                 )));
       },
@@ -70,7 +79,8 @@ class SupplierOrderCard extends StatelessWidget {
                   child: FadeInImage(
                     height: 15.h,
                     placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage('$baseBucketImage${order.supplier!.thumbnailUrl!}'),
+                    image: NetworkImage(
+                        '$baseBucketImage${order.supplier!.thumbnailUrl!}'),
                     fit: BoxFit.cover,
                     width: 15.h,
                     filterQuality: FilterQuality.high,

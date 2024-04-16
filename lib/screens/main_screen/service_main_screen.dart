@@ -24,6 +24,7 @@ class ServiceMainScreen extends StatefulWidget {
       this.availableGcoinAmount,
       this.isFromTempOrder,
       this.initSession,
+      this.endSession,
       required this.callbackFunction});
   final int numberOfMember;
   final ServiceType serviceType;
@@ -35,6 +36,7 @@ class ServiceMainScreen extends StatefulWidget {
   final bool? isFromTempOrder;
   final void Function(dynamic tempOrder) callbackFunction;
   final Session? initSession;
+  final Session? endSession;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();

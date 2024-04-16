@@ -4,17 +4,17 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_note_surcharge_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/new_schedule_item_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/select_service_screen.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_service_infor.dart';
@@ -28,16 +28,14 @@ import 'package:sizer2/sizer2.dart';
 class SelectPlanScheduleScreen extends StatefulWidget {
   const SelectPlanScheduleScreen(
       {super.key,
-      this.schedule,
       required this.isCreate,
       this.plan,
       required this.location,
       required this.isClone});
   final bool isCreate;
-  final PlanDetail? plan;
+  final PlanCreate? plan;
   final LocationViewModel location;
   final bool isClone;
-  final List<dynamic>? schedule;
 
   @override
   State<SelectPlanScheduleScreen> createState() =>
@@ -47,13 +45,12 @@ class SelectPlanScheduleScreen extends StatefulWidget {
 class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
   double _currentPage = 0;
   final PageController _pageController = PageController(initialPage: 0);
-  List<PlanSchedule> testList = [];
+  List<PlanSchedule> scheduleList = [];
   final PlanService _planService = PlanService();
   PlanScheduleItem? _selectedItem;
   DateTime? departureDate;
   DateTime startDate = DateTime.now();
   int duration = 0;
-  bool _isNotOverDay = false;
   OrderService _orderService = OrderService();
 
   getTotal(OrderViewModel order) {
@@ -73,37 +70,52 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
         _currentPage = _pageController.page!;
       });
     });
-    setUpData();
+    if (widget.plan == null) {
+      setUpDataCreate();
+    } else {
+      setUpDataUpdate();
+    }
   }
 
-  setUpData() async {
+  setUpDataUpdate() async {
+    int duration =
+        widget.plan!.arrivedAt!.hour > 16 && widget.plan!.arrivedAt!.hour < 20
+            ? ((widget.plan!.numOfExpPeriod! + 1) / 2).ceil()
+            : (widget.plan!.numOfExpPeriod! / 2).ceil();
+    var list = _planService.GetPlanScheduleFromJsonNew(
+        json.decode(widget.plan!.schedule!), widget.plan!.startDate!, duration);
+    scheduleList = list;
+
+    var finalList = _planService.convertPlanScheduleToJson(scheduleList);
+    // if (widget.plan == null) {
+    //   sharedPreferences.setString('plan_schedule', json.encode(finalList));
+    // } else {
+    widget.plan!.schedule = json.encode(finalList);
+    // }
+  }
+
+  setUpDataCreate() async {
     duration = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
     String? _scheduleText = sharedPreferences.getString('plan_schedule');
     DateTime _startDate =
         DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     final DateTime _endDate = _startDate.add(Duration(days: duration));
-    if (widget.isCreate) {
-      if (!widget.isClone) {
-        if (_scheduleText == null) {
-          testList = _planService.generateEmptySchedule(_startDate, _endDate);
-          var finalList = _planService.convertPlanScheduleToJson(testList);
-          sharedPreferences.setString('plan_schedule', json.encode(finalList));
-        } else {
-          testList = _planService.ConvertPLanJsonToObject(
-              duration, _startDate, _scheduleText);
-        }
+    if (!widget.isClone) {
+      if (_scheduleText == null) {
+        scheduleList = _planService.generateEmptySchedule(_startDate, _endDate);
+        var finalList = _planService.convertPlanScheduleToJson(scheduleList);
+        sharedPreferences.setString('plan_schedule', json.encode(finalList));
       } else {
-        var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
-            _startDate, _endDate.difference(_startDate).inDays + 1);
-        testList = _planService.GetPlanScheduleClone(list);
-        var finalList = _planService.convertPlanScheduleToJson(testList);
+        scheduleList = _planService.ConvertPLanJsonToObject(
+            duration, _startDate, _scheduleText);
+        var finalList = _planService.convertPlanScheduleToJson(scheduleList);
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       }
     } else {
-      var list = _planService.GetPlanScheduleFromJsonNew(widget.schedule!,
-          startDate, _endDate.difference(startDate).inDays + 1);
-      testList = list;
-      var finalList = _planService.convertPlanScheduleToJson(testList);
+      var list = _planService.GetPlanScheduleFromJsonNew(
+          json.decode(_scheduleText!), _startDate, duration);
+      scheduleList = _planService.GetPlanScheduleClone(list);
+      var finalList = _planService.convertPlanScheduleToJson(scheduleList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
     }
   }
@@ -117,35 +129,43 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
   callback(PlanScheduleItem item, bool isCreate, PlanScheduleItem? oldItem) {
     if (isCreate) {
       setState(() {
-        testList
+        scheduleList
             .firstWhere((element) => element.date == item.date)
             .items
             .add(item);
       });
-      var finalList = _planService.convertPlanScheduleToJson(testList);
-      sharedPreferences.setString('plan_schedule', json.encode(finalList));
+      var finalList = _planService.convertPlanScheduleToJson(scheduleList);
+      if (widget.plan == null) {
+        sharedPreferences.setString('plan_schedule', json.encode(finalList));
+      } else {
+        widget.plan!.schedule = json.encode(finalList);
+      }
     } else {
       setState(() {
-        testList
+        scheduleList
             .firstWhere((element) => element.date == oldItem!.date)
             .items
             .remove(oldItem);
-        testList
+        scheduleList
             .firstWhere((element) => element.date == item.date)
             .items
             .add(item);
       });
-      var finalList = _planService.convertPlanScheduleToJson(testList);
+      var finalList = _planService.convertPlanScheduleToJson(scheduleList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
       Navigator.of(context).pop();
     }
+  }
+
+  getDuration() {
+    int? numOfExpPeriod = sharedPreferences.getInt('numOfPeriod');
+    if (numOfExpPeriod! % 2 == 0) {}
   }
 
   _showBottomSheet(PlanScheduleItem item) {
     setState(() {
       _selectedItem = item;
     });
-    print('id: ${item.id}');
     showModalBottomSheet(
       context: context,
       builder: (context) => Container(
@@ -216,7 +236,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
     return Container(
       color: Colors.white,
       width: 100.w,
-      child: testList[_index].items.isEmpty
+      child: scheduleList[_index].items.isEmpty
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -244,14 +264,14 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
               height: 50.h,
               child: ReorderableListView(
                 children: List.generate(
-                  testList[_index].items.length,
+                  scheduleList[_index].items.length,
                   (index) => PlanScheduleActivity(
                       isCreate: widget.isCreate,
                       key: UniqueKey(),
-                      item: testList[_index].items[index],
+                      item: scheduleList[_index].items[index],
                       showBottomSheet: _showBottomSheet,
                       isSelected:
-                          _selectedItem == testList[_index].items[index]),
+                          _selectedItem == scheduleList[_index].items[index]),
                 ),
                 onReorder: (oldIndex, newIndex) {
                   setState(() {
@@ -259,11 +279,11 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                       newIndex -= 1;
                     }
                     final PlanScheduleItem item =
-                        testList[_index].items.removeAt(oldIndex);
-                    testList[_index].items.insert(newIndex, item);
+                        scheduleList[_index].items.removeAt(oldIndex);
+                    scheduleList[_index].items.insert(newIndex, item);
                   });
                   var finalList =
-                      _planService.convertPlanScheduleToJson(testList);
+                      _planService.convertPlanScheduleToJson(scheduleList);
                   sharedPreferences.setString(
                       'plan_schedule', json.encode(finalList));
                 },
@@ -280,17 +300,17 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             location: widget.location,
             selectedIndex: _currentPage.toInt(),
             item: item,
-            startDate: testList.first.date!)));
+            startDate: scheduleList.first.date!)));
   }
 
   _deleteItem(PlanScheduleItem item) {
     setState(() {
-      testList
+      scheduleList
           .firstWhere((element) => element.date == item.date)
           .items
           .remove(item);
     });
-    var finalList = _planService.convertPlanScheduleToJson(testList);
+    var finalList = _planService.convertPlanScheduleToJson(scheduleList);
     sharedPreferences.setString('plan_schedule', json.encode(finalList));
   }
 
@@ -314,7 +334,8 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
         actions: [
           InkWell(
             onTap: () {
-              _planService.handleShowPlanInformation(context, widget.location);
+              _planService.handleShowPlanInformation(
+                  context, widget.location, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -338,9 +359,9 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                 onTap: () {
                   showDatePicker(
                       context: context,
-                      initialDate: testList.first.date,
-                      firstDate: testList.first.date!,
-                      lastDate: testList.last.date!,
+                      initialDate: scheduleList.first.date,
+                      firstDate: scheduleList.first.date!,
+                      lastDate: scheduleList.last.date!,
                       builder: (context, child) {
                         return Theme(
                           data: ThemeData().copyWith(
@@ -348,16 +369,17 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                                   primary: primaryColor,
                                   onPrimary: Colors.white)),
                           child: DatePickerDialog(
-                            initialDate: testList[_currentPage.toInt()].date,
-                            firstDate: testList.first.date!,
-                            lastDate: testList.last.date!,
+                            initialDate:
+                                scheduleList[_currentPage.toInt()].date,
+                            firstDate: scheduleList.first.date!,
+                            lastDate: scheduleList.last.date!,
                           ),
                         );
                       }).then((value) {
                     if (value != null) {
                       setState(() {
-                        _currentPage = testList
-                            .indexOf(testList
+                        _currentPage = scheduleList
+                            .indexOf(scheduleList
                                 .firstWhere((element) => element.date == value))
                             .toDouble();
                         _pageController.animateToPage(_currentPage.toInt(),
@@ -390,57 +412,62 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
               SizedBox(
                 width: 2.h,
               ),
-              if (sharedPreferences.getString('plan_temp_order') != null)
-                IconButton(
-                    style: ButtonStyle(
-                        shape: const MaterialStatePropertyAll(CircleBorder(
-                            side: BorderSide(color: primaryColor, width: 1))),
-                        backgroundColor: MaterialStatePropertyAll(
-                            Colors.white.withOpacity(0.7))),
-                    onPressed: () async {
-                      final orderListJson = json.decode(
-                          sharedPreferences.getString('plan_temp_order')!);
-                      final orderList =
-                          _orderService.getOrderFromJson(orderListJson);
-                      final orderListGroupBy =
-                          orderList.groupListsBy((element) => element.type);
-                      List<OrderViewModel> listMotelOrder =
-                          orderListGroupBy.values.firstWhereOrNull((element) =>
-                                  element.first.type == 'LODGING') ??
-                              [];
-                      List<OrderViewModel> listRestaurantOrder =
-                          orderListGroupBy.values.firstWhereOrNull(
-                                  (element) => element.first.type == 'MEAL') ??
-                              [];
-                      var total = orderList.fold(
-                          0.0,
-                          (previousValue, element) =>
-                              previousValue + element.total!);
-                      showModalBottomSheet(
-                          context: context,
-                          builder: (ctx) => ConfirmServiceInfor(
-                                listSurcharges: sharedPreferences
-                                            .getString('plan_surcharge') ==
-                                        null
-                                    ? []
-                                    : json.decode(sharedPreferences
-                                        .getString('plan_surcharge')!),
-                                total: (total / 100).toDouble(),
-                                budgetPerCapita: ((total /
-                                            sharedPreferences.getInt(
-                                                'plan_number_of_member')!) /
-                                        100)
-                                    .ceil()
-                                    .toDouble(),
-                                listFood: listRestaurantOrder,
-                                listRest: listMotelOrder,
-                              ));
-                    },
-                    icon: const Icon(
-                      Icons.attach_money_rounded,
-                      color: primaryColor,
-                      size: 23,
-                    )),
+              // if (sharedPreferences.getString('plan_temp_order') != null)
+              //   IconButton(
+              //       style: ButtonStyle(
+              //           shape: const MaterialStatePropertyAll(CircleBorder(
+              //               side: BorderSide(color: primaryColor, width: 1))),
+              //           backgroundColor: MaterialStatePropertyAll(
+              //               Colors.white.withOpacity(0.7))),
+              //       onPressed: () async {
+              //         final orderListJson = json.decode(
+              //             sharedPreferences.getString('plan_temp_order')!);
+              //         final orderList =
+              //             _orderService.getOrderFromJson(orderListJson);
+              //         final orderListGroupBy =
+              //             orderList.groupListsBy((element) => element.type);
+              //         List<OrderViewModel> listMotelOrder =
+              //             orderListGroupBy.values.firstWhereOrNull((element) =>
+              //                     element.first.type == services[1].name) ??
+              //                 [];
+              //         List<OrderViewModel> listRestaurantOrder =
+              //             orderListGroupBy.values.firstWhereOrNull((element) =>
+              //                     element.first.type == services[0].name) ??
+              //                 [];
+              //         List<OrderViewModel> listVehicleOrder =
+              //             orderListGroupBy.values.firstWhereOrNull((element) =>
+              //                     element.first.type == services[2].name) ??
+              //                 [];
+              //         var total = orderList.fold(
+              //             0.0,
+              //             (previousValue, element) =>
+              //                 previousValue + element.total!);
+              //         showModalBottomSheet(
+              //             context: context,
+              //             builder: (ctx) => ConfirmServiceInfor(
+              //                   listVehicle: listVehicleOrder,
+              //                   listSurcharges: sharedPreferences
+              //                               .getString('plan_surcharge') ==
+              //                           null
+              //                       ? []
+              //                       : json.decode(sharedPreferences
+              //                           .getString('plan_surcharge')!),
+              //                   total: (total / 1000).toDouble(),
+              //                   budgetPerCapita: ((total /
+              //                               sharedPreferences.getInt(
+              //                                   'plan_number_of_member')!) /
+              //                           1000)
+              //                       .ceil()
+              //                       .toDouble(),
+              //                   listFood: listRestaurantOrder,
+              //                   listRest: listMotelOrder,
+              //                 ));
+              //       },
+              //       icon: const Icon(
+              //         Icons.attach_money_rounded,
+              //         color: primaryColor,
+              //         size: 23,
+              //       )),
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 12),
@@ -454,11 +481,12 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                         ),
                         maximumSize: const Size(110, 50)),
                     onPressed: () {
-                      var _currentSchedule = testList.firstWhere((element) =>
-                          element.date ==
-                          testList[0]
-                              .date!
-                              .add(Duration(days: _currentPage.toInt())));
+                      var _currentSchedule = scheduleList.firstWhere(
+                          (element) =>
+                              element.date ==
+                              scheduleList[0]
+                                  .date!
+                                  .add(Duration(days: _currentPage.toInt())));
                       var consumedTime = 0;
                       for (final item in _currentSchedule.items) {
                         consumedTime += item.activityTime!;
@@ -470,8 +498,9 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                             builder: (ctx) => NewScheduleItemScreen(
                                   callback: callback,
                                   location: widget.location,
+                                  plan: widget.plan,
                                   maxActivityTime: 12 - consumedTime,
-                                  startDate: testList[0].date!,
+                                  startDate: scheduleList[0].date!,
                                   selectedIndex: _currentPage.toInt(),
                                 )));
                       }
@@ -494,7 +523,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
           SizedBox(
             height: 14.h,
             child: ListView.builder(
-              itemCount: testList.length,
+              itemCount: scheduleList.length,
               physics: const BouncingScrollPhysics(),
               shrinkWrap: false,
               scrollDirection: Axis.horizontal,
@@ -513,7 +542,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                     },
                     child: PlanScheduleTitle(
                       index: index,
-                      date: testList[index].date!,
+                      date: scheduleList[index].date!,
                       isSelected: _currentPage == index.toDouble(),
                     )),
               ),
@@ -523,7 +552,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             child: PageView(
               controller: _pageController,
               children: [
-                for (int index = 0; index < testList.length; index++)
+                for (int index = 0; index < scheduleList.length; index++)
                   getPageView(index)
               ],
             ),
@@ -659,30 +688,47 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
   }
 
   bool checkValidNumberOfActivity() {
-    String _scheduleText = sharedPreferences.getString('plan_schedule')!;
-    final List<dynamic> _schedule = json.decode(_scheduleText);
+    String? _scheduleText;
+    if (widget.isCreate) {
+      _scheduleText = sharedPreferences.getString('plan_schedule')!;
+    } else {
+      _scheduleText = widget.plan!.schedule;
+    }
+
+    final List<dynamic> _schedule = json.decode(_scheduleText!);
     return _schedule.any((element) => element.length == 0);
   }
 
   bool checkValidNumberOfFoodActivity() {
-    String _scheduleText = sharedPreferences.getString('plan_schedule')!;
-    final List<dynamic> _schedule = json.decode(_scheduleText);
+    String? _scheduleText;
+    if (widget.isCreate) {
+      _scheduleText = sharedPreferences.getString('plan_schedule')!;
+    } else {
+      _scheduleText = widget.plan!.schedule;
+    }
+    final List<dynamic> _schedule = json.decode(_scheduleText!);
     List<dynamic> events = _schedule.map((e) => e).toList();
     return events.any((element) =>
         element.where((e) => e['type'] == 'EAT').toList().length < 3);
   }
 
   Widget buildConfirmScheduleItem(int index) {
-    String _scheduleText = sharedPreferences.getString('plan_schedule')!;
-    final List<dynamic> _schedule = json.decode(_scheduleText);
+    String? _scheduleText;
+    if (widget.isCreate) {
+      _scheduleText = sharedPreferences.getString('plan_schedule')!;
+    } else {
+      _scheduleText = widget.plan!.schedule;
+    }
+
+    final List<dynamic> _schedule = json.decode(_scheduleText!);
     String rsText = '';
     for (final detail in _schedule[index]) {
       if (detail != _schedule[index].last) {
         rsText +=
-            '${json.decode(detail['shortDescription']) ?? 'Không có mô tả'}, ';
+            '${detail['shortDescription'].toString().substring(0, 1) == '\"' ? json.decode(detail['shortDescription']) : detail['shortDescription'] ?? 'Không có mô tả'}, ';
       } else {
         rsText +=
-            '${json.decode(detail['shortDescription']) ?? 'Không có mô tả'}';
+            '${detail['shortDescription'].toString().substring(0, 1) == '\"' ? json.decode(detail['shortDescription']) : detail['shortDescription'] ?? 'Không có mô tả'}';
       }
     }
     return Container(
@@ -724,6 +770,9 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                   child: CreateNoteSurchargeScreen(
                     location: widget.location,
                     totalService: 0,
+                    plan: widget.plan,
+                    isCreate: widget.isCreate,
+                    isClone: widget.isClone,
                     orderList: json.decode(
                         sharedPreferences.getString('plan_temp_order') ?? '[]'),
                   ),

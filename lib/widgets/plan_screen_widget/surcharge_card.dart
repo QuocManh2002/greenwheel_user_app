@@ -3,9 +3,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/update_billing_surcharge_screen.dart';
@@ -42,6 +40,7 @@ class SurchargeCard extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
+              SizedBox(width: 1.w,),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -61,19 +60,15 @@ class SurchargeCard extends StatelessWidget {
                       children: [
                         Text(
                           NumberFormat.currency(
-                                  locale: 'vi_VN', decimalDigits: 0, symbol: '')
+                                  locale: 'vi_VN', decimalDigits: 0, symbol: 'Đ')
                               .format(
                                 surcharge.alreadyDivided?
-                                surcharge.gcoinAmount:
-                                (surcharge.gcoinAmount / maxMemberCount).ceil()
+                                surcharge.amount:
+                                (surcharge.amount / maxMemberCount).ceil()
                                 ),
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                           overflow: TextOverflow.clip,
-                        ),
-                        SvgPicture.asset(
-                          gcoin_logo,
-                          height: 20,
                         ),
                         const Text(' /',style: TextStyle(
                               fontSize: 20, fontWeight: FontWeight.bold),),

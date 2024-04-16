@@ -6,9 +6,7 @@ import 'package:greenwheel_user_app/helpers/goong_request.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:sizer2/sizer2.dart';
 
 class LocateStartLocation extends StatefulWidget {
   const LocateStartLocation(

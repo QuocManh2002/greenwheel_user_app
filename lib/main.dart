@@ -5,6 +5,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_config/flutter_config.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
@@ -52,12 +53,13 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   sharedPreferences = await SharedPreferences.getInstance();
   auth = FirebaseAuth.instance;
-  await initHiveForFlutter();
-  await Hive.initFlutter();
-  await Hive.openBox('myPlans');
+  await dotenv.load(fileName: 'keys.env');
+  // await initHiveForFlutter();
+  // await Hive.initFlutter();
+  // await Hive.openBox('myPlans');
   await FlutterConfig.loadEnvVariables();
-  MapboxOptions.setAccessToken(
-      'pk.eyJ1IjoicXVvY21hbmgyMDIiLCJhIjoiY2xuM3AwM2hpMGlzZDJqcGFla2VlejFsOCJ9.gEsXIx57uMGskLDDQYBm4g');
+
+  MapboxOptions.setAccessToken(dotenv.env['goong_api_key'].toString());
   localization = FlutterLocalization.instance;
   // final _myPlans = Hive.box('myPlans');
   // _myPlans.clear();
@@ -68,7 +70,7 @@ void main() async {
   // cron.schedule(Schedule.parse('*/1 * * * *'),(){
   //   print('Cron Job');
   // });
-  
+
   initializeDateFormatting('vi_VN', null).then((_) {
     runApp(const MainApp());
   });
@@ -81,7 +83,6 @@ class MainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     String? refreshToken = sharedPreferences.getString("userRefreshToken");
     if (refreshToken != null) {
-      log('refresh: $refreshToken' );
       TokenRefresher.refreshToken();
     }
 
@@ -94,6 +95,10 @@ class MainApp extends StatelessWidget {
         ],
         child: MaterialApp(
           localizationsDelegates: localization.localizationsDelegates,
+
+          supportedLocales: const [
+            Locale('vi'),
+          ],
           locale: const Locale('vi'),
           home: hasConnection
               ? refreshToken != null

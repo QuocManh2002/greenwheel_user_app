@@ -8,7 +8,6 @@ import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/recent_card.dart';
-import 'package:greenwheel_user_app/widgets/home_screen_widget/location_card.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:greenwheel_user_app/core/constants/recent_search.dart';
 import 'package:greenwheel_user_app/widgets/search_screen_widget/search_card.dart';

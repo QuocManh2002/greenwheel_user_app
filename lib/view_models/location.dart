@@ -46,6 +46,6 @@ class LocationViewModel {
           address: json["address"],
           rating: json['rating'],
           province: ProvinceViewModel.fromJson(json["province"]),
-          comments: List<CommentViewModel>.from(json['comments'].map((e) => CommentViewModel.fromJson(e))).toList(),
+          comments: List<CommentViewModel>.from( (json['comments'] ?? []).map((e) => CommentViewModel.fromJson(e))).toList(),
           );
 }

@@ -1,50 +1,259 @@
-
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/bottom_sheet_container_widget.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
-class PlanScheduleActivityView extends StatelessWidget {
-  const PlanScheduleActivityView({super.key, required this.item});
+class PlanScheduleActivityView extends StatefulWidget {
+  const PlanScheduleActivityView(
+      {super.key, required this.isLeader, required this.item});
   final PlanScheduleItem item;
+  final bool isLeader;
+
+  @override
+  State<PlanScheduleActivityView> createState() =>
+      _PlanScheduleActivityViewState();
+}
+
+class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
+  bool isLoading = true;
+  List<int> ids = [];
+  List<ProductViewModel>? products = [];
+  ProductService _productService = ProductService();
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    setUpData();
+  }
+
+  setUpData() async {
+    if (!widget.isLeader || widget.item.tempOrder == null ) {
+      setState(() {
+        isLoading = false;
+      });
+    } else if (widget.item.tempOrder['cart'] != null && widget.isLeader) {
+      dynamic cart = widget.item.tempOrder['cart'];
+      for (final proId in cart.keys.toList()) {
+        if (!ids.contains(int.parse(proId.toString()))) {
+          ids.add(int.parse(proId));
+        }
+      }
+      products = await _productService.getListProduct(ids);
+      if (products != null) {
+        setState(() {
+          isLoading = false;
+        });
+      }
+    } else if (widget.item.tempOrder['details'] != null && widget.isLeader) {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(top: 12,left: 6, right: 6),
+      padding: const EdgeInsets.only(top: 12, left: 6, right: 6),
       child: InkWell(
         onTap: () {
-          showModalBottomSheet(
-            context: context, 
-            builder: (ctx) => Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 8),
-              
-              child: SizedBox(
-                width: 100.w,
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(height: 2.h,),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: primaryColor.withOpacity(0.6),
-                        borderRadius: const BorderRadius.all(Radius.circular(12))
+          if (!isLoading) {
+            showModalBottomSheet(
+                context: context,
+                builder: (ctx) => Padding(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 23, vertical: 8),
+                      child: SizedBox(
+                        width: 100.w,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SizedBox(
+                              height: 2.h,
+                            ),
+                            Container(
+                              decoration: BoxDecoration(
+                                  color: primaryColor.withOpacity(0.6),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(12))),
+                              height: 6,
+                              width: 10.h,
+                            ),
+                            SizedBox(
+                              height: 2.h,
+                            ),
+                            BottomSheetContainerWidget(
+                                content: widget.item.shortDescription!,
+                                title: 'Mô tả'),
+                            SizedBox(
+                              height: 1.h,
+                            ),
+                            BottomSheetContainerWidget(
+                                content: widget.item.description!,
+                                title: 'Chi tiết'),
+                            SizedBox(
+                              height: 1.h,
+                            ),
+                            BottomSheetContainerWidget(
+                                content:
+                                    '${widget.item.activityTime!.toString()} giờ',
+                                title: 'Thời gian'),
+                            SizedBox(
+                              height: 2.h,
+                            ),
+                            if (widget.item.tempOrder != null &&
+                                widget.isLeader)
+                              Container(
+                                width: 100.w,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 6),
+                                decoration: BoxDecoration(
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        blurRadius: 3,
+                                        color: Colors.black12,
+                                        offset: Offset(1, 3),
+                                      )
+                                    ],
+                                    color: Colors.white.withOpacity(0.97),
+                                    borderRadius: const BorderRadius.all(
+                                        Radius.circular(8))),
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    const Text(
+                                      'Chi tiết dự trù kinh phí',
+                                      style: TextStyle(
+                                          fontSize: 16, fontFamily: 'NotoSans'),
+                                    ),
+                                    if (widget.item.tempOrder['details'] !=
+                                        null)
+                                      for (final detail
+                                          in widget.item.tempOrder['details'])
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: 65.w,
+                                              child: Text(
+                                                detail['productName'],
+                                                style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'NotoSans'),
+                                                overflow: TextOverflow.clip,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 15.w,
+                                              child: Text(
+                                                'x${detail['quantity']}',
+                                                textAlign: TextAlign.end,
+                                                style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'NotoSans'),
+                                                overflow: TextOverflow.clip,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                    if (widget.item.tempOrder['cart'] != null)
+                                      for (final detail in widget
+                                          .item.tempOrder['cart'].entries)
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.spaceBetween,
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            SizedBox(
+                                              width: 65.w,
+                                              child: Text(
+                                                products!
+                                                    .firstWhere((element) =>
+                                                        element.id == int.parse(detail.key))
+                                                    .name,
+                                                style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'NotoSans'),
+                                                overflow: TextOverflow.clip,
+                                              ),
+                                            ),
+                                            SizedBox(
+                                              width: 15.w,
+                                              child: Text(
+                                                detail.value.toString(),
+                                                textAlign: TextAlign.end,
+                                                style: const TextStyle(
+                                                    fontSize: 18,
+                                                    fontWeight: FontWeight.bold,
+                                                    fontFamily: 'NotoSans'),
+                                                overflow: TextOverflow.clip,
+                                              ),
+                                            )
+                                          ],
+                                        ),
+                                    SizedBox(
+                                      height: 0.5.h,
+                                    ),
+                                    const Divider(
+                                      color: Colors.black54,
+                                      height: 2,
+                                    ),
+                                    SizedBox(
+                                      height: 0.5.h,
+                                    ),
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Tổng cộng',
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'NotoSans'),
+                                        ),
+                                        SizedBox(
+                                          width: 45.w,
+                                          child: Text(
+                                            NumberFormat.simpleCurrency(
+                                                    locale: 'vi_VN',
+                                                    decimalDigits: 0,
+                                                    name: 'Đ')
+                                                .format(widget
+                                                    .item.tempOrder['total']),
+                                            style: const TextStyle(
+                                                fontSize: 18,
+                                                fontFamily: 'NotoSans',
+                                                fontWeight: FontWeight.bold),
+                                            textAlign: TextAlign.end,
+                                          ),
+                                        )
+                                      ],
+                                    ),
+                                    SizedBox(
+                                      height: 0.5.h,
+                                    )
+                                  ],
+                                ),
+                              )
+                          ],
+                        ),
                       ),
-                      height: 6,
-                      width: 10.h,
-                    ),
-                    SizedBox(height: 2.h,),
-                    BottomSheetContainerWidget(content: item.shortDescription!, title: 'Mô tả'),
-                    SizedBox(height: 1.h,),
-                    BottomSheetContainerWidget(content: item.description!, title: 'Chi tiết'),
-                    SizedBox(height: 1.h,),
-                    BottomSheetContainerWidget(content: '${item.activityTime!.toString()} giờ', title: 'Thời gian'),
-                                    SizedBox(height: 2.h,)
-                  ],
-                ),
-              ),
-            ));
+                    ));
+          }
         },
         child: Container(
           width: 100.w,
@@ -58,12 +267,12 @@ class PlanScheduleActivityView extends StatelessWidget {
                   offset: Offset(2, 4),
                 )
               ],
-              border:
-              item.isStarred != null && item.isStarred! ? 
-              Border.all(color: Colors.amber, width: 2):
-               item.type == 'Ăn uống'|| item.type == 'Check-in' 
-                  ? Border.all(color: primaryColor, width: 2)
-                  : const Border(),
+              border: widget.item.isStarred != null && widget.item.isStarred!
+                  ? Border.all(color: Colors.amber, width: 2)
+                  : widget.item.type == 'Ăn uống' ||
+                          widget.item.type == 'Check-in'
+                      ? Border.all(color: primaryColor, width: 2)
+                      : const Border(),
               borderRadius: const BorderRadius.all(Radius.circular(12))),
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -76,36 +285,51 @@ class PlanScheduleActivityView extends StatelessWidget {
                     SizedBox(
                       width: 70.w,
                       child: Text(
-                        item.shortDescription ?? 'Không có mô tả',
-                        style:
-                            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                        widget.item.shortDescription ?? 'Không có mô tả',
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold),
                         overflow: TextOverflow.clip,
                       ),
                     ),
                     const Spacer(),
-                  if( item.type == 'Ăn uống' || item.type == 'Check-in' )
-                    Icon(item.type == 'Ăn uống' ? Icons.restaurant : Icons.hotel, color: primaryColor,)
+                    if (widget.item.type == 'Ăn uống' ||
+                        widget.item.type == 'Check-in')
+                      Icon(
+                        widget.item.type == 'Ăn uống'
+                            ? Icons.restaurant
+                            : Icons.hotel,
+                        color: primaryColor,
+                      )
                   ],
                 ),
-                SizedBox(height: 1.h,),
+                SizedBox(
+                  height: 1.h,
+                ),
                 Container(
-                  color:
-                  item.isStarred != null && item.isStarred! ? 
-              Colors.amber:
-                  item.type == 'Ăn uống' || item.type == 'Check-in' ? primaryColor : Colors.black26,
+                  color: widget.item.isStarred != null && widget.item.isStarred!
+                      ? Colors.amber
+                      : widget.item.type == 'Ăn uống' ||
+                              widget.item.type == 'Check-in'
+                          ? primaryColor
+                          : Colors.black26,
                   height: 1.5,
                 ),
-                SizedBox(height: 1.h,),
+                SizedBox(
+                  height: 1.h,
+                ),
                 Row(
                   children: [
                     const Icon(Icons.watch_later_outlined),
-                    SizedBox(width: 1.h,),
-                    Text('${item.activityTime} giờ', style:const TextStyle(
-                      fontFamily: 'NotoSans',
-                      fontSize: 16
-                    ),)
+                    SizedBox(
+                      width: 1.h,
+                    ),
+                    Text(
+                      '${widget.item.activityTime} giờ',
+                      style:
+                          const TextStyle(fontFamily: 'NotoSans', fontSize: 16),
+                    )
                   ],
-                )
+                ),
               ],
             ),
           ),

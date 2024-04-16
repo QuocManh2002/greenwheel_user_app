@@ -1,5 +1,7 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/models/holiday.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
@@ -59,7 +61,9 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
         isLoading = false;
         _selectedDays = [widget.startDate];
       });
-      _selectedDays = widget.selectedDate != null ? widget.selectedDate! : [widget.startDate];
+      _selectedDays = widget.selectedDate != null
+          ? widget.selectedDate!
+          : [widget.startDate];
     }
   }
 
@@ -124,40 +128,83 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                   final bool _isHoliday = isHoliday(cellDetails.date);
                   final bool _isSelectedDay = isSelectedDay(cellDetails.date);
                   final bool _isAvaiableDay = isAvaiableDay(cellDetails.date);
-                  return Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: _isHoliday
-                          ? Border.all(
-                              color: Colors.redAccent,
-                              width: 2,
-                            )
-                          : const Border(),
-                      color: _isSelectedDay ? primaryColor : Colors.white,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          cellDetails.date.day.toString(),
-                          style: TextStyle(
-                              fontSize: 18,
-                              fontFamily: 'NotoSans',
-                              color: _isSelectedDay
-                                  ? Colors.white
-                                  : _isAvaiableDay
-                                      ? Colors.black
-                                      : Colors.grey),
-                        )
-                      ],
+                  return Padding(
+                    padding: const EdgeInsets.all(4),
+                    child: Container(
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: _isHoliday
+                            ? Border.all(
+                                color: Colors.redAccent,
+                                width: 2,
+                              )
+                            : const Border(),
+                        color: _isSelectedDay ? primaryColor : Colors.white,
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            cellDetails.date.day.toString(),
+                            style: TextStyle(
+                                fontSize: 18,
+                                fontFamily: 'NotoSans',
+                                color: _isSelectedDay
+                                    ? Colors.white
+                                    : _isAvaiableDay
+                                        ? Colors.black
+                                        : Colors.grey),
+                          )
+                        ],
+                      ),
                     ),
                   );
                 },
-                onSubmit: (p0) {
-                  widget.callbackFunction(p0 as List<DateTime>);
-                  Navigator.of(context).pop();
+                onSubmit: (dates) {
+                  if((dates as List<DateTime>).isEmpty){
+                    AwesomeDialog(
+                            context: context,
+                            animType: AnimType.leftSlide,
+                            dialogType: DialogType.warning,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            title: 'Vui lòng chọn ít nhất 1 ngày phục vụ',
+                            titleTextStyle: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NotoSans'),
+                            btnOkColor: Colors.amber,
+                            btnOkOnPress: () {},
+                            btnOkText: 'Ok')
+                        .show();
+                  }else 
+                  if (widget.serviceType.id == 2 &&
+                      !Utils().isConsecutiveDates(dates as List<DateTime>)) {
+                    AwesomeDialog(
+                            context: context,
+                            animType: AnimType.leftSlide,
+                            dialogType: DialogType.warning,
+                            padding: const EdgeInsets.symmetric(horizontal: 12),
+                            title: 'Ngày nhận không hợp lệ',
+                            titleTextStyle: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NotoSans'),
+                            desc:
+                                'Với đơn hàng nhà nghỉ, khách sạn ngày phục vụ phải liên tiếp',
+                            descTextStyle: const TextStyle(
+                              fontSize: 16,
+                              fontFamily: 'NotoSans',
+                            ),
+                            btnOkColor: Colors.amber,
+                            btnOkOnPress: () {},
+                            btnOkText: 'Ok')
+                        .show();
+                  } else {
+                    widget.callbackFunction(dates as List<DateTime>);
+                    Navigator.of(context).pop();
+                  }
                 },
                 selectionMode: DateRangePickerSelectionMode.multiple,
               ),

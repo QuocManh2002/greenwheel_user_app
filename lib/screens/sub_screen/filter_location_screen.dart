@@ -36,8 +36,9 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
           isLoading = false;
         });
       }
-    }else{
-      locationModels = await _locationService.getLocationsByActivity(widget.activity!);
+    } else {
+      locationModels =
+          await _locationService.getLocationsByActivity(widget.activity!);
       if (locationModels != null) {
         setState(() {
           isLoading = false;
@@ -59,7 +60,9 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
                 foregroundColor: MaterialStatePropertyAll(Colors.white)),
           ),
           title: Text(
-            widget.province != null ? widget.province!.name : widget.activity!.name,
+            widget.province != null
+                ? widget.province!.name
+                : widget.activity!.name,
             style: const TextStyle(
                 color: Colors.white,
                 fontFamily: 'NotoSans',
@@ -67,21 +70,18 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
           )),
       body: isLoading
           ? const ServiceSupplierLoadingScreen()
-          : Padding(
-              padding: const EdgeInsets.all(16),
-              child: SingleChildScrollView(
-                child: ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  shrinkWrap: true,
-                  itemCount: locationModels!.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.only(bottom: 16),
-                      child:
-                          FilterLocationCard(location: locationModels![index]),
-                    );
-                  },
-                ),
+          : SingleChildScrollView(
+              child: ListView.builder(
+                physics: const BouncingScrollPhysics(),
+                shrinkWrap: true,
+                itemCount: locationModels!.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    child: FilterLocationCard(location: locationModels![index]),
+                  );
+                },
               ),
             ),
     ));

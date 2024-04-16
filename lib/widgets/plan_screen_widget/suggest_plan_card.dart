@@ -1,9 +1,12 @@
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/suggest_plan.dart';
+import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -30,6 +33,7 @@ class SuggestPlanCard extends StatelessWidget {
                   isEnableToJoin: false,
                   planId: plan.id,
                   planType: 'PUBLISH',
+                  isClone: true,
                 ),
                 type: PageTransitionType.rightToLeft));
       },
@@ -63,7 +67,7 @@ class SuggestPlanCard extends StatelessWidget {
                       height: 15.h,
                       width: 15.h,
                       fit: BoxFit.cover,
-                      imageUrl: imageUrl,
+                      imageUrl: '$baseBucketImage$imageUrl',
                       placeholder: (context, url) =>
                           Image.memory(kTransparentImage),
                       errorWidget: (context, url, error) =>
@@ -84,38 +88,48 @@ class SuggestPlanCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(plan.planName,
-                                overflow: TextOverflow.ellipsis,
-                                maxLines: 2,
-                                style: const TextStyle(
-                                    fontSize: 18, fontWeight: FontWeight.bold)),
-                          ),
-                        ],
+                      SizedBox(
+                        height: 0.2.h,
                       ),
-                      const Spacer(),
-                      Row(
-                        children: [
-                          Text(
-                            '${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year} - ${plan.endDate.day}/${plan.endDate.month}/${plan.endDate.year}',
+                      SizedBox(
+                        width: 45.w,
+                        child: Text(plan.planName,
+                            overflow: TextOverflow.clip,
+                            maxLines: 2,
                             style: const TextStyle(
-                                fontSize: 15, fontWeight: FontWeight.w500),
-                          ),
-                          const SizedBox(
-                            width: 16,
-                          ),
-                        ],
+                                fontSize: 20, fontWeight: FontWeight.bold)),
+                      ),
+                      SizedBox(
+                        height: 0.5.h,
+                      ),
+                      Text(
+                        '${DateFormat('dd/MM/yyyy').format(plan.departDate.toLocal())} - ${DateFormat('dd/MM/yyyy').format(plan.endDate.toLocal())}',
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w500),
+                      ),
+                      SizedBox(
+                        height: 0.5.h,
+                      ),
+                      SizedBox(
+                        width: 50.w,
+                        child: RichText(
+                          text: TextSpan(
+                              text: 'Trưởng đoàn: ',
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.black),
+                              children: [
+                                TextSpan(
+                                    text: '${plan.leaderName}',
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold))
+                              ]),
+                          overflow: TextOverflow.ellipsis,
+                        ),
                       ),
                       const Spacer(),
-                      // Text(
-                      //   'Leader: ${plan.leaderName}',
-                      //   style: const TextStyle(
-                      //       fontSize: 14, fontWeight: FontWeight.w400),
-                      // ),
-                      // const Spacer(),
                     ],
                   ),
                 )

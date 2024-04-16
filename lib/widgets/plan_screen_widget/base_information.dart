@@ -20,12 +20,12 @@ class BaseInformationWidget extends StatefulWidget {
       {super.key,
       required this.plan,
       required this.members,
-      required this.type,
+      required this.planType,
       required this.isLeader,
       required this.refreshData});
   final PlanDetail plan;
   List<PlanMemberViewModel> members;
-  final String type;
+  final String planType;
   final void Function() refreshData;
   final bool isLeader;
 
@@ -184,7 +184,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           const SizedBox(
             height: 8,
           ),
-          if (widget.plan.memberCount != 0)
+          if (widget.plan.memberCount != 0 && widget.planType != 'PUBLISH')
             Container(
                 alignment: Alignment.topLeft,
                 child: Column(

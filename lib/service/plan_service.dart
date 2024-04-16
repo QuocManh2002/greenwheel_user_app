@@ -32,48 +32,48 @@ class PlanService {
 
   Future<int> createNewPlan(
       PlanCreate model, BuildContext context, String surcharges) async {
-    try {
-      var schedule = json.decode(model.schedule!);
-      final emerIds =
-          json.decode(model.savedContacts!).map((e) => e['id']).toList();
-      log("""
+    var schedule = json.decode(model.schedule!);
+    final emerIds =
+        json.decode(model.savedContacts!).map((e) => e['id']).toList();
+    log("""
   mutation{
   createPlan(dto: {
-    departureAddress:"${model.departureAddress}"
-    departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000+07:00"
-    departure:[${model.longitude},${model.latitude}]
+    departureAddress:"${model.departAddress}"
+    departAt:"${model.departAt!.year}-${model.departAt!.month}-${model.departAt!.day} ${model.departAt!.hour}:${model.departAt!.minute}:00.000+07:00"
+    departure:[${model.departCoordinate!.longitude},${model.departCoordinate!.latitude}]
     destinationId:${model.locationId}
-    maxMemberCount:${model.memberLimit}
+    maxMemberCount:${model.maxMemberCount}
     maxMemberWeight:${model.maxMemberWeight!}
     name:"${model.name}"
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedProviderIds:$emerIds
     schedule:$schedule
-    surcharges:$surcharges
+    surcharges:${surcharges}
     travelDuration:"${model.travelDuration}"
   }){
     id
   }
 }
 """);
+    try {
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
   mutation{
   createPlan(dto: {
-    departureAddress:"${model.departureAddress}"
-    departAt:"${model.departureDate!.year}-${model.departureDate!.month}-${model.departureDate!.day} ${model.departureDate!.hour}:${model.departureDate!.minute}:00.000+07:00"
-    departure:[${model.longitude},${model.latitude}]
+    departureAddress:"${model.departAddress}"
+    departAt:"${model.departAt!.year}-${model.departAt!.month}-${model.departAt!.day} ${model.departAt!.hour}:${model.departAt!.minute}:00.000+07:00"
+    departure:[${model.departCoordinate!.longitude},${model.departCoordinate!.latitude}]
     destinationId:${model.locationId}
-    maxMemberCount:${model.memberLimit}
+    maxMemberCount:${model.maxMemberCount}
     maxMemberWeight:${model.maxMemberWeight!}
     name:"${model.name}"
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedProviderIds:$emerIds
     schedule:$schedule
-    surcharges:$surcharges
+    surcharges:${surcharges}
     travelDuration:"${model.travelDuration}"
   }){
     id
@@ -97,12 +97,131 @@ class PlanService {
     }
   }
 
-  Future<Map?> getOrderCreatePlan(int planId) async {
+  Future<int?> updatePlan(
+      PlanCreate model, String surcharges, BuildContext context) async {
     try {
+      log('''
+
+mutation{
+  updatePlan(dto: {
+    planId:${sharedPreferences.getInt('planId')}
+    departureAddress:"${model.departAddress}"
+    departAt:"${model.departAt!.year}-${model.departAt!.month}-${model.departAt!.day} ${model.departAt!.hour}:${model.departAt!.minute}:00.000+07:00"
+    departure:[${model.departCoordinate!.longitude},${model.departCoordinate!.latitude}]
+    maxMemberCount:${model.maxMemberCount}
+    maxMemberWeight:${model.maxMemberWeight!}
+    name:"${model.name}"
+    note: "${model.note}"
+    periodCount:${model.numOfExpPeriod}
+    savedProviderIds:${model.savedContactIds}
+    schedule:${json.decode(model.schedule!)}
+    surcharges:${json.decode(surcharges)}
+    travelDuration:"${model.travelDuration}"
+  }){
+    id
+  }
+}''');
+      QueryResult result = await client.mutate(MutationOptions(document: gql('''
+  mutation{
+  updatePlan(dto: {
+    planId:${sharedPreferences.getInt('planId')}
+    departureAddress:"${model.departAddress}"
+    departAt:"${model.departAt!.year}-${model.departAt!.month}-${model.departAt!.day} ${model.departAt!.hour}:${model.departAt!.minute}:00.000+07:00"
+    departure:[${model.departCoordinate!.longitude},${model.departCoordinate!.latitude}]
+    maxMemberCount:${model.maxMemberCount}
+    maxMemberWeight:${model.maxMemberWeight!}
+    name:"${model.name}"
+    note: "${model.note}"
+    periodCount:${model.numOfExpPeriod}
+    savedProviderIds:${model.savedContactIds}
+    schedule:${json.decode(model.schedule!)}
+    surcharges:${json.decode(surcharges)}
+    travelDuration:"${model.travelDuration}"
+  }){
+    id
+  }
+}
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      } else {
+        var rstext = result.data!;
+        int planId = rstext['updatePlan']['id'];
+        return planId;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int> clonePlan(
+      PlanCreate model, BuildContext context, String surcharges) async {
+    try {
+      var schedule = json.decode(model.schedule!);
+      final emerIds =
+          json.decode(model.savedContacts!).map((e) => e['id']).toList();
+      QueryResult result = await client.mutate(MutationOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
+  mutation{
+  createPlan(dto: {
+    departureAddress:"${model.departAddress}"
+    departAt:"${model.departAt!.year}-${model.departAt!.month}-${model.departAt!.day} ${model.departAt!.hour}:${model.departAt!.minute}:00.000+07:00"
+    departure:[${model.departCoordinate!.longitude},${model.departCoordinate!.latitude}]
+    destinationId:${model.locationId}
+    maxMemberCount:${model.maxMemberCount}
+    maxMemberWeight:${model.maxMemberWeight!}
+    name:"${model.name}"
+    note: "${model.note}"
+    periodCount:${model.numOfExpPeriod}
+    savedProviderIds:$emerIds
+    schedule:$schedule
+    surcharges:${surcharges}
+    travelDuration:"${model.travelDuration}"
+    sourceId:${sharedPreferences.getInt('planId')}
+  }){
+    id
+  }
+}
+"""),
+      ));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      } else {
+        var rstext = result.data!;
+        int planId = rstext['createPlan']['id'];
+        return planId;
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<Map?> getOrderCreatePlan(int planId, String planType) async {
+    try {
+      String type = '';
+      switch (planType) {
+        case 'OWNED':
+          type = 'ownedPlans';
+          break;
+        case 'JOIN':
+          type = 'joinedPlans';
+          break;
+        case 'PUBLISH':
+          type = 'publishedPlans';
+      }
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  joinedPlans(where: { id: { eq: $planId } }) {
+  $type(where: { id: { eq: $planId } }) {
     nodes {
       actualGcoinBudget
       orders {
@@ -144,7 +263,7 @@ class PlanService {
         throw Exception(result.exception!.linkException!);
       }
 
-      List? res = result.data!['joinedPlans']['nodes'][0]['orders'];
+      List? res = result.data![type]['nodes'][0]['orders'];
       if (res == null) {
         return null;
       }
@@ -162,8 +281,7 @@ class PlanService {
       }
       return {
         'orders': orders,
-        'currentBudget': result.data!['joinedPlans']['nodes'][0]
-            ['actualGcoinBudget']
+        'currentBudget': result.data![type]['nodes'][0]['actualGcoinBudget']
       };
     } catch (error) {
       throw Exception(error);
@@ -214,12 +332,15 @@ class PlanService {
       memberCount
       maxMemberCount
       maxMemberWeight
-      savedContacts {
-        name
-        phone
-        address
-        type
-        imagePath
+      savedProviders {
+        id
+        provider{
+          name
+          phone
+          address
+          imagePath
+          type
+        }
       }
       status
       periodCount
@@ -245,7 +366,7 @@ class PlanService {
         id
       }
       surcharges {
-        gcoinAmount
+        amount
         alreadyDivided
         id
         imagePath
@@ -311,14 +432,6 @@ class PlanService {
             name
             imagePath
           }
-          comments{
-            id
-            comment
-            createdAt
-            account{
-              name
-            }
-          }
       }
     }
   }
@@ -372,7 +485,6 @@ class PlanService {
       int duration, DateTime startDate, String scheduleText) {
     List<PlanSchedule> list = [];
     List<dynamic> _scheduleList = json.decode(scheduleText);
-
     for (final sche in _scheduleList) {
       List<PlanScheduleItem> eventList = [];
       for (final event in sche) {
@@ -391,6 +503,12 @@ class PlanService {
           date: startDate.add(Duration(days: _scheduleList.indexOf(sche))),
           items: eventList));
     }
+    if (list.length < duration) {
+      for (int i = list.length; i < duration; i++) {
+        list.add(
+            PlanSchedule(date: startDate.add(Duration(days: i)), items: []));
+      }
+    }
     return list;
   }
 
@@ -403,24 +521,26 @@ class PlanService {
       if (i < schedules.length) {
         for (final planItem in schedules[i]) {
           item.add(PlanScheduleItem(
+              tempOrder: planItem['tempOrder'],
               isStarred: planItem['isStarred'],
-              activityTime:
-                  int.parse(planItem['duration'].toString().substring(0, 2)),
-              shortDescription: planItem['shortDescription'],
+              activityTime: DateFormat.Hms()
+                  .parse(planItem['duration'].toString().substring(0, 1) == '\"'
+                      ? json.decode(planItem['duration'])
+                      : planItem['duration'])
+                  .hour,
+              shortDescription:
+                  planItem['shortDescription'].toString().substring(0, 1) ==
+                          '\"'
+                      ? json.decode(planItem['shortDescription'])
+                      : planItem['shortDescription'],
               type: schedule_item_types_vn[
                   schedule_item_types.indexOf(planItem['type'].toString())],
-              time: TimeOfDay.fromDateTime(DateTime.parse(
-                  "1970-01-01 ${planItem['duration'].toString().substring(0, 2)}:${planItem['duration'].toString().substring(3, 5)}:00")),
-              description: planItem['description'],
+              description:
+                  planItem['description'].toString().substring(0, 1) == '\"'
+                      ? json.decode(planItem['description'])
+                      : planItem['description'],
               date: date));
         }
-        item.sort(
-          (a, b) {
-            var adate = DateTime(0, 0, 0, a.time!.hour, a.time!.minute);
-            var bdate = DateTime(0, 0, 0, b.time!.hour, b.time!.minute);
-            return adate.compareTo(bdate);
-          },
-        );
       }
       schedule.add(PlanSchedule(date: date, items: item));
     }
@@ -444,7 +564,15 @@ class PlanService {
               };
             }).toList();
           } else {
-            details = item.tempOrder['cart'];
+            if (item.tempOrder['cart'].runtimeType == List) {
+              details = item.tempOrder['cart']
+                  .map((e) => {'key': e['key'], 'value': e['value']})
+                  .toList();
+            } else {
+              details = item.tempOrder['cart'].entries
+                  .map((e) => {'key': e.key, 'value': e.value})
+                  .toList();
+            }
           }
         }
         items.add({
@@ -632,7 +760,11 @@ mutation{
   }
 
   generateEmptySchedule(DateTime startDate, DateTime endDate) {
-    final duration = endDate.difference(startDate).inDays;
+    int duration = endDate.difference(startDate).inDays;
+    final arrivedTime = Utils().getArrivedTimeFromLocal();
+    if (arrivedTime.hour >= 16 && arrivedTime.hour < 20) {
+      duration++;
+    }
     List<PlanSchedule> result = [];
     for (int i = 0; i < duration; i++) {
       result
@@ -652,11 +784,17 @@ mutation{
       eq:$locationId
     }
   }){
-    nodes{
-      id
-      name
-      startDate
-      endDate
+    edges{
+      node {
+        id
+        name
+        startDate
+        endDate
+        account {
+          name
+        }
+        utcDepartAt
+      }
     }
   }
 }
@@ -669,13 +807,14 @@ mutation{
         throw Exception(result.exception!.linkException!);
       }
 
-      List? res = result.data!['publishedPlans']['nodes'];
+      List? res = result.data!['publishedPlans']['edges'];
       if (res == null || res.isEmpty) {
         return [];
       }
 
-      List<SuggestPlanViewModel> plans =
-          res.map((plan) => SuggestPlanViewModel.fromJson(plan)).toList();
+      List<SuggestPlanViewModel> plans = res
+          .map((plan) => SuggestPlanViewModel.fromJson(plan['node']))
+          .toList();
       return plans;
     } catch (error) {
       throw Exception(error);
@@ -917,7 +1056,8 @@ mutation{
     }
   }
 
-  handleShowPlanInformation(BuildContext context, LocationViewModel location) {
+  handleShowPlanInformation(
+      BuildContext context, LocationViewModel location, PlanCreate? plan) {
     DateTime? _travelDuration =
         sharedPreferences.getDouble('plan_duration_value') != null
             ? DateTime(0, 0, 0).add(Duration(
@@ -941,10 +1081,10 @@ mutation{
                       ? null
                       : DateTime.parse(
                           sharedPreferences.getString('plan_end_date')!),
-                  memberLimit:
-                      sharedPreferences.getInt('plan_number_of_member'),
-                  departureDate: sharedPreferences
-                              .getString('plan_departureDate') ==
+                  maxMemberCount: plan == null
+                      ? sharedPreferences.getInt('plan_number_of_member')
+                      : plan.maxMemberCount,
+                  departAt: sharedPreferences.getString('plan_departureDate') ==
                           null
                       ? null
                       : DateTime.parse(

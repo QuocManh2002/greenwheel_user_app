@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -71,62 +72,6 @@ class SupplierCard extends StatelessWidget {
                             callbackFunction: callbackFunction,
                           ),
                           type: PageTransitionType.rightToLeft));
-              // switch (serviceType.id) {
-              //   case 1:
-              //     Navigator.push(
-              //         context,
-              //         PageTransition(
-              //             child: SelectSessionScreen(
-              //               startDate: startDate,
-              //               endDate: endDate,
-              //               numberOfMember: numberOfMember,
-              //               serviceType: serviceType,
-              //               location: location,
-              //               isOrder: isOrder,
-              //               initSession: initSession,
-              //               availableGcoinAmount: availableGcoinAmount,
-              //               isFromTempOrder: isFromTempOrder,
-              //               callbackFunction: callbackFunction,
-              //             ),
-              //             type: PageTransitionType.rightToLeft));
-              //     break;
-              //   case 2:
-              //     Navigator.push(
-              //         context,
-              //         PageTransition(
-              //             child: ServiceMenuScreen(
-              //               startDate: startDate,
-              //               endDate: endDate,
-              //               numberOfMember: numberOfMember,
-              //               supplier: supplier,
-              //               serviceType: serviceType,
-              //               isOrder: isOrder,
-              //               session: sessions[1],
-              //               isFromTempOrder: isFromTempOrder,
-              //               availableGcoinAmount: availableGcoinAmount,
-              //               callbackFunction: callbackFunction,
-              //             ),
-              //             type: PageTransitionType.rightToLeft));
-              //     break;
-                
-              //   case 3:
-              //   Navigator.push(
-              //         context,
-              //         PageTransition(
-              //             child: ServiceMenuScreen(
-              //               startDate: startDate,
-              //               endDate: endDate,
-              //               numberOfMember: numberOfMember,
-              //               supplier: supplier,
-              //               serviceType: serviceType,
-              //               isOrder: isOrder,
-              //               session: sessions[1],
-              //               isFromTempOrder: isFromTempOrder,
-              //               availableGcoinAmount: availableGcoinAmount,
-              //               callbackFunction: callbackFunction,
-              //             ),
-              //             type: PageTransitionType.rightToLeft));
-              // }
             },
             child: Row(
               children: [
@@ -139,12 +84,12 @@ class SupplierCard extends StatelessWidget {
                       topLeft: Radius.circular(8),
                       bottomLeft: Radius.circular(8),
                     ),
-                    child: FadeInImage(
+                    child: CachedNetworkImage(
                       height: 15.h,
-                      placeholder: MemoryImage(kTransparentImage),
-                      image: NetworkImage(
-                          '$baseBucketImage${supplier.thumbnailUrl!}'),
+                      placeholder: (context, url) => Image.memory(kTransparentImage),
+                      imageUrl:'$baseBucketImage${supplier.thumbnailUrl!}',
                       fit: BoxFit.cover,
+                      errorWidget: (context, url, error) => Image.asset(empty_plan),
                       width: 15.h,
                       filterQuality: FilterQuality.high,
                     ),

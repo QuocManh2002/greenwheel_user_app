@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/constant.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/tags.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/goong_request.dart';
@@ -17,10 +17,11 @@ import 'package:greenwheel_user_app/screens/loading_screen/location_loading_scre
 import 'package:greenwheel_user_app/screens/location_screen/add_comment_screen.dart';
 import 'package:greenwheel_user_app/screens/location_screen/all_comment_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_by_location.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
+import 'package:greenwheel_user_app/service/traveler_service.dart';
+import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
@@ -47,8 +48,10 @@ class _LocationScreenState extends State<LocationScreen> {
   List<dynamic> imageUrls = [];
   List<Tag> tagList = [];
   List<CommentViewModel> _comments = [];
-  LocationService _locationService = LocationService();
+  final LocationService _locationService = LocationService();
+  final CustomerService _customerService = CustomerService();
   LocationViewModel? location;
+  int? numberOfPublishedPlan = 0;
 
   var default_address = sharedPreferences.getString('defaultAddress');
   @override
@@ -60,7 +63,9 @@ class _LocationScreenState extends State<LocationScreen> {
 
   getData() async {
     location = await _locationService.GetLocationById(widget.locationId);
-    if (location != null) {
+    numberOfPublishedPlan =
+        await _locationService.getNumberOfPublishedPlan(widget.locationId);
+    if (location != null && numberOfPublishedPlan != null) {
       imageUrls = location!.imageUrls;
       _comments = location!.comments!;
       // province tag
@@ -151,7 +156,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                               child: Padding(
                                                 padding:
                                                     const EdgeInsets.all(8.0),
-                                                child: Image.asset(backIcon),
+                                                child: Image.asset(
+                                                    GlobalConstant().backIcon),
                                               ),
                                             )),
                                       ))
@@ -228,34 +234,42 @@ class _LocationScreenState extends State<LocationScreen> {
                                         color: primaryColor,
                                         fontWeight: FontWeight.bold),
                                   )),
-                              buildDivider(),
-                              const SizedBox(
-                                height: 16,
-                              ),
-                              Container(
-                                alignment: Alignment.center,
-                                child: ElevatedButton.icon(
-                                  onPressed: () {
-                                    Navigator.of(context).push(
-                                        MaterialPageRoute(
-                                            builder: (ctx) =>
-                                                SuggestPlansByLocationScreen(
-                                                    location: location!)));
-                                  },
-                                  icon: const Icon(Icons.luggage),
-                                  label: const Text(
-                                    "Tham khảo kế hoạch",
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                  style: elevatedButtonStyle.copyWith(
-                                      backgroundColor: MaterialStatePropertyAll(
-                                          Colors.grey.withOpacity(0.6)),
-                                      foregroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.black)),
+                              if (numberOfPublishedPlan != null &&
+                                  numberOfPublishedPlan! > 0)
+                                buildDivider(),
+                              if (numberOfPublishedPlan != null &&
+                                  numberOfPublishedPlan! > 0)
+                                const SizedBox(
+                                  height: 16,
                                 ),
-                              ),
+                              if (numberOfPublishedPlan != null &&
+                                  numberOfPublishedPlan! > 0)
+                                Container(
+                                  alignment: Alignment.center,
+                                  child: ElevatedButton.icon(
+                                    onPressed: () {
+                                      Navigator.of(context).push(
+                                          MaterialPageRoute(
+                                              builder: (ctx) =>
+                                                  SuggestPlansByLocationScreen(
+                                                      location: location!)));
+                                    },
+                                    icon: const Icon(Icons.luggage),
+                                    label: const Text(
+                                      "Tham khảo kế hoạch",
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                    style: elevatedButtonStyle.copyWith(
+                                        backgroundColor:
+                                            MaterialStatePropertyAll(
+                                                Colors.grey.withOpacity(0.6)),
+                                        foregroundColor:
+                                            const MaterialStatePropertyAll(
+                                          Colors.black,
+                                        )),
+                                  ),
+                                ),
                               const SizedBox(
                                 height: 16,
                               ),
@@ -511,53 +525,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                     String? locationName = sharedPreferences
                                         .getString('plan_location_name');
                                     if (locationName != null) {
-                                      AwesomeDialog(
-                                        context: context,
-                                        animType: AnimType.leftSlide,
-                                        dialogType: DialogType.question,
-                                        title:
-                                            'Bạn đang có bản nháp chuyến đi tại ${locationName == location!.name ? 'địa điểm này' : locationName}',
-                                        titleTextStyle: const TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            fontFamily: 'NotoSans'),
-                                        desc:
-                                            'Bạn có muốn ghi đè chuyến đi đó không ?',
-                                        descTextStyle: const TextStyle(
-                                            fontSize: 16,
-                                            color: Colors.grey,
-                                            fontFamily: 'NotoSans'),
-                                        btnOkOnPress: () async {
-                                          Utils().clearPlanSharePref();
-                                          sharedPreferences.setString(
-                                              'plan_location_name',
-                                              location!.name);
-                                          sharedPreferences.setInt(
-                                              'plan_location_id', location!.id);
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (ctx) =>
-                                                      SelectComboDateScreen(
-                                                          isCreate: true,
-                                                          location: location!,
-                                                        )));
-                                        },
-                                        btnOkColor: Colors.deepOrangeAccent,
-                                        btnOkText: 'Có',
-                                        btnCancelText: 'Không',
-                                        btnCancelColor: Colors.blue,
-                                        btnCancelOnPress: () {
-                                          if (locationName == location!.name) {
-                                            Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (ctx) =>
-                                                        SelectComboDateScreen(
-                                                          isCreate: true,
-                                                          location: location!,
-                                                        )));
-                                          }
-                                        },
-                                      ).show();
+                                      Utils().handleAlreadyDraft(context,
+                                          location!, locationName, false, null);
                                     } else {
                                       sharedPreferences.setString(
                                           'plan_location_name', location!.name);
@@ -569,6 +538,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                   SelectComboDateScreen(
                                                     isCreate: true,
                                                     location: location!,
+                                                    isClone: false,
                                                   )));
                                     }
                                   } else {
@@ -597,24 +567,51 @@ class _LocationScreenState extends State<LocationScreen> {
 
   callbackSelectDefaultLocation(SearchStartLocationResult? selectedAddress,
       PointLatLng? selectedLatLng) async {
+    bool isValid = false;
     if (selectedAddress != null) {
-      setState(() {
-        default_address = selectedAddress.address;
-      });
+      if (selectedAddress.address.length < 3 ||
+          selectedAddress.address.length > 120) {
+        handleInvalidAddress();
+      } else {
+        setState(() {
+          default_address = selectedAddress.address;
+        });
+        isValid = true;
+      }
     } else {
       var result = await getPlaceDetail(selectedLatLng!);
       if (result != null) {
-        setState(() {
-          default_address = result['results'][0]['formatted_address'];
-        });
+        if (result['results'][0]['formatted_address'].length < 3 ||
+            result['results'][0]['formatted_address'].length > 120) {
+          handleInvalidAddress();
+        } else {
+          setState(() {
+            default_address = result['results'][0]['formatted_address'];
+          });
+          isValid = true;
+        }
       }
     }
-    Utils().SaveDefaultAddressToSharedPref(
-        default_address!,
-        selectedAddress == null
-            ? selectedLatLng!
-            : PointLatLng(selectedAddress.lat, selectedAddress.lng));
-    
+    if (isValid) {
+      final rs = await _customerService.updateTravelerProfile(CustomerViewModel(
+          id: 0,
+          name: sharedPreferences.getString('userName')!,
+          isMale: sharedPreferences.getBool('userIsMale')!,
+          avatarUrl: sharedPreferences.getString('userAvatarUrl'),
+          phone: sharedPreferences.getString('userPhone')!,
+          balance: 0,
+          defaultAddress: default_address,
+          defaultCoordinate: selectedAddress != null
+              ? PointLatLng(selectedAddress.lat, selectedAddress.lng)
+              : selectedLatLng));
+      if (rs != null) {
+        Utils().SaveDefaultAddressToSharedPref(
+            default_address!,
+            selectedAddress == null
+                ? selectedLatLng!
+                : PointLatLng(selectedAddress.lat, selectedAddress.lng));
+      }
+    }
   }
 
   callbackAddComment() async {
@@ -648,4 +645,17 @@ class _LocationScreenState extends State<LocationScreen> {
           btnCancelText: 'Huỷ',
           btnCancelOnPress: () {})
       .show();
+
+  handleInvalidAddress() => AwesomeDialog(
+        context: context,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        btnOkColor: Colors.amber,
+        btnOkOnPress: () {},
+        btnOkText: 'OK',
+        title: 'Độ dài địa chỉ mặc định phải từ 3 - 120 ký tự',
+        titleTextStyle: const TextStyle(
+            fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
+        animType: AnimType.leftSlide,
+        dialogType: DialogType.warning,
+      ).show();
 }

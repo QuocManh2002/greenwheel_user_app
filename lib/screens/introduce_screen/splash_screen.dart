@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/features/home/presentation/pages/home_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -20,8 +19,6 @@ class _SplashScreenState extends State<SplashScreen> {
     super.initState();
     Future.delayed(const Duration(seconds: 1), () {
       Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 0)), (route) => false);
-      // Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) => const HomeScreen()), (route) => false);
-
     });
   }
 

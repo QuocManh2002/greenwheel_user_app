@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/constant.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
@@ -80,7 +81,6 @@ class _CartScreenState extends State<CartScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   TextEditingController noteController = TextEditingController();
-  var currencyFormat = NumberFormat.currency(symbol: 'GCOIN', locale: 'vi_VN');
 
   DateTimeRange selectedDates =
       DateTimeRange(start: DateTime.now(), end: DateTime.now());
@@ -159,8 +159,8 @@ class _CartScreenState extends State<CartScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Image.asset(
-                            cartEmptyIcon), // Replace with your image path
+                        Image.asset(GlobalConstant()
+                            .cartEmptyIcon), // Replace with your image path
                       ],
                     ),
                   )
@@ -335,7 +335,7 @@ class _CartScreenState extends State<CartScreen> {
                                         fontWeight: FontWeight.bold,
                                       ),
                                     )
-                                  : isConsecutiveDates(_servingDates)
+                                  : Utils().isConsecutiveDates(_servingDates)
                                       ? _servingDates.first
                                                   .difference(
                                                       _servingDates.last)
@@ -466,6 +466,7 @@ class _CartScreenState extends State<CartScreen> {
                                 if (value!.length > 110) {
                                   return "Ghi chú không được quá 110 kí tự";
                                 }
+                                return null;
                               },
                               style: const TextStyle(
                                 height:
@@ -473,57 +474,6 @@ class _CartScreenState extends State<CartScreen> {
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 6.w, vertical: 2.h),
-                          decoration: BoxDecoration(
-                            color: Colors.grey.withOpacity(0.4),
-                          ),
-                          child: const Row(
-                            children: [
-                              Text(
-                                "Thông tin hóa đơn",
-                                style: TextStyle(
-                                  fontSize: 17,
-                                  fontFamily: 'NotoSans',
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        Row(
-                          children: [
-                            const SizedBox(
-                              width: 22,
-                            ),
-                            SvgPicture.asset(
-                              gcoin_logo,
-                              height: 32,
-                            ),
-                            const Padding(
-                              padding: EdgeInsets.only(left: 14),
-                              child: Text(
-                                "Thanh toán bằng số dư GCOIN ",
-                                style: TextStyle(
-                                  fontSize: 15,
-                                  fontFamily: 'NotoSans',
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                            const Spacer(),
-                            const SizedBox(
-                              width: 20,
-                            ),
-                          ],
                         ),
                         const SizedBox(
                           height: 16,
@@ -576,12 +526,28 @@ class _CartScreenState extends State<CartScreen> {
                                         : Container(),
                                   ],
                                 ),
+                                const Spacer(),
                                 Text(
-                                  currencyFormat.format((finalTotal / 1000) *
-                                      (_servingDates.isEmpty
-                                          ? 1
-                                          : _servingDates
-                                              .length)), // Replace with your second text
+                                  widget.isOrder != null && widget.isOrder!
+                                      ? NumberFormat.simpleCurrency(
+                                              locale: 'vi_VN',
+                                              decimalDigits: 0,
+                                              name: '')
+                                          .format((finalTotal /
+                                                  GlobalConstant()
+                                                      .VND_CONVERT_RATE) *
+                                              (_servingDates.isEmpty
+                                                  ? 1
+                                                  : _servingDates.length))
+                                      : NumberFormat.simpleCurrency(
+                                              locale: 'vi_VN',
+                                              decimalDigits: 0,
+                                              name: 'Đ')
+                                          .format(
+                                              finalTotal*
+                                              (_servingDates.isEmpty
+                                                  ? 1
+                                                  : _servingDates.length)), // Replace with your second text
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
@@ -589,6 +555,8 @@ class _CartScreenState extends State<CartScreen> {
                                     color: Colors.black,
                                   ),
                                 ),
+                                if(widget.isOrder != null && widget.isOrder!)
+                                SvgPicture.asset(gcoin_logo, height: 20,)
                               ],
                             ),
                           ),
@@ -598,7 +566,7 @@ class _CartScreenState extends State<CartScreen> {
                           const SizedBox(
                             height: 20,
                           ),
-                          Container(
+                          SizedBox(
                             width: 90.w,
                             height: 6.h,
                             child: ElevatedButton(
@@ -746,9 +714,8 @@ class _CartScreenState extends State<CartScreen> {
         detailsMap,
         order.period,
         _serveDates,
-        total * _servingDates.length);
+        widget.serviceType.id == 2 ? total * _serveDates.length : total);
     if (!widget.isOrder!) {
-      
       AwesomeDialog(
               context: context,
               dialogType: DialogType.success,
@@ -770,7 +737,8 @@ class _CartScreenState extends State<CartScreen> {
         Navigator.of(context).pop();
       });
     } else {
-      if ((total / 100 * _servingDates.length) > widget.availableGcoinAmount!) {
+      if ((total / GlobalConstant().VND_CONVERT_RATE * _servingDates.length) >
+          widget.availableGcoinAmount!) {
         AwesomeDialog(
                 context: context,
                 animType: AnimType.rightSlide,
@@ -796,7 +764,7 @@ class _CartScreenState extends State<CartScreen> {
                         height: 12,
                       ),
                       Text(
-                        'Giá trị đơn hàng: ${currencyFormat.format((finalTotal / 100) * (_servingDates.isEmpty ? 1 : _servingDates.length))}',
+                        'Giá trị đơn hàng: ${NumberFormat.simpleCurrency(locale: 'vi_VN', name: 'GCOIN', decimalDigits: 0).format((finalTotal / GlobalConstant().VND_CONVERT_RATE) * (_servingDates.isEmpty ? 1 : _servingDates.length))}',
                         style: const TextStyle(
                             fontSize: 16, fontWeight: FontWeight.bold),
                       ),
@@ -827,7 +795,7 @@ class _CartScreenState extends State<CartScreen> {
                         json.encode(e.toLocal().toString().split(' ')[0]))
                     .toList(),
                 supplier: widget.supplier),
-            sharedPreferences.getInt('planId')!);
+            sharedPreferences.getInt('planId')!, context);
         if (rs != 0) {
           AwesomeDialog(
             // ignore: use_build_context_synchronously
@@ -878,20 +846,5 @@ class _CartScreenState extends State<CartScreen> {
       selectedDays = servingDates.length;
     });
     servingDates.sort((a, b) => a.compareTo(b));
-  }
-
-  isConsecutiveDates(List<DateTime> dates) {
-    if (dates.length <= 1) {
-      return true;
-    }
-
-    for (int i = 1; i < dates.length; i++) {
-      DateTime current = dates[i];
-      DateTime previous = dates[i - 1];
-      if (current.difference(previous).inDays != 1) {
-        return false;
-      }
-    }
-    return true;
   }
 }

@@ -35,9 +35,7 @@ class HomeHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(
-                  height: 7.h,
-                ),
+                const Spacer(),
                 const Text(
                   'Theo bạn trên mọi cung đường',
                   style: TextStyle(
@@ -92,7 +90,8 @@ class HomeHeader extends StatelessWidget {
                           )),
                     ),
                   ),
-                )
+                ),
+                const Spacer(),
               ],
             ),
           )

@@ -1,7 +1,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/constant.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:sizer2/sizer2.dart';
 
 class CustomPlanItem extends StatefulWidget {
@@ -62,7 +62,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                         },
                         duration: const Duration(microseconds: 300),
                         child: Image.asset(
-                          isExpanded ? upIcon : downIcon,
+                          isExpanded ? GlobalConstant().upIcon : GlobalConstant().downIcon,
                           height: 2.h,
                           fit: BoxFit.cover,
                           key: ValueKey(isExpanded),

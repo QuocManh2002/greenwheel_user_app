@@ -1,7 +1,4 @@
 import 'dart:convert';
-
-import 'package:greenwheel_user_app/core/constants/contact_type.dart';
-
 class EmergencyContactViewModel {
   int? id;
   String? name;
@@ -22,12 +19,12 @@ class EmergencyContactViewModel {
           type: json['type']);
       factory EmergencyContactViewModel.fromJsonByPlan(Map<String, dynamic> json) =>
       EmergencyContactViewModel(
-          address: json['address'],
+          address: json['provider']['address'],
           id: json['id'],
-          name: json['name'],
-          phone: json['phone'],
-          imageUrl: json['imagePath'],
-          type: contact_types[int.parse(json['type'].toString())]); 
+          name: json['provider']['name'],
+          phone: json['provider']['phone'],
+          imageUrl: json['provider']['imagePath'],
+          type: json['type']); 
   Map<String, dynamic> toJson(EmergencyContactViewModel model) => {
         "address": json.encode(model.address),
         "name": json.encode(model.name),

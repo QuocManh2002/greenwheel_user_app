@@ -34,11 +34,11 @@ class CustomerViewModel {
         isMale: json["isMale"],
         avatarUrl: json["avatarPath"],
         phone: json["phone"],
-        defaultAddress: json['defaultAddress'],
-        defaultCoordinate: json['defaultCoordinate'] == null
-            ? PointLatLng(0, 0)
-            : PointLatLng(json['defaultCoordinate']['coordinates'][1],
-                json['defaultCoordinate']['coordinates'][0]),
+        defaultAddress: json['address'],
+        defaultCoordinate: json['coordinate'] == null
+            ? null
+            : PointLatLng(json['coordinate']['coordinates'][1],
+                json['coordinate']['coordinates'][0]),
         balance: double.parse(json["gcoinBalance"].toString()),
       );
 

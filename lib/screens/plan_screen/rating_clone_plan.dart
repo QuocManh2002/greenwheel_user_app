@@ -76,6 +76,7 @@ class _RatingClonePlanState extends State<RatingClonePlan> {
                   } else if (!_isValidSentence(value)) {
                     return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
                   }
+                  return null;
                 },
               ),
             ),

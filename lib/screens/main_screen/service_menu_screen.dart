@@ -152,11 +152,9 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
               qtys[index]);
         }
       }
-    } else {
+    } else if (widget.serviceType.id == 2) {
       if (widget.serviceType.id == 2) {
         title = "Phòng nghỉ";
-      } else {
-        title = 'Thuê phương tiện';
       }
       findSumCombinations(list, widget.numberOfMember);
       List<ProductViewModel> rs = getResult(_listResult);
@@ -165,6 +163,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
         updateCart(list.firstWhere((element) => element.id == item),
             rs.where((element) => element.id == item).toList().length);
       }
+    } else {
+      title = 'Thuê phương tiện';
     }
   }
 

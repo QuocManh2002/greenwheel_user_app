@@ -13,7 +13,11 @@ import 'package:sizer2/sizer2.dart';
 
 class CancelOrderBottomSheet extends StatefulWidget {
   const CancelOrderBottomSheet(
-      {super.key, required this.orderId,required this.total, required this.callback, required this.orderCreatedAt});
+      {super.key,
+      required this.orderId,
+      required this.total,
+      required this.callback,
+      required this.orderCreatedAt});
   final int orderId;
   final DateTime orderCreatedAt;
   final int total;
@@ -32,11 +36,11 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
 
   getRefundAmount() {
     int different = DateTime.now().difference(widget.orderCreatedAt).inHours;
-    if(different >= 0 && different <= 24){
+    if (different >= 0 && different <= 24) {
       return (widget.total * 0.7).ceil();
-    }else if(different > 24 && different <= 48){
+    } else if (different > 24 && different <= 48) {
       return (widget.total * 0.4).ceil();
-    }else if(different > 48){
+    } else if (different > 48) {
       return 0;
     }
   }
@@ -141,6 +145,7 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                                       } else if (value.length > 30) {
                                         return 'Lý do không quá 30 kí tự';
                                       }
+                                      return null;
                                     },
                                     inputType: TextInputType.name),
                               ),
@@ -195,35 +200,51 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                   )
                 ],
               ),
-            SizedBox(height: 1.h,),
-
-            refundAmount == 0 ?
-            Container(
-              width: 100.w,
-              padding: const EdgeInsets.all(8),
-              color: primaryColor.withOpacity(0.1),
-              child:const Text(
-                'Đơn hàng quá 48h, bạn không được hoàn tiền cho đơn hàng này'
-                ,
-                style: TextStyle(fontSize: 16, fontFamily: 'NotoSans', color: primaryColor),
-              ),
-            ):
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  const Text('Hoàn lại:', style: TextStyle(fontSize: 18,fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),),
-                  const Spacer(),
-                  Text(NumberFormat.simpleCurrency(name: '', decimalDigits: 0, locale: 'vi_VN').format(refundAmount/1000), 
-                  style: const TextStyle(
-                    fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'
-                  ),
-                  ),
-                  SvgPicture.asset(gcoin_logo, height: 20,)
-                ],
-              ),
+            SizedBox(
+              height: 1.h,
             ),
+            refundAmount == 0
+                ? Container(
+                    width: 100.w,
+                    padding: const EdgeInsets.all(8),
+                    color: primaryColor.withOpacity(0.1),
+                    child: const Text(
+                      'Đơn hàng quá 48h, bạn không được hoàn tiền cho đơn hàng này',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontFamily: 'NotoSans',
+                          color: primaryColor),
+                    ),
+                  )
+                : Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Hoàn lại:',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                        ),
+                        const Spacer(),
+                        Text(
+                          NumberFormat.simpleCurrency(
+                                  name: '', decimalDigits: 0, locale: 'vi_VN')
+                              .format(refundAmount / 1000),
+                          style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                        ),
+                        SvgPicture.asset(
+                          gcoin_logo,
+                          height: 20,
+                        )
+                      ],
+                    ),
+                  ),
             SizedBox(
               height: 1.h,
             ),

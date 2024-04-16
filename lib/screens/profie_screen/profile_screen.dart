@@ -46,7 +46,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
       setState(() {
         _isLoading = false;
       });
-      print('$baseBucketImage${_customer!.avatarUrl}');
     }
   }
 
@@ -79,13 +78,79 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       borderRadius: const BorderRadius.only(
                           topLeft: Radius.circular(42),
                           topRight: Radius.circular(42))),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        height: 10.h,
-                      ),
-                      Padding(
+                  child: SingleChildScrollView(
+                    physics:const BouncingScrollPhysics(),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          height: 10.h,
+                        ),
+                        Padding(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 32, vertical: 16),
+                            child: Container(
+                              width: double.infinity,
+                              decoration: const BoxDecoration(
+                                  boxShadow: [
+                                    BoxShadow(
+                                      blurRadius: 3,
+                                      color: Colors.black12,
+                                      offset: Offset(1, 3),
+                                    )
+                                  ],
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(14)),
+                                  color: Colors.white),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 16, vertical: 8),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          _customer!.name,
+                                          style: const TextStyle(
+                                              fontSize: 24,
+                                              fontWeight: FontWeight.bold),
+                                        ),
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
+                                        Text(
+                                          "0${_customer!.phone.substring(2)}",
+                                          style: const TextStyle(
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          bottom: 5, right: 0),
+                                      child: IconButton(
+                                          onPressed: () {
+                                            Navigator.of(context).push(
+                                                MaterialPageRoute(
+                                                    builder: (ctx) =>
+                                                        QRScreen()));
+                                          },
+                                          icon: const Icon(
+                                            Icons.qr_code_2,
+                                            size: 40,
+                                          )),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            )),
+                        Padding(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 32, vertical: 16),
                           child: Container(
@@ -101,230 +166,169 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                 borderRadius:
                                     BorderRadius.all(Radius.circular(14)),
                                 color: Colors.white),
-                            child: Padding(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 8),
-                              child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        _customer!.name,
-                                        style: const TextStyle(
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold),
-                                      ),
-                                      const SizedBox(
-                                        height: 8,
-                                      ),
-                                      Text(
-                                        "0${_customer!.phone.substring(2)}",
-                                        style: const TextStyle(
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        bottom: 5, right: 0),
-                                    child: IconButton(
-                                        onPressed: () {
-                                          Navigator.of(context).push(
-                                              MaterialPageRoute(
-                                                  builder: (ctx) =>
-                                                      QRScreen()));
-                                        },
-                                        icon: const Icon(
-                                          Icons.qr_code_2,
-                                          size: 40,
-                                        )),
-                                  )
-                                ],
-                              ),
-                            ),
-                          )),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 32, vertical: 16),
-                        child: Container(
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-                              boxShadow: [
-                                BoxShadow(
-                                  blurRadius: 3,
-                                  color: Colors.black12,
-                                  offset: Offset(1, 3),
-                                )
-                              ],
-                              borderRadius:
-                                  BorderRadius.all(Radius.circular(14)),
-                              color: Colors.white),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 24, vertical: 16),
-                                    child: Container(
-                                      alignment: Alignment.centerLeft,
-                                      child: const Text(
-                                        "Số dư:",
-                                        style: TextStyle(
-                                            fontSize: 17, color: Colors.grey),
-                                      ),
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(
-                                        left: 24, right: 16, bottom: 16),
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          NumberFormat.simpleCurrency(
-                                                  locale: 'vi_VN',
-                                                  decimalDigits: 0,
-                                                  name: "")
-                                              .format(double.parse(_customer!
-                                                  .balance
-                                                  .toString())),
-                                          style: const TextStyle(
-                                              fontSize: 24,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        const SizedBox(
-                                          width: 8,
-                                        ),
-                                        SvgPicture.asset(
-                                          gcoin_logo,
-                                          height: 32,
-                                        )
-                                      ],
-                                    ),
-                                  )
-                                ],
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(right: 24),
-                                child: Column(
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Container(
-                                      height: 5.h,
-                                      width: 5.h,
-                                      decoration: BoxDecoration(
-                                          color: Colors.grey.withOpacity(0.25),
-                                          borderRadius: const BorderRadius.all(
-                                              Radius.circular(14))),
-                                      child: IconButton(
-                                          onPressed: () {
-                                            Navigator.of(context).pop();
-                                            Navigator.of(context).push(
-                                                MaterialPageRoute(
-                                                    builder: (ctx) =>
-                                                        AddBalanceScreen(
-                                                          balance: _customer!
-                                                              .balance,
-                                                        )));
-                                          },
-                                          icon: const Icon(
-                                            Icons
-                                                .account_balance_wallet_outlined,
-                                            color: primaryColor,
-                                          )),
+                                    Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 24, vertical: 16),
+                                      child: Container(
+                                        alignment: Alignment.centerLeft,
+                                        child: const Text(
+                                          "Số dư:",
+                                          style: TextStyle(
+                                              fontSize: 17, color: Colors.grey),
+                                        ),
+                                      ),
                                     ),
-                                    const SizedBox(
-                                      height: 4,
-                                    ),
-                                    const Text(
-                                      "Nạp",
-                                      style: TextStyle(
-                                          fontSize: 16, color: Colors.grey),
+                                    Padding(
+                                      padding: const EdgeInsets.only(
+                                          left: 24, right: 16, bottom: 16),
+                                      child: Row(
+                                        children: [
+                                          Text(
+                                            NumberFormat.simpleCurrency(
+                                                    locale: 'vi_VN',
+                                                    decimalDigits: 0,
+                                                    name: "")
+                                                .format(double.parse(_customer!
+                                                    .balance
+                                                    .toString())),
+                                            style: const TextStyle(
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                          const SizedBox(
+                                            width: 8,
+                                          ),
+                                          SvgPicture.asset(
+                                            gcoin_logo,
+                                            height: 32,
+                                          )
+                                        ],
+                                      ),
                                     )
                                   ],
                                 ),
-                              )
-                            ],
+                                Padding(
+                                  padding: const EdgeInsets.only(right: 24),
+                                  child: Column(
+                                    children: [
+                                      Container(
+                                        height: 5.h,
+                                        width: 5.h,
+                                        decoration: BoxDecoration(
+                                            color: Colors.grey.withOpacity(0.25),
+                                            borderRadius: const BorderRadius.all(
+                                                Radius.circular(14))),
+                                        child: IconButton(
+                                            onPressed: () {
+                                              
+                                              Navigator.of(context).push(
+                                                  MaterialPageRoute(
+                                                      builder: (ctx) =>
+                                                          AddBalanceScreen(
+                                                            callback: setUpData,
+                                                            balance: _customer!
+                                                                .balance,
+                                                          )));
+                                            },
+                                            icon: const Icon(
+                                              Icons
+                                                  .account_balance_wallet_outlined,
+                                              color: primaryColor,
+                                            )),
+                                      ),
+                                      const SizedBox(
+                                        height: 4,
+                                      ),
+                                      const Text(
+                                        "Nạp",
+                                        style: TextStyle(
+                                            fontSize: 16, color: Colors.grey),
+                                      )
+                                    ],
+                                  ),
+                                )
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(
-                        height: 16,
-                      ),
-                      Container(
-                        alignment: Alignment.centerLeft,
-                        padding: const EdgeInsets.only(left: 32),
-                        child: const Text(
-                          "Tổng quát",
-                          style: TextStyle(fontSize: 18, color: Colors.grey),
+                        const SizedBox(
+                          height: 16,
                         ),
-                      ),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      buildProfileButton(() {
-                        Navigator.push(
-                            context,
-                            PageTransition(
-                                child: UpdateProfileScreen(
-                                  traveler: _customer!,
-                                ),
-                                type: PageTransitionType.rightToLeft));
-                      }, Icons.person, 'Chỉnh sửa thông tin'),
-                      SizedBox(
-                        height: 1.h,
-                      ),
-                      buildProfileButton(() {
-                        Navigator.push(
-                            context,
-                            PageTransition(
-                                child: const TransactionHistoryScreen(),
-                                type: PageTransitionType.rightToLeft));
-                      }, Icons.history, 'Lịch sử giao dịch'),
-                      SizedBox(
-                        height: 1.h,
-                      ),
-                      buildProfileButton(() {
-                        Navigator.push(
-                            context,
-                            PageTransition(
-                                child: const TestScreen(),
-                                type: PageTransitionType.rightToLeft));
-                      }, Icons.vpn_key, 'Thay đổi mật khẩu'),
-                      SizedBox(
-                        height: 1.h,
-                      ),
-                      buildProfileButton(() {
-                        AwesomeDialog(
-                                context: context,
-                                dialogType: DialogType.question,
-                                animType: AnimType.leftSlide,
-                                showCloseIcon: true,
-                                title: "Đăng xuất",
-                                btnOkColor: primaryColor,
-                                btnOkText: "Đồng ý",
-                                btnCancelText: "Đóng",
-                                desc:
-                                    "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
-                                btnOkOnPress: () async {
-                                  final rs =
-                                      await _customerService.travelerSignOut();
-                                  if (rs != 0) {
-                                    sharedPreferences.clear();
-                                    Restart.restartApp();
-                                  }
-                                },
-                                btnCancelOnPress: () {})
-                            .show();
-                      }, Icons.logout, 'Đăng xuất'),
-                    ],
+                        Container(
+                          alignment: Alignment.centerLeft,
+                          padding: const EdgeInsets.only(left: 32),
+                          child: const Text(
+                            "Tổng quát",
+                            style: TextStyle(fontSize: 18, color: Colors.grey),
+                          ),
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        buildProfileButton(() {
+                          Navigator.push(
+                              context,
+                              PageTransition(
+                                  child: UpdateProfileScreen(
+                                    traveler: _customer!,
+                                    callback: setUpData,
+                                  ),
+                                  type: PageTransitionType.rightToLeft));
+                        }, Icons.person, 'Chỉnh sửa thông tin'),
+                        SizedBox(
+                          height: 1.h,
+                        ),
+                        buildProfileButton(() {
+                          Navigator.push(
+                              context,
+                              PageTransition(
+                                  child: const TransactionHistoryScreen(),
+                                  type: PageTransitionType.rightToLeft));
+                        }, Icons.history, 'Lịch sử giao dịch'),
+                        SizedBox(
+                          height: 1.h,
+                        ),
+                        // buildProfileButton(() {
+                        //   Navigator.push(
+                        //       context,
+                        //       PageTransition(
+                        //           child: const TestScreen(),
+                        //           type: PageTransitionType.rightToLeft));
+                        // }, Icons.vpn_key, 'Thay đổi mật khẩu'),
+                        // SizedBox(
+                        //   height: 1.h,
+                        // ),
+                        buildProfileButton(() {
+                          AwesomeDialog(
+                                  context: context,
+                                  dialogType: DialogType.question,
+                                  animType: AnimType.leftSlide,
+                                  showCloseIcon: true,
+                                  title: "Đăng xuất",
+                                  btnOkColor: primaryColor,
+                                  btnOkText: "Đồng ý",
+                                  btnCancelText: "Đóng",
+                                  desc:
+                                      "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
+                                  btnOkOnPress: () async {
+                                    final rs =
+                                        await _customerService.travelerSignOut();
+                                    if (rs != 0) {
+                                      sharedPreferences.clear();
+                                      Restart.restartApp();
+                                    }
+                                  },
+                                  btnCancelOnPress: () {})
+                              .show();
+                        }, Icons.logout, 'Đăng xuất'),
+                      ],
+                    ),
                   ),
                 ),
                 Positioned(

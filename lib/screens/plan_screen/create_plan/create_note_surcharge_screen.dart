@@ -2,7 +2,7 @@
 import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
@@ -28,10 +28,16 @@ class CreateNoteSurchargeScreen extends StatefulWidget {
       {super.key,
       this.orderList,
       required this.location,
+      this.plan,
+      required this.isCreate,
+      required this.isClone,
       required this.totalService});
   final List<dynamic>? orderList;
   final LocationViewModel location;
   final double totalService;
+  final PlanCreate? plan;
+  final bool isCreate;
+  final bool isClone;
 
   @override
   State<CreateNoteSurchargeScreen> createState() =>
@@ -44,10 +50,10 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   List<dynamic> _listSurchargeObjects = [];
   double _totalSurcharge = 0;
   List<Widget> _listSurcharges = [];
-  PlanCreate? plan;
   PlanService _planService = PlanService();
   OrderService _orderService = OrderService();
-  int memberLimit = sharedPreferences.getInt('plan_number_of_member')!;
+  int? memberLimit;
+  PlanCreate? _plan;
 
   @override
   void initState() {
@@ -57,6 +63,11 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   }
 
   setUpData() {
+    if (widget.plan == null) {
+      memberLimit = sharedPreferences.getInt('plan_number_of_member');
+    } else {
+      memberLimit = widget.plan!.maxMemberCount;
+    }
     callbackSurcharge(null);
   }
 
@@ -83,7 +94,8 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
         actions: [
           InkWell(
             onTap: () {
-              _planService.handleShowPlanInformation(context, widget.location);
+              _planService.handleShowPlanInformation(
+                  context, widget.location, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -304,17 +316,13 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                   const Spacer(),
                   Text(
                     NumberFormat.simpleCurrency(
-                            locale: 'vi_VN', decimalDigits: 0, name: '')
+                            locale: 'vi_VN', decimalDigits: 0, name: 'Đ')
                         .format(_totalSurcharge),
                     style: const TextStyle(
                       fontFamily: 'NotoSans',
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 25,
                   ),
                 ],
               ),
@@ -331,17 +339,13 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                   const Spacer(),
                   Text(
                     NumberFormat.simpleCurrency(
-                            locale: 'vi_VN', decimalDigits: 0, name: '')
-                        .format(_totalSurcharge / memberLimit),
+                            locale: 'vi_VN', decimalDigits: 0, name: 'Đ')
+                        .format(_totalSurcharge / memberLimit!),
                     style: const TextStyle(
                       fontFamily: 'NotoSans',
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
-                  SvgPicture.asset(
-                    gcoin_logo,
-                    height: 25,
                   ),
                 ],
               ),
@@ -388,94 +392,119 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   saveNote() async {}
 
   callbackSurcharge(dynamic surcharge) {
-    String? surchargeText = sharedPreferences.getString('plan_surcharge');
     List<Widget> listSurcharges = [];
     _listSurchargeObjects = [];
     _totalSurcharge = 0;
-    if (surchargeText != null) {
-      final surcharges = json.decode(surchargeText);
-      _listSurchargeObjects = surcharges
-          .map((e) => {
-                'alreadyDivided': e['alreadyDivided'],
-                'gcoinAmount': e['gcoinAmount'],
-                'note': e['note'],
-              })
-          .toList();
-      for (final sur in surcharges) {
-        listSurcharges.add(SurchargeCard(
-          maxMemberCount: sharedPreferences.getInt('plan_number_of_member')!,
-          isEnableToUpdate: true,
-          isCreate: true,
-          surcharge: SurchargeViewModel.fromJsonLocal(sur),
-          callbackSurcharge: callbackSurcharge,
-        ));
-        if (sur['alreadyDivided']) {
-          _totalSurcharge += sur['gcoinAmount'] * memberLimit;
+
+    final surcharges = widget.plan == null
+        ? json.decode(sharedPreferences.getString('plan_surcharge') ?? '[]')
+        : widget.plan!.surcharges!;
+    _listSurchargeObjects = surcharges
+        .map((e) => {
+              'alreadyDivided': e.runtimeType == SurchargeViewModel
+                  ? e.alreadyDivided
+                  : e['alreadyDivided'],
+              'amount':
+                  e.runtimeType == SurchargeViewModel ? e.amount : e['amount'],
+              'note': e.runtimeType == SurchargeViewModel
+                  ? json.encode(e.note)
+                  : e['note'],
+            })
+        .toList();
+    for (final sur in surcharges) {
+      listSurcharges.add(SurchargeCard(
+        maxMemberCount: widget.plan == null
+            ? sharedPreferences.getInt('plan_number_of_member')!
+            : widget.plan!.maxMemberCount!,
+        isEnableToUpdate: true,
+        isCreate: true,
+        surcharge: sur.runtimeType == SurchargeViewModel
+            ? sur
+            : SurchargeViewModel.fromJsonLocal(sur),
+        callbackSurcharge: callbackSurcharge,
+      ));
+      if (sur.runtimeType == SurchargeViewModel) {
+        if (sur.alreadyDivided) {
+          _totalSurcharge += sur.amount * memberLimit;
         } else {
-          _totalSurcharge += sur['gcoinAmount'];
+          _totalSurcharge += sur.amount;
+        }
+      } else {
+        if (sur['alreadyDivided']) {
+          _totalSurcharge += sur['amount'] * memberLimit;
+        } else {
+          _totalSurcharge += sur['amount'];
         }
       }
     }
+
     setState(() {
       _listSurcharges = listSurcharges;
     });
-    // sharedPreferences.setString(
-    //     'plan_surcharge', json.encode(_listSurchargeObjects));
   }
 
-  completeService() {
-    DateTime departureDate =
-        DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-    final departureTime =
-        DateTime.parse(sharedPreferences.getString('plan_start_time')!);
-    departureDate =
-        DateTime(departureDate.year, departureDate.month, departureDate.day)
-            .add(Duration(hours: departureTime.hour))
-            .add(Duration(minutes: departureTime.minute));
-    DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
-        seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-            .toInt()));
-    plan = PlanCreate(
-        departureAddress: sharedPreferences.getString('plan_start_address'),
+  completeService() async {
+    if (widget.plan == null) {
+      DateTime departureDate =
+          DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+      final departureTime =
+          DateTime.parse(sharedPreferences.getString('plan_start_time')!);
+      departureDate =
+          DateTime(departureDate.year, departureDate.month, departureDate.day)
+              .add(Duration(hours: departureTime.hour))
+              .add(Duration(minutes: departureTime.minute));
+      DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
+          seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+              .toInt()));
+      _plan = PlanCreate(
+        departAddress: sharedPreferences.getString('plan_start_address'),
         numOfExpPeriod: sharedPreferences.getInt('initNumOfExpPeriod'),
         locationId: widget.location.id,
         name: sharedPreferences.getString('plan_name'),
-        latitude: sharedPreferences.getDouble('plan_start_lat')!,
-        longitude: sharedPreferences.getDouble('plan_start_lng')!,
-        memberLimit: sharedPreferences.getInt('plan_number_of_member') ?? 1,
+        departCoordinate: PointLatLng(
+            sharedPreferences.getDouble('plan_start_lat')!,
+            sharedPreferences.getDouble('plan_start_lng')!),
+        maxMemberCount: sharedPreferences.getInt('plan_number_of_member') ?? 1,
         savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
         startDate:
             DateTime.parse(sharedPreferences.getString('plan_start_date')!),
-        departureDate: departureDate,
+        departAt: departureDate,
         schedule: sharedPreferences.getString('plan_schedule'),
         endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
         travelDuration: DateFormat.Hm().format(_travelDuration),
-        tempOrders:
-            _orderService.convertTempOrders(widget.orderList!).toString(),
         note: sharedPreferences.getString('plan_note'),
         maxMemberWeight: sharedPreferences.getInt('plan_max_member_weight'),
-        gcoinBudget:
-            (((widget.totalService + _totalSurcharge * 100) / memberLimit) /
-                    100)
-                .ceil());
-    showModalBottomSheet(
-        backgroundColor: Colors.white.withOpacity(0.94),
-        context: context,
-        isScrollControlled: true,
-        builder: (ctx) => SizedBox(
-              height: 90.h,
-              child: ConfirmPlanBottomSheet(
-                isFromHost: false,
-                isInfo: false,
-                locationName: widget.location.name,
-                orderList: widget.orderList!,
-                onCompletePlan: onCompletePlan,
-                plan: plan,
-                onJoinPlan: () {},
-                listSurcharges: _listSurchargeObjects,
-                isJoin: false,
-              ),
-            ));
+      );
+    }
+
+    final rs = await _orderService.getTempOrderFromSchedule(
+        widget.plan != null
+            ? json.decode(widget.plan!.schedule!)
+            : jsonDecode(sharedPreferences.getString('plan_schedule')!),
+        widget.plan != null
+            ? widget.plan!.startDate!
+            : DateTime.parse(sharedPreferences.getString('plan_start_date')!));
+
+    if (rs != null) {
+      showModalBottomSheet(
+          backgroundColor: Colors.white.withOpacity(0.94),
+          context: context,
+          isScrollControlled: true,
+          builder: (ctx) => SizedBox(
+                height: 90.h,
+                child: ConfirmPlanBottomSheet(
+                  isFromHost: false,
+                  isInfo: false,
+                  locationName: widget.location.name,
+                  orderList: rs,
+                  onCompletePlan: onCompletePlan,
+                  plan: widget.plan ?? _plan,
+                  onJoinPlan: () {},
+                  listSurcharges: _listSurchargeObjects,
+                  isJoin: false,
+                ),
+              ));
+    }
   }
 
   onCompletePlan() async {
@@ -516,15 +545,31 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
     //     (route) => false,
     //   );
     // } else {
-    final rs = await _planService.createNewPlan(
-        plan!, context, _listSurchargeObjects.toString());
+    var rs;
+    if (widget.plan == null) {
+      if (widget.isClone) {
+        rs = await _planService.clonePlan(
+            _plan!, context, _listSurchargeObjects.toString());
+      } else {
+        rs = await _planService.createNewPlan(
+            _plan!, context, _listSurchargeObjects.toString());
+      }
+    } else {
+      rs = await _planService.updatePlan(
+          widget.plan!, json.encode(_listSurchargeObjects), context);
+    }
+
     if (rs != 0) {
       Navigator.of(context).pop();
       AwesomeDialog(
         context: context,
         animType: AnimType.leftSlide,
         dialogType: DialogType.success,
-        title: 'Tạo kế hoạch thành công',
+        title: widget.plan == null
+            ? widget.isClone
+                ? 'Sao chép kế hoạch thành công'
+                : 'Tạo kế hoạch thành công'
+            : 'Cập nhật kế hoạch thành công',
         titleTextStyle:
             const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
         padding: const EdgeInsets.all(12),

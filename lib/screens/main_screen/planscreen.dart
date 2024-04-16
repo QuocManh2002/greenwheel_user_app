@@ -3,7 +3,7 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -121,9 +121,10 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                         // ignore: use_build_context_synchronously
                         context,
                         PageTransition(
-                            child: CreatePlanScreen(
+                            child: SelectComboDateScreen(
                               isCreate: true,
                               location: location,
+                              isClone: false,
                             ),
                             type: PageTransitionType.rightToLeft));
                   }

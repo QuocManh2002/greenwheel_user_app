@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/constant.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/tags.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
@@ -466,11 +466,11 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
     setState(() {
       if (check) {
         if (tag.id == "20") {
-          provinces.addAll(generateProvinceTags(northSide));
+          provinces.addAll(generateProvinceTags(GlobalConstant().northSide));
         } else if (tag.id == "21") {
-          provinces.addAll(generateProvinceTags(midSide));
+          provinces.addAll(generateProvinceTags(GlobalConstant().midSide));
         } else if (tag.id == "22") {
-          provinces.addAll(generateProvinceTags(southSide));
+          provinces.addAll(generateProvinceTags(GlobalConstant().southSide));
         }
 
         provinces.removeWhere((province) => province.id == "23");
@@ -480,15 +480,15 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
       } else {
         if (tag.id == "20") {
           provinces
-              .removeWhere((province) => northSide.contains(province.title));
-          select.removeWhere((province) => northSide.contains(province.title));
+              .removeWhere((province) => GlobalConstant().northSide.contains(province.title));
+          select.removeWhere((province) => GlobalConstant().northSide.contains(province.title));
         } else if (tag.id == "21") {
-          provinces.removeWhere((province) => midSide.contains(province.title));
-          select.removeWhere((province) => midSide.contains(province.title));
+          provinces.removeWhere((province) => GlobalConstant().midSide.contains(province.title));
+          select.removeWhere((province) => GlobalConstant().midSide.contains(province.title));
         } else if (tag.id == "22") {
           provinces
-              .removeWhere((province) => southSide.contains(province.title));
-          select.removeWhere((province) => southSide.contains(province.title));
+              .removeWhere((province) => GlobalConstant().southSide.contains(province.title));
+          select.removeWhere((province) => GlobalConstant().southSide.contains(province.title));
         }
 
         if (provinces.isEmpty) {

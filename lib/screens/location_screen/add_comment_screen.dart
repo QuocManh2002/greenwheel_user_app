@@ -13,7 +13,14 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:vn_badwords_filter/vn_badwords_filter.dart';
 
 class AddCommentScreen extends StatefulWidget {
-  const AddCommentScreen({super.key, required this.callback, this.comments, required this.destinationId,required this.destinationImageUrl,required this.destinationName, required this.destinationDescription});
+  const AddCommentScreen(
+      {super.key,
+      required this.callback,
+      this.comments,
+      required this.destinationId,
+      required this.destinationImageUrl,
+      required this.destinationName,
+      required this.destinationDescription});
   final List<CommentViewModel>? comments;
   final int destinationId;
   final void Function() callback;
@@ -21,23 +28,20 @@ class AddCommentScreen extends StatefulWidget {
   final String destinationImageUrl;
   final String destinationName;
 
-
   @override
   State<AddCommentScreen> createState() => _AddCommentScreenState();
 }
 
 class _AddCommentScreenState extends State<AddCommentScreen> {
-
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-    TextEditingController _commentController = TextEditingController();
-    LocationService _locationService = LocationService();
+  TextEditingController _commentController = TextEditingController();
+  LocationService _locationService = LocationService();
 
   @override
   Widget build(BuildContext context) {
-    
     return SafeArea(
         child: Scaffold(
-          resizeToAvoidBottomInset: true,
+      resizeToAvoidBottomInset: true,
       appBar: AppBar(
         title: const Text('Thêm bình luận'),
       ),
@@ -55,28 +59,27 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                         height: 25.w,
                         width: 25.w,
                         clipBehavior: Clip.hardEdge,
-                        decoration:const BoxDecoration(
+                        decoration: const BoxDecoration(
                           borderRadius: BorderRadius.all(Radius.circular(12)),
-
                         ),
                         child: CachedNetworkImage(
-                  key: UniqueKey(),
-                  height: 20.h,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  imageUrl:
-                      '$baseBucketImage/${25.w.ceil()}x${25.w.ceil()}${widget.destinationImageUrl}',
-                  placeholder: (context, url) =>
-                      Image.memory(kTransparentImage),
-                  errorWidget: (context, url, error) =>
-                      FadeInImage.assetNetwork(
-                    height: 15.h,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    placeholder: '',
-                    image: defaultHomeImage,
-                  ),
-                ),
+                          key: UniqueKey(),
+                          height: 20.h,
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                          imageUrl:
+                              '$baseBucketImage/${25.w.ceil()}x${25.w.ceil()}${widget.destinationImageUrl}',
+                          placeholder: (context, url) =>
+                              Image.memory(kTransparentImage),
+                          errorWidget: (context, url, error) =>
+                              FadeInImage.assetNetwork(
+                            height: 15.h,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                            placeholder: '',
+                            image: defaultHomeImage,
+                          ),
+                        ),
                       ),
                       SizedBox(width: 2.h),
                       SizedBox(
@@ -88,25 +91,26 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                             Text(
                               widget.destinationName,
                               overflow: TextOverflow.clip,
-                              style:const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold,
+                              style: const TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
                               ),
                             ),
                             RatingBar(rating: 4),
                             ReadMoreText(
-                                    widget.destinationDescription,
-                                    trimLines: 3,
-                                    textAlign: TextAlign.justify,
-                                    trimMode: TrimMode.Line,
-                                    trimCollapsedText: "Xem thêm",
-                                    trimExpandedText: "Thu gọn",
-                                    lessStyle: const TextStyle(
-                                        color: primaryColor,
-                                        fontWeight: FontWeight.bold),
-                                    moreStyle: const TextStyle(
-                                        color: primaryColor,
-                                        fontWeight: FontWeight.bold),
-                                  )
+                              widget.destinationDescription,
+                              trimLines: 3,
+                              textAlign: TextAlign.justify,
+                              trimMode: TrimMode.Line,
+                              trimCollapsedText: "Xem thêm",
+                              trimExpandedText: "Thu gọn",
+                              lessStyle: const TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.bold),
+                              moreStyle: const TextStyle(
+                                  color: primaryColor,
+                                  fontWeight: FontWeight.bold),
+                            )
                           ],
                         ),
                       )
@@ -118,40 +122,48 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
             Row(
               children: [
                 Form(
-                      key: _formKey,
-                      child: SizedBox(
-                        width: 80.w,
-                        child: TextFormFieldWithLength(
-                          controller: _commentController,
-                          inputType: TextInputType.text,
-                          isAutoFocus: true,
-                          hinttext: 'Để lại bình luận, góp ý của bạn cho địa điểm này...',
-                          maxline: 3,
-                          minline: 3,
-                          maxLength: 95,
-                          onValidate: (value) {
-                            if (value!.length < 10) {
-                              return "Bình luận của bạn phải từ 10 - 120 ký tự";
-                            } else if (VNBadwordsFilter.isProfane(value)) {
-                              return "Bình luận của bạn chứa từ ngữ không hợp lệ";
-                            } else if (!Utils().IsValidSentence(value)) {
-                              return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
-                            }
-                          },
-                        ),
-                      )),
-                      const Spacer(),
-                      IconButton(onPressed: ()async{
-                        if(_formKey.currentState!.validate()){
-                          final rs = await _locationService.commentOnDestination(_commentController.text, widget.destinationId);
-                        if(rs){
+                    key: _formKey,
+                    child: SizedBox(
+                      width: 80.w,
+                      child: TextFormFieldWithLength(
+                        controller: _commentController,
+                        inputType: TextInputType.text,
+                        isAutoFocus: true,
+                        hinttext:
+                            'Để lại bình luận, góp ý của bạn cho địa điểm này...',
+                        maxline: 3,
+                        minline: 3,
+                        maxLength: 95,
+                        onValidate: (value) {
+                          if (value!.length < 10) {
+                            return "Bình luận của bạn phải từ 10 - 120 ký tự";
+                          } else if (VNBadwordsFilter.isProfane(value)) {
+                            return "Bình luận của bạn chứa từ ngữ không hợp lệ";
+                          } else if (!Utils().IsValidSentence(value)) {
+                            return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
+                          }
+                          return null;
+                        },
+                      ),
+                    )),
+                const Spacer(),
+                IconButton(
+                    onPressed: () async {
+                      if (_formKey.currentState!.validate()) {
+                        final rs = await _locationService.commentOnDestination(
+                            _commentController.text, widget.destinationId);
+                        if (rs) {
                           widget.callback();
                         }
                         // ignore: use_build_context_synchronously
                         Navigator.of(context).pop();
-                        }
-                      }, icon:const Icon(Icons.send, color: primaryColor,size: 30,))
-
+                      }
+                    },
+                    icon: const Icon(
+                      Icons.send,
+                      color: primaryColor,
+                      size: 30,
+                    ))
               ],
             )
           ],

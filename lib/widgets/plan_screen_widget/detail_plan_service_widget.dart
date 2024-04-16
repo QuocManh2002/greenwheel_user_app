@@ -1,12 +1,13 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/list_order_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_order_card.dart';
@@ -20,6 +21,7 @@ class DetailPlanServiceWidget extends StatefulWidget {
       required this.isLeader,
       required this.tempOrders,
       required this.total,
+      required this.planType,
       this.orderList,
       required this.onGetOrderList});
   final PlanDetail plan;
@@ -28,6 +30,7 @@ class DetailPlanServiceWidget extends StatefulWidget {
   final List<OrderViewModel>? orderList;
   final List<OrderViewModel> tempOrders;
   final double total;
+  final String planType;
 
   @override
   State<DetailPlanServiceWidget> createState() =>
@@ -38,6 +41,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
     with TickerProviderStateMixin {
   late TabController tabController;
   LocationService _locationService = LocationService();
+  PlanService _planService = PlanService();
+  List<OrderViewModel> _orderList = [];
   List<OrderViewModel> roomOrderList = [];
   List<OrderViewModel> foodOrderList = [];
   List<OrderViewModel> movingOrderList = [];
@@ -52,13 +57,26 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
 
   setUpData() {
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
-    final orderGroups =
-        widget.orderList!.groupListsBy((element) => element.type);
+    _orderList = widget.orderList ?? [];
+    final orderGroups = _orderList.groupListsBy((element) => element.type);
     roomOrderList = orderGroups[services[1].name] ?? [];
     foodOrderList = orderGroups[services[0].name] ?? [];
     movingOrderList = orderGroups[services[2].name] ?? [];
     isShowTotal =
         widget.plan.status != 'PENDING' && widget.plan.status != 'REGISTERING';
+  }
+
+  refreshData() async {
+    final rs = await _planService.getOrderCreatePlan(widget.plan.id!, widget.planType);
+    if (rs != null) {
+      setState(() {
+        _orderList = rs['orders'];
+        final orderGroups = _orderList.groupListsBy((element) => element.type);
+        roomOrderList = orderGroups[services[1].name] ?? [];
+        foodOrderList = orderGroups[services[0].name] ?? [];
+        movingOrderList = orderGroups[services[2].name] ?? [];
+      });
+    }
   }
 
   @override
@@ -90,8 +108,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                                     planId: widget.plan.id!,
                                     orders: widget.tempOrders,
                                     startDate: widget.plan.startDate!,
-                                    callback: (p0) {
-                                      
+                                    callback: (p) {
+                                      refreshData();
                                     },
                                     endDate: widget.plan.endDate!,
                                     memberLimit: widget.plan.memberCount!,
@@ -148,6 +166,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                   return PlanOrderCard(
                       callback: widget.onGetOrderList,
                       isShowQuantity: true,
+                      planStatus: widget.plan.status,
                       order: roomOrderList[index],
                       isLeader: widget.isLeader);
                 },
@@ -192,30 +211,31 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 child: Column(
                   children: [
                     buildAmountInfo(
-                        'Ngân sách dự tính:',
+                        'Dự tính (Đ):',
                         widget.plan.gcoinBudgetPerCapita! *
-                            widget.plan.maxMemberCount!),
+                            widget.plan.maxMemberCount! ),
                     buildAmountInfo(
-                        'Ngân sách đã thu:',
+                        'Đã thu (Đ):',
                         widget.plan.gcoinBudgetPerCapita! *
-                            widget.plan.memberCount!),
-                    if (isShowTotal)
-                      buildAmountInfo('Ngân sách hiện tại:',
-                          widget.plan.actualGcoinBudget!),
+                            widget.plan.memberCount! ),
                     if (isShowTotal)
                       buildAmountInfo(
-                          'Đã chi:',
+                          'Hiện tại (Đ):',
+                          widget.plan.actualGcoinBudget! ),
+                    if (isShowTotal)
+                      buildAmountInfo(
+                          'Đã chi (Đ):',
                           widget.plan.status == 'PENDING' ||
                                   widget.plan.status == 'REGISTERING'
                               ? 0
-                              : widget.total / 1000),
+                              : widget.total/GlobalConstant().VND_CONVERT_RATE),
                     if (isShowTotal)
                       buildAmountInfo(
-                          'Số tiền đã bù:',
+                          'Số tiền đã bù (Đ):',
                           widget.plan.maxMemberCount! *
-                                  widget.plan.gcoinBudgetPerCapita! -
+                                  widget.plan.gcoinBudgetPerCapita!  -
                               widget.plan.memberCount! *
-                                  widget.plan.gcoinBudgetPerCapita!),
+                                  widget.plan.gcoinBudgetPerCapita! ),
 
                     // buildAmountInfo('Số tiền hoàn lại:', widget.plan.displayGcoinBudget! / widget.plan.memberCount! *
                     // + widget.plan.actualGcoinBudget! - widget.plan.displayGcoinBudget!
@@ -230,23 +250,24 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
   }
 
   buildAmountInfo(String title, num amount) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 6),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               title,
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
             const Spacer(),
-            Text(
-              NumberFormat.simpleCurrency(
-                      locale: 'vi-VN', decimalDigits: 0, name: "")
-                  .format(amount),
-              style: const TextStyle(fontSize: 18),
-            ),
-            SvgPicture.asset(
-              gcoin_logo,
-              height: 20,
+            SizedBox(
+              width: 30.w,
+              child: Text(
+                NumberFormat.simpleCurrency(
+                        locale: 'vi-VN', decimalDigits: 0, name: "K")
+                    .format(amount),
+                textAlign: TextAlign.end,
+                style: const TextStyle(fontSize: 18),
+              ),
             ),
           ],
         ),

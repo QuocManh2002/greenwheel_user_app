@@ -194,37 +194,60 @@ query getSupplierById(\$id: [Int]!) {
   Future<List<EmergencyContactViewModel>?> getEmergencyContacts(
       PointLatLng coordinate, List<String> types, int lte) async {
     try {
-      QueryResult result = await client.query(QueryOptions(document: gql("""
+      log('''
 {
-            providers(where: 
-  { 
-    and: [
-      { coordinate: { 
-        distance: { 
-          lte: $lte, 
-          geometry:{
-            type: Point,
-            coordinates: [${coordinate.longitude}, ${coordinate.latitude}]
-          }
-        } 
-      } 
-      }, 
-      {
-        type:{
-          in: $types
-        }
-      }] 
-  }){
-              nodes {
-                id
-                name
-                address
-                phone
-                imagePath
-                type
-              }
+  providers(
+    where: {
+      and: [
+        {
+          coordinate: {
+            distance: {
+              lte: $lte
+              geometry: { type: Point, coordinates: [${coordinate.longitude}, ${coordinate.latitude}] }
             }
           }
+        }
+        { type: { in: $types } }
+      ]
+    }
+  ) {
+    nodes {
+      id
+      name
+      address
+      phone
+      imagePath
+      type
+    }
+  }
+}''');
+      QueryResult result = await client.query(QueryOptions(document: gql("""
+{
+  providers(
+    where: {
+      and: [
+        {
+          coordinate: {
+            distance: {
+              lte: $lte
+              geometry: { type: Point, coordinates: [${coordinate.longitude}, ${coordinate.latitude}] }
+            }
+          }
+        }
+        { type: { in: $types } }
+      ]
+    }
+  ) {
+    nodes {
+      id
+      name
+      address
+      phone
+      imagePath
+      type
+    }
+  }
+}
 """)));
       if (result.hasException) {
         throw Exception(result.exception);

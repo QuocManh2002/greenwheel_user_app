@@ -15,12 +15,14 @@ class PLanScheduleWidget extends StatefulWidget {
       required this.planId,
       required this.endDate,
       required this.planType,
+      required this.isLeader,
       required this.startDate});
   final int planId;
   final List<dynamic> schedule;
   final DateTime startDate;
   final DateTime endDate;
   final String planType;
+  final bool isLeader;
 
   @override
   State<PLanScheduleWidget> createState() => _PLanScheduleWidgetState();
@@ -98,6 +100,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
               itemCount: _scheduleList[_index].items.length,
               itemBuilder: (context, index) => PlanScheduleActivityView(
                 item: _scheduleList[_index].items[index],
+                isLeader: widget.isLeader,
               ),
             )),
     );

@@ -256,9 +256,10 @@ class _OTPScreenState extends State<OTPScreen> {
                 traveler.defaultAddress!, traveler.defaultCoordinate!);
           }
           if (traveler.avatarUrl != null && traveler.avatarUrl!.isNotEmpty) {
-            sharedPreferences.setString('userAvatarPath', traveler.avatarUrl!);
+            sharedPreferences.setString('userAvatarUrl', traveler.avatarUrl!);
           }
           sharedPreferences.setInt('userId', traveler.id);
+          sharedPreferences.setBool('userIsMale', traveler.isMale);
           sharedPreferences.setString('userPhone', traveler.phone);
           sharedPreferences.setString('userName', traveler.name);
           sharedPreferences.setInt('userBalance', traveler.balance.toInt());

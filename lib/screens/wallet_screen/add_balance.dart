@@ -2,6 +2,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
@@ -16,8 +17,10 @@ import 'package:vnpay_client/vnpay_client.dart';
 import 'package:intl/intl.dart';
 
 class AddBalanceScreen extends StatefulWidget {
-  const AddBalanceScreen({super.key, required this.balance});
+  const AddBalanceScreen(
+      {super.key, required this.balance, required this.callback});
   final double balance;
+  final void Function() callback;
 
   @override
   State<AddBalanceScreen> createState() => _AddBalanceScreenState();
@@ -61,9 +64,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
       appBar: AppBar(
         title: const Text("Nạp tiền vào ví"),
         leading: BackButton(onPressed: () {
+          widget.callback();
           Navigator.of(context).pop();
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (ctx) => const TabScreen(pageIndex: 3)));
         }),
       ),
       body: SingleChildScrollView(
@@ -95,7 +97,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                             children: [
                               Text(
                                 NumberFormat.simpleCurrency(
-                                        locale: 'en-US',
+                                        locale: 'vi_VN',
                                         decimalDigits: 0,
                                         name: "")
                                     .format(refreshedBalance ?? widget.balance),
@@ -188,8 +190,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                             NumberFormat.simpleCurrency(
                                     decimalDigits: 0,
                                     locale: 'vi_VN',
-                                    name: 'đ')
-                                .format(amount * 100),
+                                    name: 'Đ')
+                                .format(amount * GlobalConstant().VND_CONVERT_RATE),
                             style: const TextStyle(
                                 fontSize: 18,
                                 color: Colors.black87,
@@ -392,15 +394,14 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   showSuccessPaymentDialog() {
     print('sucess payment');
     AwesomeDialog(
-        context: context,
-        dialogType: DialogType.success,
-        body: const Center(
-          child: Text('Nạp GCOIN vào ví thành công'),
-        ),
-        btnOkColor: primaryColor,
-        btnOkOnPress: () => Navigator.of(context).push(
-            MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 3))),
-      ).show();
-      
-      }
+      context: context,
+      dialogType: DialogType.success,
+      body: const Center(
+        child: Text('Nạp GCOIN vào ví thành công'),
+      ),
+      btnOkColor: primaryColor,
+      btnOkOnPress: () => Navigator.of(context).push(
+          MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 3))),
+    ).show();
+  }
 }

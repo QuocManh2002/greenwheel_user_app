@@ -15,7 +15,7 @@ class HotLocations extends StatelessWidget {
     provider.getHotLocations();
     List<HomeLocationEntity>? hot_locations = Provider.of<HomeProvider>(context).hot_locations;
     return
-    hot_locations != null ?
+    hot_locations != null && hot_locations.isNotEmpty ?
      Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

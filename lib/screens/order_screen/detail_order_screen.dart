@@ -2,6 +2,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -27,6 +28,7 @@ class OrderDetailScreen extends StatefulWidget {
       this.planId,
       required this.callback,
       this.isFromTempOrder,
+      this.planStatus,
       this.availableGcoinAmount,
       required this.isTempOrder});
   final OrderViewModel order;
@@ -37,6 +39,7 @@ class OrderDetailScreen extends StatefulWidget {
   final DateTime? endDate;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
+  final String? planStatus;
   final void Function() callback;
 
   @override
@@ -66,7 +69,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
         .range;
-        final tmp =
+    final tmp =
         widget.order.details!.groupListsBy((element) => element.productId);
     for (final temp in tmp.values) {
       details.add(temp.first);
@@ -80,45 +83,48 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       appBar: AppBar(
         title: const Text('Chi tiết đơn hàng'),
         actions: [
-          PopupMenuButton(
-            itemBuilder: (context) => [
-             const PopupMenuItem(
-              value: 0,
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.remove_shopping_cart_outlined,
-                      color: Colors.redAccent,
-                      size: 25,
+          if (widget.planStatus == plan_statuses[2].name)
+            PopupMenuButton(
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 0,
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.remove_shopping_cart_outlined,
+                        color: Colors.redAccent,
+                        size: 25,
+                      ),
+                      SizedBox(
+                        width: 8,
+                      ),
+                      Text(
+                        'Huỷ đơn hàng',
+                        style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'NotoSans',
+                            color: Colors.redAccent),
+                      )
+                    ],
+                  ),
+                )
+              ],
+              onSelected: (value) {
+                if (value == 0) {
+                  showModalBottomSheet(
+                    context: context,
+                    isDismissible: true,
+                    builder: (context) => CancelOrderBottomSheet(
+                      orderCreatedAt: widget.order.createdAt!,
+                      total: widget.order.total!.toInt(),
+                      callback: (p0) {},
+                      orderId: widget.order.id!,
                     ),
-                    SizedBox(width: 8,),
-                    Text(
-                      'Huỷ đơn hàng',
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'NotoSans',
-                          color: Colors.redAccent),
-                    )
-                  ],
-                ),
-              )
-            ],
-            onSelected: (value) {
-              if(value == 0){
-                showModalBottomSheet(
-                  context: context, 
-                  isDismissible: true,
-                  builder: (context) => CancelOrderBottomSheet(
-                    orderCreatedAt: widget.order.createdAt!,
-                    total: widget.order.total!.toInt(),
-                    callback: (p0) {
-                      
-                    },
-                    orderId: widget.order.id!,),);
-              }
-            },
-          ),
+                  );
+                }
+              },
+            ),
           SizedBox(
             width: 2.w,
           )
@@ -454,7 +460,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             Column(
                               children: [
                                 Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
                                   child: Row(
                                     children: [
                                       Text(
@@ -561,23 +568,24 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
                   Navigator.of(context).push(MaterialPageRoute(
                       builder: (ctx) => ServiceMenuScreen(
-                          availableGcoinAmount: widget.availableGcoinAmount,
-                          initCart: cart,
-                          session: session,
-                          orderGuid: widget.order.guid,
-                          isFromTempOrder: widget.isFromTempOrder,
-                          currentCart: cart,
-                          supplier: widget.order.supplier!,
-                          serviceType: services.firstWhere(
-                              (element) => element.name == widget.order.type),
-                          numberOfMember: widget.memberLimit!,
-                          endDate: widget.endDate!,
-                          period: widget.order.period,
-                          startDate: widget.startDate,
-                          isOrder: true,
-                          callbackFunction: (tempOrder) {
-                            
-                          },)));
+                            availableGcoinAmount: widget.availableGcoinAmount,
+                            initCart: cart,
+                            session: session,
+                            orderGuid: widget.order.guid,
+                            isFromTempOrder: widget.isFromTempOrder,
+                            currentCart: cart,
+                            supplier: widget.order.supplier!,
+                            serviceType: services.firstWhere(
+                                (element) => element.name == widget.order.type),
+                            numberOfMember: widget.memberLimit!,
+                            endDate: widget.endDate!,
+                            period: widget.order.period,
+                            startDate: widget.startDate,
+                            isOrder: true,
+                            callbackFunction: (tempOrder) {
+                              widget.callback();
+                            },
+                          )));
                 },
                 child: const Text('Xác nhận đơn hàng mẫu')),
           if (widget.isTempOrder)

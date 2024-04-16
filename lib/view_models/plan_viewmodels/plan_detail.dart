@@ -111,8 +111,8 @@ class PlanDetail {
                 json['members'].map((e) => PlanMemberViewModel.fromJson(e)))
             .toList(),
         savedContacts: List<EmergencyContactViewModel>.from(
-                json['savedContacts'].map(
-                    (e) => EmergencyContactViewModel.fromJsonByLocation(e)))
+                json['savedProviders'].map(
+                    (e) => EmergencyContactViewModel.fromJsonByPlan(e)))
             .toList(),
       );
 }
