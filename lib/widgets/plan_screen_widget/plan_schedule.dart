@@ -16,6 +16,7 @@ class PLanScheduleWidget extends StatefulWidget {
       required this.endDate,
       required this.planType,
       required this.isLeader,
+      required this.orders,
       required this.startDate});
   final int planId;
   final List<dynamic> schedule;
@@ -23,6 +24,7 @@ class PLanScheduleWidget extends StatefulWidget {
   final DateTime endDate;
   final String planType;
   final bool isLeader;
+  final List? orders;
 
   @override
   State<PLanScheduleWidget> createState() => _PLanScheduleWidgetState();
@@ -52,7 +54,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
         _scheduleList = _planService.GetPlanScheduleFromJsonNew(
             widget.schedule,
             widget.startDate,
-            widget.endDate.difference(widget.startDate).inDays + 1);
+            widget.endDate.difference(widget.startDate).inDays + 1, false);
       });
 
     PlanSchedule? todaySchedule = _scheduleList.firstWhereOrNull((element) =>
@@ -99,6 +101,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
               shrinkWrap: true,
               itemCount: _scheduleList[_index].items.length,
               itemBuilder: (context, index) => PlanScheduleActivityView(
+                order: widget.orders!.firstWhereOrNull((e) => e.uuid == _scheduleList[_index].items[index].orderUUID),
                 item: _scheduleList[_index].items[index],
                 isLeader: widget.isLeader,
               ),

@@ -15,11 +15,13 @@ class PlanScheduleActivity extends StatefulWidget {
       required this.item,
       required this.showBottomSheet,
       required this.isCreate,
+      required this.orderList,
       required this.isSelected});
   final PlanScheduleItem item;
   final void Function(PlanScheduleItem item) showBottomSheet;
   final bool isSelected;
   final bool isCreate;
+  final dynamic orderList;
 
   @override
   State<PlanScheduleActivity> createState() => _PlanScheduleActivityState();
@@ -29,6 +31,8 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
   List<ProductViewModel>? products = [];
   ProductService _productService = ProductService();
   bool isLoading = true;
+  dynamic order;
+
   @override
   void initState() {
     // TODO: implement initState
@@ -38,46 +42,47 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
 
   setUpData() async {
     List<int> ids = [];
-    if (widget.item.tempOrder == null) {
+    if (widget.item.orderUUID == null) {
       setState(() {
         isLoading = false;
       });
-    } else if (widget.item.tempOrder['cart'] != null) {
-      // List<dynamic> cart = widget.item.tempOrder['cart'];
-      // for (final proId in cart) {
-      //   if (!ids.contains(proId['key'])) {
-      //     ids.add(proId['key']);
-      //   }
-      // }
-      dynamic cart = widget.item.tempOrder['cart'];
-      // for (final proId in cart.entries) {
-      //   if (!ids.contains(int.parse(proId.key))) {
-      //     ids.add(int.parse(proId.key));
-      //   }
-      // }
-      if(cart.runtimeType == List<dynamic> ){
-        for (final proId in cart) {
-        if (!ids.contains(int.parse(proId['key'].toString()))) {
-          ids.add(int.parse(proId['key'].toString()));
-        }
-      }
-      }else{
-        for (final proId in cart.entries) {
-        if (!ids.contains(int.parse(proId.key))) {
-          ids.add(int.parse(proId.key));
-        }
-      }
-      }
-      products = await _productService.getListProduct(ids);
-      if (products != null) {
-        setState(() {
+    } else {
+      if (widget.orderList.isNotEmpty) {
+        order = widget.orderList
+            .firstWhere((e) => e['orderUUID'] == widget.item.orderUUID);
+        if (order != null) {
+          if (order['cart'] != null) {
+            dynamic cart = order['cart'];
+            if (cart.runtimeType == List<dynamic>) {
+              for (final proId in cart) {
+                if (!ids.contains(int.parse(proId['key'].toString()))) {
+                  ids.add(int.parse(proId['key'].toString()));
+                }
+              }
+            } else {
+              for (final proId in cart.entries) {
+                if (!ids.contains(int.parse(proId.key))) {
+                  ids.add(int.parse(proId.key));
+                }
+              }
+            }
+            products = await _productService.getListProduct(ids);
+            if (products != null) {
+              setState(() {
+                isLoading = false;
+              });
+            }
+          } else if (order['details'] != null) {
+            setState(() {
+              isLoading = false;
+            });
+          }
+        } else {
           isLoading = false;
-        });
-      }
-    } else if (widget.item.tempOrder['details'] != null) {
-      setState(() {
+        }
+      } else {
         isLoading = false;
-      });
+      }
     }
   }
 
@@ -133,7 +138,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                 SizedBox(
                                   height: 1.h,
                                 ),
-                                if (widget.item.tempOrder != null)
+                                if (order != null)
                                   Container(
                                     width: 100.w,
                                     padding: const EdgeInsets.symmetric(
@@ -159,10 +164,8 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                               fontSize: 16,
                                               fontFamily: 'NotoSans'),
                                         ),
-                                        if (widget.item.tempOrder['details'] !=
-                                            null)
-                                          for (final detail in widget
-                                              .item.tempOrder['details'])
+                                        if (order['details'] != null)
+                                          for (final detail in order['details'])
                                             Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment
@@ -197,10 +200,9 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                 )
                                               ],
                                             ),
-                                        if (widget.item.tempOrder['cart'] !=
-                                            null)
+                                        if (order['cart'] != null)
                                           for (final detail
-                                              in widget.item.tempOrder['cart'].entries)
+                                              in order['cart'].entries)
                                             Row(
                                               mainAxisAlignment:
                                                   MainAxisAlignment
@@ -214,7 +216,8 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                     products!
                                                         .firstWhere((element) =>
                                                             element.id ==
-                                                            int.parse(detail.key))
+                                                            int.parse(
+                                                                detail.key))
                                                         .name,
                                                     style: const TextStyle(
                                                         fontSize: 18,
@@ -269,8 +272,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                         locale: 'vi_VN',
                                                         decimalDigits: 0,
                                                         name: 'Đ')
-                                                    .format(widget.item
-                                                        .tempOrder['total']),
+                                                    .format(order['total']),
                                                 style: const TextStyle(
                                                     fontSize: 18,
                                                     fontFamily: 'NotoSans',

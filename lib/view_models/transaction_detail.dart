@@ -22,8 +22,6 @@ class TransactionDetailViewModel {
                       ['name'],
                   utcDepartAt:
                       DateTime.parse(json['planMember']['plan']['utcDepartAt']),
-                  endDate:
-                      DateTime.parse(json['planMember']['plan']['endDate']),
                   maxMemberCount: json['planMember']['plan']['maxMemberCount'],
                   memberCount: json['planMember']['plan']['memberCount'],
                   maxMemberWeight: json['planMember']['plan']

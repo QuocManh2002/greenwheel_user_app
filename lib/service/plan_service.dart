@@ -10,6 +10,7 @@ import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
@@ -29,6 +30,7 @@ class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
   final Location _locationController = Location();
+  final OrderService _orderService = OrderService();
 
   Future<int> createNewPlan(
       PlanCreate model, BuildContext context, String surcharges) async {
@@ -51,6 +53,7 @@ class PlanService {
     schedule:$schedule
     surcharges:${surcharges}
     travelDuration:"${model.travelDuration}"
+    tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
   }){
     id
   }
@@ -75,6 +78,7 @@ class PlanService {
     schedule:$schedule
     surcharges:${surcharges}
     travelDuration:"${model.travelDuration}"
+    tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
   }){
     id
   }
@@ -161,9 +165,33 @@ mutation{
   Future<int> clonePlan(
       PlanCreate model, BuildContext context, String surcharges) async {
     try {
-      var schedule = json.decode(model.schedule!);
+       var schedule = json.decode(model.schedule!);
       final emerIds =
           json.decode(model.savedContacts!).map((e) => e['id']).toList();
+      log("""
+  mutation{
+  createPlan(dto: {
+    departureAddress:"${model.departAddress}"
+    departAt:"${model.departAt!.year}-${model.departAt!.month}-${model.departAt!.day} ${model.departAt!.hour}:${model.departAt!.minute}:00.000+07:00"
+    departure:[${model.departCoordinate!.longitude},${model.departCoordinate!.latitude}]
+    destinationId:${model.locationId}
+    maxMemberCount:${model.maxMemberCount}
+    maxMemberWeight:${model.maxMemberWeight!}
+    name:"${model.name}"
+    note: "${model.note}"
+    periodCount:${model.numOfExpPeriod}
+    savedProviderIds:$emerIds
+    schedule:$schedule
+    surcharges:$surcharges
+    travelDuration:"${model.travelDuration}"
+    sourceId:${sharedPreferences.getInt('planId')}
+    tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
+  }){
+    id
+  }
+}
+""");
+     
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
@@ -180,9 +208,10 @@ mutation{
     periodCount:${model.numOfExpPeriod}
     savedProviderIds:$emerIds
     schedule:$schedule
-    surcharges:${surcharges}
+    surcharges:$surcharges
     travelDuration:"${model.travelDuration}"
     sourceId:${sharedPreferences.getInt('planId')}
+    tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
   }){
     id
   }
@@ -316,8 +345,6 @@ mutation{
     nodes {
       name
       id
-      startDate
-      endDate
       departureAddress
       accountId
       account {
@@ -334,6 +361,7 @@ mutation{
       maxMemberWeight
       savedProviders {
         id
+        providerId
         provider{
           name
           phone
@@ -366,8 +394,7 @@ mutation{
         id
       }
       surcharges {
-        amount
-        alreadyDivided
+        gcoinAmount
         id
         imagePath
         note
@@ -377,6 +404,16 @@ mutation{
       utcStartAt
       utcEndAt
       schedule
+      tempOrders{
+        cart
+        uuid
+        type
+        providerId
+        serveDateIndexes
+        period
+        note
+        totalGcoin
+      }
     }
   }
 }
@@ -414,9 +451,9 @@ mutation{
     nodes{
       id
       name
-      startDate
-      endDate
       status
+      utcStartAt
+      utcEndAt
       destination{
         id
           description
@@ -489,7 +526,7 @@ mutation{
       List<PlanScheduleItem> eventList = [];
       for (final event in sche) {
         eventList.add(PlanScheduleItem(
-            tempOrder: event['tempOrder'],
+            orderUUID: event['orderUUID'],
             isStarred: event['isStarred'],
             activityTime: int.parse(
                 json.decode(event['duration']).toString().split(':')[0]),
@@ -513,7 +550,7 @@ mutation{
   }
 
   List<PlanSchedule> GetPlanScheduleFromJsonNew(
-      List<dynamic> schedules, DateTime startDate, int duration) {
+      List<dynamic> schedules, DateTime startDate, int duration, bool isClone) {
     List<PlanSchedule> schedule = [];
     for (int i = 0; i < duration; i++) {
       List<PlanScheduleItem> item = [];
@@ -521,7 +558,7 @@ mutation{
       if (i < schedules.length) {
         for (final planItem in schedules[i]) {
           item.add(PlanScheduleItem(
-              tempOrder: planItem['tempOrder'],
+              orderUUID: isClone ? null : planItem['orderUUID'],
               isStarred: planItem['isStarred'],
               activityTime: DateFormat.Hms()
                   .parse(planItem['duration'].toString().substring(0, 1) == '\"'
@@ -554,39 +591,40 @@ mutation{
       for (final item in schedule.items) {
         final type = schedule_item_types_vn
             .firstWhere((element) => element == item.type);
-        dynamic details;
-        if (item.tempOrder != null) {
-          if (item.tempOrder['details'] != null) {
-            details = item.tempOrder['details'].map((detail) {
-              return {
-                'key': detail['productId'],
-                'value': detail['quantity'],
-              };
-            }).toList();
-          } else {
-            if (item.tempOrder['cart'].runtimeType == List) {
-              details = item.tempOrder['cart']
-                  .map((e) => {'key': e['key'], 'value': e['value']})
-                  .toList();
-            } else {
-              details = item.tempOrder['cart'].entries
-                  .map((e) => {'key': e.key, 'value': e.value})
-                  .toList();
-            }
-          }
-        }
+        // dynamic details;
+        // if (item.tempOrder != null) {
+        //   if (item.tempOrder['details'] != null) {
+        //     details = item.tempOrder['details'].map((detail) {
+        //       return {
+        //         'key': detail['productId'],
+        //         'value': detail['quantity'],
+        //       };
+        //     }).toList();
+        //   } else {
+        //     if (item.tempOrder['cart'].runtimeType == List) {
+        //       details = item.tempOrder['cart']
+        //           .map((e) => {'key': e['key'], 'value': e['value']})
+        //           .toList();
+        //     } else {
+        //       details = item.tempOrder['cart'].entries
+        //           .map((e) => {'key': e.key, 'value': e.value})
+        //           .toList();
+        //     }
+        //   }
+        // }
         items.add({
-          'tempOrder': item.tempOrder != null
-              ? {
-                  'cart': details,
-                  'note': item.tempOrder['note'] != null
-                      ? json.encode(item.tempOrder['note'])
-                      : null,
-                  'period': item.tempOrder['period'],
-                  'providerId': item.tempOrder['providerId'],
-                  'total': item.tempOrder['total']
-                }
-              : null,
+          // 'tempOrder': item.tempOrder != null
+          //     ? {
+          //         'cart': details,
+          //         'note': item.tempOrder['note'] != null
+          //             ? json.encode(item.tempOrder['note'])
+          //             : null,
+          //         'period': item.tempOrder['period'],
+          //         'providerId': item.tempOrder['providerId'],
+          //         'total': item.tempOrder['total']
+          //       }
+          //     : null,
+          'orderUUID': json.encode(item.orderUUID),
           'isStarred': item.isStarred,
           'duration': json.encode("${item.activityTime}:00:00"),
           'description': json.encode(item.description),
@@ -788,12 +826,12 @@ mutation{
       node {
         id
         name
-        startDate
-        endDate
+        utcStartAt
+        utcEndAt
+        utcDepartAt
         account {
           name
         }
-        utcDepartAt
       }
     }
   }

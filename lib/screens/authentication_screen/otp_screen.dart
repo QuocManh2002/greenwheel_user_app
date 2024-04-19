@@ -1,6 +1,5 @@
 import 'dart:developer';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -117,34 +116,6 @@ class _OTPScreenState extends State<OTPScreen> {
                     const SizedBox(
                       height: 25,
                     ),
-                    // Container(
-                    //   child: TextFormField(
-                    //     controller: tokenController,
-                    //     decoration: const InputDecoration(
-                    //       border: OutlineInputBorder(
-                    //         borderRadius: BorderRadius.all(
-                    //           Radius.circular(5.0),
-                    //         ),
-                    //       ),
-                    //       contentPadding:
-                    //           EdgeInsets.symmetric(horizontal: 20.0),
-                    //       hintStyle: TextStyle(
-                    //         color: Colors.grey,
-                    //       ),
-                    //       hintText: 'Type...',
-                    //     ),
-                    //   ),
-                    // ),
-                    // TextButton(
-                    //   onPressed: () async {
-                    //     if (tokenController.text.isNotEmpty) {
-                    //       // Example to copy data to Clipboard
-                    //       await Clipboard.setData(
-                    //           ClipboardData(text: tokenController.text));
-                    //     }
-                    //   },
-                    //   child: const Text('Click to Copy'),
-                    // ),
                     const Spacer(),
                     SizedBox(
                       height: 7.h,
@@ -178,61 +149,10 @@ class _OTPScreenState extends State<OTPScreen> {
 
   void verifyCode() async {
     try {
-      // String token = "";
-      // String verificationIDReceived =
-      //     sharedPreferences.getString('verificationID') ?? "";
-
-      // PhoneAuthCredential credential = PhoneAuthProvider.credential(
-      //     verificationId: verificationIDReceived, smsCode: otpController.text);
-      // await auth.signInWithCredential(credential).then(
-      //       (value) => {print(value)},
-      //     );
-
-      // await auth.currentUser!.getIdTokenResult().then(
-      //       (value) => {
-      //         // tokenController.text = value.token ?? "";
-      //         token = value.token!,
-      //         sharedPreferences.setString('userToken', token),
-      //       },
-      //     );
-      // print(sharedPreferences.getString("userToken"));
-      // Map<String, dynamic> payload = Jwt.parseJwt(token);
-
-      // if (payload['id'] != null) {
-      //   sharedPreferences.setString('userId', payload['id'].toString());
-      //   print("NEW PAYLOAD: $payload");
-
-      //   List<CustomerViewModel>? customer =
-      //       await customerService.GetCustomerByPhone(payload['phone_number']);
-      //   if (customer.isNotEmpty) {
-      //     sharedPreferences.setString('userName', customer[0].name);
-      //     sharedPreferences.setDouble('userBalance', customer[0].balance);
       String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
       if (deviceToken != '') {
         sharedPreferences.setString('deviceToken', deviceToken);
-        // customerService.travelerSignIn(deviceToken);
       }
-      //     // Utils().SaveDefaultAddressToSharedPref(customer[0].defaultAddress!, customer[0].defaultCoordinate!);
-      //     sharedPreferences.setString("userPhone", payload['phone_number']);
-      //     // ignore: use_build_context_synchronously
-      //     Navigator.pushAndRemoveUntil(context,
-      //         MaterialPageRoute( builder: (_) => const TabScreen(pageIndex: 0)), (route) => false,);
-      //   }
-      // }else{
-      //     String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
-      //   if(deviceToken != ''){
-      //       sharedPreferences.setString('deviceToken', deviceToken);
-      //     }
-      //   sharedPreferences.setString("userPhone", payload['phone_number']);
-      //   // ignore: use_build_context_synchronously
-      //   Navigator.of(context).pop();
-      //   // ignore: use_build_context_synchronously
-      //   Navigator.push(context,
-      //         MaterialPageRoute(builder: (_) => const RegisterScreen()));
-      // }
-      print(widget.phoneNumber);
-      print(otpController.text);
-      print(deviceToken);
       LoginModel? model = await customerService.travelerRequestAuthorize(
           widget.phoneNumber, otpController.text, deviceToken);
       if (model != null) {
@@ -273,8 +193,6 @@ class _OTPScreenState extends State<OTPScreen> {
       }
     } on PlatformException catch (e) {
       print(e.message);
-    } on FirebaseAuthException {
-      print("ERROR_INVALID_VERIFICATION_CODE");
     }
   }
 }

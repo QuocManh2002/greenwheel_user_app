@@ -1,7 +1,11 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
@@ -17,6 +21,7 @@ import 'package:greenwheel_user_app/widgets/order_screen_widget/cancel_order_bot
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen(
@@ -49,7 +54,7 @@ class OrderDetailScreen extends StatefulWidget {
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   TextEditingController noteController = TextEditingController();
   bool isExpanded = false;
-  List<DateTime> _servingDates = [];
+  List<dynamic> _servingDates = [];
   String _servingTime = '';
   List<OrderDetailViewModel> details = [];
 
@@ -64,8 +69,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     } else {
       noteController.text = widget.order.note!;
     }
-    _servingDates =
-        widget.order.serveDates!.map((e) => DateTime.parse(e)).toList();
+    _servingDates = widget.order.serveDates ?? [];
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
         .range;
@@ -83,7 +87,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       appBar: AppBar(
         title: const Text('Chi tiết đơn hàng'),
         actions: [
-          if (widget.planStatus == plan_statuses[2].name)
+          if (widget.planStatus == plan_statuses[2].engName)
             PopupMenuButton(
               itemBuilder: (context) => [
                 const PopupMenuItem(
@@ -139,15 +143,17 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   Stack(
                     alignment: Alignment.topCenter,
                     children: [
-                      SizedBox(
-                        height: 30.h,
-                        width: double.infinity,
-                        child: Image.network(
-                          '$baseBucketImage${widget.order.supplier!.thumbnailUrl!}',
-                          fit: BoxFit.fitWidth,
+                      CachedNetworkImage(
+                          key: UniqueKey(),
                           height: 30.h,
-                        ),
-                      ),
+                          width: 100.w,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Image.memory(kTransparentImage),
+                          errorWidget: (context, url, error) =>
+                              Image.asset(empty_plan),
+                          imageUrl:
+                              '$baseBucketImage${widget.order.supplier!.thumbnailUrl!}'),
                       Container(
                           margin: EdgeInsets.only(top: 20.h),
                           width: 90.w,
@@ -272,7 +278,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     fontSize: 18, fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                '${widget.order.createdAt!.day}/${widget.order.createdAt!.month}/${widget.order.createdAt!.year}',
+                                DateFormat('dd/MM/yyyy')
+                                    .format(widget.order.createdAt!),
                                 style: const TextStyle(
                                   fontSize: 18,
                                 ),
@@ -283,6 +290,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             height: 12,
                           ),
                           Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               const Icon(
                                 Icons.calendar_month,
@@ -296,71 +304,28 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 style: TextStyle(
                                     fontSize: 18, fontWeight: FontWeight.bold),
                               ),
-                              if (!isExpanded)
-                                Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    Text(
-                                      '${_servingDates[0].day}/${_servingDates[0].month}/${_servingDates[0].year}',
-                                      style: const TextStyle(fontSize: 18),
-                                    ),
-                                    const SizedBox(
-                                      width: 8,
-                                    ),
-                                    if (_servingDates.length > 1)
-                                      Text(
-                                        '+${_servingDates.length - 1} ngày',
-                                        style: const TextStyle(fontSize: 18),
-                                      ),
-                                    if (widget.order.serveDates!.length > 1)
-                                      IconButton(
-                                          onPressed: () {
-                                            setState(() {
-                                              isExpanded = !isExpanded;
-                                            });
-                                          },
-                                          icon: const Icon(
-                                            Icons.arrow_drop_down,
-                                            size: 36,
-                                          ))
-                                  ],
-                                ),
-                              if (isExpanded)
-                                Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        for (final date in _servingDates)
-                                          Text(
-                                            '${date.day}/${date.month}/${date.year}',
-                                            style:
-                                                const TextStyle(fontSize: 18),
-                                          ),
-                                      ],
-                                    ),
-                                    IconButton(
-                                        onPressed: () {
-                                          setState(() {
-                                            isExpanded = !isExpanded;
-                                          });
-                                        },
-                                        icon: const Icon(
-                                          Icons.arrow_drop_up,
-                                          size: 36,
-                                        ))
-                                  ],
-                                )
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    mainAxisAlignment: MainAxisAlignment.start,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      for (final date in _servingDates)
+                                        Text(
+                                          DateFormat('dd/MM/yyyy').format(
+                                              date.runtimeType == String
+                                                  ? DateTime.parse(date)
+                                                  : date),
+                                          style: const TextStyle(fontSize: 18),
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              )
                             ],
-                          ),
-                          const SizedBox(
-                            height: 12,
                           ),
                           Row(
                             children: [
@@ -482,7 +447,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                         NumberFormat.simpleCurrency(
                                                 locale: 'vi_VN',
                                                 decimalDigits: 0,
-                                                name: "")
+                                                name: "đ")
                                             .format(detail.unitPrice),
                                         style: const TextStyle(fontSize: 14),
                                       )
@@ -510,9 +475,45 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ),
                               const Spacer(),
                               Text(
-                                '${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.order.total)}VND',
+                                NumberFormat.simpleCurrency(
+                                        locale: 'vi-VN',
+                                        decimalDigits: 0,
+                                        name: "đ")
+                                    .format(widget.order.id == null
+                                        ? (widget.order.total ?? 0) *
+                                            GlobalConstant().VND_CONVERT_RATE
+                                        : widget.order.total ?? 0),
                                 style: const TextStyle(
                                     fontSize: 15, fontWeight: FontWeight.bold),
+                              )
+                            ],
+                          ),
+                          const SizedBox(
+                            height: 12,
+                          ),
+                          Row(
+                            children: [
+                              const Text(
+                                'Giá trị quy đổi',
+                                style: TextStyle(
+                                    fontSize: 18, fontWeight: FontWeight.bold),
+                              ),
+                              const Spacer(),
+                              Text(
+                                NumberFormat.simpleCurrency(
+                                        locale: 'vi-VN',
+                                        decimalDigits: 0,
+                                        name: "")
+                                    .format(widget.order.id == null
+                                        ? (widget.order.total ?? 0)
+                                        : (widget.order.total ?? 0) /
+                                            GlobalConstant().VND_CONVERT_RATE),
+                                style: const TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.bold),
+                              ),
+                              SvgPicture.asset(
+                                gcoin_logo,
+                                height: 18,
                               )
                             ],
                           ),
@@ -571,7 +572,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                             availableGcoinAmount: widget.availableGcoinAmount,
                             initCart: cart,
                             session: session,
-                            orderGuid: widget.order.guid,
+                            orderGuid: widget.order.uuid,
                             isFromTempOrder: widget.isFromTempOrder,
                             currentCart: cart,
                             supplier: widget.order.supplier!,

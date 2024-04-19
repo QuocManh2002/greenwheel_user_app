@@ -2,9 +2,12 @@ import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
+import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/list_order_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -107,11 +110,11 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                                         widget.plan.actualGcoinBudget,
                                     planId: widget.plan.id!,
                                     orders: widget.tempOrders,
-                                    startDate: widget.plan.startDate!,
+                                    startDate: widget.plan.utcStartAt!.toLocal(),
                                     callback: (p) {
                                       refreshData();
                                     },
-                                    endDate: widget.plan.endDate!,
+                                    endDate: widget.plan.utcEndAt!.toLocal(),
                                     memberLimit: widget.plan.memberCount!,
                                     location: rs,
                                   )));
@@ -179,6 +182,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                   return PlanOrderCard(
                       callback: widget.onGetOrderList,
                       isShowQuantity: true,
+                      planStatus: widget.plan.status,
                       order: foodOrderList[index],
                       isLeader: widget.isLeader);
                 },
@@ -191,6 +195,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                   return PlanOrderCard(
                       callback: widget.onGetOrderList,
                       isShowQuantity: true,
+                      planStatus: widget.plan.status,
                       order: movingOrderList[index],
                       isLeader: widget.isLeader);
                 },
@@ -211,35 +216,31 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 child: Column(
                   children: [
                     buildAmountInfo(
-                        'Dự tính (Đ):',
+                        'Dự tính:',
                         widget.plan.gcoinBudgetPerCapita! *
                             widget.plan.maxMemberCount! ),
                     buildAmountInfo(
-                        'Đã thu (Đ):',
+                        'Đã thu:',
                         widget.plan.gcoinBudgetPerCapita! *
                             widget.plan.memberCount! ),
                     if (isShowTotal)
                       buildAmountInfo(
-                          'Hiện tại (Đ):',
+                          'Hiện tại:',
                           widget.plan.actualGcoinBudget! ),
                     if (isShowTotal)
                       buildAmountInfo(
-                          'Đã chi (Đ):',
-                          widget.plan.status == 'PENDING' ||
-                                  widget.plan.status == 'REGISTERING'
+                          'Đã chi:',
+                          widget.plan.status == plan_statuses[0].engName ||
+                                  widget.plan.status == plan_statuses[1].engName
                               ? 0
                               : widget.total/GlobalConstant().VND_CONVERT_RATE),
                     if (isShowTotal)
                       buildAmountInfo(
-                          'Số tiền đã bù (Đ):',
+                          'Số tiền đã bù:',
                           widget.plan.maxMemberCount! *
                                   widget.plan.gcoinBudgetPerCapita!  -
                               widget.plan.memberCount! *
                                   widget.plan.gcoinBudgetPerCapita! ),
-
-                    // buildAmountInfo('Số tiền hoàn lại:', widget.plan.displayGcoinBudget! / widget.plan.memberCount! *
-                    // + widget.plan.actualGcoinBudget! - widget.plan.displayGcoinBudget!
-                    // )
                   ],
                 ),
               ),
@@ -263,12 +264,17 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
               width: 30.w,
               child: Text(
                 NumberFormat.simpleCurrency(
-                        locale: 'vi-VN', decimalDigits: 0, name: "K")
+                        locale: 'vi-VN', decimalDigits: 0, name: "")
                     .format(amount),
                 textAlign: TextAlign.end,
-                style: const TextStyle(fontSize: 18),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
+            Padding(
+              padding: const EdgeInsets.only(top: 3),
+              child: SvgPicture.asset(gcoin_logo, height: 18,),
+            ),
+            SizedBox(width: 5.w,)
           ],
         ),
       );

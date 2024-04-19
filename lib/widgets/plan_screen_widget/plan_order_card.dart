@@ -2,8 +2,9 @@ import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
@@ -128,9 +129,9 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                     children: [
                       for (final day in widget.order.serveDates!)
                         SizedBox(
-                          width: 45.w,
+                          width: 40.w,
                           child: Text(
-                            '${widget.order.type != 'RIDING' ? '${Utils().getPeriodString(widget.order.period!)['text']} ' : ''}${DateFormat('dd/MM').format(DateTime.parse(day))}',
+                            '${widget.order.type != 'RIDING' ? '${Utils().getPeriodString(widget.order.period!)['text']} ' : ''}${DateFormat('dd/MM').format(day.runtimeType == String ? DateTime.parse(day) : day)}',
                             style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
@@ -145,8 +146,8 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                     width: 30.w,
                     child: Text(
                       NumberFormat.simpleCurrency(
-                              locale: 'vi_VN', decimalDigits: 0, name: 'Đ')
-                          .format(widget.order.total!),
+                              locale: 'vi_VN', decimalDigits: 0, name: '')
+                          .format(widget.order.id == null ? widget.order.total! : widget.order.total!/GlobalConstant().VND_CONVERT_RATE),
                       overflow: TextOverflow.clip,
                       textAlign: TextAlign.end,
                       style: const TextStyle(
@@ -154,6 +155,10 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                           fontWeight: FontWeight.bold,
                           fontFamily: 'NotoSans'),
                     ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: SvgPicture.asset(gcoin_logo, height: 20,),
                   )
                 ],
               ),

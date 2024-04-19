@@ -83,7 +83,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             ? ((widget.plan!.numOfExpPeriod! + 1) / 2).ceil()
             : (widget.plan!.numOfExpPeriod! / 2).ceil();
     var list = _planService.GetPlanScheduleFromJsonNew(
-        json.decode(widget.plan!.schedule!), widget.plan!.startDate!, duration);
+        json.decode(widget.plan!.schedule!), widget.plan!.startDate!, duration, false);
     scheduleList = list;
 
     var finalList = _planService.convertPlanScheduleToJson(scheduleList);
@@ -113,7 +113,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
       }
     } else {
       var list = _planService.GetPlanScheduleFromJsonNew(
-          json.decode(_scheduleText!), _startDate, duration);
+          json.decode(_scheduleText ?? '[]'), _startDate, duration, true);
       scheduleList = _planService.GetPlanScheduleClone(list);
       var finalList = _planService.convertPlanScheduleToJson(scheduleList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
@@ -266,6 +266,9 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                 children: List.generate(
                   scheduleList[_index].items.length,
                   (index) => PlanScheduleActivity(
+                      orderList: json.decode(
+                          sharedPreferences.getString('plan_temp_order') ??
+                              '[]'),
                       isCreate: widget.isCreate,
                       key: UniqueKey(),
                       item: scheduleList[_index].items[index],
@@ -725,7 +728,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
     for (final detail in _schedule[index]) {
       if (detail != _schedule[index].last) {
         rsText +=
-            '${detail['shortDescription'].toString().substring(0, 1) == '\"' ? json.decode(detail['shortDescription']) : detail['shortDescription'] ?? 'Không có mô tả'}, ';
+            '${detail['shortDescription'].toString().substring(0, 1) == '\"' ? json.decode(detail['shortDescription']) : detail['shortDescription'] ?? 'Không có mô tả'} ▷ ';
       } else {
         rsText +=
             '${detail['shortDescription'].toString().substring(0, 1) == '\"' ? json.decode(detail['shortDescription']) : detail['shortDescription'] ?? 'Không có mô tả'}';

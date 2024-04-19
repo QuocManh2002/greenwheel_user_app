@@ -69,8 +69,8 @@ class GlobalConstant {
 
   final int VND_CONVERT_RATE = 1000;
   final double BUDGET_ASSURANCE_RATE = 1.1;
-  final int SURCHARGE_MIN_AMOUNT = 10000;
-  final int SURCHARGE_MAX_AMOUNT = 10000000;
+  final int SURCHARGE_MIN_AMOUNT = 10;
+  final int SURCHARGE_MAX_AMOUNT = 10000;
   final int SURCHARGE_MIN_NOTE_LENGTH = 2;
   final int SURCHARGE_MAX_NOTE_LENGTH = 40;
   final int ACTIVITY_SHORT_DESCRIPTION_MIN_LENGTH = 2;

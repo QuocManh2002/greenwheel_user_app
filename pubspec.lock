@@ -377,6 +377,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.4.1"
+  draggable_fab:
+    dependency: "direct main"
+    description:
+      name: draggable_fab
+      sha256: "5c4cc16fb61e44308c9f92a68bd12c127f1898b40a7baf31d75d27d019a591cc"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.4"
   ed25519_edwards:
     dependency: transitive
     description:
@@ -465,30 +473,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.9.3+1"
-  firebase_auth:
-    dependency: "direct main"
-    description:
-      name: firebase_auth
-      sha256: "279b2773ff61afd9763202cb5582e2b995ee57419d826b9af6517302a59b672f"
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.16.0"
-  firebase_auth_platform_interface:
-    dependency: transitive
-    description:
-      name: firebase_auth_platform_interface
-      sha256: "3c9cfaccb7549492edf5b0c67c6dd1c6727c7830891aa6727f2fb225f0226626"
-      url: "https://pub.dev"
-    source: hosted
-    version: "7.0.9"
-  firebase_auth_web:
-    dependency: transitive
-    description:
-      name: firebase_auth_web
-      sha256: c7b1379ccef7abf4b6816eede67a868c44142198e42350f51c01d8fc03f95a7d
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.8.13"
   firebase_core:
     dependency: "direct main"
     description:
@@ -582,14 +566,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.3.1"
-  flutter_config:
-    dependency: "direct main"
-    description:
-      name: flutter_config
-      sha256: a07e6156bb6e776e29c6357be433155acda87d1dab1a3f787a72091a1b71ffbf
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.2"
   flutter_dotenv:
     dependency: "direct main"
     description:
@@ -2259,7 +2235,7 @@ packages:
     source: hosted
     version: "2.4.4"
   webview_flutter:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: webview_flutter
       sha256: "25e1b6e839e8cbfbd708abc6f85ed09d1727e24e08e08c6b8590d7c65c9a8932"

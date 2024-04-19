@@ -2,7 +2,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/main.dart';
 
 class GraphQlConfig {
-  String oldServer = 'https://btssapp.azurewebsites.net/graphql';
   String newServer =
       'https://api-btss.southeastasia.cloudapp.azure.com/graphql';
 

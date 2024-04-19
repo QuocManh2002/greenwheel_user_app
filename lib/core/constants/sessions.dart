@@ -3,6 +3,7 @@ import 'package:greenwheel_user_app/models/session.dart';
 
 const List<Session> sessions = [
   Session(
+      index: 0,
       name: "Buổi sáng",
       range: "06:00 SA - 10:00 SA",
       image: morning,
@@ -10,6 +11,7 @@ const List<Session> sessions = [
       to: 10,
       enumName: "MORNING"),
   Session(
+      index: 1,
       name: "Buổi trưa",
       range: "10:00 SA - 14:00 CH",
       image: noon,
@@ -17,6 +19,7 @@ const List<Session> sessions = [
       to: 14,
       enumName: "NOON"),
   Session(
+      index: 2,
       name: "Buổi chiều",
       range: "14:00 CH - 18:00 CH",
       image: afternoon,
@@ -24,6 +27,7 @@ const List<Session> sessions = [
       to: 18,
       enumName: "AFTERNOON"),
   Session(
+      index: 3,
       name: "Buổi tối",
       range: "18:00 CH - 22:00 CH",
       image: evening,

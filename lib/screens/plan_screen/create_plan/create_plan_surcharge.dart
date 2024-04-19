@@ -36,7 +36,7 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
       String? surchargeText = sharedPreferences.getString('plan_surcharge');
       SurchargeViewModel sur = SurchargeViewModel(
           alreadyDivided: alreadyDivided,
-          amount: amount,
+          gcoinAmount: amount,
           note: _noteController.text);
       final surchargeObject = sur.toJson();
       if (surchargeText == null) {
@@ -57,13 +57,12 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
     if (_formKey.currentState!.validate()) {
       String? surchargeText = sharedPreferences.getString('plan_surcharge');
       var list = json.decode(surchargeText!);
-      log('1  $surchargeText');
       var initSurcharge =
           list.firstWhere((e) => e['id'] == widget.surcharge!.id);
       var initIndex = list.indexOf(initSurcharge);
 
       list[initIndex]['note'] = json.encode(_noteController.text);
-      list[initIndex]['amount'] = amount;
+      list[initIndex]['gcoinAmount'] = amount;
       list[initIndex]['alreadyDivided'] = alreadyDivided;
 
       sharedPreferences.setString('plan_surcharge', json.encode(list));
@@ -94,8 +93,8 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
   setUpData() {
     if (!widget.isCreate) {
       _noteController.text = json.decode(widget.surcharge!.note);
-      amount = widget.surcharge!.amount;
-      alreadyDivided = widget.surcharge!.alreadyDivided;
+      amount = widget.surcharge!.gcoinAmount;
+      alreadyDivided = widget.surcharge!.alreadyDivided ?? true;
       _amountController.text =
           NumberFormat('###,###,##0', 'vi_VN').format(amount);
     }
@@ -118,8 +117,8 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
               height: 32,
             ),
             defaultTextFormField(
-                text: 'Khoản phụ thu (VND)',
-                hinttext: '10.000, 100.000,...',
+                text: 'Khoản phụ thu (GCOIN)',
+                hinttext: '10, 100, 1000...',
                 controller: _amountController,
                 onValidate: (value) {
                   if (value == null || value.trim() == '') {
@@ -200,7 +199,7 @@ class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
                   ? onCreateSurcharge
                   : (_noteController.text !=
                               json.decode(widget.surcharge!.note) ||
-                          amount != widget.surcharge!.amount ||
+                          amount != widget.surcharge!.gcoinAmount ||
                           alreadyDivided != widget.surcharge!.alreadyDivided)
                       ? onUpdateSurcharge
                       : null,

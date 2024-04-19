@@ -1,7 +1,12 @@
 import 'package:collection/collection.dart';
+import 'package:draggable_fab/draggable_fab.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
@@ -533,6 +538,175 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
             ),
           ),
         ),
+        floatingActionButton: widget.isOrder != null && widget.isOrder!
+            ? DraggableFab(
+                child: FloatingActionButton(
+                backgroundColor: primaryColor,
+                foregroundColor: Colors.white,
+                key: UniqueKey(),
+                shape: const CircleBorder(),
+                onPressed: () {
+                  showDialog(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: const Text('Tổng quan chi phí'),
+                      titleTextStyle: const TextStyle(
+                          fontSize: 16,
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'NotoSans'),
+                      content: SizedBox(
+                        width: 100.w,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Ngân sách hiện tại',
+                                  style: TextStyle(
+                                      fontSize: 14, fontFamily: 'NotoSans'),
+                                ),
+                                const Spacer(),
+                                SizedBox(
+                                  width: 30.w,
+                                  child: Text(
+                                    NumberFormat.simpleCurrency(
+                                            locale: 'vi_VN',
+                                            decimalDigits: 0,
+                                            name: '')
+                                        .format(widget.availableGcoinAmount),
+                                    textAlign: TextAlign.end,
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'NotoSans'),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 3),
+                                  child: SvgPicture.asset(
+                                    gcoin_logo,
+                                    height: 18,
+                                  ),
+                                )
+                              ],
+                            ),
+                            SizedBox(
+                              height: 0.3.h,
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Tổng cộng đơn hàng',
+                                  style: TextStyle(
+                                      fontSize: 14, fontFamily: 'NotoSans'),
+                                ),
+                                const Spacer(),
+                                SizedBox(
+                                  width: 30.w,
+                                  child: Text(
+                                    NumberFormat.simpleCurrency(
+                                            locale: 'vi_VN',
+                                            decimalDigits: 0,
+                                            name: 'đ')
+                                        .format(total),
+                                    textAlign: TextAlign.end,
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'NotoSans'),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            SizedBox(
+                              height: 0.3.h,
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Giá trị quy đổi',
+                                  style: TextStyle(
+                                      fontSize: 14, fontFamily: 'NotoSans'),
+                                ),
+                                const Spacer(),
+                                SizedBox(
+                                  width: 30.w,
+                                  child: Text(
+                                    NumberFormat.simpleCurrency(
+                                            locale: 'vi_VN',
+                                            decimalDigits: 0,
+                                            name: '')
+                                        .format(total /
+                                            GlobalConstant().VND_CONVERT_RATE),
+                                    textAlign: TextAlign.end,
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'NotoSans'),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 3),
+                                  child: SvgPicture.asset(
+                                    gcoin_logo,
+                                    height: 18,
+                                  ),
+                                )
+                              ],
+                            ),
+                            SizedBox(
+                              height: 0.3.h,
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Text(
+                                  'Ngân sách mới',
+                                  style: TextStyle(
+                                      fontSize: 14, fontFamily: 'NotoSans'),
+                                ),
+                                const Spacer(),
+                                SizedBox(
+                                  width: 30.w,
+                                  child: Text(
+                                    NumberFormat.simpleCurrency(
+                                            locale: 'vi_VN',
+                                            decimalDigits: 0,
+                                            name: '')
+                                        .format(widget.availableGcoinAmount! -
+                                            total /
+                                                GlobalConstant()
+                                                    .VND_CONVERT_RATE),
+                                    textAlign: TextAlign.end,
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'NotoSans'),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 3),
+                                  child: SvgPicture.asset(
+                                    gcoin_logo,
+                                    height: 18,
+                                  ),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+                child: const Icon(Icons.attach_money),
+              ))
+            : null,
       ),
     );
   }

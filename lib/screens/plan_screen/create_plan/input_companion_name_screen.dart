@@ -49,25 +49,6 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
               widget.callback(names);
             }
             Navigator.of(context).pop();
-            // AwesomeDialog(
-            //         context: context,
-            //         animType: AnimType.rightSlide,
-            //         dialogType: DialogType.warning,
-            //         title: 'Thông tin thành viên chưa được lưu',
-            //         titleTextStyle: const TextStyle(
-            //             fontSize: 18, fontWeight: FontWeight.bold),
-            //         desc: 'Vẫn rời khỏi màn hình này chứ?',
-            //         descTextStyle:
-            //             const TextStyle(fontSize: 16, color: Colors.grey),
-            //         btnOkColor: Colors.amber,
-            //         btnOkOnPress: () {
-            //           Navigator.of(context).pop();
-            //         },
-            //         btnOkText: 'Rời khỏi',
-            //         btnCancelColor: Colors.blue,
-            //         btnCancelOnPress: () {},
-            //         btnCancelText: 'Huỷ')
-            //     .show();
           },
         ),
         actions: [

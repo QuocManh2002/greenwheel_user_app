@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/payment_screen/payment_webview_screen.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
@@ -13,14 +13,14 @@ import 'package:greenwheel_user_app/view_models/topup_request.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/search_screen_widget/tag.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:vnpay_client/vnpay_client.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:intl/intl.dart';
 
 class AddBalanceScreen extends StatefulWidget {
   const AddBalanceScreen(
       {super.key, required this.balance, required this.callback});
   final double balance;
-  final void Function() callback;
+  final void Function(bool isSuccess, int amount) callback;
 
   @override
   State<AddBalanceScreen> createState() => _AddBalanceScreenState();
@@ -36,6 +36,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   double? refreshedBalance;
   String? paymentData;
   int amount = 0;
+  bool isSuccess = true;
 
   @override
   void dispose() {
@@ -53,7 +54,6 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
         refreshedBalance = _customer!.balance;
       });
     }
-    print(phone);
   }
 
   @override
@@ -63,10 +63,6 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
       backgroundColor: lightPrimaryTextColor,
       appBar: AppBar(
         title: const Text("Nạp tiền vào ví"),
-        leading: BackButton(onPressed: () {
-          widget.callback();
-          Navigator.of(context).pop();
-        }),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -191,7 +187,8 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                     decimalDigits: 0,
                                     locale: 'vi_VN',
                                     name: 'Đ')
-                                .format(amount * GlobalConstant().VND_CONVERT_RATE),
+                                .format(
+                                    amount * GlobalConstant().VND_CONVERT_RATE),
                             style: const TextStyle(
                                 fontSize: 18,
                                 color: Colors.black87,
@@ -303,7 +300,6 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                             "VNPay",
                             style: TextStyle(fontWeight: FontWeight.bold),
                           ),
-                          // subtitle: const Text("Thanh toán trong nước"),
                           trailing: isSelected
                               ? Image.asset(
                                   "assets/images/outline_circle.png",
@@ -318,49 +314,45 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                 height: 16,
               ),
               ElevatedButton(
-                  style: elevatedButtonStyle,
+                  style: elevatedButtonStyle.copyWith(
+                      backgroundColor: MaterialStatePropertyAll(
+                          isSelected && amount != 0
+                              ? primaryColor
+                              : Colors.grey.withOpacity(0.6))),
                   onPressed: () async {
-                    TopupRequestViewModel? request =
-                        await orderService.topUpRequest(amount);
+                    if (isSelected && amount != 0) {
+                      TopupRequestViewModel? request =
+                          await orderService.topUpRequest(amount);
 
-                    if (request != null) {
-                      showVNPayScreen(
-                        // ignore: use_build_context_synchronously
-                        context,
-                        paymentUrl: request.paymentUrl,
-                        onPaymentSuccess: (data) async {
-                          print(data);
-                          Navigator.of(context).pop();
-                          showSuccessPaymentDialog();
-                        },
-                        onPaymentError: _onPaymentFailure,
-                      );
+                      if (request != null) {
+                        Navigator.push(
+                            // ignore: use_build_context_synchronously
+                            context,
+                            PageTransition(
+                                child: PaymentWebViewScreen(
+                                  callback: widget.callback,
+                                  request: request.paymentUrl,
+                                  amount: amount,
+                                ),
+                                type: PageTransitionType.bottomToTop));
 
-                      // setUpData();
-                      // print(request.transactionId);
-                      // TopupViewModel? topup = await orderService
-                      //     .topUpSubcription(request.transactionId);
-                      // print("TOPUP STATUS: ${topup!.status}");
-                      // if (topup.status == "ACCEPTED") {
-                      // } else {
-                      //   // ignore: use_build_context_synchronously
-                      // }
 // Ngân hàng	NCB
 // Số thẻ	9704198526191432198
 // Tên chủ thẻ	NGUYEN VAN A
 // Ngày phát hành	07/15
 // Mật khẩu OTP	123456
-                    } else {
-                      // ignore: use_build_context_synchronously
-                      AwesomeDialog(
-                        context: context,
-                        dialogType: DialogType.error,
-                        animType: AnimType.topSlide,
-                        title: "Tạo đơn thất bại!",
-                        desc: "Xuất hiện lỗi khi tạo đơn nạp GCOIN.",
-                        btnOkText: "OK",
-                        btnOkOnPress: () {},
-                      ).show();
+                      } else {
+                        AwesomeDialog(
+                          // ignore: use_build_context_synchronously
+                          context: context,
+                          dialogType: DialogType.error,
+                          animType: AnimType.topSlide,
+                          title: "Tạo đơn thất bại!",
+                          desc: "Xuất hiện lỗi khi tạo đơn nạp GCOIN.",
+                          btnOkText: "OK",
+                          btnOkOnPress: () {},
+                        ).show();
+                      }
                     }
                   },
                   child: const Text("Nạp tiền"))
@@ -369,39 +361,5 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
         ),
       ),
     ));
-  }
-
-  void _onPaymentSuccess(data) {
-    print(data);
-    Navigator.of(context).pop();
-    Navigator.of(context).push(
-        MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 3)));
-  }
-
-  void _onPaymentFailure(error) {
-    AwesomeDialog(
-      context: context,
-      dialogType: DialogType.error,
-      animType: AnimType.topSlide,
-      title: "Thanh toán thất bại!",
-      desc: "Nạp GCOIN không thành công.",
-      btnOkText: "OK",
-      btnOkOnPress: () {},
-    ).show();
-    print(error);
-  }
-
-  showSuccessPaymentDialog() {
-    print('sucess payment');
-    AwesomeDialog(
-      context: context,
-      dialogType: DialogType.success,
-      body: const Center(
-        child: Text('Nạp GCOIN vào ví thành công'),
-      ),
-      btnOkColor: primaryColor,
-      btnOkOnPress: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 3))),
-    ).show();
   }
 }

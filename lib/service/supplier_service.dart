@@ -1,4 +1,3 @@
-
 import 'dart:developer';
 
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -133,8 +132,9 @@ class SupplierService extends Iterable {
         return <SupplierViewModel>[];
       }
 
-      final List<SupplierViewModel> suppliers =
-          res.map((supplier) => SupplierViewModel.fromJson(supplier['node'])).toList();
+      final List<SupplierViewModel> suppliers = res
+          .map((supplier) => SupplierViewModel.fromJson(supplier['node']))
+          .toList();
       return suppliers;
     } catch (error) {
       throw Exception(error.toString());
@@ -194,6 +194,8 @@ query getSupplierById(\$id: [Int]!) {
   Future<List<EmergencyContactViewModel>?> getEmergencyContacts(
       PointLatLng coordinate, List<String> types, int lte) async {
     try {
+      GraphQLClient newClient = config.getClient();
+
       log('''
 {
   providers(
@@ -221,7 +223,7 @@ query getSupplierById(\$id: [Int]!) {
     }
   }
 }''');
-      QueryResult result = await client.query(QueryOptions(document: gql("""
+      QueryResult result = await newClient.query(QueryOptions(document: gql("""
 {
   providers(
     where: {
@@ -235,6 +237,7 @@ query getSupplierById(\$id: [Int]!) {
           }
         }
         { type: { in: $types } }
+        { isActive: { eq: true } }
       ]
     }
   ) {

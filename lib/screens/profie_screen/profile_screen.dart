@@ -7,13 +7,13 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/profile_loading_screen.dart';
+import 'package:greenwheel_user_app/screens/payment_screen/payment_result_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/qr_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/update_profile_screen.dart';
-import 'package:greenwheel_user_app/screens/wallet_screen/add_balance.dart';
+import 'package:greenwheel_user_app/screens/payment_screen/add_balance.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
-import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:restart_app/restart_app.dart';
@@ -79,7 +79,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           topLeft: Radius.circular(42),
                           topRight: Radius.circular(42))),
                   child: SingleChildScrollView(
-                    physics:const BouncingScrollPhysics(),
+                    physics: const BouncingScrollPhysics(),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
@@ -221,17 +221,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         height: 5.h,
                                         width: 5.h,
                                         decoration: BoxDecoration(
-                                            color: Colors.grey.withOpacity(0.25),
-                                            borderRadius: const BorderRadius.all(
-                                                Radius.circular(14))),
+                                            color:
+                                                Colors.grey.withOpacity(0.25),
+                                            borderRadius:
+                                                const BorderRadius.all(
+                                                    Radius.circular(14))),
                                         child: IconButton(
                                             onPressed: () {
-                                              
                                               Navigator.of(context).push(
                                                   MaterialPageRoute(
                                                       builder: (ctx) =>
                                                           AddBalanceScreen(
-                                                            callback: setUpData,
+                                                            callback:
+                                                                callbackAddBalance,
                                                             balance: _customer!
                                                                 .balance,
                                                           )));
@@ -311,14 +313,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   animType: AnimType.leftSlide,
                                   showCloseIcon: true,
                                   title: "Đăng xuất",
-                                  btnOkColor: primaryColor,
+                                  btnOkColor: Colors.deepOrangeAccent,
                                   btnOkText: "Đồng ý",
+                                  btnCancelColor: Colors.blueAccent,
                                   btnCancelText: "Đóng",
                                   desc:
                                       "   Bạn có muốn thoát khỏi phiên đăng nhập này không ?  ",
                                   btnOkOnPress: () async {
-                                    final rs =
-                                        await _customerService.travelerSignOut();
+                                    final rs = await _customerService
+                                        .travelerSignOut();
                                     if (rs != 0) {
                                       sharedPreferences.clear();
                                       Restart.restartApp();
@@ -340,22 +343,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       clipBehavior: Clip.hardEdge,
                       decoration: const BoxDecoration(
                           color: Colors.white, shape: BoxShape.circle),
-                      child:
-                          CachedNetworkImage(
-                              key: UniqueKey(),
-                              height: 18.h,
-                              width: 18.h,
-                              fit: BoxFit.cover,
-                              imageUrl:
-                                  '$baseBucketImage${_customer!.avatarUrl}',
-                              placeholder: (context, url) =>
-                                  Image.memory(kTransparentImage),
-                              errorWidget: (context, url, error) => Image.asset(
-                                    _customer!.isMale
-                                        ? male_default_avatar
-                                        : female_default_avatar,
-                                    fit: BoxFit.cover,
-                                  ))),
+                      child: CachedNetworkImage(
+                          key: UniqueKey(),
+                          height: 18.h,
+                          width: 18.h,
+                          fit: BoxFit.cover,
+                          imageUrl: '$baseBucketImage${_customer!.avatarUrl}',
+                          placeholder: (context, url) =>
+                              Image.memory(kTransparentImage),
+                          errorWidget: (context, url, error) => Image.asset(
+                                _customer!.isMale
+                                    ? male_default_avatar
+                                    : female_default_avatar,
+                                fit: BoxFit.cover,
+                              ))),
                 )
               ],
             ),
@@ -408,4 +409,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       );
+
+  callbackAddBalance(bool isSuccess, int amount) {
+    if (isSuccess) {
+      setUpData();
+      Navigator.push(
+          context,
+          PageTransition(
+              child: PaymentResultScreen(
+                amount: amount,
+                planId: null,
+                isSuccess: true,
+              ),
+              type: PageTransitionType.rightToLeft));
+    } else {
+      Navigator.push(
+          context,
+          PageTransition(
+              child: PaymentResultScreen(
+                amount: amount,
+                planId: null,
+                isSuccess: false,
+              ),
+              type: PageTransitionType.rightToLeft));
+    }
+  }
 }

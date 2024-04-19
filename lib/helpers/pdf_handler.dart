@@ -194,7 +194,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                       buildInfoRow(boldTtf, ttf, ' Ngày khởi hành',
                           DateFormat('dd/MM/yyyy').format(_plan.utcDepartAt!)),
                       buildInfoRow(boldTtf, ttf, ' Ngày kết thúc',
-                          DateFormat('dd/MM/yyyy').format(_plan.endDate!)),
+                          DateFormat('dd/MM/yyyy').format(_plan.utcEndAt!)),
                       buildInfoRow(
                           boldTtf,
                           ttf,
@@ -258,84 +258,6 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                             buildServiceWidget('MEAL', newFoodOrderList, ttf),
                         ],
                       ),
-                      // if (listRoom.isNotEmpty)
-                      //   pw.Padding(
-                      //       padding: const pw.EdgeInsets.only(left: 10),
-                      //       child: pw.Text('LƯU TRÚ',
-                      //           style: pw.TextStyle(
-                      //               fontSize: 15,
-                      //               font: ttf,
-                      //               color:
-                      //                   const PdfColor.fromInt(0xffE4080A)))),
-                      // if (listRoom.isNotEmpty)
-                      //   for (final day in listRoom)
-                      //     pw.Padding(
-                      //       padding: const pw.EdgeInsets.only(left: 50),
-                      //       child: pw.Row(
-                      //         crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      //         children: [
-                      //           pw.Text('- Ngày ${day.dayIndex + 1} - ',
-                      //               style: pw.TextStyle(
-                      //                   fontSize: 14,
-                      //                   font: ttf,
-                      //                   fontWeight: pw.FontWeight.bold)),
-                      //           pw.Column(
-                      //             children: day.orderList
-                      //                 .map((e) => pw.Text(
-                      //                       'Nghỉ ngơi tại khách sạn',
-                      //                       style: pw.TextStyle(
-                      //                           fontSize: 14,
-                      //                           font: ttf,
-                      //                           fontWeight: pw.FontWeight.bold),
-                      //                     ))
-                      //                 .toList(),
-                      //           )
-                      //         ],
-                      //       ),
-                      //     ),
-                      // if (listFood.isNotEmpty)
-                      //   pw.Padding(
-                      //       padding: const pw.EdgeInsets.only(left: 10),
-                      //       child: pw.Text('ĂN UỐNG',
-                      //           style: pw.TextStyle(
-                      //               fontSize: 15,
-                      //               font: ttf,
-                      //               color:
-                      //                   const PdfColor.fromInt(0xffE4080A)))),
-                      // if (listFood.isNotEmpty)
-                      //   for (final day in listFood)
-                      //     pw.Padding(
-                      //       padding: const pw.EdgeInsets.only(left: 50),
-                      //       child: pw.Row(
-                      //         crossAxisAlignment: pw.CrossAxisAlignment.start,
-                      //         children: [
-                      //           pw.Text('- Ngày ${day.dayIndex + 1} - ',
-                      //               style: pw.TextStyle(
-                      //                   fontSize: 14,
-                      //                   font: ttf,
-                      //                   fontWeight: pw.FontWeight.bold)),
-                      //           pw.Column(
-                      //             children: day.orderList
-                      //                 .map((e) => pw.Text(
-                      //                       '${Utils().getPeriodString(e.period)['text']} - Nhà hàng',
-                      //                       style: pw.TextStyle(
-                      //                           fontSize: 14,
-                      //                           font: ttf,
-                      //                           fontWeight: pw.FontWeight.bold),
-                      //                     ))
-                      //                 .toList(),
-                      //           )
-                      //         ],
-                      //       ),
-                      //     ),
-                      // if (listFood.isNotEmpty || listRoom.isNotEmpty)
-                      //   pw.SizedBox(height: 10),
-                      // pw.Text('CHI PHÍ',
-                      //     style: pw.TextStyle(
-                      //         color: const PdfColor.fromInt(0xffE4080A),
-                      //         font: boldTtf,
-                      //         fontSize: 17,
-                      //         fontWeight: pw.FontWeight.bold)),
                       pw.SizedBox(height: 10),
                       pw.Padding(
                           padding: const pw.EdgeInsets.only(left: 10),

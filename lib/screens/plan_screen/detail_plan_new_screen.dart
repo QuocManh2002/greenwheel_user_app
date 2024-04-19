@@ -8,20 +8,23 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:flutter_svg/flutter_svg.dart';
+import 'package:greenwheel_user_app/core/constants/clone_plan_options.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_detail_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
+import 'package:greenwheel_user_app/screens/payment_screen/payment_result_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/history_order_screen.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/clone_plan_options_bottom_sheet.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_member_dialog_body.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_header.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_plan_surcharge_note.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/join_confirm_plan_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/plan_pdf_view_screen.dart';
@@ -113,11 +116,18 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         isLoading = false;
       });
       isLeader = sharedPreferences.getInt('userId') == _planDetail!.leaderId;
+      for (final order in _planDetail!.tempOrders ?? []) {
+        for (final detail in order['cart'].entries) {
+          if (!productIds.contains(int.parse(detail.key))) {
+            productIds.add(int.parse(detail.key));
+          }
+        }
+      }
       products = await _productService.getListProduct(productIds);
-      tempOrders = await _orderService.getTempOrderFromSchedule(
-          _planDetail!.schedule!, _planDetail!.startDate!);
+      tempOrders = getTempOrder();
       _isPublic = _planDetail!.joinMethod != 'NONE';
-      _isEnableToInvite = _planDetail!.status == 'REGISTERING';
+      _isEnableToInvite = _planDetail!.status == 'REGISTERING' &&
+          _planDetail!.memberCount! < _planDetail!.maxMemberCount!;
       getOrderList();
       await getPlanMember();
       if (_planDetail != null) {
@@ -127,18 +137,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       }
       _isEnableToConfirm = _planDetail!.status == 'REGISTERING';
     }
-    var tempDuration = DateFormat.Hm().parse(_planDetail!.travelDuration!);
-    final startTime = DateTime(0, 0, 0, _planDetail!.utcDepartAt!.hour,
-        _planDetail!.utcDepartAt!.minute, 0);
-    final arrivedTime = startTime
-        .add(Duration(hours: tempDuration.hour))
-        .add(Duration(minutes: tempDuration.minute));
-    final rs = Utils().getNumOfExpPeriod(
-        arrivedTime, _planDetail!.numOfExpPeriod!, startTime, null, true);
-    var comboDate = listComboDate.firstWhere(
-        (element) => element.duration == _planDetail!.numOfExpPeriod!);
-    comboDateText =
-        '${comboDate.numberOfDay} ngày ${rs['numOfExpPeriod'] != _planDetail!.numOfExpPeriod ? comboDate.numberOfNight + 1 : comboDate.numberOfNight} đêm';
   }
 
   getPlanMember() async {
@@ -179,6 +177,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             (element) => element.id.toString() == cart.entries.first.key);
         return OrderViewModel(
             id: e['id'],
+            uuid: e['uuid'],
             details: cart.entries.map((e) {
               final product = products
                   .firstWhere((element) => element.id.toString() == e.key);
@@ -191,8 +190,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   quantity: e.value);
             }).toList(),
             note: e['note'],
-            serveDates: e["serveDates"],
-            total: e['total'].toDouble(),
+            serveDates: e["serveDateIndexes"]
+                .map((e) => _planDetail!.utcStartAt!.add(Duration(days: e)))
+                .toList(),
+            total: e['totalGcoin'].toDouble(),
             createdAt: DateTime.now(),
             supplier: SupplierViewModel(
                 type: sampleProduct.supplierType,
@@ -207,8 +208,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
 
   getOrderList() async {
     var _total = 0.0;
-    if (_planDetail!.status == 'REGISTERING' ||
-        _planDetail!.status == 'PENDING') {
+    if (_planDetail!.status == plan_statuses[0].engName ||
+        _planDetail!.status == plan_statuses[1].engName) {
       orderList = tempOrders!;
     } else {
       final rs =
@@ -216,6 +217,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       if (rs != null) {
         setState(() {
           orderList = rs['orders'];
+          _planDetail!.orders = rs['orders'];
           _planDetail!.actualGcoinBudget = rs['currentBudget'].toInt();
         });
       }
@@ -244,8 +246,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               .map((e) => EmergencyContactViewModel().toJson(e))
               .toList()),
           note: _planDetail!.note,
-          endDate: _planDetail!.endDate,
-          startDate: _planDetail!.startDate,
+          endDate: _planDetail!.utcEndAt,
+          startDate: _planDetail!.utcStartAt,
           departCoordinate: PointLatLng(
               _planDetail!.startLocationLat!, _planDetail!.startLocationLng!),
           numOfExpPeriod: _planDetail!.numOfExpPeriod,
@@ -337,7 +339,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   Colors.amber.withOpacity(0.8),
                               foregroundColor: Colors.white,
                               backgroundColor: Colors.amber),
-                          if (DateTime.now().isBefore(_planDetail!.endDate!) &&
+                          if (DateTime.now().isBefore(_planDetail!.utcEndAt!) &&
                               DateTime.now().isAfter(_planDetail!.utcDepartAt!
                                   .add(Duration(
                                       hours: DateFormat.Hm()
@@ -411,8 +413,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                     builder: (context) => AlertDialog(
                                       content: SizedBox(
                                         height: 10.h,
-                                        child:const Center(
-                                          child:  CircularProgressIndicator(
+                                        child: const Center(
+                                          child: CircularProgressIndicator(
                                             color: primaryColor,
                                           ),
                                         ),
@@ -448,7 +450,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                 backgroundColor: primaryColor),
                         ],
                       )
-                    : _isAlreadyJoin
+                    : _isAlreadyJoin && widget.planType != 'PUBLISH'
                         ? FloatingActionButton(
                             shape: const CircleBorder(),
                             backgroundColor: primaryColor,
@@ -628,70 +630,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                     const EdgeInsets.symmetric(horizontal: 24),
                                 alignment: Alignment.centerLeft,
                                 child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        SizedBox(
-                                          width: 70.w,
-                                          child: Text(
-                                            _planDetail!.locationName!,
-                                            overflow: TextOverflow.clip,
-                                            style: const TextStyle(
-                                                fontSize: 20,
-                                                fontFamily: 'NotoSans',
-                                                fontWeight: FontWeight.bold),
-                                          ),
-                                        ),
-                                        Text(
-                                          comboDateText,
-                                          overflow: TextOverflow.clip,
-                                          style: const TextStyle(
-                                              fontFamily: 'NotoSans',
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold),
-                                        ),
-                                        if (!_isAlreadyJoin &&
-                                            _planDetail!.gcoinBudgetPerCapita !=
-                                                0)
-                                          Row(
-                                            children: [
-                                              Text(
-                                                NumberFormat.simpleCurrency(
-                                                        locale: 'vi_VN',
-                                                        decimalDigits: 0,
-                                                        name: '')
-                                                    .format(_planDetail!
-                                                        .gcoinBudgetPerCapita),
-                                                overflow: TextOverflow.clip,
-                                                style: const TextStyle(
-                                                    fontSize: 20,
-                                                    fontFamily: 'NotoSans',
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              SvgPicture.asset(
-                                                gcoin_logo,
-                                                height: 25,
-                                              ),
-                                              const Text(
-                                                ' /',
-                                                style: TextStyle(
-                                                    fontSize: 20,
-                                                    fontFamily: 'NotoSans',
-                                                    fontWeight:
-                                                        FontWeight.bold),
-                                              ),
-                                              const Icon(
-                                                Icons.person,
-                                                color: primaryColor,
-                                                size: 25,
-                                              ),
-                                            ],
-                                          ),
-                                      ],
-                                    ),
+                                    DetailPlanHeader(
+                                        isAlreadyJoin: _isAlreadyJoin,
+                                        plan: _planDetail!),
                                     const Spacer(),
                                     Column(
                                       children: [
@@ -855,6 +798,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
 
   buildSurchagreNoteWidget() => DetailPlanSurchargeNote(
         plan: _planDetail!,
+        isLeader: isLeader,
       );
 
   buildServiceWidget() => DetailPlanServiceWidget(
@@ -910,12 +854,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             SizedBox(
               height: 60.h,
               child: PLanScheduleWidget(
+                orders: tempOrders,
                 planId: widget.planId,
                 isLeader: isLeader,
                 planType: widget.planType,
                 schedule: _planDetail!.schedule!,
-                startDate: _planDetail!.startDate!,
-                endDate: _planDetail!.endDate!,
+                startDate: _planDetail!.utcStartAt!.toLocal(),
+                endDate: _planDetail!.utcEndAt!.toLocal(),
               ),
             ),
           ],
@@ -924,7 +869,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   onInvite() async {
     var enableToShare = checkEnableToShare();
     if (enableToShare['status']) {
-      // await getPlanMember();
       Navigator.of(context).push(MaterialPageRoute(
           builder: (ctx) => SharePlanScreen(
                 joinMethod: _planDetail!.joinMethod!,
@@ -1005,9 +949,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             "type": emer.type
           });
         }
-        // List<dynamic>? _schedule =
-        //     await _planService.getPlanSchedule(widget.planId, widget.planType);
-        // if (_schedule != null) {
         final rs = await showModalBottomSheet(
             context: context,
             isScrollControlled: true,
@@ -1022,8 +963,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                       savedContacts: json.encode(emerList),
                       name: _planDetail!.name,
                       maxMemberCount: _planDetail!.maxMemberCount,
-                      startDate: _planDetail!.startDate,
-                      endDate: _planDetail!.endDate,
+                      startDate: _planDetail!.utcStartAt,
+                      endDate: _planDetail!.utcEndAt,
                       travelDuration: _planDetail!.travelDuration,
                       departAt: _planDetail!.utcDepartAt,
                       note: _planDetail!.note,
@@ -1051,7 +992,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             _isPublic = false;
           });
         }
-        // }
       } else {
         AwesomeDialog(
                 context: context,
@@ -1110,7 +1050,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               },
               style: elevatedButtonStyle.copyWith(
                   backgroundColor: MaterialStatePropertyAll(
-                      _isAlreadyJoin ? Colors.grey : primaryColor)),
+                      _isAlreadyJoin && widget.planType != 'PUBLISH'
+                          ? Colors.grey
+                          : primaryColor)),
               child: Text(
                 widget.planType == 'PUBLISH'
                     ? "Sao chép kế hoạch"
@@ -1141,78 +1083,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               context: context,
               animType: AnimType.bottomSlide,
               dialogType: DialogType.warning,
-              body: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Chuyến đi chưa đủ thành viên',
-                      style:
-                          TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      children: [
-                        const Text(
-                          'Số lượng thành viên',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '${_planDetail!.memberCount! < 10 ? '0${_planDetail!.memberCount}' : _planDetail!.memberCount}/${_planDetail!.maxMemberCount! < 10 ? '0${_planDetail!.maxMemberCount}' : _planDetail!.maxMemberCount}',
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Text(
-                          'Thời gian',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '${DateFormat('dd/MM/yyyy').format(_planDetail!.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(_planDetail!.endDate!)}',
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        const Text(
-                          'Chi phí tham gia',
-                          style: TextStyle(fontSize: 16, color: Colors.grey),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '${currencyFormat.format(_planDetail!.gcoinBudgetPerCapita)} GCOIN',
-                          style: const TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Text(
-                      'Thanh toán thêm ${currencyFormat.format(_planDetail!.gcoinBudgetPerCapita)}${_planDetail!.maxMemberCount! - _planDetail!.memberCount! > 1 ? ' x ${_planDetail!.maxMemberCount! - _planDetail!.memberCount!} = ${currencyFormat.format(_planDetail!.gcoinBudgetPerCapita! * (_planDetail!.maxMemberCount! - _planDetail!.memberCount!))}' : ''}GCOIN để chốt số lượng thành viên cho chuyến đi',
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 17, fontWeight: FontWeight.w500),
-                    )
-                  ],
-                ),
+              body: ConfirmMemberDialogBody(
+                plan: _planDetail!,
               ),
               btnOkColor: Colors.blue,
               btnOkOnPress: () {
@@ -1227,7 +1099,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             isConfirm: true),
                         type: PageTransitionType.rightToLeft));
               },
-              btnOkText: 'Chơi',
+              btnOkText: 'Đồng ý',
               btnCancelColor: Colors.amber,
               btnCancelOnPress: () {},
               btnCancelText: 'Huỷ')
@@ -1479,9 +1351,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (ctx) => SuccessPaymentScreen(
+                                      builder: (ctx) => PaymentResultScreen(
                                             amount: amount!,
                                             planId: widget.planId,
+                                            isSuccess: true,
                                           )),
                                   (route) => false);
                             }
@@ -1535,9 +1408,10 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               Navigator.pushAndRemoveUntil(
                                   context,
                                   MaterialPageRoute(
-                                      builder: (ctx) => SuccessPaymentScreen(
+                                      builder: (ctx) => PaymentResultScreen(
                                             amount: amount!,
                                             planId: widget.planId,
+                                            isSuccess: true,
                                           )),
                                   (route) => false);
                             }
@@ -1592,33 +1466,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onClonePlan() async {
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        content: SizedBox(
-          height: 10.h,
-          child: const Center(
-            child: CircularProgressIndicator(
-              color: primaryColor,
-            ),
-          ),
-        ),
+      isScrollControlled: true,
+      builder: (context) => ClonePlanOptionsBottomSheet(
+        plan: _planDetail!,
       ),
     );
-    final location =
-        await _locationService.GetLocationById(_planDetail!.locationId!);
-    String? locationName = sharedPreferences.getString('plan_location_name');
-    if (locationName != null) {
-      Navigator.of(context).pop();
-      Utils().handleAlreadyDraft(context, location!, locationName, true, _planDetail);
-    } else {
-      Utils().setUpDataClonePlan(_planDetail!);
-      Navigator.of(context).pop();
-      Navigator.push(
-          context,
-          PageTransition(
-              child: SelectComboDateScreen(location: location!, isCreate: true, isClone: true,),
-              type: PageTransitionType.rightToLeft));
-    }
   }
 }

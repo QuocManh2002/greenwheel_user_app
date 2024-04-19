@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/bottom_sheet_container_widget.dart';
@@ -9,9 +12,13 @@ import 'package:sizer2/sizer2.dart';
 
 class PlanScheduleActivityView extends StatefulWidget {
   const PlanScheduleActivityView(
-      {super.key, required this.isLeader, required this.item});
+      {super.key,
+      required this.isLeader,
+      required this.item,
+      required this.order});
   final PlanScheduleItem item;
   final bool isLeader;
+  final dynamic order;
 
   @override
   State<PlanScheduleActivityView> createState() =>
@@ -23,6 +30,7 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
   List<int> ids = [];
   List<ProductViewModel>? products = [];
   ProductService _productService = ProductService();
+  dynamic _order;
   @override
   void initState() {
     // TODO: implement initState
@@ -31,27 +39,37 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
   }
 
   setUpData() async {
-    if (!widget.isLeader || widget.item.tempOrder == null ) {
+    if (!widget.isLeader || widget.item.orderUUID == null) {
       setState(() {
         isLoading = false;
       });
-    } else if (widget.item.tempOrder['cart'] != null && widget.isLeader) {
-      dynamic cart = widget.item.tempOrder['cart'];
-      for (final proId in cart.keys.toList()) {
-        if (!ids.contains(int.parse(proId.toString()))) {
-          ids.add(int.parse(proId));
-        }
-      }
-      products = await _productService.getListProduct(ids);
-      if (products != null) {
+    } else {
+      if(widget.order.runtimeType == OrderViewModel){
+        _order = widget.order;
         setState(() {
           isLoading = false;
         });
       }
-    } else if (widget.item.tempOrder['details'] != null && widget.isLeader) {
-      setState(() {
-        isLoading = false;
-      });
+      // order = widget.orderList.firstWhere((e) => (e.runtimeType == OrderViewModel ? e.uuid : e['orderUUID'] ) == widget.item.orderUUID);
+      // if (order['cart'] != null) {
+      //   dynamic cart = (widget.orderList
+      //       .firstWhere((e) => e['orderUUID'] == widget.item.orderUUID))['cart'];
+      //   for (final proId in cart.keys.toList()) {
+      //     if (!ids.contains(int.parse(proId.toString()))) {
+      //       ids.add(int.parse(proId));
+      //     }
+      //   }
+      //   products = await _productService.getListProduct(ids);
+      //   if (products != null) {
+      //     setState(() {
+      //       isLoading = false;
+      //     });
+      //   }
+      // } else if (order['details'] != null) {
+      //   setState(() {
+      //     isLoading = false;
+      //   });
+      // }
     }
   }
 
@@ -105,8 +123,7 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                             SizedBox(
                               height: 2.h,
                             ),
-                            if (widget.item.tempOrder != null &&
-                                widget.isLeader)
+                            if (widget.item.orderUUID != null && widget.isLeader)
                               Container(
                                 width: 100.w,
                                 padding: const EdgeInsets.symmetric(
@@ -130,10 +147,41 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                                       style: TextStyle(
                                           fontSize: 16, fontFamily: 'NotoSans'),
                                     ),
-                                    if (widget.item.tempOrder['details'] !=
-                                        null)
-                                      for (final detail
-                                          in widget.item.tempOrder['details'])
+                                    // if (_order['details'] != null)
+                                    //   for (final detail in _order['details'])
+                                    //     Row(
+                                    //       mainAxisAlignment:
+                                    //           MainAxisAlignment.spaceBetween,
+                                    //       crossAxisAlignment:
+                                    //           CrossAxisAlignment.start,
+                                    //       children: [
+                                    //         SizedBox(
+                                    //           width: 65.w,
+                                    //           child: Text(
+                                    //             detail['productName'],
+                                    //             style: const TextStyle(
+                                    //                 fontSize: 18,
+                                    //                 fontWeight: FontWeight.bold,
+                                    //                 fontFamily: 'NotoSans'),
+                                    //             overflow: TextOverflow.clip,
+                                    //           ),
+                                    //         ),
+                                    //         SizedBox(
+                                    //           width: 15.w,
+                                    //           child: Text(
+                                    //             'x${detail['quantity']}',
+                                    //             textAlign: TextAlign.end,
+                                    //             style: const TextStyle(
+                                    //                 fontSize: 18,
+                                    //                 fontWeight: FontWeight.bold,
+                                    //                 fontFamily: 'NotoSans'),
+                                    //             overflow: TextOverflow.clip,
+                                    //           ),
+                                    //         )
+                                    //       ],
+                                    //     ),
+                                    if (_order.details != null)
+                                      for (final detail in _order.details)
                                         Row(
                                           mainAxisAlignment:
                                               MainAxisAlignment.spaceBetween,
@@ -143,7 +191,7 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                                             SizedBox(
                                               width: 65.w,
                                               child: Text(
-                                                detail['productName'],
+                                                detail.productName,
                                                 style: const TextStyle(
                                                     fontSize: 18,
                                                     fontWeight: FontWeight.bold,
@@ -154,7 +202,7 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                                             SizedBox(
                                               width: 15.w,
                                               child: Text(
-                                                'x${detail['quantity']}',
+                                                'x${detail.quantity}',
                                                 textAlign: TextAlign.end,
                                                 style: const TextStyle(
                                                     fontSize: 18,
@@ -165,43 +213,44 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                                             )
                                           ],
                                         ),
-                                    if (widget.item.tempOrder['cart'] != null)
-                                      for (final detail in widget
-                                          .item.tempOrder['cart'].entries)
-                                        Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            SizedBox(
-                                              width: 65.w,
-                                              child: Text(
-                                                products!
-                                                    .firstWhere((element) =>
-                                                        element.id == int.parse(detail.key))
-                                                    .name,
-                                                style: const TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'NotoSans'),
-                                                overflow: TextOverflow.clip,
-                                              ),
-                                            ),
-                                            SizedBox(
-                                              width: 15.w,
-                                              child: Text(
-                                                detail.value.toString(),
-                                                textAlign: TextAlign.end,
-                                                style: const TextStyle(
-                                                    fontSize: 18,
-                                                    fontWeight: FontWeight.bold,
-                                                    fontFamily: 'NotoSans'),
-                                                overflow: TextOverflow.clip,
-                                              ),
-                                            )
-                                          ],
-                                        ),
+                                    // if (_order['cart'] != null)
+                                    //   for (final detail
+                                    //       in _order['cart'].entries)
+                                    //     Row(
+                                    //       mainAxisAlignment:
+                                    //           MainAxisAlignment.spaceBetween,
+                                    //       crossAxisAlignment:
+                                    //           CrossAxisAlignment.start,
+                                    //       children: [
+                                    //         SizedBox(
+                                    //           width: 65.w,
+                                    //           child: Text(
+                                    //             products!
+                                    //                 .firstWhere((element) =>
+                                    //                     element.id ==
+                                    //                     int.parse(detail.key))
+                                    //                 .name,
+                                    //             style: const TextStyle(
+                                    //                 fontSize: 18,
+                                    //                 fontWeight: FontWeight.bold,
+                                    //                 fontFamily: 'NotoSans'),
+                                    //             overflow: TextOverflow.clip,
+                                    //           ),
+                                    //         ),
+                                    //         SizedBox(
+                                    //           width: 15.w,
+                                    //           child: Text(
+                                    //             detail.value.toString(),
+                                    //             textAlign: TextAlign.end,
+                                    //             style: const TextStyle(
+                                    //                 fontSize: 18,
+                                    //                 fontWeight: FontWeight.bold,
+                                    //                 fontFamily: 'NotoSans'),
+                                    //             overflow: TextOverflow.clip,
+                                    //           ),
+                                    //         )
+                                    //       ],
+                                    //     ),
                                     SizedBox(
                                       height: 0.5.h,
                                     ),
@@ -213,8 +262,6 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                                       height: 0.5.h,
                                     ),
                                     Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.spaceBetween,
                                       crossAxisAlignment:
                                           CrossAxisAlignment.start,
                                       children: [
@@ -225,22 +272,23 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                                               fontWeight: FontWeight.bold,
                                               fontFamily: 'NotoSans'),
                                         ),
+                                        const Spacer(),
                                         SizedBox(
                                           width: 45.w,
                                           child: Text(
                                             NumberFormat.simpleCurrency(
                                                     locale: 'vi_VN',
                                                     decimalDigits: 0,
-                                                    name: 'Đ')
-                                                .format(widget
-                                                    .item.tempOrder['total']),
+                                                    name: '')
+                                                .format(_order.total),
                                             style: const TextStyle(
                                                 fontSize: 18,
                                                 fontFamily: 'NotoSans',
                                                 fontWeight: FontWeight.bold),
                                             textAlign: TextAlign.end,
                                           ),
-                                        )
+                                        ),
+                                        SvgPicture.asset(gcoin_logo, height: 18,)
                                       ],
                                     ),
                                     SizedBox(

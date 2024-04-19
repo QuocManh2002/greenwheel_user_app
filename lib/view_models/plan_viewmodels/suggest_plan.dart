@@ -3,25 +3,25 @@ class SuggestPlanViewModel {
   int? leaderId;
   String? leaderName;
   String planName;
-  DateTime startDate;
-  DateTime departDate;
-  DateTime endDate;
+  DateTime utcStartAt;
+  DateTime utcDepartAt;
+  DateTime utcEndAt;
 
   SuggestPlanViewModel(
-      {required this.endDate,
+      {required this.utcEndAt,
       required this.id,
       this.leaderId,
       this.leaderName,
-      required this.departDate,
+      required this.utcDepartAt,
       required this.planName,
-      required this.startDate});
+      required this.utcStartAt});
 
   factory SuggestPlanViewModel.fromJson(Map<String, dynamic> json) =>
       SuggestPlanViewModel(
-          endDate: DateTime.parse(json['endDate']),
+          utcEndAt: DateTime.parse(json['utcEndAt']),
           id: json['id'],
-          departDate: DateTime.parse(json['utcDepartAt']),
+          utcDepartAt: DateTime.parse(json['utcDepartAt']),
           leaderName: json['account']['name'],
           planName: json['name'],
-          startDate: DateTime.parse(json['startDate']));
+          utcStartAt: DateTime.parse(json['utcStartAt']));
 }

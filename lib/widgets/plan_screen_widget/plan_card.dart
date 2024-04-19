@@ -1,9 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -14,27 +14,6 @@ class PlanCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget buildStatusPoint(PlanCardViewModel plan) {
-      Color pointColor = Colors.red;
-      print("${plan.startDate} - ${plan.endDate}");
-      print(DateTime.now());
-      DateTime now = DateTime.now();
-      if (now.isBefore(plan.startDate) && now.isAfter(plan.endDate)) {
-        pointColor = primaryColor;
-      } else if (now.isBefore(plan.endDate)) {
-        pointColor = Colors.orange;
-      } else if (now.isBefore(plan.startDate)) {
-        pointColor = Colors.blue;
-      }
-      print(now.difference(plan.startDate));
-
-      return Container(
-        height: 1.5.h,
-        width: 1.5.h,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: pointColor),
-      );
-    }
-
     return InkWell(
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
@@ -106,20 +85,15 @@ class PlanCard extends StatelessWidget {
                     const SizedBox(
                       height: 8,
                     ),
-                    Text(plan.province.name),
+                    Text(
+                      plan.province.name,
+                      style: const TextStyle(fontWeight: FontWeight.w500),
+                    ),
                     const SizedBox(
                       height: 8,
                     ),
-                    Row(
-                      children: [
-                        Text(
-                            '${plan.startDate.day}/${plan.startDate.month}/${plan.startDate.year} - ${plan.endDate.day}/${plan.endDate.month}/${plan.endDate.year}'),
-                        const SizedBox(
-                          width: 16,
-                        ),
-                        // if (plan.status == "OFFICIAL") buildStatusPoint(plan)
-                      ],
-                    )
+                    Text(
+                        '${DateFormat('dd/MM/yyyy').format(plan.utcStartAt)} - ${DateFormat('dd/MM/yyyy').format(plan.utcEndAt)}')
                   ],
                 ),
               )

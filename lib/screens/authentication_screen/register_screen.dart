@@ -207,24 +207,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 const SizedBox(
                   height: 16,
                 ),
-                // defaultTextFormField(
-                //   readonly: true,
-                //   controller: addressController,
-                //   inputType: TextInputType.streetAddress,
-                //   text: 'Địa chỉ',
-                //   hinttext: '113 Hồng Lĩnh, ...',
-                //   onTap: () {
-                //     Navigator.of(context).push(MaterialPageRoute(
-                //         builder: (ctx) => SelectDefaultAddress(
-                //               callback: callback,
-                //             )));
-                //   },
-                //   onValidate: (value) {
-                //     if (value!.isEmpty) {
-                //       return "Địa chỉ mặc định không được để trống";
-                //     }
-                //   },
-                // ),
                 Row(
                   children: [
                     Checkbox(

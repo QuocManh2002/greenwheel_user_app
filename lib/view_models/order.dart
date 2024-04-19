@@ -3,7 +3,7 @@ import 'package:greenwheel_user_app/view_models/supplier.dart';
 
 class OrderViewModel {
   int? id;
-  String? guid;
+  String? uuid;
   double? total;
   String? note;
   List<dynamic>? serveDates;
@@ -24,14 +24,14 @@ class OrderViewModel {
     this.details,
     this.createdAt,
     this.type,
-    this.guid,
+    this.uuid,
     this.supplier,
     this.currentStatus
   });
 
   factory OrderViewModel.fromJson(Map<String, dynamic> json) => OrderViewModel(
       id: json["id"],
-      guid: json['guid'],
+      uuid: json['uuid'],
       note: json["note"],
       serveDates: json["serveDates"],
       total: double.parse(json["total"].toString()),

@@ -52,23 +52,23 @@ class _LocationScreenState extends State<LocationScreen> {
   final CustomerService _customerService = CustomerService();
   LocationViewModel? location;
   int? numberOfPublishedPlan = 0;
+  int numberOfComment = 0;
 
   var default_address = sharedPreferences.getString('defaultAddress');
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    getData();
+    setUpData();
   }
 
-  getData() async {
+  setUpData() async {
     location = await _locationService.GetLocationById(widget.locationId);
     numberOfPublishedPlan =
         await _locationService.getNumberOfPublishedPlan(widget.locationId);
     if (location != null && numberOfPublishedPlan != null) {
       imageUrls = location!.imageUrls;
       _comments = location!.comments!;
-      // province tag
       tagList.add(getTag(location!.topographic));
       for (final activity in location!.activities) {
         tagList.add(getTag(activity));
@@ -81,6 +81,7 @@ class _LocationScreenState extends State<LocationScreen> {
         isLoading = false;
       });
     }
+    getNumberOfComment(true, 0);
   }
 
   @override
@@ -393,9 +394,9 @@ class _LocationScreenState extends State<LocationScreen> {
                                               const SizedBox(
                                                 width: 2,
                                               ),
-                                              const Text(
-                                                '5/5',
-                                                style: TextStyle(
+                                              Text(
+                                                '${location!.rating ?? 0}/5',
+                                                style: const TextStyle(
                                                     color: primaryColor,
                                                     fontWeight:
                                                         FontWeight.bold),
@@ -404,7 +405,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                 width: 4,
                                               ),
                                               Text(
-                                                  '(${location!.comments!.length} đánh giá)')
+                                                  '($numberOfComment đánh giá)')
                                             ],
                                           ),
                                         ]),
@@ -424,6 +425,8 @@ class _LocationScreenState extends State<LocationScreen> {
                                                                 .imageUrls[0],
                                                         destinationName:
                                                             location!.name,
+                                                        callback:
+                                                            getNumberOfComment,
                                                       )));
                                         },
                                         child: const Row(
@@ -456,6 +459,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 20, vertical: 10),
                                   child: CommentCard(
+                                      isViewAll: false,
                                       comment:
                                           _comments.reversed.elementAt(index)),
                                 ),
@@ -492,7 +496,6 @@ class _LocationScreenState extends State<LocationScreen> {
                                                           location!.name,
                                                       callback:
                                                           callbackAddComment,
-                                                      comments: _comments,
                                                     )));
                                       },
                                       label: const Text(
@@ -526,7 +529,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                         .getString('plan_location_name');
                                     if (locationName != null) {
                                       Utils().handleAlreadyDraft(context,
-                                          location!, locationName, false, null);
+                                          location!, locationName, false, null,[]);
                                     } else {
                                       sharedPreferences.setString(
                                           'plan_location_name', location!.name);
@@ -658,4 +661,20 @@ class _LocationScreenState extends State<LocationScreen> {
         animType: AnimType.leftSlide,
         dialogType: DialogType.warning,
       ).show();
+
+  getNumberOfComment(bool isFromQuery, int _numberOfComment) async {
+    if (isFromQuery) {
+      final rs = await _locationService.getNumberOfComments(
+          widget.locationId, context);
+      if (rs != null) {
+        setState(() {
+          numberOfComment = rs;
+        });
+      }
+    } else {
+      setState(() {
+        numberOfComment = _numberOfComment;
+      });
+    }
+  }
 }

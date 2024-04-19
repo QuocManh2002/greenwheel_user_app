@@ -65,12 +65,12 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
         if(plan.status == 'CANCELED'){
           canceledPlans.add(plan);
         }
-        else if (plan.startDate.isAfter(DateTime.now())) {
+        else if (plan.utcStartAt.toLocal().isAfter(DateTime.now())) {
           futurePlans.add(plan);
-        } else if (plan.startDate.isBefore(DateTime.now()) &&
-            plan.endDate.isAfter(DateTime.now())) {
+        } else if (plan.utcStartAt.toLocal().isBefore(DateTime.now()) &&
+            plan.utcEndAt.toLocal().isAfter(DateTime.now())) {
           onGoingPlans.add(plan);
-        } else if (plan.endDate.isBefore(DateTime.now())) {
+        } else if (plan.utcEndAt.toLocal().isBefore(DateTime.now())) {
           historyPlans.add(plan);
         }
       }

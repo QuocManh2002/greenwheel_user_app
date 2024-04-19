@@ -1,9 +1,9 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -30,15 +30,6 @@ class _SelectEmergencyDetailServiceState
     extends State<SelectEmergencyDetailService> {
   @override
   Widget build(BuildContext context) {
-    List<String>? selectedIndex =
-        sharedPreferences.getStringList('selectedIndex');
-    var isEnableToAdd = false;
-    if (selectedIndex != null) {
-      isEnableToAdd = selectedIndex.any(
-        (element) => element == widget.index.toString(),
-      );
-    }
-
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
@@ -46,31 +37,18 @@ class _SelectEmergencyDetailServiceState
                 'Chi tiết dịch vụ',
                 style: TextStyle(color: Colors.white),
               ),
-              leading: BackButton(
-                style: const ButtonStyle(
-                    foregroundColor: MaterialStatePropertyAll(Colors.white)),
-                onPressed: () {
-                  Navigator.of(context).pop();
-                  if (!widget.isView) {
-                    widget.callback();
-                  }
-                },
-              ),
             ),
             body: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                ClipRRect(
-                  child: FadeInImage(
-                    height: 25.h,
-                    placeholder: MemoryImage(kTransparentImage),
-                    image: const NetworkImage(
-                        "https://vantaihoangminh.com/wp-content/uploads/2021/05/d%E1%BB%8Bch-v%E1%BB%A5-xe-c%E1%BB%A9u-h%E1%BB%99-giao-th%C3%B4ng-v%E1%BA%ADn-t%E1%BA%A3i-ho%C3%A0ng-minh2.jpg"),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    filterQuality: FilterQuality.high,
-                  ),
-                ),
+                CachedNetworkImage(
+                  height: 25.h,
+                  width: 100.w,
+                  key: UniqueKey(),
+                  fit: BoxFit.fill,
+                  errorWidget: (context, url, error) => Image.network(defaultHomeImage),
+                  placeholder: (context, url) => Image.memory(kTransparentImage),
+                  imageUrl: '$baseBucketImage${widget.emergency.imageUrl}'),
                 SizedBox(
                   height: 2.h,
                 ),
@@ -142,46 +120,6 @@ class _SelectEmergencyDetailServiceState
                                     fontWeight: FontWeight.normal))
                           ])),
                 ),
-                const Spacer(),
-                if (!isEnableToAdd && !widget.isView)
-                  Container(
-                    alignment: Alignment.center,
-                    child: ElevatedButton(
-                        style: elevatedButtonStyle,
-                        onPressed: () {
-                          selectedIndex!.add(widget.index.toString());
-                          sharedPreferences.setStringList(
-                              'selectedIndex', selectedIndex);
-                          AwesomeDialog(
-                            context: context,
-                            dialogType: DialogType.success,
-                            body: Padding(
-                              padding: EdgeInsets.symmetric(horizontal: 2.h),
-                              child: const Center(
-                                child: Text(
-                                  'Lưu thông tin dịch vụ thành công',
-                                  style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                ),
-                              ),
-                            ),
-                            btnOkColor: primaryColor,
-                            btnOkOnPress: () {
-                              setState(() {
-                                isEnableToAdd == true;
-                              });
-                              widget.callback();
-                              Navigator.of(context).pop();
-                            },
-                          ).show();
-                        },
-                        child: const Text(
-                          'Lưu dịch vụ',
-                          style: TextStyle(
-                              fontSize: 20, fontWeight: FontWeight.bold),
-                        )),
-                  ),
                 SizedBox(
                   height: 3.h,
                 )

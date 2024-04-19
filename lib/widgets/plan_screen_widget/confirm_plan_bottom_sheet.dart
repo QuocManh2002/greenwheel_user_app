@@ -7,7 +7,6 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
@@ -69,19 +68,19 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     for (final order in widget.orderList!) {
       if (order != null) {
         if (order.runtimeType == OrderViewModel) {
-          total += order.total * order.serveDates.length;
+          total += order.total;
         } else {
-          total += order['total'] * order['serveDates'].length;
+          if (order['type'] == 'CHECKIN') {
+            total += order['total'];
+          } else {
+            total += order['total'] * order['serveDates'].length;
+          }
         }
       }
     }
     if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty) {
       for (final sur in widget.listSurcharges!) {
-        if (sur['alreadyDivided']) {
-          total += sur['amount'] * widget.plan!.maxMemberCount;
-        } else {
-          total += sur['amount'];
-        }
+        total += sur['gcoinAmount'] * widget.plan!.maxMemberCount!;
       }
     }
 
@@ -437,8 +436,8 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             children: [
                               Text(
                                 widget.isJoin
-                                    ? 'Dịch vụ chuyến đi (Đ)'
-                                    : 'Kinh phí dự trù (Đ)',
+                                    ? 'Dịch vụ chuyến đi'
+                                    : 'Kinh phí dự trù',
                                 style: const TextStyle(fontSize: 16),
                               ),
                               const Spacer(),
@@ -496,7 +495,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Phụ thu (Đ)',
+                          'Phụ thu',
                           style: TextStyle(fontSize: 16),
                         ),
                         for (final sur in widget.listSurcharges!)
@@ -517,16 +516,20 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                 NumberFormat.simpleCurrency(
                                         decimalDigits: 0,
                                         locale: 'vi_VN',
-                                        name: 'K')
-                                    .format((sur['alreadyDivided']
-                                            ? sur['amount'] *
-                                                widget.plan!.maxMemberCount
-                                            : sur['amount']) /
-                                        GlobalConstant().VND_CONVERT_RATE),
+                                        name: '')
+                                    .format(sur['gcoinAmount'] *
+                                        widget.plan!.maxMemberCount),
                                 style: const TextStyle(
                                     fontSize: 15, fontWeight: FontWeight.bold),
                                 overflow: TextOverflow.ellipsis,
                               ),
+                              Padding(
+                                padding: const EdgeInsets.only(top: 2),
+                                child: SvgPicture.asset(
+                                  gcoin_logo,
+                                  height: 18,
+                                ),
+                              )
                             ],
                           )
                       ]),
@@ -557,7 +560,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
-                              'Tiền dịch vụ (Đ)',
+                              'Tiền dịch vụ',
                               style: TextStyle(fontSize: 16),
                             ),
                             const Spacer(),
@@ -565,12 +568,18 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               NumberFormat.simpleCurrency(
                                       locale: 'vi_VN',
                                       decimalDigits: 0,
-                                      name: "K")
-                                  .format(total /
-                                      GlobalConstant().VND_CONVERT_RATE),
+                                      name: "")
+                                  .format(total),
                               style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: SvgPicture.asset(
+                                gcoin_logo,
+                                height: 18,
+                              ),
+                            )
                           ],
                         ),
                         SizedBox(
@@ -588,12 +597,18 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               NumberFormat.simpleCurrency(
                                       locale: 'vi_VN',
                                       decimalDigits: 0,
-                                      name: "K")
-                                  .format((total * 0.1) /
-                                      GlobalConstant().VND_CONVERT_RATE),
+                                      name: "")
+                                  .format((total * 0.1)),
                               style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: SvgPicture.asset(
+                                gcoin_logo,
+                                height: 18,
+                              ),
+                            )
                           ],
                         ),
                         SizedBox(
@@ -609,23 +624,38 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
-                              'Tổng cộng (Đ)',
-                              style: TextStyle(fontSize: 16),
+                            const Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Tổng cộng',
+                                  style: TextStyle(fontSize: 16),
+                                ),
+                                Text(
+                                  '(Đã làm tròn)',
+                                  style: TextStyle(fontSize: 11),
+                                )
+                              ],
                             ),
                             const Spacer(),
                             Text(
                               NumberFormat.simpleCurrency(
                                       locale: 'vi_VN',
                                       decimalDigits: 0,
-                                      name: "K")
+                                      name: "")
                                   .format(num.parse(
-                                              (total * 1.1).toStringAsFixed(5))
-                                          .ceil() /
-                                      GlobalConstant().VND_CONVERT_RATE),
+                                          (total * 1.1).toStringAsFixed(5))
+                                      .ceil()),
                               style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold),
                             ),
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: SvgPicture.asset(
+                                gcoin_logo,
+                                height: 18,
+                              ),
+                            )
                           ],
                         ),
                         SizedBox(
@@ -638,53 +668,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  'Chi phí cho chuyến đi (Đ)',
+                                  'Chi phí cho chuyến đi',
                                   style: TextStyle(fontSize: 16),
                                 ),
                                 Text(
-                                  '(Cho mỗi người)',
-                                  style: TextStyle(
-                                      fontSize: 11, fontFamily: 'NotoSans'),
-                                )
-                              ],
-                            ),
-                            const Spacer(),
-                            Text(
-                              NumberFormat.simpleCurrency(
-                                      locale: 'vi_VN',
-                                      decimalDigits: 0,
-                                      name: "K")
-                                  .format(budgetPerCapita /
-                                      GlobalConstant().VND_CONVERT_RATE),
-                              style: const TextStyle(
-                                  fontSize: 15, fontWeight: FontWeight.bold),
-                            ),
-                          ],
-                        ),
-                        SizedBox(
-                          height: 0.3.h,
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      'Giá trị quy đổi ',
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                                    SvgPicture.asset(
-                                      gcoin_logo,
-                                      height: 15,
-                                    )
-                                  ],
-                                ),
-                                const Text(
-                                  '(Cho mỗi người)',
+                                  '(Cho mỗi người, đã làm tròn)',
                                   style: TextStyle(
                                       fontSize: 11, fontFamily: 'NotoSans'),
                                 )
@@ -696,16 +684,21 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                       locale: 'vi_VN',
                                       decimalDigits: 0,
                                       name: "")
-                                  .format(budgetPerCapita /
-                                      GlobalConstant().VND_CONVERT_RATE),
+                                  .format(budgetPerCapita),
                               style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold),
                             ),
-                            SvgPicture.asset(
-                              gcoin_logo,
-                              height: 20,
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: SvgPicture.asset(
+                                gcoin_logo,
+                                height: 18,
+                              ),
                             )
                           ],
+                        ),
+                        SizedBox(
+                          height: 0.3.h,
                         ),
                       ]),
                 ),
@@ -836,15 +829,6 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             fontSize: 17, fontWeight: FontWeight.bold),
                         overflow: TextOverflow.clip,
                       )),
-                  // SizedBox(
-                  //   width: 42.w,
-                  //   child: Text(
-                  //     buildServiceText(order),
-                  //     style: const TextStyle(
-                  //         fontSize: 17, fontWeight: FontWeight.bold),
-                  //     overflow: TextOverflow.clip,
-                  //   ),
-                  // ),
                   buildServiceText(order),
                   const Spacer(),
                   Container(
@@ -852,19 +836,26 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                     width: 20.w,
                     child: Text(
                       NumberFormat.simpleCurrency(
-                              locale: 'vi_VN', decimalDigits: 0, name: 'K')
+                              locale: 'vi_VN', decimalDigits: 0, name: '')
                           .format(((order.runtimeType == OrderViewModel
-                                      ? (order.total) *
-                                          (order.serveDates.length)
+                                  ? (order.total)
+                                  : order['type'] == 'CHECKIN'
+                                      ? order['total']
                                       : order['total'] *
                                           order['serveDates'].length))
-                                  .toInt() /
-                              GlobalConstant().VND_CONVERT_RATE),
+                              .toInt()),
                       style: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.bold),
                       overflow: TextOverflow.clip,
                     ),
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: SvgPicture.asset(
+                      gcoin_logo,
+                      height: 18,
+                    ),
+                  )
                 ],
               ),
             ),
@@ -896,6 +887,5 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
           )
       ],
     );
-    // return '${isShowPeriod ? '${Utils().getPeriodString(order.runtimeType == OrderViewModel ? order.period : order['period'])['text']} ' : ''}${Utils().buildServingDatesText(order.runtimeType == OrderViewModel ? order.serveDates : order['serveDates'])}';
   }
 }

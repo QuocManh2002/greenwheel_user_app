@@ -1,3 +1,4 @@
+
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/features/home/data/models/home_location_model.dart';
@@ -29,11 +30,15 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       if (getIds.hasException) {
         throw Exception(getIds.exception);
       }
-      List? ids = getIds.data!['trendingDestinations']['destinations']
-          .map((e) => e['id'])
-          .toList();
-      if (ids != null) {
-        QueryResult result = await client.query(QueryOptions(document: gql("""
+      final trendingDestinations = getIds.data!['trendingDestinations'];
+      if (trendingDestinations == null) {
+        return null;
+      } else {
+        final ids =
+            trendingDestinations['destinations'].map((e) => int.parse(e['id'].toString())).toList();
+
+        if (ids.isNotEmpty) {
+          QueryResult result = await client.query(QueryOptions(document: gql("""
 {
   destinations(where: {
     isVisible:{
@@ -53,19 +58,21 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   }
 }
 """)));
-        if (result.hasException) {
-          throw Exception(result.exception);
+          if (result.hasException) {
+            throw Exception(result.exception);
+          }
+          List? res = result.data!['destinations']['edges'];
+          if (res == null || res.isEmpty) {
+            return [];
+          }
+          List<HomeLocationModel> destinations =
+              res.map((e) => HomeLocationModel.fromJson(e['node'])).toList();
+          List<HomeLocationModel> listResult = [];
+          for(final id in ids){
+            listResult.add(destinations.firstWhere((element) => element.id == id));
+          }
+          return listResult;
         }
-        List? res = result.data!['destinations']['edges'];
-        if (res == null || res.isEmpty) {
-          return [];
-        }
-        List<HomeLocationModel> destinations =
-            res.map((e) => HomeLocationModel.fromJson(e['node'])).toList();
-
-        return ids
-            .map((e) => destinations.firstWhere((element) => element.id == e))
-            .toList();
       }
       return [];
     } catch (error) {

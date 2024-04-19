@@ -59,11 +59,17 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
       setState(() {
         holidays = rs;
         isLoading = false;
-        _selectedDays = [widget.startDate];
+        _selectedDays = [
+          DateTime(widget.startDate.year, widget.startDate.month,
+              widget.startDate.day, 0, 0, 0)
+        ];
       });
       _selectedDays = widget.selectedDate != null
           ? widget.selectedDate!
-          : [widget.startDate];
+          : [
+              DateTime(widget.startDate.year, widget.startDate.month,
+                  widget.startDate.day, 0, 0, 0)
+            ];
     }
   }
 
@@ -163,7 +169,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                   );
                 },
                 onSubmit: (dates) {
-                  if((dates as List<DateTime>).isEmpty){
+                  if ((dates as List<DateTime>).isEmpty) {
                     AwesomeDialog(
                             context: context,
                             animType: AnimType.leftSlide,
@@ -178,9 +184,8 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                             btnOkOnPress: () {},
                             btnOkText: 'Ok')
                         .show();
-                  }else 
-                  if (widget.serviceType.id == 2 &&
-                      !Utils().isConsecutiveDates(dates as List<DateTime>)) {
+                  } else if (widget.serviceType.id == 2 &&
+                      !Utils().isConsecutiveDates(dates)) {
                     AwesomeDialog(
                             context: context,
                             animType: AnimType.leftSlide,
@@ -202,7 +207,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                             btnOkText: 'Ok')
                         .show();
                   } else {
-                    widget.callbackFunction(dates as List<DateTime>);
+                    widget.callbackFunction(dates);
                     Navigator.of(context).pop();
                   }
                 },
@@ -224,8 +229,12 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
   }
 
   isAvaiableDay(DateTime date) {
-    return (date.isAfter(widget.startDate) && date.isBefore(widget.endDate)) ||
-        date.isAtSameMomentAs(widget.startDate) ||
-        date.isAtSameMomentAs(widget.endDate);
+    final startDate = DateTime(widget.startDate.year, widget.startDate.month,
+        widget.startDate.day, 0, 0, 0);
+    final endDate = DateTime(
+        widget.endDate.year, widget.endDate.month, widget.endDate.day, 0, 0, 0);
+    return (date.isAfter(startDate) && date.isBefore(endDate)) ||
+        date.isAtSameMomentAs(startDate) ||
+        date.isAtSameMomentAs(endDate);
   }
 }

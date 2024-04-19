@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 
-const uuid = Uuid();
+const _uuid = Uuid();
 
 class PlanScheduleItem {
   final String id;
@@ -16,7 +16,7 @@ class PlanScheduleItem {
   final String? shortDescription;
   final int? activityTime;
   final bool? isStarred;
-  final dynamic tempOrder;
+  final String? orderUUID;
 
   PlanScheduleItem(
       {String? id,
@@ -27,9 +27,9 @@ class PlanScheduleItem {
       this.orderId,
       this.activityTime,
       this.isStarred,
-      this.tempOrder,
+      this.orderUUID,
       this.type})
-      : id = id ?? uuid.v4();
+      : id = id ?? _uuid.v4();
 
   PlanScheduleItem fromJson(Map<String, dynamic> json) => PlanScheduleItem(
       time: json['time'],

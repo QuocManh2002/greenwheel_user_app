@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:intl/intl.dart';
@@ -11,8 +13,10 @@ class DetailPlanSurchargeNote extends StatefulWidget {
   const DetailPlanSurchargeNote({
     super.key,
     required this.plan,
+    required this.isLeader,
   });
   final PlanDetail plan;
+  final bool isLeader;
 
   @override
   State<DetailPlanSurchargeNote> createState() =>
@@ -36,9 +40,9 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
 
     if (widget.plan.surcharges != null) {
       for (final sur in widget.plan.surcharges!) {
-        sur.alreadyDivided
-            ? _totalSurcharge += sur.amount * widget.plan.maxMemberCount!
-            : _totalSurcharge += sur.amount;
+        sur.alreadyDivided ?? true
+            ? _totalSurcharge += sur.gcoinAmount * widget.plan.maxMemberCount!
+            : _totalSurcharge += sur.gcoinAmount;
       }
     }
   }
@@ -96,6 +100,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                                         widget.plan.status != 'PENDING',
                                 isCreate: false,
                                 surcharge: sur,
+                                isLeader: widget.isLeader,
                                 callbackSurcharge: (dynamic) {},
                               ),
                             )
@@ -104,57 +109,72 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                     ),
                   ),
                   if (_totalSurcharge != 0)
-                    Row(
-                      children: [
-                        const Text(
-                          'Tổng cộng: ',
-                          style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'NotoSans'),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal:  8.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: lightPrimaryTextColor.withOpacity(0.5),
+                          borderRadius:const BorderRadius.all(Radius.circular(12))
                         ),
-                        const Spacer(),
-                        Text(
-                          NumberFormat.simpleCurrency(
-                                  locale: 'vi_VN', decimalDigits: 0, name: 'Đ')
-                              .format(_totalSurcharge),
-                          style: const TextStyle(
-                            fontFamily: 'NotoSans',
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              const Text(
+                                'Tổng cộng: ',
+                                style: TextStyle(
+                                    fontSize: 17,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: 'NotoSans'),
+                              ),
+                              const Spacer(),
+                              Text(
+                                NumberFormat.simpleCurrency(
+                                        locale: 'vi_VN', decimalDigits: 0, name: '')
+                                    .format(_totalSurcharge),
+                                style: const TextStyle(
+                                  fontFamily: 'NotoSans',
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              SvgPicture.asset(gcoin_logo, height: 18,),
+                              SizedBox(
+                                width: 5.w,
+                              )
+                            ],
                           ),
+                          SizedBox(height: 0.5.h,),
+                          Row(
+                          children: [
+                            const Text(
+                              'Bình quân: ',
+                              style: TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'NotoSans'),
+                            ),
+                            const Spacer(),
+                            Text(
+                              NumberFormat.simpleCurrency(
+                                      locale: 'vi_VN', decimalDigits: 0, name: '')
+                                  .format(_totalSurcharge /
+                                      widget.plan.maxMemberCount!),
+                              style: const TextStyle(
+                                fontFamily: 'NotoSans',
+                                fontSize: 17,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SvgPicture.asset(gcoin_logo, height: 18,),
+                            SizedBox(
+                              width: 5.w,
+                            )
+                          ],
                         ),
-                        SizedBox(
-                          width: 2.w,
-                        )
-                      ],
-                    ),
-                  if (_totalSurcharge != 0)
-                    Row(
-                      children: [
-                        const Text(
-                          'Chi phí bình quân: ',
-                          style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'NotoSans'),
-                        ),
-                        const Spacer(),
-                        Text(
-                          NumberFormat.simpleCurrency(
-                                  locale: 'vi_VN', decimalDigits: 0, name: 'Đ')
-                              .format(_totalSurcharge /
-                                  widget.plan.maxMemberCount!),
-                          style: const TextStyle(
-                            fontFamily: 'NotoSans',
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        SizedBox(
-                          width: 2.w,
-                        )
-                      ],
+                        ],
+                      ),)
                     ),
                 ],
               ),

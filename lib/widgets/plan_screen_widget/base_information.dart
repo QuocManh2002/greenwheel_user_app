@@ -73,25 +73,16 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             height: 1.h,
           ),
           buildInforWidget('Trưởng đoàn:', widget.plan.leaderName!),
-          if (widget.plan.utcRegCloseAt != null &&
-              widget.plan.status == 'REGISTERING')
-            SizedBox(
-              height: 1.h,
-            ),
-          if (widget.plan.utcRegCloseAt != null &&
-              widget.plan.status == 'REGISTERING')
-            buildInforWidget('Đóng đơn đăng kí:',
-                '${DateFormat.Hm().format(widget.plan.utcRegCloseAt!.toLocal())} ${DateFormat('dd/MM/yy').format(widget.plan.utcRegCloseAt!.toLocal())}'),
           SizedBox(
             height: 1.h,
           ),
-          buildInforWidget('Bắt đầu:',
+          buildInforWidget('Khởi hành:',
               '${DateFormat.Hm().format(widget.plan.utcDepartAt!.toLocal())} ${DateFormat('dd/MM/yy').format(widget.plan.utcDepartAt!.toLocal())}'),
           SizedBox(
             height: 1.h,
           ),
           buildInforWidget(
-              'Kết thúc:', DateFormat('dd/MM/yy').format(widget.plan.endDate!)),
+              'Kết thúc:', DateFormat('dd/MM/yy').format(widget.plan.utcEndAt!)),
           SizedBox(
             height: 1.h,
           ),
@@ -184,7 +175,14 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           const SizedBox(
             height: 8,
           ),
-          if (widget.plan.memberCount != 0 && widget.planType != 'PUBLISH')
+          if ((widget.isLeader && widget.plan.memberCount != 0) ||
+              (!widget.isLeader &&
+                  widget.planType != 'PUBLISH' &&
+                  plan_statuses
+                          .firstWhere((element) =>
+                              element.engName == widget.plan.status)
+                          .value >
+                      1))
             Container(
                 alignment: Alignment.topLeft,
                 child: Column(
@@ -303,17 +301,6 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
       // ignore: use_build_context_synchronously
       Navigator.of(context).pop();
       widget.refreshData();
-      // Future.delayed(const Duration(seconds: 1), () async {
-      //   final planMembers = await _planService.getPlanMember(widget.plan.id, widget.type);
-
-      //   if (planMembers.isNotEmpty) {
-      //     Navigator.of(context).pop();
-      //     Navigator.of(context).pop();
-      //     setState(() {
-      //       widget.members = planMembers;
-      //     });
-      //   }
-      // });
     }
   }
 

@@ -1,4 +1,3 @@
-import 'package:greenwheel_user_app/core/constants/urls.dart';
 
 class CommentViewModel {
   const CommentViewModel(
@@ -19,5 +18,5 @@ class CommentViewModel {
           customerName: json['account']['name'],
           content: json['comment'],
           date: DateTime.parse(json['createdAt']),
-          imgUrl: defaultUserAvatarLink);
+          imgUrl: json['account']['avatarPath']);
 }

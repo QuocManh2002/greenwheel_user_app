@@ -273,10 +273,9 @@ class Utils {
         ? DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!)
         : plan.arrivedAt!;
     var dayEqualNight = (plan == null
-                ? sharedPreferences.getInt('numOfExpPeriod')!
-                : plan.numOfExpPeriod)! %
-            2 ==
-        0;
+            ? sharedPreferences.getInt('numOfExpPeriod')!
+            : plan.numOfExpPeriod)!
+        .isEven;
     var arrivedAtNight = _arrivedTime.hour >= 20;
     var arrivedAtEvening = !arrivedAtNight && _arrivedTime.hour >= 16;
     return (arrivedAtEvening && dayEqualNight) ||
@@ -325,7 +324,7 @@ class Utils {
     if (dates.length <= 1) {
       return true;
     }
-
+    dates.sort((a, b) => a.compareTo(b));
     for (int i = 1; i < dates.length; i++) {
       DateTime current = dates[i];
       DateTime previous = dates[i - 1];
@@ -347,50 +346,57 @@ class Utils {
     return arrivedTime;
   }
 
-  setUpDataClonePlan(PlanDetail plan) {
+  setUpDataClonePlan(PlanDetail plan, List<bool> options) {
     sharedPreferences.setInt('planId', plan.id!);
-
-    sharedPreferences.setInt('plan_number_of_member', plan.maxMemberCount!);
-
-    sharedPreferences.setInt(
-        'plan_combo_date',
-        listComboDate
-                .firstWhere(
-                    (element) => element.duration == plan.numOfExpPeriod)
-                .id -
-            1);
-
-    sharedPreferences.setDouble('plan_start_lat', plan.startLocationLat!);
-
-    sharedPreferences.setDouble('plan_start_lng', plan.startLocationLng!);
-
-    sharedPreferences.setString('plan_start_address', plan.departureAddress!);
-
-    sharedPreferences.setStringList('selectedIndex',
-        plan.savedContacts!.map((e) => e.id.toString()).toList());
-
-    sharedPreferences.setString('plan_note', plan.note ?? 'null');
-
-    sharedPreferences.setBool('notAskScheduleAgain', false);
-
-    sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
-
-    sharedPreferences.setInt('plan_max_member_weight', plan.maxMemberWeight!);
-
     sharedPreferences.setString('plan_location_name', plan.locationName!);
-
     sharedPreferences.setInt('plan_location_id', plan.locationId!);
+    if (options[0]) {
+      sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
+      sharedPreferences.setInt(
+          'plan_combo_date',
+          listComboDate
+                  .firstWhere(
+                      (element) => element.duration == plan.numOfExpPeriod)
+                  .id -
+              1);
+    }
+    if (options[1]) {
+      sharedPreferences.setInt('plan_number_of_member', plan.maxMemberCount!);
+      sharedPreferences.setInt('plan_max_member_weight', plan.maxMemberWeight!);
+    }
 
-    sharedPreferences.setString('plan_name', plan.name!);
+    if (options[2]) {
+      sharedPreferences.setDouble('plan_start_lat', plan.startLocationLat!);
+      sharedPreferences.setDouble('plan_start_lng', plan.startLocationLng!);
+      sharedPreferences.setString('plan_start_address', plan.departureAddress!);
+    }
 
-    sharedPreferences.setString('plan_schedule', json.encode(plan.schedule));
+    if (options[3]) {
+      sharedPreferences.setString('plan_name', plan.name!);
+    }
 
-    sharedPreferences.setString('plan_surcharge',
-        json.encode(plan.surcharges!.map((e) => e.toJson()).toList()));
+    if (options[4]) {
+      sharedPreferences.setStringList('selectedIndex',
+          plan.savedContacts!.map((e) => e.providerId.toString()).toList());
+    }
+
+    if (options[5]) {
+      sharedPreferences.setBool('notAskScheduleAgain', false);
+      sharedPreferences.setString('plan_schedule', json.encode(plan.schedule));
+      sharedPreferences.setString('plan_temp_order', '[]');
+    }
+
+    if (options[6]) {
+      sharedPreferences.setString('plan_surcharge',
+          json.encode(plan.surcharges!.map((e) => e.toJsonWithoutImage()).toList()));
+    }
+    if (options[7]) {
+      sharedPreferences.setString('plan_note', plan.note ?? 'null');
+    }
   }
 
   handleAlreadyDraft(BuildContext context, LocationViewModel location,
-      String locationName, bool isClone, PlanDetail? plan) {
+      String locationName, bool isClone, PlanDetail? plan, List<bool> options) {
     AwesomeDialog(
       context: context,
       animType: AnimType.leftSlide,
@@ -407,7 +413,7 @@ class Utils {
         sharedPreferences.setString('plan_location_name', location.name);
         sharedPreferences.setInt('plan_location_id', location.id);
         if (isClone) {
-          setUpDataClonePlan(plan!);
+          setUpDataClonePlan(plan!, options);
         }
         Navigator.of(context).push(MaterialPageRoute(
             builder: (ctx) => SelectComboDateScreen(

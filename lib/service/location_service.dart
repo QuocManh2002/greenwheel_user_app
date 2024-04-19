@@ -1,7 +1,9 @@
 import 'dart:developer';
 
+import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/models/activity.dart';
 import 'package:greenwheel_user_app/models/tag.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -140,8 +142,9 @@ class LocationService extends Iterable {
 }
 ''');
 
-      QueryResult result = await client.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+      QueryResult result = await client.query(QueryOptions(
+        fetchPolicy: FetchPolicy.noCache,
+        document: gql("""
 {
     destinations
     (
@@ -174,7 +177,8 @@ class LocationService extends Iterable {
         }
     }
 }
-"""), ));
+"""),
+      ));
 
       if (result.hasException) {
         throw Exception(result.exception);
@@ -353,22 +357,23 @@ mutation {
 
   Future<List<CommentViewModel>?> getComments(int destinationId) async {
     try {
-      QueryResult result = await client.query(QueryOptions(document: gql("""
+      GraphQLClient client1 = graphQlConfig.getClient();
+      QueryResult result = await client1.query(QueryOptions(document: gql("""
 {
-  destinations(where: {
-    id:{
-      eq: $destinationId
+  destinationComments(where: {
+    destinationId:{
+      eq:$destinationId
     }
-  }
-  ){
-    nodes{
-      comments{
+  }){
+    edges{
+      node{
         id
         comment
         createdAt
         account{
           id
           name
+          avatarPath
         }
       }
     }
@@ -378,12 +383,13 @@ mutation {
       if (result.hasException) {
         throw Exception(result.exception);
       }
-      List? res = result.data!['destinations']['nodes'][0]['comments'];
+      List? res = result.data!['destinationComments']['edges'];
       if (res == null || res.isEmpty) {
         return [];
       }
-      List<CommentViewModel> comments =
-          res.map((comment) => CommentViewModel.fromJson(comment)).toList();
+      List<CommentViewModel> comments = res
+          .map((comment) => CommentViewModel.fromJson(comment['node']))
+          .toList();
       return comments;
     } catch (error) {
       throw Exception(error);
@@ -500,6 +506,38 @@ mutation {
       }
       List? res = result.data!['publishedPlans']['edges'];
       return res!.length;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int?> getNumberOfComments(
+      int destinationId, BuildContext context) async {
+    try {
+      GraphQLClient newClient = graphQlConfig.getClient();
+      QueryResult result = await newClient.query(QueryOptions(document: gql('''
+{
+  destinationComments(where: {
+    destinationId:{
+      eq:1
+    }
+  }){
+    edges{
+      node{
+        id
+      }
+    }
+  }
+}
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      return result.data!['destinationComments']['edges'].length;
     } catch (error) {
       throw Exception(error);
     }

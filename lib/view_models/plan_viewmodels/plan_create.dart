@@ -20,6 +20,7 @@ class PlanCreate {
   int? maxMemberWeight;
   List<String>? savedContactIds;
   DateTime? arrivedAt;
+  List<dynamic>? tempOrders;
 
   PlanCreate(
       {this.locationId,
@@ -40,5 +41,6 @@ class PlanCreate {
       this.maxMemberWeight,
       this.savedContactIds,
       this.arrivedAt,
+      this.tempOrders,
       this.savedContacts});
 }

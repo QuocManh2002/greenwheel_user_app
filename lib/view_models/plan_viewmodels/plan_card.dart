@@ -5,16 +5,16 @@ import 'package:greenwheel_user_app/view_models/province.dart';
 class PlanCardViewModel {
     int id;
     String? name;
-    DateTime startDate;
-    DateTime endDate;
+    DateTime utcStartAt;
+    DateTime utcEndAt;
     String status;
     LocationViewModel location;
     ProvinceViewModel province;
 
     PlanCardViewModel({
         required this.id,
-        required this.startDate,
-        required this.endDate,
+        required this.utcEndAt,
+        required this.utcStartAt,
         required this.location,
         required this.province,
         required this.status,
@@ -23,8 +23,8 @@ class PlanCardViewModel {
 
     factory PlanCardViewModel.fromJson(Map<String, dynamic> json) => PlanCardViewModel(
         id: json["id"],
-        startDate: DateTime.parse(json["startDate"]),
-        endDate: DateTime.parse(json["endDate"]),
+        utcEndAt: DateTime.parse(json["utcEndAt"]),
+        utcStartAt: DateTime.parse(json["utcStartAt"]),
         location: LocationViewModel.fromJson(json["destination"]),
         province: ProvinceViewModel.fromJson(json["destination"]["province"]),
         status: json["status"],

@@ -6,8 +6,6 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
 class PlanDetail {
   int? id;
   String? name;
-  DateTime? startDate;
-  DateTime? endDate;
   String? joinMethod;
   List<dynamic>? schedule;
   int? maxMemberCount;
@@ -41,8 +39,6 @@ class PlanDetail {
 
   PlanDetail(
       {this.id,
-      this.startDate,
-      this.endDate,
       this.schedule,
       this.maxMemberCount,
       this.status,
@@ -84,8 +80,6 @@ class PlanDetail {
         name: json["name"],
         leaderName: json['account']['name'],
         tempOrders: json['tempOrders'],
-        startDate: DateTime.parse(json["startDate"]),
-        endDate: DateTime.parse(json["endDate"]),
         schedule: json["schedule"],
         maxMemberCount: json["maxMemberCount"],
         status: json["status"],

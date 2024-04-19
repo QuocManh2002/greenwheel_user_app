@@ -71,14 +71,7 @@ class SuggestPlanCard extends StatelessWidget {
                       placeholder: (context, url) =>
                           Image.memory(kTransparentImage),
                       errorWidget: (context, url, error) =>
-                          FadeInImage.assetNetwork(
-                        height: 15.h,
-                        width: 15.h,
-                        fit: BoxFit.cover,
-                        placeholder: 'No Image',
-                        image:
-                            'https://th.bing.com/th/id/R.e61db6eda58d4e57acf7ef068cc4356d?rik=oXCsaP5FbsFBTA&pid=ImgRaw&r=0',
-                      ),
+                          Image.asset(empty_plan)
                     )),
                 const SizedBox(
                   width: 8,
@@ -103,7 +96,7 @@ class SuggestPlanCard extends StatelessWidget {
                         height: 0.5.h,
                       ),
                       Text(
-                        '${DateFormat('dd/MM/yyyy').format(plan.departDate.toLocal())} - ${DateFormat('dd/MM/yyyy').format(plan.endDate.toLocal())}',
+                        '${DateFormat('dd/MM/yyyy').format(plan.utcDepartAt.toLocal())} - ${DateFormat('dd/MM/yyyy').format(plan.utcEndAt.toLocal())}',
                         style: const TextStyle(
                             fontSize: 15, fontWeight: FontWeight.w500),
                       ),

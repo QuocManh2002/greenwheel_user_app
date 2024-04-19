@@ -1,18 +1,24 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
+import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
+import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
 import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
+import 'package:uuid/uuid.dart';
 
 class OrderService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
@@ -147,17 +153,22 @@ mutation{
     }
   }
 
-  List<dynamic> convertTempOrders(List<dynamic> sourceOrders) {
+  List<dynamic> convertTempOrders(
+      List<dynamic> sourceOrders, DateTime startDate) {
     var orders = [];
     for (final order in sourceOrders) {
       orders.add({
+        'uuid': json.encode(order['orderUUID']),
         'cart': [
           for (final detail in order['details'])
             {'key': detail['productId'], 'value': detail['quantity']}
         ],
         'note': json.encode(order['note']),
         'period': order['period'],
-        'serveDates': order['serveDates'].map((e) => json.encode(e)).toList(),
+        'serveDateIndexes': order['serveDates']
+            .map((e) =>
+                DateTime.parse(e).difference(startDate).inDays)
+            .toList(),
         'type': order['type']
       });
     }
@@ -317,7 +328,8 @@ mutation {
           List<String> serveDates,
           int total) =>
       {
-        'total': total,
+        'orderUUID': const Uuid().v4(),
+        'total': total / GlobalConstant().VND_CONVERT_RATE,
         'serveDates': serveDates,
         'period': period,
         'details': details,
@@ -440,6 +452,27 @@ mutation {
       case "VEHICLE_RENTAL":
         return 'VISIT';
     }
+  }
+
+  bool getAvailableDatesToOrder(int dayIndex, ServiceType serviceType,
+      int duration, DateTime arrivedAt, int periodIndex, PlanCreate? plan) {
+    if (serviceType.id == 1) {
+      if (dayIndex == 0) {
+        final session = sessions.firstWhereOrNull((element) =>
+            element.from <= arrivedAt.hour && element.to > arrivedAt.hour);
+        if (session == null) {
+          return true;
+        } else {
+          if (session.index <= periodIndex) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      } else if (dayIndex == duration - 1) {
+      } else {}
+    } else {}
+    return true;
   }
 
   @override

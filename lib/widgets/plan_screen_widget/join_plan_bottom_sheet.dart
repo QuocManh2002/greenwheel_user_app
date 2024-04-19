@@ -159,7 +159,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
                     SizedBox(
                       width: 60.w,
                       child: Text(
-                        '${DateFormat('dd/MM/yyyy').format(widget.plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan.endDate!)}',
+                        '${DateFormat('dd/MM/yyyy').format(widget.plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan.utcEndAt!)}',
                         textAlign: TextAlign.end,
                         overflow: TextOverflow.clip,
                         style: const TextStyle(

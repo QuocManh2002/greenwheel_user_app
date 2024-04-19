@@ -5,6 +5,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
@@ -12,6 +13,7 @@ import 'package:greenwheel_user_app/core/constants/meal_text.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/session.dart';
@@ -144,7 +146,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
       _shortDescriptionController.text = widget.item!.shortDescription!;
       _activityTimeController.text = widget.item!.activityTime!.toString();
       _isStarEvent = widget.item!.isStarred!;
-      tempOrder = widget.item!.tempOrder;
+      final orderList =
+          json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+      if (orderList.isNotEmpty) {
+        tempOrder = orderList
+            .firstWhereOrNull((e) => e['orderUUID'] == widget.item!.orderUUID);
+      }
     } else {
       setState(() {
         _selectedDate =
@@ -239,7 +246,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   description: _descriptionController.text,
                                   date: DateTime.parse(
                                       tempOrder['serveDates'].first.toString()),
-                                  tempOrder: tempOrder,
+                                  orderUUID: tempOrder['orderUUID'],
                                   activityTime:
                                       int.parse(_activityTimeController.text),
                                   type: _selectedType,
@@ -261,7 +268,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                               .last
                                               .toString())
                                           .add(const Duration(days: 1)),
-                                  tempOrder: tempOrder,
+                                  orderUUID: tempOrder['orderUUID'],
                                   activityTime:
                                       int.parse(_activityTimeController.text),
                                   type: 'Check-out',
@@ -277,7 +284,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         _shortDescriptionController.text,
                                     description: _descriptionController.text,
                                     date: DateTime.parse(day.toString()),
-                                    tempOrder: tempOrder,
+                                    orderUUID: tempOrder['orderUUID'],
                                     activityTime:
                                         int.parse(_activityTimeController.text),
                                     type: _selectedType,
@@ -294,7 +301,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     _shortDescriptionController.text,
                                 description: _descriptionController.text,
                                 date: _selectedDate,
-                                tempOrder: tempOrder,
+                                orderUUID: null,
                                 activityTime:
                                     int.parse(_activityTimeController.text),
                                 type: _selectedType,
@@ -722,13 +729,14 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         NumberFormat.simpleCurrency(
                                                 locale: 'vi_VN',
                                                 decimalDigits: 0,
-                                                name: 'Đ')
-                                            .format(surcharge['amount']),
+                                                name: '')
+                                            .format(surcharge['gcoinAmount']),
                                         style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                             fontFamily: 'NotoSans'),
                                       ),
+                                      SvgPicture.asset(gcoin_logo, height: 18),
                                       if (surcharge['alreadyDivided'])
                                         const Text(
                                           ' /',
@@ -809,6 +817,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     fontFamily: 'NotoSans',
                                   ),
                                 ),
+                                const Spacer(),
                                 if (tempOrder != null)
                                   SizedBox(
                                     width: 50.w,
@@ -816,8 +825,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       NumberFormat.simpleCurrency(
                                               locale: 'vi_VN',
                                               decimalDigits: 0,
-                                              name: 'Đ')
-                                          .format( tempOrder['total']),
+                                              name: '')
+                                          .format(tempOrder['total']),
                                       style: const TextStyle(
                                           fontSize: 18,
                                           fontFamily: 'NotoSans',
@@ -825,7 +834,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       textAlign: TextAlign.end,
                                     ),
                                   ),
-                                if (surcharge != null) const Spacer(),
                                 if (surcharge != null)
                                   SizedBox(
                                     width: 40.w,
@@ -833,12 +841,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       NumberFormat.simpleCurrency(
                                               locale: 'vi_VN',
                                               decimalDigits: 0,
-                                              name: 'Đ')
+                                              name: '')
                                           .format(surcharge['alreadyDivided']
-                                              ? surcharge['amount'] *
+                                              ? surcharge['gcoinAmount'] *
                                                   sharedPreferences.getInt(
                                                       'plan_number_of_member')!
-                                              : surcharge['amount']),
+                                              : surcharge['gcoinAmount']),
                                       style: const TextStyle(
                                           fontSize: 20,
                                           fontFamily: 'NotoSans',
@@ -846,6 +854,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       textAlign: TextAlign.end,
                                     ),
                                   ),
+                                SvgPicture.asset(
+                                  gcoin_logo,
+                                  height: 18,
+                                )
                               ],
                             )
                           ],
@@ -942,14 +954,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   } else if (_isRoomActivity) {
                                     final _startEndSessionIndex =
                                         sessions.indexOf(getStartEndSession());
-                                    // if (_isFirstDay &&
-                                    //     _startEndSessionIndex > 1) {
-                                    //   handleInvalidActivityBasedOnStartTime(
-                                    //       () {}, () {});
-                                    // } else {
                                     navigateToServiceMainScreen(
                                         sessions[_startEndSessionIndex]);
-                                    // }
                                   } else {
                                     final _startEndSessionIndex =
                                         sessions.indexOf(getStartEndSession());

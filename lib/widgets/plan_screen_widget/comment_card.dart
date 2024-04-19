@@ -1,12 +1,15 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class CommentCard extends StatelessWidget {
-  const CommentCard({super.key, required this.comment});
+  const CommentCard({super.key, required this.comment, required this.isViewAll});
   final CommentViewModel comment;
+  final bool isViewAll;
 
   @override
   Widget build(BuildContext context) {
@@ -25,16 +28,15 @@ class CommentCard extends StatelessWidget {
             child: Container(
               decoration: const BoxDecoration(shape: BoxShape.circle),
               clipBehavior: Clip.hardEdge,
-              child: Hero(
-                  tag: UniqueKey(),
-                  child: FadeInImage(
-                    height: 5.h,
-                    placeholder: MemoryImage(kTransparentImage),
-                    image: NetworkImage(comment.imgUrl),
-                    fit: BoxFit.cover,
-                    width: 5.h,
-                    filterQuality: FilterQuality.high,
-                  )),
+              child: CachedNetworkImage(
+                  key: UniqueKey(),
+                  height: 5.h,
+                  width: 5.h,
+                  placeholder: (context, url) => Image.memory(kTransparentImage),
+                  errorWidget: (context, url, error) => Image.asset(no_image),
+                  fit: BoxFit.cover,
+                  imageUrl: '$baseBucketImage${comment.imgUrl}',
+                  ),
             ),
           ),
           Column(
@@ -55,7 +57,7 @@ class CommentCard extends StatelessWidget {
                   comment.content,
                   style: const TextStyle(
                       fontSize: 15),
-                  overflow: TextOverflow.ellipsis,
+                  overflow: isViewAll ? TextOverflow.clip : TextOverflow.ellipsis,
                 ),
               ),
               SizedBox(height: 1.h,)

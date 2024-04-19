@@ -1,10 +1,7 @@
 import 'dart:developer';
-
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_config/flutter_config.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localization/flutter_localization.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -28,7 +25,6 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:cron/cron.dart';
 
 late SharedPreferences sharedPreferences;
-late FirebaseAuth auth;
 late bool hasConnection;
 late FlutterLocalization localization;
 ConfigService _configService = ConfigService();
@@ -52,12 +48,10 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   sharedPreferences = await SharedPreferences.getInstance();
-  auth = FirebaseAuth.instance;
   await dotenv.load(fileName: 'keys.env');
   // await initHiveForFlutter();
   // await Hive.initFlutter();
   // await Hive.openBox('myPlans');
-  await FlutterConfig.loadEnvVariables();
 
   MapboxOptions.setAccessToken(dotenv.env['goong_api_key'].toString());
   localization = FlutterLocalization.instance;
@@ -95,7 +89,6 @@ class MainApp extends StatelessWidget {
         ],
         child: MaterialApp(
           localizationsDelegates: localization.localizationsDelegates,
-
           supportedLocales: const [
             Locale('vi'),
           ],

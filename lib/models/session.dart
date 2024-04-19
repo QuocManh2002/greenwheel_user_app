@@ -1,5 +1,6 @@
 class Session {
   const Session({
+    required this.index,
     required this.name,
     required this.range,
     required this.image,
@@ -7,7 +8,7 @@ class Session {
     required this.from,
     required this.to
   });
-
+  final int index;
   final String name;
   final String range;
   final String image;

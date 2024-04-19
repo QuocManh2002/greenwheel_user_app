@@ -96,7 +96,7 @@ class DetailPaymentPlanInfo extends StatelessWidget {
                 SizedBox(
                     width: 60.w,
                     child: buildTextWidget(
-                        '${DateFormat('dd/MM/yyyy').format(plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(plan.endDate!)}'))
+                        '${DateFormat('dd/MM/yyyy').format(plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(plan.utcEndAt!)}'))
               ],
             ),
             Padding(

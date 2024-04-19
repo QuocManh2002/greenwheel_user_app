@@ -90,7 +90,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           } else {}
                         },
                         child: Container(
-                          color: _notiList!.indexOf(noti).isEven
+                          color: _notiList!.indexOf(noti).isOdd
                               ? lightPrimaryTextColor
                               : Colors.white,
                           child: Column(
@@ -123,7 +123,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                       child: Text(
                                         noti.body,
                                         style: const TextStyle(
-                                            fontSize: 18,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.w500,
                                             fontFamily: 'NotoSans'),
                                         overflow: TextOverflow.clip,

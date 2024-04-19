@@ -5,16 +5,19 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
-import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
-class SuccessPaymentScreen extends StatelessWidget {
-  const SuccessPaymentScreen(
-      {super.key, required this.amount, required this.planId});
+class PaymentResultScreen extends StatelessWidget {
+  const PaymentResultScreen(
+      {super.key,
+      required this.amount,
+      required this.planId,
+      required this.isSuccess});
   final int amount;
-  final int planId;
+  final int? planId;
+  final bool isSuccess;
 
   @override
   Widget build(BuildContext context) {
@@ -55,9 +58,9 @@ class SuccessPaymentScreen extends StatelessWidget {
                   SizedBox(
                     height: 1.h,
                   ),
-                  const Text(
-                    'Thanh toán thành công',
-                    style: TextStyle(
+                  Text(
+                    'Thanh toán${isSuccess ? '' : ' không'} thành công',
+                    style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         fontFamily: 'NotoSans',
@@ -137,7 +140,8 @@ class SuccessPaymentScreen extends StatelessWidget {
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
-                        text: 'Bạn đã thanh toán thành công số tiền ',
+                        text:
+                            'Bạn đã ${planId != null ? 'thanh toán' : 'nạp'} ${isSuccess ? '' : 'không '}thành công ',
                         style: const TextStyle(
                             fontFamily: 'NotoSans',
                             fontSize: 18,
@@ -149,13 +153,43 @@ class SuccessPaymentScreen extends StatelessWidget {
                                       decimalDigits: 0,
                                       name: 'GCOIN')
                                   .format(amount),
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: primaryColor)),
-                          TextSpan(
-                              text:
-                                  ' ${DateFormat('dd/MM/yyyy').format(DateTime.now())} ${DateFormat.Hm().format(DateTime.now())}')
+                                  color: isSuccess
+                                      ? primaryColor
+                                      : Colors.redAccent)),
+                          // TextSpan(
+                          //     text:
+                          //         ' ${DateFormat('dd/MM/yyyy').format(DateTime.now())} ${DateFormat.Hm().format(DateTime.now())}')
                         ]),
+                  ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Thời gian',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontFamily: 'NotoSans',
+                            color: Colors.grey),
+                      ),
+                      const Spacer(),
+                      SizedBox(
+                        width: 40.w,
+                        child: Text(
+                          '${DateFormat('dd/MM/yyyy').format(DateTime.now())} ${DateFormat.Hm().format(DateTime.now())}',
+                          overflow: TextOverflow.clip,
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                        ),
+                      )
+                    ],
                   ),
                   SizedBox(
                     height: 2.h,
@@ -165,15 +199,23 @@ class SuccessPaymentScreen extends StatelessWidget {
                       Expanded(
                           child: InkWell(
                         onTap: () {
-                          Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                  builder: (ctx) =>
-                                      const TabScreen(pageIndex: 0)),
-                              (route) => false);
+                          // Navigator.of(context).pushAndRemoveUntil(
+                          //     MaterialPageRoute(
+                          //         builder: (ctx) =>
+                          //             const TabScreen(pageIndex: 0)),
+                          //     (route) => false);
+                          // Navigator.push(
+                          //   context,
+                          //   PageTransition(
+                          //       child: const TransactionHistoryScreen(),
+                          //       type: PageTransitionType.topToBottom),
+                          // );
                           Navigator.push(
                             context,
                             PageTransition(
-                                child: const TransactionHistoryScreen(),
+                                child: const TabScreen(
+                                  pageIndex: 2,
+                                ),
                                 type: PageTransitionType.topToBottom),
                           );
                         },
@@ -185,20 +227,30 @@ class SuccessPaymentScreen extends StatelessWidget {
                       Expanded(
                           child: InkWell(
                         onTap: () {
-                          Navigator.of(context).pushAndRemoveUntil(
-                              MaterialPageRoute(
-                                  builder: (ctx) => const TabScreen(pageIndex: 1,)),
-                              (route) => false);
-                          Navigator.push(
-                            context,
-                            PageTransition(
-                                child: DetailPlanNewScreen(
-                                  planId: planId,
-                                  planType: 'JOIN',
-                                  isEnableToJoin: false,
-                                ),
-                                type: PageTransitionType.topToBottom),
-                          );
+                          if (planId != null) {
+                            Navigator.of(context).pushAndRemoveUntil(
+                                MaterialPageRoute(
+                                    builder: (ctx) => const TabScreen(
+                                          pageIndex: 1,
+                                        )),
+                                (route) => false);
+                            Navigator.push(
+                              context,
+                              PageTransition(
+                                  child: DetailPlanNewScreen(
+                                    planId: planId!,
+                                    planType: 'JOIN',
+                                    isEnableToJoin: false,
+                                  ),
+                                  type: PageTransitionType.topToBottom),
+                            );
+                          } else {
+                            Navigator.push(
+                                context,
+                                PageTransition(
+                                    child: const TabScreen(pageIndex: 4),
+                                    type: PageTransitionType.rightToLeft));
+                          }
                         },
                         child: buildButton('Quay lại', Icons.home),
                       )),

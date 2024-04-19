@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
@@ -30,11 +31,6 @@ class SupplierOrderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // var total = 0.0;
-    // for(final detail in order.details!){
-    //   total += detail.price! * detail.quantity;
-    // }
-
     return InkWell(
       onTap: () {
         Navigator.of(context).push(MaterialPageRoute(
@@ -112,10 +108,22 @@ class SupplierOrderCard extends StatelessWidget {
                   const SizedBox(
                     height: 6,
                   ),
-                  Text(
-                    "Tổng: ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(order.total)}VND",
-                    style: const TextStyle(fontWeight: FontWeight.bold),
-                  )
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        "Tổng: ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(order.total)}",
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 3),
+                        child: SvgPicture.asset(
+                          gcoin_logo,
+                          height: 15,
+                        ),
+                      )
+                    ],
+                  ),
                 ],
               ),
             )

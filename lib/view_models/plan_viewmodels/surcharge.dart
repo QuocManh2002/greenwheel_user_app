@@ -6,15 +6,15 @@ const uuid = Uuid();
 
 class SurchargeViewModel {
   String? id;
-  bool alreadyDivided;
+  bool? alreadyDivided;
   String? imagePath;
-  int amount;
+  int gcoinAmount;
   String note;
   SurchargeViewModel(
       {String? id,
-      required this.alreadyDivided,
+      this.alreadyDivided,
       this.imagePath,
-      required this.amount,
+      required this.gcoinAmount,
       required this.note})
       : id = id ?? uuid.v4();
 
@@ -22,26 +22,30 @@ class SurchargeViewModel {
       SurchargeViewModel(
           id: json['id'].toString(),
           imagePath: json['imagePath'],
-          alreadyDivided: json['alreadyDivided'],
-          amount: json['amount'],
-          note: "${json['note']}"
-          
-          );
+          gcoinAmount: json['gcoinAmount'],
+          note: "${json['note']}");
 
   factory SurchargeViewModel.fromJsonLocal(Map<String, dynamic> json) =>
       SurchargeViewModel(
           id: json['id'].toString(),
           imagePath: json['imagePath'],
           alreadyDivided: json['alreadyDivided'],
-          amount: json['amount'],
+          gcoinAmount: json['gcoinAmount'],
           note: json['note']);
-
 
   Map<String, dynamic> toJson() => {
         'id': id,
         'alreadyDivided': alreadyDivided,
         'imagePath': imagePath,
-        'amount': amount,
+        'gcoinAmount': gcoinAmount,
+        'note': json.encode(note),
+      };
+
+  Map<String, dynamic> toJsonWithoutImage() => {
+        'id': id,
+        'alreadyDivided': true,
+        'imagePath': null,
+        'gcoinAmount': gcoinAmount,
         'note': json.encode(note),
       };
 }

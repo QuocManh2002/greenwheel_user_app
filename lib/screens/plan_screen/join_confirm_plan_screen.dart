@@ -6,7 +6,7 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/transaction_detail_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/payment_screen/success_payment_screen.dart';
+import 'package:greenwheel_user_app/screens/payment_screen/payment_result_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/input_companion_name_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
@@ -243,7 +243,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                             SizedBox(
                               width: 60.w,
                               child: Text(
-                                '${DateFormat('dd/MM/yyyy').format(widget.plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan.endDate!)}',
+                                '${DateFormat('dd/MM/yyyy').format(widget.plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan.utcEndAt!)}',
                                 textAlign: TextAlign.end,
                                 overflow: TextOverflow.clip,
                                 style: const TextStyle(
@@ -610,34 +610,6 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
       );
 
   handleJoin() {
-    // if (companionNames.length < weight - 1) {
-    //   AwesomeDialog(
-    //     context: context,
-    //     animType: AnimType.leftSlide,
-    //     dialogType: DialogType.warning,
-    //     title: 'Chưa đầy đủ tên thành viên của nhóm',
-    //     titleTextStyle:
-    //         const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    //     btnOkColor: Colors.amber,
-    //     btnOkText: 'Ok',
-    //     btnOkOnPress: () {},
-    //   ).show();
-    // } else if (companionNames.length > weight - 1) {
-    //   AwesomeDialog(
-    //     context: context,
-    //     animType: AnimType.leftSlide,
-    //     dialogType: DialogType.warning,
-    //     title: 'Số lượng thành viên đã thay đổi',
-    //     titleTextStyle: const TextStyle(
-    //         fontFamily: 'NotoSans', fontSize: 18, fontWeight: FontWeight.bold),
-    //     desc: 'Cập nhật lại thông tin thành viên để thanh toán',
-    //     descTextStyle: const TextStyle(
-    //         fontSize: 16, color: Colors.grey, fontFamily: 'NotoSans'),
-    //     btnOkColor: Colors.amber,
-    //     btnOkOnPress: () {},
-    //     btnOkText: 'Ok',
-    //   ).show();
-    // } else {
     AwesomeDialog(
             context: context,
             animType: AnimType.leftSlide,
@@ -646,8 +618,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                 'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${weight != 1 ? 'x $weight = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * weight)}' : ''}GCOIN',
             titleTextStyle:
                 const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            btnOkColor: Colors.blue,
-            btnOkText: 'Chơi',
+            btnOkColor: Colors.deepOrangeAccent,
+            btnOkText: 'Đồng ý',
             btnOkOnPress: () async {
               final rs = await _planService.joinPlan(
                   widget.plan.id!, companionNames, context);
@@ -658,34 +630,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                 } else {
                   handleJoinSuccess();
                 }
-
-                // AwesomeDialog(
-                //   // ignore: use_build_context_synchronously
-                //   context: context,
-                //   dialogType: DialogType.success,
-                //   animType: AnimType.topSlide,
-                //   showCloseIcon: true,
-                //   title: "Tham gia kế hoạch thành công",
-                //   desc: "Ấn tiếp tục để trở về",
-                //   btnOkText: "Tiếp tục",
-                //   btnOkOnPress: () async {
-                //     if (widget.isPublic) {
-                //       widget.onPublicizePlan!(true);
-                //     } else {
-                //       handleJoinSuccess();
-                //     }
-                //     final rs = sharedPreferences.getDouble('userBalance')! -
-                //         (widget.plan.gcoinBudgetPerCapita! * weight);
-                //     sharedPreferences.setDouble('userBalance', rs);
-                //   },
-                // ).show();
               }
             },
-            btnCancelColor: Colors.deepOrangeAccent,
+            btnCancelColor: Colors.blueAccent,
             btnCancelOnPress: () {},
             btnCancelText: 'Huỷ')
         .show();
-    // }
   }
 
   handleConfirm() {
@@ -713,11 +663,6 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                   desc: "Ấn tiếp tục để trở về",
                   btnOkText: "Tiếp tục",
                   btnOkOnPress: () {
-                    // final rs = sharedPreferences.getDouble('userBalance')! -
-                    //     (widget.plan.gcoinBudgetPerCapita! *
-                    //         (widget.plan.maxMemberCount -
-                    //             widget.plan.memberCount!));
-                    // sharedPreferences.setDouble('userBalance', rs);
                     widget.callback!();
                     Navigator.of(context).pop();
                   },
@@ -738,8 +683,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
     Navigator.pushAndRemoveUntil(
         context,
         MaterialPageRoute(
-            builder: (ctx) => SuccessPaymentScreen(
+            builder: (ctx) => PaymentResultScreen(
                   planId: widget.plan.id!,
+                  isSuccess: true,
                   amount: widget.plan.gcoinBudgetPerCapita! * weight,
                 )),
         (route) => false);

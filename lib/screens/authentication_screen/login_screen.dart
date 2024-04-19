@@ -1,4 +1,3 @@
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -17,12 +16,6 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController phoneController = TextEditingController();
-
-  FirebaseAuth auth = FirebaseAuth.instance;
-
-  String verificationIDReceived = "";
-
-  bool checkVerify = false;
 
   CustomerService _customerService = CustomerService();
 
@@ -57,7 +50,9 @@ class _LoginScreenState extends State<LoginScreen> {
                                 height: 170,
                               ),
                             ),
-                            SizedBox(height: 2.h,), // Replace 'your_image_path.png' with your image asset path
+                            SizedBox(
+                              height: 2.h,
+                            ), // Replace 'your_image_path.png' with your image asset path
                             const Text(
                               'Chào mừng đến với Phượt Travel',
                               style: TextStyle(
@@ -129,31 +124,6 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(
                         height: 8,
                       ),
-                      // Row(
-                      //   mainAxisAlignment: MainAxisAlignment.center,
-                      //   children: [
-                      //     const Text(
-                      //       "Bạn chưa có tài khoản?",
-                      //       style: TextStyle(
-                      //         fontFamily: 'NotoSans',
-                      //       ),
-                      //     ),
-                      //     TextButton(
-                      //       onPressed: () {
-                      //         Navigator.of(context).push(MaterialPageRoute(
-                      //             builder: (ctx) => const RegisterScreen()));
-                      //       },
-                      //       child: const Text(
-                      //         'Đăng ký ngay',
-                      //         style: TextStyle(
-                      //           fontFamily: 'NotoSans',
-                      //           color:
-                      //               primaryColor, // Set the color of the link text
-                      //         ),
-                      //       ),
-                      //     ),
-                      //   ],
-                      // ),
                       Spacer(),
                       Container(
                         height: 7.h,
@@ -187,40 +157,20 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void verifyNumber() async {
-    // auth.verifyPhoneNumber(
-    //   phoneNumber: "+84${phoneController.text.trim()}",
-    //   verificationCompleted: (PhoneAuthCredential credential) async {
-    //     await auth.signInWithCredential(credential).then(
-    //           (value) => {
-    //             print("VERIFY SUCCESSFULLY!"),
-    //           },
-    //         );
-    //   },
-    //   verificationFailed: (FirebaseAuthException exception) {
-    //     Fluttertoast.showToast(
-    //       msg: 'Vui lòng kiểm tra lại số điện thoại! ${phoneController.text}',
-    //       toastLength: Toast.LENGTH_SHORT,
-    //       gravity: ToastGravity.BOTTOM,
-    //     );
-    //   },
-    //   codeSent: (String verificationID, int? resendToken) {
-    //     verificationIDReceived = verificationID;
-    //     sharedPreferences.setString('verificationID', verificationIDReceived);
-    //     Navigator.pop(context);
-    //     Navigator.push(
-    //         context, MaterialPageRoute(builder: (_) => const OTPScreen(phoneNumber: '',)));
-    //   },
-    //   codeAutoRetrievalTimeout: (String verificationId) {},
-    // );
-  
-    final rs = await _customerService.requestTravelerOTP(phoneController.text.length == 10 ? phoneController.text : '0${phoneController.text}' , context);
+    final rs = await _customerService.requestTravelerOTP(
+        phoneController.text.length == 10
+            ? phoneController.text
+            : '0${phoneController.text}',
+        context);
     if (rs!) {
       Navigator.pop(context);
       Navigator.push(
           context,
           MaterialPageRoute(
               builder: (_) => OTPScreen(
-                    phoneNumber: phoneController.text.length == 10 ? phoneController.text : '0${phoneController.text}',
+                    phoneNumber: phoneController.text.length == 10
+                        ? phoneController.text
+                        : '0${phoneController.text}',
                   )));
     }
   }
