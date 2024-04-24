@@ -23,10 +23,10 @@ class LocationService extends Iterable {
   Future<List<LocationViewModel>> searchLocations(
       String search, List<Tag> tags) async {
     try {
-      List<String> words = search.split(' ');
-      List<String> capitalizedWords =
-          words.map((word) => _capitalize(word)).toList();
-      String capitalizedSearch = capitalizedWords.join(' ');
+      // List<String> words = search.split(' ');
+      // List<String> capitalizedWords =
+      //     words.map((word) => _capitalize(word)).toList();
+      // String capitalizedSearch = capitalizedWords.join(' ');
 
       String activities = "";
       String seasons = "";
@@ -305,15 +305,6 @@ class LocationService extends Iterable {
 }
 
 """)));
-      // comments {
-      //   id
-      //   comment
-      //   createdAt
-      //   account {
-      //     name
-      //   }
-      // }
-
       if (result.hasException) {
         throw Exception(result.exception);
       }
@@ -360,11 +351,10 @@ mutation {
       GraphQLClient client1 = graphQlConfig.getClient();
       QueryResult result = await client1.query(QueryOptions(document: gql("""
 {
-  destinationComments(where: {
-    destinationId:{
-      eq:$destinationId
-    }
-  }){
+  destinationComments(
+    where: { destinationId: { eq: $destinationId } }
+    order: { createdAt: DESC }
+  ){
     edges{
       node{
         id
@@ -519,7 +509,7 @@ mutation {
 {
   destinationComments(where: {
     destinationId:{
-      eq:1
+      eq:$destinationId
     }
   }){
     edges{

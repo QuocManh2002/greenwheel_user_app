@@ -1466,6 +1466,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onClonePlan() async {
+    _planDetail!.orders = orderList;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

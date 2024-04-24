@@ -53,7 +53,7 @@ class _SelectSessionScreenState extends State<SelectSessionScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: false,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(7.7.h),
+          preferredSize: Size.fromHeight(12.h),
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 1.h),
             width: double.infinity,

@@ -129,7 +129,7 @@ class DetailPaymentInfo extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 62.w,
+                        width: 57.w,
                         child: Text(
                           transactionDetail.transaction!.description!,
                           overflow: TextOverflow.clip,

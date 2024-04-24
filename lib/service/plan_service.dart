@@ -165,7 +165,7 @@ mutation{
   Future<int> clonePlan(
       PlanCreate model, BuildContext context, String surcharges) async {
     try {
-       var schedule = json.decode(model.schedule!);
+      var schedule = json.decode(model.schedule!);
       final emerIds =
           json.decode(model.savedContacts!).map((e) => e['id']).toList();
       log("""
@@ -191,7 +191,7 @@ mutation{
   }
 }
 """);
-     
+
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
@@ -263,6 +263,7 @@ mutation{
         period
         type
         currentStatus
+        uuid
         provider {
           type
           id
@@ -270,6 +271,7 @@ mutation{
           name
           imagePath
           address
+          isActive
         }
         details {
           id
@@ -277,9 +279,11 @@ mutation{
           quantity
           product {
             id
+            partySize
             name
             type
             price
+            isAvailable
           }
         }
       }
@@ -550,7 +554,7 @@ mutation{
   }
 
   List<PlanSchedule> GetPlanScheduleFromJsonNew(
-      List<dynamic> schedules, DateTime startDate, int duration, bool isClone) {
+      List<dynamic> schedules, DateTime startDate, int duration) {
     List<PlanSchedule> schedule = [];
     for (int i = 0; i < duration; i++) {
       List<PlanScheduleItem> item = [];
@@ -558,7 +562,7 @@ mutation{
       if (i < schedules.length) {
         for (final planItem in schedules[i]) {
           item.add(PlanScheduleItem(
-              orderUUID: isClone ? null : planItem['orderUUID'],
+              orderUUID: planItem['orderUUID'],
               isStarred: planItem['isStarred'],
               activityTime: DateFormat.Hms()
                   .parse(planItem['duration'].toString().substring(0, 1) == '\"'
@@ -591,39 +595,7 @@ mutation{
       for (final item in schedule.items) {
         final type = schedule_item_types_vn
             .firstWhere((element) => element == item.type);
-        // dynamic details;
-        // if (item.tempOrder != null) {
-        //   if (item.tempOrder['details'] != null) {
-        //     details = item.tempOrder['details'].map((detail) {
-        //       return {
-        //         'key': detail['productId'],
-        //         'value': detail['quantity'],
-        //       };
-        //     }).toList();
-        //   } else {
-        //     if (item.tempOrder['cart'].runtimeType == List) {
-        //       details = item.tempOrder['cart']
-        //           .map((e) => {'key': e['key'], 'value': e['value']})
-        //           .toList();
-        //     } else {
-        //       details = item.tempOrder['cart'].entries
-        //           .map((e) => {'key': e.key, 'value': e.value})
-        //           .toList();
-        //     }
-        //   }
-        // }
         items.add({
-          // 'tempOrder': item.tempOrder != null
-          //     ? {
-          //         'cart': details,
-          //         'note': item.tempOrder['note'] != null
-          //             ? json.encode(item.tempOrder['note'])
-          //             : null,
-          //         'period': item.tempOrder['period'],
-          //         'providerId': item.tempOrder['providerId'],
-          //         'total': item.tempOrder['total']
-          //       }
-          //     : null,
           'orderUUID': json.encode(item.orderUUID),
           'isStarred': item.isStarred,
           'duration': json.encode("${item.activityTime}:00:00"),
@@ -826,12 +798,8 @@ mutation{
       node {
         id
         name
-        utcStartAt
-        utcEndAt
-        utcDepartAt
-        account {
-          name
-        }
+        periodCount
+        gcoinBudgetPerCapita
       }
     }
   }

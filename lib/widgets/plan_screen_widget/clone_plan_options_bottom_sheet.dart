@@ -1,4 +1,8 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/clone_plan_options.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
@@ -24,9 +28,9 @@ class ClonePlanOptionsBottomSheet extends StatefulWidget {
 
 class _ClonePlanOptionsBottomSheetState
     extends State<ClonePlanOptionsBottomSheet> {
-  Map<int, bool> options = {};
   List<bool> values = clonePlanOptions.map((e) => false).toList();
   final LocationService _locationService = LocationService();
+  bool isSelectAll = false;
   @override
   void initState() {
     // TODO: implement initState
@@ -34,9 +38,7 @@ class _ClonePlanOptionsBottomSheetState
     setUpData();
   }
 
-  setUpData() {
-    options = {};
-  }
+  setUpData() {}
 
   @override
   Widget build(BuildContext context) {
@@ -57,19 +59,39 @@ class _ClonePlanOptionsBottomSheetState
             SizedBox(
               height: 1.h,
             ),
-            Container(
-              alignment: Alignment.center,
-              child: const Text(
-                'Các mục sao chép',
-                style: TextStyle(
-                    fontSize: 17,
-                    fontFamily: 'NotoSans',
-                    fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
+            Stack(
+              children: [
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  child: Checkbox(
+                      value: isSelectAll,
+                      activeColor: primaryColor,
+                      onChanged: (value) {
+                        isSelectAll = !isSelectAll;
+                        setState(() {
+                          values =
+                              clonePlanOptions.map((e) => isSelectAll).toList();
+                        });
+                      }),
+                ),
+                Container(
+                  width: 100.w,
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'Các mục sao chép',
+                    style: TextStyle(
+                        fontSize: 19,
+                        fontFamily: 'NotoSans',
+                        fontWeight: FontWeight.bold),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ],
             ),
             SizedBox(
-              height: 1.h,
+              height: 0.4.h,
             ),
             for (int index = 0; index < clonePlanOptions.length; index++)
               Row(
@@ -79,17 +101,9 @@ class _ClonePlanOptionsBottomSheetState
                     activeColor: primaryColor,
                     value: values[index],
                     onChanged: (value) {
-                      if (index == clonePlanOptions.length - 1) {
-                        setState(() {
-                          values = clonePlanOptions
-                              .map((e) => values[index] ? false : true)
-                              .toList();
-                        });
-                      } else {
-                        setState(() {
-                          values[index] = !values[index];
-                        });
-                      }
+                      setState(() {
+                        values[index] = !values[index];
+                      });
                     },
                   ),
                   SizedBox(
@@ -154,7 +168,11 @@ class _ClonePlanOptionsBottomSheetState
                                     widget.plan.locationId!);
                             String? locationName = sharedPreferences
                                 .getString('plan_location_name');
-                            if (locationName != null) {
+                            if (!values[5] && values[6]) {
+                              Navigator.of(context).pop();
+                              Utils()
+                                  .showInvalidScheduleAndServiceClone(context);
+                            } else if (locationName != null) {
                               Navigator.of(context).pop();
                               Utils().handleAlreadyDraft(context, location!,
                                   locationName, true, widget.plan, values);

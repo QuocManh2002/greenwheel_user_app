@@ -252,7 +252,7 @@ class PaymentResultScreen extends StatelessWidget {
                                     type: PageTransitionType.rightToLeft));
                           }
                         },
-                        child: buildButton('Quay lại', Icons.home),
+                        child: buildButton('Quay lại', Icons.keyboard_return),
                       )),
                     ],
                   ),

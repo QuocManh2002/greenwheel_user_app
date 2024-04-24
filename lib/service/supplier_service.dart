@@ -40,6 +40,7 @@ class SupplierService extends Iterable {
             }
           }
         }
+        { isActive: { eq: true } }
       ]
     }
   ) {
@@ -94,6 +95,7 @@ class SupplierService extends Iterable {
             }
           }
         }
+        { isActive: { eq: true } }
       ]
     }
   ) {

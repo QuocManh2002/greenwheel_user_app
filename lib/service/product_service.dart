@@ -34,6 +34,7 @@ class ProductService extends Iterable {
               where: {
                 providerId: { eq: $supplierId },
                 periods: { some: {in: [$session]} }
+                isAvailable: { eq: true }
               },
               order: {
                 id: ASC

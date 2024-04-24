@@ -348,7 +348,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                               ),
                               const Spacer(),
                               SizedBox(
-                                width: 40.w,
+                                width: 35.w,
                                 child: Text(
                                   NumberFormat.simpleCurrency(
                                           locale: 'vi-VN',

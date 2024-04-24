@@ -3,6 +3,7 @@ import 'package:greenwheel_user_app/features/home/business/repositories/home_rep
 import 'package:greenwheel_user_app/features/home/data/datasources/home_remote_datasource.dart';
 import 'package:greenwheel_user_app/features/home/data/models/home_location_model.dart';
 import 'package:greenwheel_user_app/features/home/data/models/home_provinces_model.dart';
+import 'package:greenwheel_user_app/models/pagination.dart';
 
 class HomeRepositoryImpl implements HomeRepository {
   final HomeRemoteDataSource remoteDataSource;
@@ -10,10 +11,10 @@ class HomeRepositoryImpl implements HomeRepository {
   HomeRepositoryImpl({required this.remoteDataSource});
 
   @override
-  Future<List<HomeLocationModel>?> getHotLocations() async {
+  Future<Pagination<HomeLocationModel>?> getHotLocations(String? cursor) async {
     // TODO: implement getLocations
 
-    final remoteHomeLocations = await remoteDataSource.getHotLocations();
+    final remoteHomeLocations = await remoteDataSource.getHotLocations(cursor);
     return remoteHomeLocations;
   }
 

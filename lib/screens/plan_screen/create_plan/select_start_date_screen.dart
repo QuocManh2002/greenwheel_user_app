@@ -1,5 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -19,7 +21,11 @@ import 'package:sizer2/sizer2.dart';
 
 class SelectStartDateScreen extends StatefulWidget {
   const SelectStartDateScreen(
-      {super.key, required this.isCreate, this.plan, required this.location, required this.isClone});
+      {super.key,
+      required this.isCreate,
+      this.plan,
+      required this.location,
+      required this.isClone});
   final bool isCreate;
   final PlanCreate? plan;
   final LocationViewModel location;
@@ -161,7 +167,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
         DateFormat('dd/MM/yyyy').format(widget.plan!.departAt!.toLocal());
     numberOfDay = _initComboDate.numberOfDay;
     numberOfNight = _initComboDate.numberOfNight;
-    
+
     handleChangeComboDate();
   }
 
@@ -370,90 +376,222 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                       inputType: TextInputType.datetime,
                       text: 'Giờ',
                       onTap: () async {
-                        TimeOfDay? newTime = await showTimePicker(
-                          context: context,
-                          initialTime: _selectTime,
-                          confirmText: 'CHỌN',
-                          cancelText: 'HUỶ',
-                          initialEntryMode: TimePickerEntryMode.dial,
-                          builder: (context, child) {
-                            return Theme(
-                                data: ThemeData().copyWith(
-                                    colorScheme: const ColorScheme.light(
-                                        primary: primaryColor,
-                                        onPrimary: Colors.white)),
-                                child: MediaQuery(
-                                  data: MediaQuery.of(context)
-                                      .copyWith(alwaysUse24HourFormat: false),
-                                  child: Localizations.override(
-                                    context: context,
-                                    locale: const Locale('vi', ''),
-                                    child: child!,
-                                  ),
-                                ));
-                          },
-                        ).then((value) {
-                          if (!Utils().checkTimeAfterNow1Hour(
-                              value!,
-                              DateTime(_selectedDate!.year,
-                                  _selectedDate!.month, _selectedDate!.day))) {
-                            AwesomeDialog(
-                                context: context,
-                                dialogType: DialogType.warning,
-                                btnOkColor: Colors.orange,
-                                body: const Padding(
-                                  padding: EdgeInsets.symmetric(horizontal: 16),
-                                  child: Center(
-                                    child: Text(
-                                      'Thời gian xuất phát của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                      textAlign: TextAlign.center,
+                        // TimeOfDay? newTime = await showTimePicker(
+                        //   context: context,
+                        //   initialTime: _selectTime,
+                        //   confirmText: 'CHỌN',
+                        //   cancelText: 'HUỶ',
+                        //   initialEntryMode: TimePickerEntryMode.dial,
+                        //   builder: (context, child) {
+                        //     return Theme(
+                        //         data: ThemeData().copyWith(
+                        //             colorScheme: const ColorScheme.light(
+                        //                 primary: primaryColor,
+                        //                 onPrimary: Colors.white)),
+                        //         child: MediaQuery(
+                        //           data: MediaQuery.of(context)
+                        //               .copyWith(alwaysUse24HourFormat: false),
+                        //           child: Localizations.override(
+                        //             context: context,
+                        //             locale: const Locale('vi', ''),
+                        //             child: child!,
+                        //           ),
+                        //         ));
+                        //   },
+                        // ).then((value) {
+                        //   if (!Utils().checkTimeAfterNow1Hour(
+                        //       value!,
+                        //       DateTime(_selectedDate!.year,
+                        //           _selectedDate!.month, _selectedDate!.day))) {
+                        //     AwesomeDialog(
+                        //         context: context,
+                        //         dialogType: DialogType.warning,
+                        //         btnOkColor: Colors.orange,
+                        //         body: const Padding(
+                        //           padding: EdgeInsets.symmetric(horizontal: 16),
+                        //           child: Center(
+                        //             child: Text(
+                        //               'Thời gian xuất phát của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
+                        //               style: TextStyle(
+                        //                   fontSize: 18,
+                        //                   fontWeight: FontWeight.bold),
+                        //               textAlign: TextAlign.center,
+                        //             ),
+                        //           ),
+                        //         ),
+                        //         btnOkOnPress: () {
+                        //           _selectTime = TimeOfDay.fromDateTime(
+                        //               DateTime.now()
+                        //                   .add(const Duration(hours: 1)));
+                        //           _timeController.text = DateFormat.Hm().format(
+                        //               DateTime(0, 0, 0, _selectTime.hour,
+                        //                   _selectTime.minute));
+                        //           sharedPreferences.setString(
+                        //               'plan_start_time',
+                        //               DateTime(0, 0, 0, _selectTime.hour,
+                        //                       _selectTime.minute)
+                        //                   .toString());
+                        //         }).show();
+                        //   } else {
+                        //     _timeController.text = DateFormat.Hm().format(
+                        //         DateTime(0, 0, 0, value.hour, value.minute));
+                        //     if (widget.isCreate) {
+                        //       sharedPreferences.setString(
+                        //           'plan_start_time',
+                        //           DateTime(0, 0, 0, value.hour, value.minute)
+                        //               .toString());
+                        //     } else {
+                        //       setState(() {
+                        //         final departTime =
+                        //             DateFormat.Hm().parse(_timeController.text);
+                        //         final departDate = DateFormat('dd/MM/yyyy')
+                        //             .parse(_dateController.text);
+                        //         widget.plan!.departAt = DateTime(
+                        //             departDate.year,
+                        //             departDate.month,
+                        //             departDate.day,
+                        //             departTime.hour,
+                        //             departTime.minute);
+                        //       });
+                        //     }
+                        //     setState(() {
+                        //       _selectTime = value;
+                        //     });
+                        //     handleChangeComboDate();
+                        //   }
+                        // });
+                        var newTime;
+                        showDialog(
+                            context: context,
+                            builder: (_) => AlertDialog(
+                                  backgroundColor: Colors.white,
+                                  content: SizedBox(
+                                    width: 100.w,
+                                    height: 25.h,
+                                    child: CupertinoDatePicker(
+                                      use24hFormat: true,
+                                      onDateTimeChanged: (value) {
+                                        newTime = value;
+                                      },
+                                      initialDateTime: DateTime.now(),
+                                      mode: CupertinoDatePickerMode.time,
                                     ),
                                   ),
-                                ),
-                                btnOkOnPress: () {
-                                  _selectTime = TimeOfDay.fromDateTime(
-                                      DateTime.now()
-                                          .add(const Duration(hours: 1)));
-                                  _timeController.text = DateFormat.Hm().format(
-                                      DateTime(0, 0, 0, _selectTime.hour,
-                                          _selectTime.minute));
-                                  sharedPreferences.setString(
-                                      'plan_start_time',
-                                      DateTime(0, 0, 0, _selectTime.hour,
-                                              _selectTime.minute)
-                                          .toString());
-                                }).show();
-                          } else {
-                            _timeController.text = DateFormat.Hm().format(
-                                DateTime(0, 0, 0, value.hour, value.minute));
-                            if (widget.isCreate) {
-                              sharedPreferences.setString(
-                                  'plan_start_time',
-                                  DateTime(0, 0, 0, value.hour, value.minute)
-                                      .toString());
-                            } else {
-                              setState(() {
-                                final departTime =
-                                    DateFormat.Hm().parse(_timeController.text);
-                                final departDate = DateFormat('dd/MM/yyyy')
-                                    .parse(_dateController.text);
-                                widget.plan!.departAt = DateTime(
-                                    departDate.year,
-                                    departDate.month,
-                                    departDate.day,
-                                    departTime.hour,
-                                    departTime.minute);
-                              });
-                            }
-                            setState(() {
-                              _selectTime = value;
-                            });
-                            handleChangeComboDate();
-                          }
-                        });
+                                  actions: [
+                                    TextButton(
+                                        style: const ButtonStyle(
+                                            foregroundColor:
+                                                MaterialStatePropertyAll(
+                                                    primaryColor)),
+                                        onPressed: () {
+                                          Navigator.of(context).pop();
+                                        },
+                                        child: const Text('HUỶ')),
+                                    TextButton(
+                                        style: const ButtonStyle(
+                                            foregroundColor:
+                                                MaterialStatePropertyAll(
+                                                    primaryColor)),
+                                        onPressed: () {
+                                          if (!Utils().checkTimeAfterNow1Hour(
+                                              TimeOfDay.fromDateTime(newTime!),
+                                              DateTime(
+                                                  _selectedDate!.year,
+                                                  _selectedDate!.month,
+                                                  _selectedDate!.day))) {
+                                            AwesomeDialog(
+                                                context: context,
+                                                dialogType: DialogType.warning,
+                                                btnOkColor: Colors.orange,
+                                                body: const Padding(
+                                                  padding: EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                                  child: Center(
+                                                    child: Text(
+                                                      'Thời gian xuất phát của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
+                                                      style: TextStyle(
+                                                          fontSize: 18,
+                                                          fontWeight:
+                                                              FontWeight.bold),
+                                                      textAlign:
+                                                          TextAlign.center,
+                                                    ),
+                                                  ),
+                                                ),
+                                                btnOkOnPress: () {
+                                                  _selectTime =
+                                                      TimeOfDay.fromDateTime(
+                                                          DateTime.now().add(
+                                                              const Duration(
+                                                                  hours: 1)));
+                                                  _timeController.text =
+                                                      DateFormat.Hm().format(
+                                                          DateTime(
+                                                              0,
+                                                              0,
+                                                              0,
+                                                              _selectTime.hour,
+                                                              _selectTime
+                                                                  .minute));
+                                                  sharedPreferences.setString(
+                                                      'plan_start_time',
+                                                      DateTime(
+                                                              0,
+                                                              0,
+                                                              0,
+                                                              _selectTime.hour,
+                                                              _selectTime
+                                                                  .minute)
+                                                          .toString());
+                                                }).show();
+                                          } else {
+                                            _timeController.text =
+                                                DateFormat.Hm().format(DateTime(
+                                                    0,
+                                                    0,
+                                                    0,
+                                                    newTime.hour,
+                                                    newTime.minute));
+                                            if (widget.isCreate) {
+                                              sharedPreferences.setString(
+                                                  'plan_start_time',
+                                                  DateTime(
+                                                          0,
+                                                          0,
+                                                          0,
+                                                          newTime.hour,
+                                                          newTime.minute)
+                                                      .toString());
+                                            } else {
+                                              setState(() {
+                                                final departTime =
+                                                    DateFormat.Hm().parse(
+                                                        _timeController.text);
+                                                final departDate = DateFormat(
+                                                        'dd/MM/yyyy')
+                                                    .parse(
+                                                        _dateController.text);
+                                                widget.plan!.departAt =
+                                                    DateTime(
+                                                        departDate.year,
+                                                        departDate.month,
+                                                        departDate.day,
+                                                        departTime.hour,
+                                                        departTime.minute);
+                                              });
+                                            }
+                                            setState(() {
+                                              _selectTime =
+                                                  TimeOfDay.fromDateTime(
+                                                      newTime);
+                                            });
+                                            Navigator.of(context).pop();
+                                            handleChangeComboDate();
+                                          }
+                                        },
+                                        child: const Text('CHỌN')),
+                                  ],
+                                ));
                       },
                       onValidate: (value) {
                         if (value!.isEmpty) {
@@ -538,6 +676,9 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
               style: elevatedButtonStyle,
               onPressed: () {
                 if (formKey.currentState!.validate()) {
+                  if (widget.isClone) {
+                    Utils().updateTempOrder(false);
+                  }
                   Navigator.push(
                       context,
                       PageTransition(

@@ -1,11 +1,14 @@
+import 'dart:convert';
+import 'dart:developer';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/features/home/data/models/home_location_model.dart';
 import 'package:greenwheel_user_app/features/home/data/models/home_provinces_model.dart';
+import 'package:greenwheel_user_app/models/pagination.dart';
 
 abstract class HomeRemoteDataSource {
-  Future<List<HomeLocationModel>?> getHotLocations();
+  Future<Pagination<HomeLocationModel>?> getHotLocations(String? cursor);
   Future<List<HomeLocationModel>?> getTrendingLocations();
   Future<List<HomeProvinceModel>?> getProvinces();
 }
@@ -34,8 +37,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       if (trendingDestinations == null) {
         return null;
       } else {
-        final ids =
-            trendingDestinations['destinations'].map((e) => int.parse(e['id'].toString())).toList();
+        final ids = trendingDestinations['destinations']
+            .map((e) => int.parse(e['id'].toString()))
+            .toList();
 
         if (ids.isNotEmpty) {
           QueryResult result = await client.query(QueryOptions(document: gql("""
@@ -68,8 +72,9 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
           List<HomeLocationModel> destinations =
               res.map((e) => HomeLocationModel.fromJson(e['node'])).toList();
           List<HomeLocationModel> listResult = [];
-          for(final id in ids){
-            listResult.add(destinations.firstWhere((element) => element.id == id));
+          for (final id in ids) {
+            listResult
+                .add(destinations.firstWhere((element) => element.id == id));
           }
           return listResult;
         }
@@ -113,7 +118,7 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   }
 
   @override
-  Future<List<HomeLocationModel>?> getHotLocations() async {
+  Future<Pagination<HomeLocationModel>?> getHotLocations(String? cursor) async {
     try {
       String? season;
       final today = DateTime(0, DateTime.now().month, DateTime.now().day);
@@ -130,17 +135,55 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
         season = 'WINTER';
       }
 
-      QueryResult result = await client.query(QueryOptions(document: gql('''
+      log('''
 {
   destinations(
-    where: {
+    where: { 
+      isVisible: { eq: true } 
       seasons:{
         some:{
           in:[$season]
         }
       }
     }
+    order: { id: ASC }
+    after: ${cursor == null ? null : json.encode(cursor)}
+    first: 5
   ){
+    pageInfo{
+      endCursor
+    }
+    edges{
+      node{
+        id
+        description
+        name
+        imagePaths
+        rating
+      }
+    }
+  }
+}
+''');
+
+      QueryResult result = await client.query(QueryOptions(document: gql('''
+{
+  destinations(
+    where: { 
+      isVisible: { eq: true } 
+      seasons:{
+        some:{
+          in:[$season]
+        }
+      }
+    }
+    order: { id: ASC }
+    after: ${cursor == null ? null : json.encode(cursor)}
+    first: 5
+  ){
+    pageInfo{
+      endCursor
+    }
     edges{
       node{
         id
@@ -158,9 +201,13 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       }
       List? res = result.data!['destinations']['edges'];
       if (res == null || res.isEmpty) {
-        return [];
+        return null;
       }
-      return res.map((e) => HomeLocationModel.fromJson(e['node'])).toList();
+      cursor = result.data!['destinations']['pageInfo']['endCursor'];
+      final listObjects =
+          res.map((e) => HomeLocationModel.fromJson(e['node'])).toList();
+      return Pagination(pageSize: 5, cursor: cursor, objects: listObjects);
+      // return listObjects;
     } catch (error) {
       throw Exception(error);
     }

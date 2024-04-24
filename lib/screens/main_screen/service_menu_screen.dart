@@ -10,56 +10,20 @@ import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
-import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/session.dart';
+import 'package:greenwheel_user_app/models/order_input_model.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/service_menu_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/cart.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
-import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/menu_item_card.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ServiceMenuScreen extends StatefulWidget {
-  const ServiceMenuScreen(
-      {super.key,
-      required this.supplier,
-      required this.serviceType,
-      this.currentCart = const [],
-      this.iniPickupDate,
-      this.iniReturnDate,
-      this.iniNote = "",
-      required this.numberOfMember,
-      required this.endDate,
-      required this.startDate,
-      this.session,
-      this.period,
-      this.isOrder,
-      this.isFromTempOrder,
-      this.initCart,
-      this.orderGuid,
-      this.availableGcoinAmount,
-      required this.callbackFunction});
-  final Session? session;
-  final DateTime startDate;
-  final DateTime endDate;
-  final SupplierViewModel supplier;
-  final ServiceType serviceType;
-  final List<ItemCart> currentCart;
-  final List<ItemCart>? initCart;
-  final DateTime? iniPickupDate;
-  final DateTime? iniReturnDate;
-  final String iniNote;
-  final int numberOfMember;
-  final bool? isOrder;
-  final String? period;
-  final bool? isFromTempOrder;
-  final int? availableGcoinAmount;
-  final void Function(dynamic tempOrder) callbackFunction;
-  final String? orderGuid;
+  const ServiceMenuScreen({required this.inputModel});
+  final OrderInputModel inputModel;
 
   @override
   State<ServiceMenuScreen> createState() => _ServiceMenuScreenState();
@@ -79,7 +43,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   double total = 0;
   List<List<ProductViewModel>> _listResult = [];
 
-  var currencyFormat = NumberFormat.currency(symbol: 'VND', locale: 'vi_VN');
+  var currencyFormat = NumberFormat.currency(symbol: 'đ', locale: 'vi_VN');
 
   @override
   void initState() {
@@ -109,6 +73,15 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     }
   }
 
+  getTotal() {
+    return total *
+            widget.inputModel.holidayServingDates!.length *
+            (1 + widget.inputModel.holidayUpPCT! / 100) +
+        total *
+            (widget.inputModel.servingDates!.length -
+                widget.inputModel.holidayServingDates!.length);
+  }
+
   List<ProductViewModel> getResult(List<List<ProductViewModel>> list) {
     List<ProductViewModel> listRoomsCheapest = [];
     double minPriceRooms = 0;
@@ -129,25 +102,26 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   }
 
   setUpData() async {
-    list = await productService.getProductsBySupplierId(widget.supplier.id,
-        widget.session == null ? widget.period! : widget.session!.enumName);
+    list = await productService.getProductsBySupplierId(
+        widget.inputModel.supplier!.id,
+        widget.inputModel.session == null
+            ? widget.inputModel.period!
+            : widget.inputModel.session!.enumName);
 
     if (list.isNotEmpty) {
       setState(() {
         isLoading = false;
       });
     }
-    pickupDate = widget.iniPickupDate;
-    returnDate = widget.iniReturnDate;
-    note = widget.iniNote;
+    note = widget.inputModel.iniNote ?? "";
 
-    if (widget.serviceType.id == 1) {
+    if (widget.inputModel.serviceType!.id == 1) {
       title = "Món ăn";
-      if (widget.isFromTempOrder != null && widget.isFromTempOrder!) {
+      if (widget.inputModel.isOrder != null && widget.inputModel.isOrder!) {
         List<int> qtys = [];
-        for (final item in widget.currentCart) {
-          int index = widget.currentCart.indexOf(item);
-          qtys.add(item.qty = (widget.numberOfMember /
+        for (final item in widget.inputModel.currentCart!) {
+          int index = widget.inputModel.currentCart!.indexOf(item);
+          qtys.add(item.qty = (widget.inputModel.numberOfMember! /
                   list
                       .firstWhere((element) => element.id == item.product.id)
                       .partySize!)
@@ -157,11 +131,11 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
               qtys[index]);
         }
       }
-    } else if (widget.serviceType.id == 2) {
-      if (widget.serviceType.id == 2) {
+    } else if (widget.inputModel.serviceType!.id == 2) {
+      if (widget.inputModel.serviceType!.id == 2) {
         title = "Phòng nghỉ";
       }
-      findSumCombinations(list, widget.numberOfMember);
+      findSumCombinations(list, widget.inputModel.numberOfMember!);
       List<ProductViewModel> rs = getResult(_listResult);
       Map gr = rs.groupListsBy((element) => element.id);
       for (final item in gr.keys) {
@@ -179,7 +153,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       child: Scaffold(
         resizeToAvoidBottomInset: true,
         appBar: PreferredSize(
-          preferredSize: Size.fromHeight(15.h),
+          preferredSize: Size.fromHeight(12.h),
           child: Container(
             padding: EdgeInsets.symmetric(vertical: 1.h),
             width: double.infinity,
@@ -202,7 +176,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                     Padding(
                       padding: const EdgeInsets.only(left: 14),
                       child: Text(
-                        widget.supplier.name!,
+                        widget.inputModel.supplier!.name!,
                         style: const TextStyle(
                             fontSize: 16,
                             fontFamily: 'NotoSans',
@@ -214,38 +188,38 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                 const SizedBox(
                   height: 6,
                 ),
-                Padding(
-                  padding: EdgeInsets.only(left: 4.w, right: 4.w),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: TextField(
-                          decoration: InputDecoration(
-                            enabledBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                  width: 1, color: Colors.grey),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderSide: const BorderSide(
-                                  width: 1, color: Colors.black),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            suffixIcon: IconButton(
-                              icon: const Icon(
-                                Icons.search,
-                                color: Colors.black,
-                              ),
-                              onPressed: () {},
-                            ),
-                            hintText: "Bạn đang cần gì?",
-                            contentPadding: EdgeInsets.all(4.w),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Padding(
+                //   padding: EdgeInsets.only(left: 4.w, right: 4.w),
+                //   child: Row(
+                //     children: [
+                //       Expanded(
+                //         child: TextField(
+                //           decoration: InputDecoration(
+                //             enabledBorder: OutlineInputBorder(
+                //               borderSide: const BorderSide(
+                //                   width: 1, color: Colors.grey),
+                //               borderRadius: BorderRadius.circular(20),
+                //             ),
+                //             focusedBorder: OutlineInputBorder(
+                //               borderSide: const BorderSide(
+                //                   width: 1, color: Colors.black),
+                //               borderRadius: BorderRadius.circular(20),
+                //             ),
+                //             suffixIcon: IconButton(
+                //               icon: const Icon(
+                //                 Icons.search,
+                //                 color: Colors.black,
+                //               ),
+                //               onPressed: () {},
+                //             ),
+                //             hintText: "Bạn đang cần gì?",
+                //             contentPadding: EdgeInsets.all(4.w),
+                //           ),
+                //         ),
+                //       ),
+                //     ],
+                //   ),
+                // ),
               ],
             ),
           ),
@@ -263,7 +237,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                           height: 30.h,
                           width: double.infinity,
                           child: Image.network(
-                            '$baseBucketImage${widget.supplier.thumbnailUrl!}',
+                            '$baseBucketImage${widget.inputModel.supplier!.thumbnailUrl!}',
                             fit: BoxFit.fitWidth,
                             height: 30.h,
                           ),
@@ -292,14 +266,14 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                   Container(
                                     alignment: Alignment.centerLeft,
                                     child: Text(
-                                      widget.supplier.name!,
+                                      widget.inputModel.supplier!.name!,
                                       overflow: TextOverflow.clip,
                                       style: const TextStyle(
                                           fontSize: 23,
                                           fontWeight: FontWeight.bold),
                                     ),
                                   ),
-                                  widget.supplier.standard != null
+                                  widget.inputModel.supplier!.standard != null
                                       ? Container(
                                           padding: EdgeInsets.symmetric(
                                               vertical: 0.25.h),
@@ -307,8 +281,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                           child: RatingBar.builder(
                                               itemCount: 5,
                                               itemSize: 25,
-                                              initialRating:
-                                                  widget.supplier.standard!,
+                                              initialRating: widget.inputModel
+                                                  .supplier!.standard!,
                                               allowHalfRating: true,
                                               ignoreGestures: true,
                                               unratedColor:
@@ -336,7 +310,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                           width: 2.w,
                                         ),
                                         Text(
-                                          '0${widget.supplier.phone!.substring(2)}',
+                                          '0${widget.inputModel.supplier!.phone!.substring(2)}',
                                           style: const TextStyle(
                                               fontSize: 20,
                                               color: Colors.black54),
@@ -364,7 +338,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                         SizedBox(
                                           width: 70.w,
                                           child: Text(
-                                            widget.supplier.address!,
+                                            widget
+                                                .inputModel.supplier!.address!,
                                             style: const TextStyle(
                                                 fontSize: 15,
                                                 color: Colors.black54),
@@ -389,14 +364,14 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                         ),
                       ),
                     ),
-                    (widget.serviceType.id == 5)
+                    (widget.inputModel.serviceType!.id == 5)
                         ? Padding(
                             padding: const EdgeInsets.only(left: 14, top: 10),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  "Check-in ${widget.session!.name.toLowerCase()}",
+                                  "Check-in ${widget.inputModel.session!.name.toLowerCase()}",
                                   style: const TextStyle(
                                     fontSize: 15,
                                     fontFamily: 'NotoSans',
@@ -406,8 +381,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                 const SizedBox(
                                   height: 8,
                                 ),
-                                if (widget.isFromTempOrder == null ||
-                                    !widget.isFromTempOrder!)
+                                if (widget.inputModel.isOrder == null ||
+                                    !widget.inputModel.isOrder!)
                                   const Text(
                                     "Chúng tôi đã đề xuất cho bạn combo phòng có giá hợp lý nhất ứng với số lượng thành viên của chuyến đi.",
                                     style: TextStyle(color: Colors.grey),
@@ -419,11 +394,11 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                     const SizedBox(
                       width: 8,
                     ),
-                    (widget.serviceType.id == 1)
+                    (widget.inputModel.serviceType!.id == 1)
                         ? Padding(
                             padding: const EdgeInsets.only(left: 14, top: 10),
                             child: Text(
-                              "Phục vụ vào ${widget.session!.name.toLowerCase()}",
+                              "Phục vụ vào ${widget.inputModel.session!.name.toLowerCase()}",
                               style: const TextStyle(
                                 fontSize: 15,
                                 fontFamily: 'NotoSans',
@@ -451,8 +426,8 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                         return MenuItemCard(
                           product: list[index],
                           quantity: qty,
-                          serviceType: widget.serviceType,
-                          numberOfMember: widget.numberOfMember,
+                          serviceType: widget.inputModel.serviceType!,
+                          numberOfMember: widget.inputModel.numberOfMember!,
                           updateCart: updateCart,
                         );
                       },
@@ -477,22 +452,29 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (ctx) => CartScreen(
-                            isFromTempOrder: widget.isFromTempOrder,
-                            startDate: widget.startDate,
-                            endDate: widget.endDate,
-                            numberOfMember: widget.numberOfMember,
-                            supplier: widget.supplier,
+                            startDate: widget.inputModel.startDate!,
+                            endDate: widget.inputModel.endDate!,
+                            numberOfMember: widget.inputModel.numberOfMember!,
+                            supplier: widget.inputModel.supplier!,
                             list: items,
                             total: total,
-                            updateCart: updateCart,
-                            serviceType: widget.serviceType,
+                            serviceType: widget.inputModel.serviceType!,
                             note: note,
-                            orderGuid: widget.orderGuid,
-                            isOrder: widget.isOrder,
-                            session: widget.session!,
-                            callbackFunction: widget.callbackFunction,
-                            availableGcoinAmount: widget.availableGcoinAmount,
-                            isChangeCart: !compareTwoCart()!,
+                            orderGuid: widget.inputModel.orderGuid,
+                            isOrder: widget.inputModel.isOrder,
+                            session: widget.inputModel.session!,
+                            servingDates: widget.inputModel.servingDates,
+                            callbackFunction:
+                                widget.inputModel.callbackFunction!,
+                            availableGcoinAmount:
+                                widget.inputModel.availableGcoinAmount,
+                            holidayServingDates:
+                                widget.inputModel.holidayServingDates,
+                            holidayUpPCT: widget.inputModel.holidayUpPCT,
+                            finalTotal: widget.inputModel.isOrder == null ||
+                                    !widget.inputModel.isOrder!
+                                ? total
+                                : getTotal(),
                           ),
                         ),
                       );
@@ -538,18 +520,20 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
             ),
           ),
         ),
-        floatingActionButton: widget.isOrder != null && widget.isOrder!
+        floatingActionButton: widget.inputModel.isOrder != null &&
+                widget.inputModel.isOrder!
             ? DraggableFab(
                 child: FloatingActionButton(
-                backgroundColor: primaryColor,
+                backgroundColor: primaryColor.withOpacity(0.9),
                 foregroundColor: Colors.white,
                 key: UniqueKey(),
                 shape: const CircleBorder(),
                 onPressed: () {
+                  final totalOrder = getTotal();
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
-                      title: const Text('Tổng quan chi phí'),
+                      title: const Text('Tổng quan chi phí đơn hàng'),
                       titleTextStyle: const TextStyle(
                           fontSize: 16,
                           color: Colors.black,
@@ -570,13 +554,14 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                 ),
                                 const Spacer(),
                                 SizedBox(
-                                  width: 30.w,
+                                  width: 25.w,
                                   child: Text(
                                     NumberFormat.simpleCurrency(
                                             locale: 'vi_VN',
                                             decimalDigits: 0,
                                             name: '')
-                                        .format(widget.availableGcoinAmount),
+                                        .format(widget
+                                            .inputModel.availableGcoinAmount),
                                     textAlign: TextAlign.end,
                                     style: const TextStyle(
                                         fontSize: 17,
@@ -594,36 +579,98 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                               ],
                             ),
                             SizedBox(
-                              height: 0.3.h,
+                              height: 0.02.h,
+                            ),
+                            Divider(
+                              thickness: 1,
+                              color: Colors.grey.withOpacity(0.7),
+                            ),
+                            SizedBox(
+                              height: 0.02.h,
+                            ),
+                            Container(
+                              alignment: Alignment.centerLeft,
+                              child: const Text(
+                                'Đơn giá theo ngày',
+                                style: TextStyle(
+                                    fontSize: 14, fontFamily: 'NotoSans'),
+                              ),
+                            ),
+                            for (final date in widget.inputModel.servingDates!)
+                              Row(
+                                children: [
+                                  SizedBox(
+                                    width: 3.w,
+                                  ),
+                                  Text(
+                                    DateFormat('dd/MM/yyyy').format(date),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontFamily: 'NotoSans',
+                                    ),
+                                  ),
+                                  if (widget.inputModel.holidayServingDates!
+                                      .contains(date))
+                                    const Text(
+                                      ' (Ngày lễ)',
+                                      style: TextStyle(
+                                          fontSize: 12, fontFamily: 'NotoSans'),
+                                    ),
+                                  const Spacer(),
+                                  Text(
+                                    NumberFormat.simpleCurrency(
+                                            locale: 'vi_VN',
+                                            name: 'đ',
+                                            decimalDigits: 0)
+                                        .format(widget
+                                                .inputModel.holidayServingDates!
+                                                .contains(date)
+                                            ? total *
+                                                (1 +
+                                                    widget.inputModel
+                                                            .holidayUpPCT! /
+                                                        100)
+                                            : total),
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'NotoSans'),
+                                  )
+                                ],
+                              ),
+                            SizedBox(
+                              height: 0.02.h,
+                            ),
+                            Divider(
+                              thickness: 1,
+                              color: Colors.grey.withOpacity(0.7),
+                            ),
+                            SizedBox(
+                              height: 0.02.h,
                             ),
                             Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
-                                  'Tổng cộng đơn hàng',
+                                  'Tổng cộng',
                                   style: TextStyle(
                                       fontSize: 14, fontFamily: 'NotoSans'),
                                 ),
                                 const Spacer(),
-                                SizedBox(
-                                  width: 30.w,
-                                  child: Text(
-                                    NumberFormat.simpleCurrency(
-                                            locale: 'vi_VN',
-                                            decimalDigits: 0,
-                                            name: 'đ')
-                                        .format(total),
-                                    textAlign: TextAlign.end,
-                                    style: const TextStyle(
-                                        fontSize: 17,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'NotoSans'),
-                                  ),
-                                ),
+                                Text(
+                                  NumberFormat.simpleCurrency(
+                                          locale: 'vi_VN',
+                                          name: 'đ',
+                                          decimalDigits: 0)
+                                      .format(totalOrder),
+                                  style: const TextStyle(
+                                      fontSize: 15,
+                                      fontFamily: 'NotoSans',
+                                      fontWeight: FontWeight.bold),
+                                )
                               ],
                             ),
                             SizedBox(
-                              height: 0.3.h,
+                              height: 0.1.h,
                             ),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -641,11 +688,11 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                             locale: 'vi_VN',
                                             decimalDigits: 0,
                                             name: '')
-                                        .format(total /
+                                        .format(totalOrder /
                                             GlobalConstant().VND_CONVERT_RATE),
                                     textAlign: TextAlign.end,
                                     style: const TextStyle(
-                                        fontSize: 17,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: 'NotoSans'),
                                   ),
@@ -654,13 +701,13 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                   padding: const EdgeInsets.only(top: 3),
                                   child: SvgPicture.asset(
                                     gcoin_logo,
-                                    height: 18,
+                                    height: 15,
                                   ),
                                 )
                               ],
                             ),
                             SizedBox(
-                              height: 0.3.h,
+                              height: 0.1.h,
                             ),
                             Row(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,13 +725,14 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                             locale: 'vi_VN',
                                             decimalDigits: 0,
                                             name: '')
-                                        .format(widget.availableGcoinAmount! -
-                                            total /
+                                        .format(widget.inputModel
+                                                .availableGcoinAmount! -
+                                            totalOrder /
                                                 GlobalConstant()
                                                     .VND_CONVERT_RATE),
                                     textAlign: TextAlign.end,
                                     style: const TextStyle(
-                                        fontSize: 17,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.bold,
                                         fontFamily: 'NotoSans'),
                                   ),
@@ -693,7 +741,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                   padding: const EdgeInsets.only(top: 3),
                                   child: SvgPicture.asset(
                                     gcoin_logo,
-                                    height: 18,
+                                    height: 15,
                                   ),
                                 )
                               ],

@@ -350,6 +350,19 @@ mutation{
   Future<LoginModel?> travelerRequestAuthorize(
       String phoneNumber, String otp, String deviceToken) async {
     try {
+      log("""
+mutation auth{
+  travelerRequestAuthorize(dto: {
+    channel: VONAGE
+    phone: "84${phoneNumber.substring(1).toString()}"
+    otp: "$otp"
+    deviceToken: "$deviceToken"
+  }){
+    accessToken
+    refreshToken
+  }
+}
+""");
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(MutationOptions(document: gql("""
 mutation auth{

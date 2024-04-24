@@ -51,7 +51,7 @@ class SurchargeCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   SizedBox(
-                    width: 70.w,
+                    width: 65.w,
                     child: Text(
                       surcharge.note.substring(0, 1) == "\""
                           ? '${json.decode(surcharge.note)}'

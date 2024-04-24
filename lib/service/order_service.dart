@@ -9,12 +9,10 @@ import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/view_models/topup_request.dart';
 import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
@@ -23,7 +21,6 @@ import 'package:uuid/uuid.dart';
 class OrderService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
   static GraphQLClient client = config.getClient();
-  final ProductService _productService = ProductService();
 
   Future<int> addOrder(OrderCreateViewModel order, BuildContext context) async {
     try {
@@ -166,8 +163,7 @@ mutation{
         'note': json.encode(order['note']),
         'period': order['period'],
         'serveDateIndexes': order['serveDates']
-            .map((e) =>
-                DateTime.parse(e).difference(startDate).inDays)
+            .map((e) => DateTime.parse(e).difference(startDate).inDays)
             .toList(),
         'type': order['type']
       });
@@ -187,10 +183,8 @@ mutation{
   createOrder(dto: {
     cart:$details
     note:"${order.note}"
-    period:${order.period}
     planId:$planId
-    serveDates:${order.serveDates}
-    type:${order.type}
+    uuid:"${order.uuid}"
   }){
     id
   }
@@ -326,9 +320,11 @@ mutation {
           List<Map> details,
           String period,
           List<String> serveDates,
+          List<int> serveDateIndexes,
+          String? uuid,
           int total) =>
       {
-        'orderUUID': const Uuid().v4(),
+        'orderUUID': uuid ?? const Uuid().v4(),
         'total': total / GlobalConstant().VND_CONVERT_RATE,
         'serveDates': serveDates,
         'period': period,
@@ -341,118 +337,9 @@ mutation {
         'providerName': supplier.name,
         'providerPhone': supplier.phone,
         'providerImageUrl': supplier.thumbnailUrl,
-        'providerAddress': supplier.address
+        'providerAddress': supplier.address,
+        'serveDateIndexes': serveDateIndexes
       };
-
-  Future<List<OrderViewModel>?> getTempOrderFromSchedule(
-      List<dynamic> schedule, DateTime startDate) async {
-    List<dynamic> orderList = [];
-    List<int> ids = [];
-    int i = 0;
-    for (final day in schedule) {
-      for (final activity in day) {
-        if (activity['tempOrder'] != null) {
-          final orderKey =
-              '${activity['tempOrder']['cart']} ${activity['tempOrder']['period']}';
-
-          if (!orderList.any((element) =>
-              '${element['order']['cart']} ${element['order']['period']}' ==
-              orderKey)) {
-            orderList.add({
-              'order': activity['tempOrder'],
-              'serveDates': [i]
-            });
-          } else {
-            final temp = orderList.firstWhere((element) =>
-                '${element['order']['cart']} ${element['order']['period']}' ==
-                orderKey)['serveDates'];
-
-            orderList.firstWhere((element) =>
-                '${element['order']['cart']} ${element['order']['period']}' ==
-                orderKey)['serveDates'] = [...temp, i];
-          }
-        }
-      }
-      i++;
-    }
-    for (final order in orderList) {
-      if (order['order']['cart'].runtimeType == List<dynamic>) {
-        for (final id in order['order']['cart']) {
-          if (!ids.contains(int.parse(id['key'].toString()))) {
-            ids.add(int.parse(id['key'].toString()));
-          }
-        }
-      } else {
-        for (final id in order['order']['cart'].keys.toList()) {
-          if (!ids.contains(id)) {
-            ids.add(int.parse(id));
-          }
-        }
-      }
-    }
-    List<ProductViewModel>? products =
-        await _productService.getListProduct(ids);
-
-    return orderList.map((order) {
-      ProductViewModel sampleProduct = products.firstWhere((element) =>
-          element.id.toString() ==
-          (order['order']['cart'].runtimeType == List
-              ? order['order']['cart'].first['key'].toString()
-              : order['order']['cart'].entries.first.key));
-      return OrderViewModel(
-          details: (order['order']['cart'].runtimeType == List
-                  ? order['order']['cart']
-                  : order['order']['cart'].entries)
-              .map((detail) {
-            final product = products.firstWhere((element) =>
-                element.id.toString() ==
-                (detail.runtimeType.toString() == '_Map<String, dynamic>'
-                    ? detail['key'].toString()
-                    : detail.key));
-            return OrderDetailViewModel(
-                id: product.id,
-                productId: product.id,
-                productName: product.name,
-                price: product.price.toDouble(),
-                unitPrice: product.price.toDouble(),
-                quantity:
-                    detail.runtimeType.toString() == '_Map<String, dynamic>'
-                        ? detail['value']
-                        : detail.value);
-          }).toList(),
-          note: order['note'],
-          serveDates: order["serveDates"]
-              .map((day) =>
-                  startDate.add(Duration(days: day)).toString().split(' ')[0])
-              .toList(),
-          total: order['order']['total'].toDouble(),
-          createdAt: DateTime.now(),
-          supplier: SupplierViewModel(
-              type: sampleProduct.supplierType,
-              id: sampleProduct.supplierId!,
-              name: sampleProduct.supplierName,
-              phone: sampleProduct.supplierPhone,
-              thumbnailUrl: sampleProduct.supplierThumbnailUrl,
-              address: sampleProduct.supplierAddress),
-          type: getOrdeType(sampleProduct.supplierType!),
-          period: order['order']['period']);
-    }).toList();
-  }
-
-  getOrdeType(String supplierType) {
-    switch (supplierType) {
-      case "FOOD_STALL":
-        return "EAT";
-      case "RESTAURANT":
-        return "EAT";
-      case "HOTEL":
-        return "CHECKIN";
-      case "MOTEL":
-        return "CHECKIN";
-      case "VEHICLE_RENTAL":
-        return 'VISIT';
-    }
-  }
 
   bool getAvailableDatesToOrder(int dayIndex, ServiceType serviceType,
       int duration, DateTime arrivedAt, int periodIndex, PlanCreate? plan) {

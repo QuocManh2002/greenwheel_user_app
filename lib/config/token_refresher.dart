@@ -9,6 +9,7 @@ class TokenRefresher {
 
   static Future<void> refreshToken() async {
     String? refreshToken = sharedPreferences.getString('userRefreshToken');
+    log('refresh: $refreshToken');
      LoginModel? loginModel = await _customerService.refreshToken(refreshToken!);
     if(loginModel != null){
       log(loginModel.accessToken);

@@ -70,7 +70,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
   }
 
   refreshData() async {
-    final rs = await _planService.getOrderCreatePlan(widget.plan.id!, widget.planType);
+    final rs =
+        await _planService.getOrderCreatePlan(widget.plan.id!, widget.planType);
     if (rs != null) {
       setState(() {
         _orderList = rs['orders'];
@@ -109,8 +110,12 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                                     availableGcoinAmount:
                                         widget.plan.actualGcoinBudget,
                                     planId: widget.plan.id!,
-                                    orders: widget.tempOrders,
-                                    startDate: widget.plan.utcStartAt!.toLocal(),
+                                    orders: widget.tempOrders
+                                        .where((element) => !widget.orderList!
+                                            .any((e) => e.uuid == element.uuid))
+                                        .toList(),
+                                    startDate:
+                                        widget.plan.utcStartAt!.toLocal(),
                                     callback: (p) {
                                       refreshData();
                                     },
@@ -218,29 +223,29 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                     buildAmountInfo(
                         'Dự tính:',
                         widget.plan.gcoinBudgetPerCapita! *
-                            widget.plan.maxMemberCount! ),
+                            widget.plan.maxMemberCount!),
                     buildAmountInfo(
                         'Đã thu:',
                         widget.plan.gcoinBudgetPerCapita! *
-                            widget.plan.memberCount! ),
+                            widget.plan.memberCount!),
                     if (isShowTotal)
                       buildAmountInfo(
-                          'Hiện tại:',
-                          widget.plan.actualGcoinBudget! ),
+                          'Hiện tại:', widget.plan.actualGcoinBudget!),
                     if (isShowTotal)
                       buildAmountInfo(
                           'Đã chi:',
                           widget.plan.status == plan_statuses[0].engName ||
                                   widget.plan.status == plan_statuses[1].engName
                               ? 0
-                              : widget.total/GlobalConstant().VND_CONVERT_RATE),
+                              : widget.total /
+                                  GlobalConstant().VND_CONVERT_RATE),
                     if (isShowTotal)
                       buildAmountInfo(
                           'Số tiền đã bù:',
                           widget.plan.maxMemberCount! *
-                                  widget.plan.gcoinBudgetPerCapita!  -
+                                  widget.plan.gcoinBudgetPerCapita! -
                               widget.plan.memberCount! *
-                                  widget.plan.gcoinBudgetPerCapita! ),
+                                  widget.plan.gcoinBudgetPerCapita!),
                   ],
                 ),
               ),
@@ -267,14 +272,20 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                         locale: 'vi-VN', decimalDigits: 0, name: "")
                     .format(amount),
                 textAlign: TextAlign.end,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
             Padding(
               padding: const EdgeInsets.only(top: 3),
-              child: SvgPicture.asset(gcoin_logo, height: 18,),
+              child: SvgPicture.asset(
+                gcoin_logo,
+                height: 18,
+              ),
             ),
-            SizedBox(width: 5.w,)
+            SizedBox(
+              width: 5.w,
+            )
           ],
         ),
       );

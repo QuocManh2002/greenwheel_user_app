@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
@@ -174,7 +176,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 SizedBox(
-                                                  width: 65.w,
+                                                  width: 60.w,
                                                   child: Text(
                                                     detail['productName'],
                                                     style: const TextStyle(
@@ -253,10 +255,8 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                           height: 0.5.h,
                                         ),
                                         Row(
-                                          mainAxisAlignment:
-                                              MainAxisAlignment.spaceBetween,
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                              CrossAxisAlignment.center,
                                           children: [
                                             const Text(
                                               'Tổng cộng',
@@ -265,13 +265,14 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                   fontWeight: FontWeight.bold,
                                                   fontFamily: 'NotoSans'),
                                             ),
+                                            const Spacer(),
                                             SizedBox(
                                               width: 45.w,
                                               child: Text(
                                                 NumberFormat.simpleCurrency(
                                                         locale: 'vi_VN',
                                                         decimalDigits: 0,
-                                                        name: 'Đ')
+                                                        name: '')
                                                     .format(order['total']),
                                                 style: const TextStyle(
                                                     fontSize: 18,
@@ -280,6 +281,10 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                         FontWeight.bold),
                                                 textAlign: TextAlign.end,
                                               ),
+                                            ),
+                                            SvgPicture.asset(
+                                              gcoin_logo,
+                                              height: 18,
                                             )
                                           ],
                                         ),

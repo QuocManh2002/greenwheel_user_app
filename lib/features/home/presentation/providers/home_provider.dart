@@ -8,7 +8,7 @@ import 'package:greenwheel_user_app/features/home/data/datasources/home_remote_d
 import 'package:greenwheel_user_app/features/home/data/repositories/home_repository_impl.dart';
 
 class HomeProvider extends ChangeNotifier {
-  List<HomeLocationEntity>? hot_locations;
+  List<HomeLocationEntity>? hot_locations = [];
   List<HomeProvinceEntity>? home_provinces;
   List<HomeLocationEntity>? home_trending_locations;
   HomeProvider({
@@ -16,13 +16,23 @@ class HomeProvider extends ChangeNotifier {
     this.home_provinces,
   });
 
+  String? cursorHotLocation;
+
   void getHotLocations() async {
     HomeRepositoryImpl repository =
         HomeRepositoryImpl(remoteDataSource: HomeRemoteDataSourceImpl());
 
-    final hotLocations = await GetHomeLocations(repository).call();
+    final hotLocations =
+        await GetHomeLocations(repository).call(cursorHotLocation);
     if (hotLocations != null) {
-      hot_locations = hotLocations;
+      if (hotLocations.objects != null && hotLocations.objects!.isNotEmpty) {
+        if (hot_locations == null || hot_locations!.isEmpty) {
+          hot_locations = hotLocations.objects!;
+        } else {
+          hot_locations!.addAll(hotLocations.objects!);
+        }
+      }
+      cursorHotLocation = hotLocations.cursor;
       notifyListeners();
     }
   }

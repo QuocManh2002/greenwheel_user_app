@@ -4,8 +4,8 @@ List<String> clonePlanOptions = [
   'Địa điểm xuất phát',
   'Tên chuyến đi',
   'Liên lạc khẩn cấp',
-  'Lịch trình & đơn dịch vụ',
+  'Lịch trình',
+  'Đơn dịch vụ',
   'Phụ thu',
   'Ghi chú',
-  'Chọn tất cả'
 ];

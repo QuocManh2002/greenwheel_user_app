@@ -44,6 +44,7 @@ class OrderViewModel {
           id: json["provider"]["id"],
           name: json["provider"]["name"],
           phone: json["provider"]["phone"],
+          isActive: json['provider']['isActive'],
           thumbnailUrl: json["provider"]["imagePath"],
           address: json["provider"]["address"]),
       period: json['period']);

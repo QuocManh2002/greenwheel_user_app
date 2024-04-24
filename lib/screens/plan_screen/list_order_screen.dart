@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_order_type_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ListOrderScreen extends StatelessWidget {
@@ -86,26 +83,6 @@ class ListOrderScreen extends StatelessWidget {
                     ],
                   ),
                 ),
-          const Spacer(),
-          Container(
-            alignment: Alignment.center,
-            child: ElevatedButton(
-                onPressed: () {
-                  Navigator.push(
-                      context,
-                      PageTransition(
-                          child: SelectOrderType(
-                            availableGcoinAmount: availableGcoinAmount!,
-                            endDate: endDate,
-                            startDate: startDate,
-                            location: location,
-                            memberLimit: memberLimit,
-                          ),
-                          type: PageTransitionType.rightToLeft));
-                },
-                style: elevatedButtonStyle,
-                child: const Text('Đặt đơn hàng mới')),
-          ),
         ]),
       ),
     ));

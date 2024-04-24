@@ -5,6 +5,7 @@ import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/models/order_input_model.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
@@ -55,23 +56,25 @@ class SupplierCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-                    Navigator.push(
-                      context,
-                      PageTransition(
-                          child: ServiceMenuScreen(
-                            startDate: startDate,
-                            endDate: endDate,
-                            period: 'NOON',
-                            numberOfMember: numberOfMember,
-                            supplier: supplier,
-                            serviceType: serviceType,
-                            isOrder: isOrder,
-                            session:serviceType.id == 1 ? initSession : sessions[1],
-                            isFromTempOrder: isFromTempOrder,
-                            availableGcoinAmount: availableGcoinAmount,
-                            callbackFunction: callbackFunction,
-                          ),
-                          type: PageTransitionType.rightToLeft));
+              Navigator.push(
+                  context,
+                  PageTransition(
+                      child: ServiceMenuScreen(
+                        inputModel: OrderInputModel(
+                          startDate: startDate,
+                          endDate: endDate,
+                          period: 'NOON',
+                          numberOfMember: numberOfMember,
+                          supplier: supplier,
+                          serviceType: serviceType,
+                          isOrder: isOrder,
+                          session:
+                              serviceType.id == 1 ? initSession : sessions[1],
+                          availableGcoinAmount: availableGcoinAmount,
+                          callbackFunction: callbackFunction,
+                        ),
+                      ),
+                      type: PageTransitionType.rightToLeft));
             },
             child: Row(
               children: [
@@ -86,10 +89,12 @@ class SupplierCard extends StatelessWidget {
                     ),
                     child: CachedNetworkImage(
                       height: 15.h,
-                      placeholder: (context, url) => Image.memory(kTransparentImage),
-                      imageUrl:'$baseBucketImage${supplier.thumbnailUrl!}',
+                      placeholder: (context, url) =>
+                          Image.memory(kTransparentImage),
+                      imageUrl: '$baseBucketImage${supplier.thumbnailUrl!}',
                       fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Image.asset(empty_plan),
+                      errorWidget: (context, url, error) =>
+                          Image.asset(empty_plan),
                       width: 15.h,
                       filterQuality: FilterQuality.high,
                     ),

@@ -8,6 +8,7 @@ class SupplierViewModel {
   double? latitude;
   String? type;
   double? standard;
+  bool? isActive;
 
   SupplierViewModel({
     required this.id,
@@ -19,6 +20,7 @@ class SupplierViewModel {
     this.latitude,
     this.standard,
     this.type,
+    this.isActive
   });
 
   factory SupplierViewModel.fromJson(Map<String, dynamic> json) =>
@@ -29,6 +31,7 @@ class SupplierViewModel {
         thumbnailUrl: json["imagePath"],
         address: json["address"],
         type: json['type'],
+        isActive: json['isActive'],
         standard: json['standard'] == null ? null : double.parse(json['standard'].toString()),
         latitude: json["coordinate"]["coordinates"][1],
         longitude: json["coordinate"]["coordinates"][0],

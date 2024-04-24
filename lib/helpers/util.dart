@@ -1,20 +1,26 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:collection/collection.dart';
 import 'package:dart_jts/dart_jts.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
+import 'package:greenwheel_user_app/service/config_service.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
+
+import '../models/holiday.dart';
 
 class Utils {
   static List<Widget> modelBuilder<M>(
@@ -81,7 +87,9 @@ class Utils {
     return dateTime
         .add(Duration(hours: time.hour))
         .add(Duration(minutes: time.minute))
-        .isAfter(DateTime.now().add(const Duration(minutes: 59)));
+        .isAfter(DateTime.now()
+            .add(const Duration(days: 7))
+            .add(const Duration(minutes: 59)));
   }
 
   Future<bool> CheckLoationInSouthSide(
@@ -347,6 +355,7 @@ class Utils {
   }
 
   setUpDataClonePlan(PlanDetail plan, List<bool> options) {
+    OrderService _orderService = OrderService();
     sharedPreferences.setInt('planId', plan.id!);
     sharedPreferences.setString('plan_location_name', plan.locationName!);
     sharedPreferences.setInt('plan_location_id', plan.locationId!);
@@ -382,15 +391,71 @@ class Utils {
 
     if (options[5]) {
       sharedPreferences.setBool('notAskScheduleAgain', false);
+      final availableOrder = plan.orders!
+          .where((e) =>
+              e.supplier!.isActive! &&
+              e.details!.every((element) => element.isAvailable))
+          .toList();
+      final list = availableOrder.map((e) {
+        final orderDetailGroupList =
+            e.details!.groupListsBy((e) => e.productId);
+        final orderDetailList =
+            orderDetailGroupList.entries.map((e) => e.value.first).toList();
+        return _orderService.convertToTempOrder(
+          e.supplier!,
+          e.note ?? "",
+          e.type!,
+          orderDetailList
+              .map((item) => {
+                    'productId': item.productId,
+                    'productName': item.productName,
+                    'quantity': item.quantity,
+                    'partySize': item.partySize,
+                    'unitPrice': item.unitPrice.toDouble(),
+                    'price': item.price.toDouble()
+                  })
+              .toList(),
+          e.period!,
+          e.serveDates!.map((date) => date.toString()).toList(),
+          e.serveDates!
+              .map((date) => DateTime.parse(date.toString())
+                  .difference(DateTime(plan.utcStartAt!.year,
+                      plan.utcStartAt!.month, plan.utcStartAt!.day, 0, 0, 0))
+                  .inDays)
+              .toList(),
+          e.uuid,
+          (orderDetailList.fold(
+                  0,
+                  (previousValue, element) =>
+                      previousValue +
+                      num.parse(
+                              (element.unitPrice * element.quantity).toString())
+                          .toInt()) *
+              e.serveDates!.length),
+        );
+      }).toList();
+      for (final date in plan.schedule!) {
+        for (final item in date) {
+          if (item['orderUUID'] != null &&
+              !availableOrder
+                  .any((element) => element.uuid == item['orderUUID'])) {
+            item['orderUUID'] = null;
+          }
+        }
+      }
       sharedPreferences.setString('plan_schedule', json.encode(plan.schedule));
-      sharedPreferences.setString('plan_temp_order', '[]');
+      if (options[6]) {
+        sharedPreferences.setString('plan_temp_order', json.encode(list));
+      }
     }
 
-    if (options[6]) {
-      sharedPreferences.setString('plan_surcharge',
-          json.encode(plan.surcharges!.map((e) => e.toJsonWithoutImage()).toList()));
-    }
     if (options[7]) {
+      sharedPreferences.setString(
+          'plan_surcharge',
+          json.encode(
+              plan.surcharges!.map((e) => e.toJsonWithoutImage()).toList()));
+    }
+    if (options[8]) {
       sharedPreferences.setString('plan_note', plan.note ?? 'null');
     }
   }
@@ -437,5 +502,145 @@ class Utils {
         }
       },
     ).show();
+  }
+
+  showInvalidScheduleAndServiceClone(BuildContext context) {
+    AwesomeDialog(
+            context: context,
+            title:
+                'Không thể sao chép đơn dịch vụ nếu không sao chép lịch trình',
+            animType: AnimType.leftSlide,
+            dialogType: DialogType.warning,
+            titleTextStyle: const TextStyle(
+                fontSize: 17,
+                fontWeight: FontWeight.bold,
+                fontFamily: 'NotoSans'),
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            btnOkColor: Colors.amber,
+            btnOkOnPress: () {},
+            btnOkText: 'OK')
+        .show();
+  }
+
+  getHolidayServingDates(List<Holiday> holidays, List<DateTime> servingDates) {
+    List<DateTime> normalServingDates = [];
+    List<DateTime> holidayServingDates = [];
+    for (final date in servingDates) {
+      if (holidays.any((element) =>
+          element.from.isBefore(date) && element.to.isAfter(date) ||
+          date.isAtSameMomentAs(element.from) ||
+          date.isAtSameMomentAs(element.to))) {
+        holidayServingDates.add(date);
+      } else {
+        normalServingDates.add(date);
+      }
+    }
+    return {
+      'normalServingDates': normalServingDates,
+      'holidayServingDates': holidayServingDates
+    };
+  }
+
+  updateTempOrder(bool isChangeByMember) async {
+    final newMaxMemberCount = sharedPreferences.getInt('plan_number_of_member');
+    var orderList =
+        json.decode(sharedPreferences.getString('plan_temp_order')!);
+    if (isChangeByMember) {
+      for (final order in orderList) {
+        for (final detail in order['details']) {
+          detail['quantity'] =
+              (newMaxMemberCount! / detail['partySize']).ceil();
+        }
+        order['total'] = order['details'].fold(
+                0,
+                (previousValue, element) =>
+                    previousValue +
+                    num.parse((element['unitPrice'] * element['quantity'])
+                            .toString())
+                        .toInt()) *
+            order['serveDates']!.length /
+            GlobalConstant().VND_CONVERT_RATE;
+      }
+    } else {
+      ConfigService _config = ConfigService();
+      DateTime startDate =
+          DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+      final config = await _config.getOrderConfig();
+      final holidays = config!.HOLIDAYS;
+      var listedPrice = 0.0;
+      for (final order in orderList) {
+        listedPrice = order['total'] / order['serveDates'].length;
+        List<DateTime> _servingDates = [];
+        for (final index in order['serveDateIndexes']) {
+          _servingDates.add(startDate.add(Duration(days: index)));
+        }
+        final rs = getHolidayServingDates(holidays!, _servingDates);
+
+        order['serveDates'] = order['serveDateIndexes']
+            .map((e) =>
+                startDate.add(Duration(days: e)).toString().split(' ')[0])
+            .toList();
+
+        if (rs['holidayServingDates'].isNotEmpty) {
+          switch (order['type']) {
+            case "EAT":
+              order['total'] = listedPrice * rs['normalServingDates'].length +
+                  listedPrice *
+                      rs['holidayServingDates'].length *
+                      (1 + config.HOLIDAY_MEAL_UP_PCT! / 100);
+              break;
+            case "CHECKIN":
+              order['total'] = listedPrice * rs['normalServingDates'].length +
+                  listedPrice *
+                      rs['holidayServingDates'].length *
+                      (1 + config.HOLIDAY_LODGING_UP_PCT! / 100);
+              break;
+            case "VISIT":
+              order['total'] = listedPrice * rs['normalServingDates'].length +
+                  listedPrice *
+                      rs['holidayServingDates'].length *
+                      (1 + config.HOLIDAY_RIDING_UP_PCT! / 100);
+              break;
+          }
+        }
+      }
+    }
+    sharedPreferences.setString('plan_temp_order', json.encode(orderList));
+  }
+
+  updateScheduleAndOrder() {
+    int duration = (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil();
+    var schedule = json.decode(sharedPreferences.getString('plan_schedule')!);
+    var tempOrder =
+        json.decode(sharedPreferences.getString('plan_temp_order')!);
+    var newSchedule = [];
+
+    for (int i = 0; i < duration; i++) {
+      newSchedule.add(schedule[i]);
+    }
+
+    var invalidOrder =[];
+    for(final order in tempOrder){
+      if(
+        order['serveDateIndexes'].any((index) => int.parse(index.toString()) >= duration )
+      ){
+        invalidOrder.add(order);
+      }
+    }
+
+    for (final order in invalidOrder) {
+      tempOrder.remove(order);
+      for (final day in newSchedule) {
+        for (final item in day) {
+          if (item['orderUUID'] != null &&
+              order['orderUUID'] == item['orderUUID']) {
+            item['orderUUID'] = null;
+          }
+        }
+      }
+    }
+
+    sharedPreferences.setString('plan_schedule', json.encode(newSchedule));
+    sharedPreferences.setString('plan_temp_order', json.encode(tempOrder));
   }
 }

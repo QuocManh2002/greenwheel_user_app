@@ -146,11 +146,14 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
       _shortDescriptionController.text = widget.item!.shortDescription!;
       _activityTimeController.text = widget.item!.activityTime!.toString();
       _isStarEvent = widget.item!.isStarred!;
+      _isFoodActivity = widget.item!.type == 'Ăn uống';
+      _isRoomActivity = widget.item!.type == 'Check-in';
+      _isVisitActivity = widget.item!.type == 'Tham quan';
       final orderList =
           json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
       if (orderList.isNotEmpty) {
-        tempOrder = orderList
-            .firstWhereOrNull((e) => e['orderUUID'] == widget.item!.orderUUID);
+        tempOrder =
+            orderList.where((e) => e['orderUUID'] == widget.item!.orderUUID);
       }
     } else {
       setState(() {
@@ -897,7 +900,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                                 .rightToLeft));
                                   },
                                   icon: const Icon(Icons.attach_money),
-                                  label: const Text('Phụ thu'))),
+                                  label: const Text(
+                                    'Phụ thu',
+                                    style: TextStyle(fontSize: 12),
+                                  ))),
                           SizedBox(
                             width: 2.w,
                           ),
@@ -969,10 +975,16 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         ? Icons.hotel
                                         : Icons.directions_car),
                                 style: elevatedButtonStyle,
-                                label: const Text('Dự trù kinh phí')),
+                                label: const Text(
+                                  'Dự trù kinh phí',
+                                  style: TextStyle(fontSize: 12),
+                                )),
                           ),
                         ],
-                      )
+                      ),
+              SizedBox(
+                height: 50.h,
+              )
             ],
           ),
         ),

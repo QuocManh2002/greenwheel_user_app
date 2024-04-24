@@ -81,7 +81,7 @@ class _LocationScreenState extends State<LocationScreen> {
         isLoading = false;
       });
     }
-    getNumberOfComment(true, 0);
+    callbackAddComment();
   }
 
   @override
@@ -461,7 +461,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                   child: CommentCard(
                                       isViewAll: false,
                                       comment:
-                                          _comments.reversed.elementAt(index)),
+                                          _comments[index]),
                                 ),
                               ),
                               Container(
@@ -618,6 +618,7 @@ class _LocationScreenState extends State<LocationScreen> {
   }
 
   callbackAddComment() async {
+    await getNumberOfComment(true, 0);
     var comments = await _locationService.getComments(location!.id);
     if (comments != null) {
       setState(() {

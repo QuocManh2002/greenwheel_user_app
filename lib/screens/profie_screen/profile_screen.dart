@@ -14,6 +14,7 @@ import 'package:greenwheel_user_app/screens/profie_screen/update_profile_screen.
 import 'package:greenwheel_user_app/screens/payment_screen/add_balance.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
+import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:restart_app/restart_app.dart';
@@ -296,16 +297,16 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         SizedBox(
                           height: 1.h,
                         ),
-                        // buildProfileButton(() {
-                        //   Navigator.push(
-                        //       context,
-                        //       PageTransition(
-                        //           child: const TestScreen(),
-                        //           type: PageTransitionType.rightToLeft));
-                        // }, Icons.vpn_key, 'Thay đổi mật khẩu'),
-                        // SizedBox(
-                        //   height: 1.h,
-                        // ),
+                        buildProfileButton(() {
+                          Navigator.push(
+                              context,
+                              PageTransition(
+                                  child: const TestScreen(),
+                                  type: PageTransitionType.rightToLeft));
+                        }, Icons.vpn_key, 'Thay đổi mật khẩu'),
+                        SizedBox(
+                          height: 1.h,
+                        ),
                         buildProfileButton(() {
                           AwesomeDialog(
                                   context: context,

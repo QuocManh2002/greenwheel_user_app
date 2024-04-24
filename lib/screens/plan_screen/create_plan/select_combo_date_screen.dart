@@ -22,7 +22,11 @@ import 'package:sizer2/sizer2.dart';
 
 class SelectComboDateScreen extends StatefulWidget {
   const SelectComboDateScreen(
-      {super.key, required this.location, required this.isCreate, this.plan, required this.isClone});
+      {super.key,
+      required this.location,
+      required this.isCreate,
+      this.plan,
+      required this.isClone});
   final bool isCreate;
   final PlanCreate? plan;
   final LocationViewModel location;
@@ -42,6 +46,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   int maxMemberWeight = 1;
   final PlanService _planService = PlanService();
   int _previousSelection = 0;
+  bool isChangeScheduleAndOrder = false;
+  bool isShowDialog = false;
 
   @override
   void initState() {
@@ -80,7 +86,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
         (element) =>
             element.numberOfDay + element.numberOfNight == numOfExpPeriod,
       );
-
+      _previousSelection = _selectedComboDate.id - 1;
       setState(() {
         _selectedCombo = _selectedComboDate.id - 1;
         _scrollController =
@@ -212,271 +218,182 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
           )
         ],
       ),
-      body: Padding(
-        padding: EdgeInsets.only(left: 2.w, bottom: 3.h, right: 2.w),
-        child: Column(
-          children: [
-            const CreatePlanHeader(
-                stepNumber: 1, stepName: 'Thời gian và số thành viên'),
-            const Text(
-              'Thời gian trải nghiệm mong muốn',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 2.h,
-            ),
-            const Text(
-              'Chưa gồm thời gian di chuyển đến điểm xuất phát',
-              style: TextStyle(fontSize: 15, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(
-              height: 3.h,
-            ),
-            _isSelecting
-                ? SizedBox(
-                    height: 320,
-                    child: CupertinoPicker(
-                        itemExtent: 64,
-                        diameterRatio: 0.7,
-                        looping: true,
-                        scrollController: _scrollController,
-                        selectionOverlay:
-                            CupertinoPickerDefaultSelectionOverlay(
-                                background: primaryColor.withOpacity(0.12)),
-                        onSelectedItemChanged: (value) {
-                          if (widget.isCreate) {
-                            if (sharedPreferences.getString('plan_schedule') !=
-                                    null &&
-                                (listComboDate[value].duration / 2).ceil() <
-                                    json
-                                        .decode(sharedPreferences
-                                            .getString('plan_schedule')!)
-                                        .length) {
-                              AwesomeDialog(
-                                      context: context,
-                                      animType: AnimType.leftSlide,
-                                      dialogType: DialogType.warning,
-                                      title: 'Thay đổi quan trọng',
-                                      titleTextStyle: const TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          fontFamily: 'NotoSans'),
-                                      desc:
-                                          'Thay đổi này ảnh hưởng đến lịch trình và các thành phần quan trọng của chuyến đi. Đồng ý với thay đổi, chúng tôi sẽ xoá toàn bộ lịch trình và các thành phần liên quan',
-                                      descTextStyle: const TextStyle(
-                                        fontSize: 16,
-                                        color: Colors.grey,
-                                        fontFamily: 'NotoSans',
-                                      ),
-                                      padding: const EdgeInsets.symmetric(
-                                          horizontal: 12),
-                                      btnOkText: 'Đồng ý',
-                                      btnOkColor: Colors.amber,
-                                      btnOkOnPress: () {
-                                        sharedPreferences.remove('plan_schedule');
-                                        sharedPreferences.remove('plan_surcharge');
-                                        sharedPreferences.remove('plan_temp_order');
-                                        setState(() {
-                                          _selectedCombo = value;
-                                        });
-                                        _previousSelection = value;
-                                        sharedPreferences.setInt(
-                                            'plan_combo_date', value);
-                                        sharedPreferences.setInt(
-                                            'initNumOfExpPeriod',
-                                            listComboDate[value].numberOfDay +
-                                                listComboDate[value]
-                                                    .numberOfNight);
-                                      },
-                                      btnCancelColor: Colors.blueAccent,
-                                      btnCancelOnPress: () {
-                                        setState(() {
-                                          _selectedCombo = _previousSelection;
-                                          _scrollController =
-                                              FixedExtentScrollController(
-                                                  initialItem:
-                                                      _previousSelection);
-                                        });
-                                      },
-                                      btnCancelText: 'Huỷ')
-                                  .show();
-                            } else {
+      body: SingleChildScrollView(
+        physics: AlwaysScrollableScrollPhysics(),
+        child: Padding(
+          padding: EdgeInsets.only(left: 2.w, bottom: 3.h, right: 2.w),
+          child: Column(
+            children: [
+              const CreatePlanHeader(
+                  stepNumber: 1, stepName: 'Thời gian và số thành viên'),
+              const Text(
+                'Thời gian trải nghiệm mong muốn',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: 2.h,
+              ),
+              const Text(
+                'Chưa gồm thời gian di chuyển đến điểm xuất phát',
+                style: TextStyle(fontSize: 15, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(
+                height: 3.h,
+              ),
+              _isSelecting
+                  ? SizedBox(
+                      height: 320,
+                      child: CupertinoPicker(
+                          itemExtent: 64,
+                          diameterRatio: 0.7,
+                          looping: true,
+                          scrollController: _scrollController,
+                          selectionOverlay:
+                              CupertinoPickerDefaultSelectionOverlay(
+                                  background: primaryColor.withOpacity(0.12)),
+                          onSelectedItemChanged: (value) {
+                            if (widget.isCreate) {
                               setState(() {
                                 _selectedCombo = value;
                               });
-                              _previousSelection = value;
                               sharedPreferences.setInt(
                                   'plan_combo_date', value);
                               sharedPreferences.setInt(
                                   'initNumOfExpPeriod',
                                   listComboDate[value].numberOfDay +
                                       listComboDate[value].numberOfNight);
-                            }
-                          } else {
-                            widget.plan!.numOfExpPeriod =
-                                listComboDate[value].numberOfDay +
-                                    listComboDate[value].numberOfNight;
-                          }
-
-                          Future.delayed(
-                            const Duration(seconds: 1),
-                            () {
-                              setState(() {
-                                _isSelecting = false;
-                              });
-                            },
-                          );
-                        },
-                        children: Utils.modelBuilder(
-                            listComboDate,
-                            (index, model) => Center(
-                                  child: Text(
-                                    '${model.numberOfDay} ngày, ${model.numberOfNight} đêm',
-                                    style: TextStyle(
-                                        fontWeight: _selectedCombo == index
-                                            ? FontWeight.bold
-                                            : FontWeight.normal,
-                                        color: _selectedCombo == index
-                                            ? primaryColor
-                                            : Colors.black),
-                                  ),
-                                ))),
-                  )
-                : InkWell(
-                    onTap: () {
-                      setState(() {
-                        _isSelecting = true;
-                      });
-                      _scrollController = FixedExtentScrollController(
-                          initialItem: _selectedCombo);
-                    },
-                    child: Container(
-                        width: 70.w,
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                            border: Border.all(color: Colors.black38, width: 2),
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(12))),
-                        child: Text(
-                          '${listComboDate[_selectedCombo].numberOfDay} ngày, ${listComboDate[_selectedCombo].numberOfNight} đêm',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                              color: primaryColor,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold),
-                        )),
-                  ),
-            SizedBox(
-              height: 3.h,
-            ),
-            const Text(
-              'Số lượng thành viên tối đa',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 2.h,
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                IconButton(
-                    color: primaryColor,
-                    iconSize: 30,
-                    onPressed: () {
-                      if (int.parse(_memberController.text) > 2) {
-                        onChangeQuantity("subtract");
-                      }
-                    },
-                    icon: const Icon(Icons.remove)),
-                SizedBox(
-                    width: 10.h,
-                    height: 5.h,
-                    child: defaultTextFormField(
-                        maxLength: 2,
-                        padding: const EdgeInsets.all(16),
-                        isNumber: true,
-                        onTap: () {
-                          setState(() {
-                            _isSelecting = false;
-                          });
-                        },
-                        onChange: (value) {
-                          if (value == null || value.isEmpty) {
-                            sharedPreferences.setInt(
-                                'plan_number_of_member', 2);
-                            Fluttertoast.showToast(
-                                msg: "Số lượng thành viên không được để trống",
-                                toastLength: Toast.LENGTH_SHORT,
-                                gravity: ToastGravity.CENTER,
-                                timeInSecForIosWeb: 1,
-                                backgroundColor: Colors.white,
-                                textColor: Colors.black,
-                                fontSize: 18.0);
-                          } else {
-                            var selectedNumber =
-                                int.tryParse(_memberController.text);
-                            if (selectedNumber == null) {
-                              sharedPreferences.setInt(
-                                  'plan_number_of_member', 2);
-                              Fluttertoast.showToast(
-                                  msg: "Số lượng thành viên không hợp lệ",
-                                  toastLength: Toast.LENGTH_SHORT,
-                                  gravity: ToastGravity.CENTER,
-                                  timeInSecForIosWeb: 1,
-                                  backgroundColor: Colors.white,
-                                  textColor: Colors.black,
-                                  fontSize: 18.0);
                             } else {
-                              if (selectedNumber < 2 || selectedNumber > 20) {
-                                sharedPreferences.setInt(
-                                    'plan_number_of_member', 2);
-                                Fluttertoast.showToast(
-                                    msg: "Số lượng thành viên phải từ 2 - 20",
-                                    toastLength: Toast.LENGTH_SHORT,
-                                    gravity: ToastGravity.CENTER,
-                                    timeInSecForIosWeb: 1,
-                                    backgroundColor: Colors.white,
-                                    textColor: Colors.black,
-                                    fontSize: 18.0);
-                              } else {
-                                sharedPreferences.setInt(
-                                    'plan_number_of_member', int.parse(value));
-                                setState(() {
-                                  maxMemberWeight =
-                                      getMaxMemberWeight(int.parse(value));
-                                });
-                              }
+                              widget.plan!.numOfExpPeriod =
+                                  listComboDate[value].numberOfDay +
+                                      listComboDate[value].numberOfNight;
                             }
-                          }
-                        },
-                        borderSize: 2,
-                        textAlign: TextAlign.center,
-                        controller: _memberController,
-                        inputType: TextInputType.number)),
-                IconButton(
-                    color: primaryColor,
-                    iconSize: 30,
-                    onPressed: () {
-                      if (int.parse(_memberController.text) < 20) {
-                        onChangeQuantity('add');
-                      }
-                    },
-                    icon: const Icon(Icons.add)),
-              ],
-            ),
-            SizedBox(
-              height: 3.h,
-            ),
-            if (maxMemberWeight != 1)
+
+                            Future.delayed(
+                              const Duration(seconds: 1),
+                              () {
+                                setState(() {
+                                  _isSelecting = false;
+                                });
+                                if (sharedPreferences
+                                            .getString('plan_schedule') !=
+                                        null &&
+                                    (listComboDate[value].duration / 2).ceil() <
+                                        json
+                                            .decode(sharedPreferences
+                                                .getString('plan_schedule')!)
+                                            .length) {
+                                  if (!_isSelecting && !isShowDialog )  {
+                                    isShowDialog = true;
+                                    AwesomeDialog(
+                                            context: context,
+                                            animType: AnimType.leftSlide,
+                                            dialogType: DialogType.warning,
+                                            title: 'Thay đổi quan trọng',
+                                            titleTextStyle: const TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold,
+                                                fontFamily: 'NotoSans'),
+                                            desc:
+                                                'Thay đổi này ảnh hưởng đến lịch trình và các thành phần quan trọng của chuyến đi. Đồng ý với thay đổi, chúng tôi sẽ cập nhật lại lịch trình và các thành phần liên quan',
+                                            descTextStyle: const TextStyle(
+                                              fontSize: 16,
+                                              color: Colors.grey,
+                                              fontFamily: 'NotoSans',
+                                            ),
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 12),
+                                            btnOkText: 'Đồng ý',
+                                            btnOkColor: Colors.amber,
+                                            btnOkOnPress: () {
+                                              isChangeScheduleAndOrder = true;
+                                              setState(() {
+                                                _selectedCombo = value;
+                                              });
+                                              _previousSelection = value;
+                                              sharedPreferences.setInt(
+                                                  'plan_combo_date', value);
+                                              sharedPreferences.setInt(
+                                                  'initNumOfExpPeriod',
+                                                  listComboDate[value]
+                                                          .numberOfDay +
+                                                      listComboDate[value]
+                                                          .numberOfNight);
+                                            },
+                                            btnCancelColor: Colors.blueAccent,
+                                            btnCancelOnPress: () {
+                                              setState(() {
+                                                _selectedCombo =
+                                                    _previousSelection;
+                                                _scrollController =
+                                                    FixedExtentScrollController(
+                                                        initialItem:
+                                                            _previousSelection);
+                                              });
+                                            },
+                                            btnCancelText: 'Huỷ')
+                                        .show();
+                                  }
+                                } else {
+                                  isShowDialog = false;
+                                  if (!_isSelecting) {
+                                    _previousSelection = value;
+
+                                  }
+                                }
+                              },
+                            );
+                          },
+                          children: Utils.modelBuilder(
+                              listComboDate,
+                              (index, model) => Center(
+                                    child: Text(
+                                      '${model.numberOfDay} ngày, ${model.numberOfNight} đêm',
+                                      style: TextStyle(
+                                          fontWeight: _selectedCombo == index
+                                              ? FontWeight.bold
+                                              : FontWeight.normal,
+                                          color: _selectedCombo == index
+                                              ? primaryColor
+                                              : Colors.black),
+                                    ),
+                                  ))),
+                    )
+                  : InkWell(
+                      onTap: () {
+                        setState(() {
+                          _isSelecting = true;
+                        });
+                        _scrollController = FixedExtentScrollController(
+                            initialItem: _selectedCombo);
+                      },
+                      child: Container(
+                          width: 70.w,
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                              border:
+                                  Border.all(color: Colors.black38, width: 2),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(12))),
+                          child: Text(
+                            '${listComboDate[_selectedCombo].numberOfDay} ngày, ${listComboDate[_selectedCombo].numberOfNight} đêm',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                                color: primaryColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold),
+                          )),
+                    ),
+              SizedBox(
+                height: 3.h,
+              ),
               const Text(
-                'Số người đi cùng tối đa',
+                'Số lượng thành viên tối đa',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
-            SizedBox(
-              height: 2.h,
-            ),
-            if (maxMemberWeight != 1)
+              SizedBox(
+                height: 2.h,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -484,8 +401,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                       color: primaryColor,
                       iconSize: 30,
                       onPressed: () {
-                        if (int.parse(_maxMemberWeightController.text) > 0) {
-                          onChangeMaxWeightMember("subtract");
+                        if (int.parse(_memberController.text) > 2) {
+                          onChangeQuantity("subtract");
                         }
                       },
                       icon: const Icon(Icons.remove)),
@@ -494,8 +411,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                       height: 5.h,
                       child: defaultTextFormField(
                           maxLength: 2,
-                          isNumber: true,
                           padding: const EdgeInsets.all(16),
+                          isNumber: true,
                           onTap: () {
                             setState(() {
                               _isSelecting = false;
@@ -504,10 +421,10 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                           onChange: (value) {
                             if (value == null || value.isEmpty) {
                               sharedPreferences.setInt(
-                                  'plan_max_member_weight', 1);
+                                  'plan_number_of_member', 2);
                               Fluttertoast.showToast(
                                   msg:
-                                      "Số lượng người đi cùng không được để trống",
+                                      "Số lượng thành viên không được để trống",
                                   toastLength: Toast.LENGTH_SHORT,
                                   gravity: ToastGravity.CENTER,
                                   timeInSecForIosWeb: 1,
@@ -516,12 +433,12 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                   fontSize: 18.0);
                             } else {
                               var selectedNumber =
-                                  int.tryParse(_maxMemberWeightController.text);
+                                  int.tryParse(_memberController.text);
                               if (selectedNumber == null) {
                                 sharedPreferences.setInt(
-                                    'plan_max_member_weight', 1);
+                                    'plan_number_of_member', 2);
                                 Fluttertoast.showToast(
-                                    msg: "Số lượng người đi cùng không hợp lệ",
+                                    msg: "Số lượng thành viên không hợp lệ",
                                     toastLength: Toast.LENGTH_SHORT,
                                     gravity: ToastGravity.CENTER,
                                     timeInSecForIosWeb: 1,
@@ -529,13 +446,11 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                     textColor: Colors.black,
                                     fontSize: 18.0);
                               } else {
-                                if (selectedNumber < 0 ||
-                                    selectedNumber > maxMemberWeight - 1) {
+                                if (selectedNumber < 2 || selectedNumber > 20) {
                                   sharedPreferences.setInt(
-                                      'plan_max_member_weight', 1);
+                                      'plan_number_of_member', 2);
                                   Fluttertoast.showToast(
-                                      msg:
-                                          "Số lượng người đi cùng phải từ 0 - ${maxMemberWeight - 1}",
+                                      msg: "Số lượng thành viên phải từ 2 - 20",
                                       toastLength: Toast.LENGTH_SHORT,
                                       gravity: ToastGravity.CENTER,
                                       timeInSecForIosWeb: 1,
@@ -544,29 +459,135 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                       fontSize: 18.0);
                                 } else {
                                   sharedPreferences.setInt(
-                                      'plan_max_member_weight',
-                                      int.parse(value) + 1);
+                                      'plan_number_of_member',
+                                      int.parse(value));
+                                  setState(() {
+                                    maxMemberWeight =
+                                        getMaxMemberWeight(int.parse(value));
+                                  });
                                 }
                               }
                             }
                           },
                           borderSize: 2,
                           textAlign: TextAlign.center,
-                          controller: _maxMemberWeightController,
+                          controller: _memberController,
                           inputType: TextInputType.number)),
                   IconButton(
                       color: primaryColor,
                       iconSize: 30,
                       onPressed: () {
-                        if (int.parse(_maxMemberWeightController.text) + 1 <
-                            (int.parse(_memberController.text) / 3).floor()) {
-                          onChangeMaxWeightMember('add');
+                        if (int.parse(_memberController.text) < 20) {
+                          onChangeQuantity('add');
                         }
                       },
                       icon: const Icon(Icons.add)),
                 ],
               ),
-          ],
+              SizedBox(
+                height: 3.h,
+              ),
+              if (maxMemberWeight != 1)
+                const Text(
+                  'Số người đi cùng tối đa',
+                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                ),
+              SizedBox(
+                height: 2.h,
+              ),
+              if (maxMemberWeight != 1)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    IconButton(
+                        color: primaryColor,
+                        iconSize: 30,
+                        onPressed: () {
+                          if (int.parse(_maxMemberWeightController.text) > 0) {
+                            onChangeMaxWeightMember("subtract");
+                          }
+                        },
+                        icon: const Icon(Icons.remove)),
+                    SizedBox(
+                        width: 10.h,
+                        height: 5.h,
+                        child: defaultTextFormField(
+                            maxLength: 2,
+                            isNumber: true,
+                            padding: const EdgeInsets.all(16),
+                            onTap: () {
+                              setState(() {
+                                _isSelecting = false;
+                              });
+                            },
+                            onChange: (value) {
+                              if (value == null || value.isEmpty) {
+                                sharedPreferences.setInt(
+                                    'plan_max_member_weight', 1);
+                                Fluttertoast.showToast(
+                                    msg:
+                                        "Số lượng người đi cùng không được để trống",
+                                    toastLength: Toast.LENGTH_SHORT,
+                                    gravity: ToastGravity.CENTER,
+                                    timeInSecForIosWeb: 1,
+                                    backgroundColor: Colors.white,
+                                    textColor: Colors.black,
+                                    fontSize: 18.0);
+                              } else {
+                                var selectedNumber = int.tryParse(
+                                    _maxMemberWeightController.text);
+                                if (selectedNumber == null) {
+                                  sharedPreferences.setInt(
+                                      'plan_max_member_weight', 1);
+                                  Fluttertoast.showToast(
+                                      msg:
+                                          "Số lượng người đi cùng không hợp lệ",
+                                      toastLength: Toast.LENGTH_SHORT,
+                                      gravity: ToastGravity.CENTER,
+                                      timeInSecForIosWeb: 1,
+                                      backgroundColor: Colors.white,
+                                      textColor: Colors.black,
+                                      fontSize: 18.0);
+                                } else {
+                                  if (selectedNumber < 0 ||
+                                      selectedNumber > maxMemberWeight - 1) {
+                                    sharedPreferences.setInt(
+                                        'plan_max_member_weight', 1);
+                                    Fluttertoast.showToast(
+                                        msg:
+                                            "Số lượng người đi cùng phải từ 0 - ${maxMemberWeight - 1}",
+                                        toastLength: Toast.LENGTH_SHORT,
+                                        gravity: ToastGravity.CENTER,
+                                        timeInSecForIosWeb: 1,
+                                        backgroundColor: Colors.white,
+                                        textColor: Colors.black,
+                                        fontSize: 18.0);
+                                  } else {
+                                    sharedPreferences.setInt(
+                                        'plan_max_member_weight',
+                                        int.parse(value) + 1);
+                                  }
+                                }
+                              }
+                            },
+                            borderSize: 2,
+                            textAlign: TextAlign.center,
+                            controller: _maxMemberWeightController,
+                            inputType: TextInputType.number)),
+                    IconButton(
+                        color: primaryColor,
+                        iconSize: 30,
+                        onPressed: () {
+                          if (int.parse(_maxMemberWeightController.text) + 1 <
+                              (int.parse(_memberController.text) / 3).floor()) {
+                            onChangeMaxWeightMember('add');
+                          }
+                        },
+                        icon: const Icon(Icons.add)),
+                  ],
+                ),
+            ],
+          ),
         ),
       ),
       bottomNavigationBar: Padding(
@@ -614,6 +635,12 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                             btnOkText: 'OK')
                         .show();
                   } else {
+                    if (widget.isClone) {
+                      Utils().updateTempOrder(true);
+                    }
+                    if (isChangeScheduleAndOrder) {
+                      Utils().updateScheduleAndOrder();
+                    }
                     Navigator.push(
                         context,
                         PageTransition(

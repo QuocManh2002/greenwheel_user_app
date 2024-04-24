@@ -49,13 +49,12 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
   }
 
   setUpData() async {
-
-      setState(() {
-        _scheduleList = _planService.GetPlanScheduleFromJsonNew(
-            widget.schedule,
-            widget.startDate,
-            widget.endDate.difference(widget.startDate).inDays + 1, false);
-      });
+    setState(() {
+      _scheduleList = _planService.GetPlanScheduleFromJsonNew(
+          widget.schedule,
+          widget.startDate,
+          widget.endDate.difference(widget.startDate).inDays + 1);
+    });
 
     PlanSchedule? todaySchedule = _scheduleList.firstWhereOrNull((element) =>
         element.date!.isBefore(DateTime.now()) &&
@@ -101,7 +100,8 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
               shrinkWrap: true,
               itemCount: _scheduleList[_index].items.length,
               itemBuilder: (context, index) => PlanScheduleActivityView(
-                order: widget.orders!.firstWhereOrNull((e) => e.uuid == _scheduleList[_index].items[index].orderUUID),
+                order: widget.orders!.firstWhereOrNull((e) =>
+                    e.uuid == _scheduleList[_index].items[index].orderUUID),
                 item: _scheduleList[_index].items[index],
                 isLeader: widget.isLeader,
               ),

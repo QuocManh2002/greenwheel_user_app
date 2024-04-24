@@ -44,7 +44,7 @@ class EmergencyContactView extends StatelessWidget {
                   ),
                 ),
                 SizedBox(
-                  height: 1.h,
+                  height: 0.5.h,
                 ),
                 Row(
                   children: [
@@ -67,7 +67,7 @@ class EmergencyContactView extends StatelessWidget {
                   ],
                 ),
                 SizedBox(
-                  height: 1.h,
+                  height: 0.5.h,
                 ),
                 Row(
                   children: [

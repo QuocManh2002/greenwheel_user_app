@@ -5,18 +5,46 @@ import 'package:greenwheel_user_app/features/home/presentation/widgets/location_
 import 'package:provider/provider.dart';
 import 'package:sizer2/sizer2.dart';
 
-class HotLocations extends StatelessWidget {
+class HotLocations extends StatefulWidget {
   const HotLocations({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    final provider =
-        Provider.of<HomeProvider>(context);
+  State<HotLocations> createState() => _HotLocationsState();
+}
+
+class _HotLocationsState extends State<HotLocations> {
+  final controller = ScrollController();
+  bool isCalled = false;
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    setUpData();
+  }
+
+  setUpData() {
+    final provider = Provider.of<HomeProvider>(context, listen: false);
     provider.getHotLocations();
-    List<HomeLocationEntity>? hot_locations = Provider.of<HomeProvider>(context).hot_locations;
-    return
-    hot_locations != null && hot_locations.isNotEmpty ?
-     Column(
+    controller.addListener(() {
+      if(controller.position.pixels == controller.position.maxScrollExtent){
+        if(!isCalled){
+          provider.getHotLocations();
+          print('call');
+          isCalled = true;
+        }
+      }else{
+        if(isCalled){
+          isCalled = false;
+          print('dont call');
+        }
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(
@@ -34,26 +62,54 @@ class HotLocations extends StatelessWidget {
         ),
         Padding(
           padding: const EdgeInsets.only(left: 8.0),
-          child: Row(
-            children: <Widget>[
-              Expanded(
-                  child: SizedBox(
-                height: 30.h,
-                child: ListView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  itemCount: hot_locations.length,
-                  shrinkWrap: true,
-                  scrollDirection: Axis.horizontal,
-                  itemBuilder: (context, index) => Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: LocationCard(location: hot_locations[index]),
-                  ),
-                ),
-              ))
-            ],
+          child: Consumer<HomeProvider>(
+            builder: (context, value, child) {
+              return Row(
+                children: <Widget>[
+                  Expanded(
+                      child: SizedBox(
+                    height: 30.h,
+                    child: ListView.builder(
+                      controller: controller,
+                      physics: const BouncingScrollPhysics(),
+                      itemCount: value.hot_locations == null
+                          ? 0
+                          : value.hot_locations!.length,
+                      shrinkWrap: true,
+                      scrollDirection: Axis.horizontal,
+                      itemBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child:
+                            LocationCard(location: value.hot_locations![index]),
+                      ),
+                    ),
+                  ))
+                ],
+              );
+              // child: Row(
+              //   children: <Widget>[
+              //     Expanded(
+              //         child: SizedBox(
+              //       height: 30.h,
+              //       child: ListView.builder(
+              //         controller: controller,
+              //         physics: const BouncingScrollPhysics(),
+              //         itemCount: hot_locations.length,
+              //         shrinkWrap: true,
+              //         scrollDirection: Axis.horizontal,
+              //         itemBuilder: (context, index) => Padding(
+              //           padding: const EdgeInsets.symmetric(horizontal: 8),
+              //           child: LocationCard(location: hot_locations[index]),
+              //         ),
+              //       ),
+              //     ))
+              //   ],
+              // ),
+            },
           ),
         ),
       ],
-    ):Container();
+    );
+    // : Container();
   }
 }

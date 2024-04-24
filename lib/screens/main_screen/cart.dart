@@ -1,22 +1,26 @@
 import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/holiday.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
+import 'package:greenwheel_user_app/service/config_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
-import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/cart_item_card.dart';
 import 'package:intl/intl.dart';
@@ -35,12 +39,13 @@ class CartScreen extends StatefulWidget {
       required this.numberOfMember,
       required this.session,
       this.isOrder,
-      this.isFromTempOrder,
       this.initCart,
-      this.isChangeCart,
       this.orderGuid,
       this.availableGcoinAmount,
-      required this.updateCart,
+      this.servingDates,
+      this.holidayServingDates,
+      this.holidayUpPCT,
+      this.finalTotal,
       required this.callbackFunction});
   final SupplierViewModel supplier;
   final List<ItemCart> list;
@@ -53,12 +58,13 @@ class CartScreen extends StatefulWidget {
   final int numberOfMember;
   final Session session;
   final bool? isOrder;
-  final bool? isFromTempOrder;
   final void Function(dynamic tempOrder) callbackFunction;
-  final bool? isChangeCart;
   final String? orderGuid;
-  final void Function(ProductViewModel prod, int qty) updateCart;
   final int? availableGcoinAmount;
+  final List<DateTime>? servingDates;
+  final List<DateTime>? holidayServingDates;
+  final int? holidayUpPCT;
+  final num? finalTotal;
 
   @override
   State<CartScreen> createState() => _CartScreenState();
@@ -85,31 +91,53 @@ class _CartScreenState extends State<CartScreen> {
   DateTimeRange selectedDates =
       DateTimeRange(start: DateTime.now(), end: DateTime.now());
   List<DateTime> _servingDates = [];
+  List<Holiday> holidays = [];
+  List<DateTime> holidayServingDates = [];
+  List<DateTime> normalServingDates = [];
+  int holidayUpPCT = 0;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
+    setUpdata();
+  }
+
+  setUpdata() async {
     finalTotal = widget.total;
     list = widget.list;
     supplier = widget.supplier;
     noteController.text = widget.note;
+    _servingDates = widget.isOrder != null && widget.isOrder!
+        ? widget.servingDates!
+        : [widget.startDate];
+    if (widget.isOrder == null || !widget.isOrder!) {
+      callback(_servingDates, widget.total);
+    }
 
-    planId = sharedPreferences.getInt("planId");
-    if (planId != null) {
-      setUpdata();
-    }
-    if (planId == null) {
-      isIndividual = true;
-    }
-    if (widget.startDate.difference(DateTime.now()).inDays + 1 < 3) {
-      _servingDates = [DateTime.now().add(const Duration(days: 3))];
+    if (widget.isOrder == null || !widget.isOrder!) {
+      ConfigService _configService = ConfigService();
+      final config = await _configService.getOrderConfig();
+      holidays = config!.HOLIDAYS!;
+      final rs = Utils().getHolidayServingDates(holidays, _servingDates);
+      holidayServingDates = rs['holidayServingDates'];
+      normalServingDates = rs['normalServingDates'];
+      switch (widget.serviceType.id) {
+        case 1:
+          holidayUpPCT = config.HOLIDAY_MEAL_UP_PCT!;
+          break;
+        case 2:
+          holidayUpPCT = config.HOLIDAY_LODGING_UP_PCT!;
+          break;
+        case 3:
+          holidayUpPCT = config.HOLIDAY_RIDING_UP_PCT!;
+          break;
+      }
     } else {
-      _servingDates = [widget.startDate];
+      holidayServingDates = widget.holidayServingDates!;
+      holidayUpPCT = widget.holidayUpPCT!;
     }
   }
-
-  setUpdata() async {}
 
   @override
   Widget build(BuildContext context) {
@@ -173,12 +201,16 @@ class _CartScreenState extends State<CartScreen> {
                               left: 20, right: 14, top: 6, bottom: 12),
                           child: Row(
                             children: [
-                              Text(
-                                supplier!.name!,
-                                style: const TextStyle(
-                                  fontSize: 17,
-                                  fontFamily: 'NotoSans',
-                                  fontWeight: FontWeight.bold,
+                              SizedBox(
+                                width: 50.w,
+                                child: Text(
+                                  supplier!.name!,
+                                  overflow: TextOverflow.clip,
+                                  style: const TextStyle(
+                                    fontSize: 17,
+                                    fontFamily: 'NotoSans',
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                               ),
                               const Spacer(), // Add space between the two elements
@@ -213,35 +245,11 @@ class _CartScreenState extends State<CartScreen> {
                               shrinkWrap: true,
                               itemCount: list.length,
                               itemBuilder: (context, index) {
-                                return
-                                    // Dismissible(
-                                    // key:
-                                    //     UniqueKey(), // Unique key for each Dismissible item
-                                    // background: Container(
-                                    //   color: Colors
-                                    //       .red, // Background color when swiped
-                                    //   alignment: Alignment.centerRight,
-                                    //   child: const Icon(
-                                    //     Icons.delete,
-                                    //     color: Colors.white,
-                                    //   ),
-                                    // ),
-                                    // onDismissed: (direction) {
-                                    //   // Handle the item removal here
-                                    //   setState(() {
-                                    //     finalTotal -= list[index].product.price *
-                                    //         list[index].qty!;
-                                    //     list.removeAt(index);
-                                    //   });
-                                    // },
-                                    // child:
-                                    CartItemCard(
+                                return CartItemCard(
                                   cartItem: list[index],
-                                  updateFinalCart: newUpdateFinalCart,
                                   days: selectedDays,
                                   serviceType: widget.serviceType,
                                 );
-                                // );
                               },
                             ),
                           ),
@@ -365,16 +373,17 @@ class _CartScreenState extends State<CartScreen> {
                                             fontWeight: FontWeight.bold,
                                           ),
                                         ),
-                              TextButton(
-                                onPressed: pickDateRange,
-                                child: const Text(
-                                  'Chỉnh sửa',
-                                  style: TextStyle(
-                                    color: Colors
-                                        .blue, // Set the color of the link text
+                              if (widget.isOrder == null || !widget.isOrder!)
+                                TextButton(
+                                  onPressed: pickDateRange,
+                                  child: const Text(
+                                    'Chỉnh sửa',
+                                    style: TextStyle(
+                                      color: Colors
+                                          .blue, // Set the color of the link text
+                                    ),
                                   ),
                                 ),
-                              ),
                             ],
                           ),
                         ),
@@ -476,7 +485,76 @@ class _CartScreenState extends State<CartScreen> {
                           ),
                         ),
                         const SizedBox(
-                          height: 16,
+                          height: 8,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          child: Column(
+                            children: [
+                              Divider(
+                                color: Colors.grey.withOpacity(0.7),
+                                thickness: 1,
+                              ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                children: [
+                                  const Icon(
+                                    Icons.receipt_long,
+                                    color: primaryColor,
+                                  ),
+                                  const SizedBox(
+                                    width: 14,
+                                  ),
+                                  Container(
+                                    alignment: Alignment.centerLeft,
+                                    child: const Text(
+                                      'Đơn giá theo ngày',
+                                      style: TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          fontFamily: 'NotoSans'),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(
+                                height: 8,
+                              ),
+                              for (final date in _servingDates)
+                                Row(
+                                  children: [
+                                    SizedBox(
+                                      width: 2.w,
+                                    ),
+                                    Text(
+                                      DateFormat('dd/MM/yyyy').format(date),
+                                      style: const TextStyle(
+                                          fontSize: 15, fontFamily: 'NotoSans'),
+                                    ),
+                                    if (holidayServingDates.contains(date))
+                                      const Text(
+                                        ' (Ngày lễ)',
+                                        style: TextStyle(
+                                            fontSize: 13,
+                                            fontFamily: 'NotoSans'),
+                                      ),
+                                    const Spacer(),
+                                    Text(NumberFormat.simpleCurrency(
+                                            locale: 'vi_VN',
+                                            name: 'đ',
+                                            decimalDigits: 0)
+                                        .format(
+                                            holidayServingDates.contains(date)
+                                                ? widget.total *
+                                                    (1 + holidayUpPCT / 100)
+                                                : widget.total))
+                                  ],
+                                )
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -488,7 +566,7 @@ class _CartScreenState extends State<CartScreen> {
                 : Visibility(
                     visible: finalTotal != 0,
                     child: Container(
-                      height: 19.h,
+                      height: 17.h,
                       width: double.infinity,
                       color: Colors.white,
                       child: Column(
@@ -496,7 +574,7 @@ class _CartScreenState extends State<CartScreen> {
                           const SizedBox(
                             height: 20,
                           ),
-                          Container(
+                          SizedBox(
                             width: 90.w,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -508,11 +586,9 @@ class _CartScreenState extends State<CartScreen> {
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontFamily: 'NotoSans',
-                                        color: Colors.black,
                                       ),
                                     ),
-                                    (widget.serviceType.id == 1 ||
-                                            widget.serviceType.id == 4)
+                                    (widget.serviceType.id == 1)
                                         ? Text(
                                             selectedDays == 1
                                                 ? ""
@@ -528,26 +604,14 @@ class _CartScreenState extends State<CartScreen> {
                                 ),
                                 const Spacer(),
                                 Text(
-                                  widget.isOrder != null && widget.isOrder!
-                                      ? NumberFormat.simpleCurrency(
-                                              locale: 'vi_VN',
-                                              decimalDigits: 0,
-                                              name: '')
-                                          .format((finalTotal /
-                                                  GlobalConstant()
-                                                      .VND_CONVERT_RATE) *
-                                              (_servingDates.isEmpty
-                                                  ? 1
-                                                  : _servingDates.length))
-                                      : NumberFormat.simpleCurrency(
-                                              locale: 'vi_VN',
-                                              decimalDigits: 0,
-                                              name: 'Đ')
-                                          .format(
-                                              finalTotal*
-                                              (_servingDates.isEmpty
-                                                  ? 1
-                                                  : _servingDates.length)), // Replace with your second text
+                                  NumberFormat.simpleCurrency(
+                                          locale: 'vi_VN',
+                                          decimalDigits: 0,
+                                          name: 'đ')
+                                      .format(widget.isOrder != null &&
+                                              widget.isOrder!
+                                          ? widget.finalTotal!
+                                          : finalTotal),
                                   style: const TextStyle(
                                     fontSize: 17,
                                     fontWeight: FontWeight.bold,
@@ -555,16 +619,40 @@ class _CartScreenState extends State<CartScreen> {
                                     color: Colors.black,
                                   ),
                                 ),
-                                if(widget.isOrder != null && widget.isOrder!)
-                                SvgPicture.asset(gcoin_logo, height: 20,)
+                              ],
+                            ),
+                          ),
+                          Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 5.w),
+                            child: Row(
+                              children: [
+                                const Text(
+                                  'Quy đổi',
+                                  style: TextStyle(
+                                      fontSize: 16, fontFamily: 'NotoSans'),
+                                ),
+                                const Spacer(),
+                                Text(
+                                  NumberFormat.simpleCurrency(
+                                          locale: 'vi_VN',
+                                          name: '',
+                                          decimalDigits: 0)
+                                      .format(finalTotal /
+                                          GlobalConstant().VND_CONVERT_RATE),
+                                  style: const TextStyle(
+                                      fontSize: 17,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'NotoSans'),
+                                ),
+                                SvgPicture.asset(
+                                  gcoin_logo,
+                                  height: 18,
+                                )
                               ],
                             ),
                           ),
                           const SizedBox(
                             height: 10,
-                          ),
-                          const SizedBox(
-                            height: 20,
                           ),
                           SizedBox(
                             width: 90.w,
@@ -615,34 +703,6 @@ class _CartScreenState extends State<CartScreen> {
             finalTotal -= cartItem.product.price * cartItem.qty!;
             finalTotal += cartItem.product.price * newQty;
 
-            updatedList[i] = ItemCart(product: cartItem.product, qty: newQty);
-          });
-        } else {
-          setState(() {
-            finalTotal -= cartItem.product.price * cartItem.qty!;
-          });
-          updatedList.removeAt(i);
-          break; // Exit the loop since the item was found and removed
-        }
-      }
-    }
-
-    setState(() {
-      list = updatedList; // Update the original list with the modified copy
-    });
-  }
-
-  void newUpdateFinalCart(ItemCart cartItem, int newQty) {
-    widget.updateCart(cartItem.product, newQty);
-    List<ItemCart> updatedList =
-        List.from(list); // Create a copy of the original list
-
-    for (var i = 0; i < updatedList.length; i++) {
-      if (updatedList[i].product.id == cartItem.product.id) {
-        if (newQty != 0) {
-          setState(() {
-            finalTotal -= cartItem.product.price * cartItem.qty!;
-            finalTotal += cartItem.product.price * newQty;
             updatedList[i] = ItemCart(product: cartItem.product, qty: newQty);
           });
         } else {
@@ -714,6 +774,10 @@ class _CartScreenState extends State<CartScreen> {
         detailsMap,
         order.period,
         _serveDates,
+        _serveDates
+            .map((e) => DateTime.parse(e).difference(widget.startDate).inDays)
+            .toList(),
+        null,
         widget.serviceType.id == 2 ? total * _serveDates.length : total);
     if (!widget.isOrder!) {
       AwesomeDialog(
@@ -787,6 +851,7 @@ class _CartScreenState extends State<CartScreen> {
             OrderViewModel(
                 createdAt: DateTime.now(),
                 details: details,
+                uuid: widget.orderGuid,
                 note: noteController.text,
                 type: widget.serviceType.name,
                 period: order.period,
@@ -795,7 +860,8 @@ class _CartScreenState extends State<CartScreen> {
                         json.encode(e.toLocal().toString().split(' ')[0]))
                     .toList(),
                 supplier: widget.supplier),
-            sharedPreferences.getInt('planId')!, context);
+            sharedPreferences.getInt('planId')!,
+            context);
         if (rs != 0) {
           AwesomeDialog(
             // ignore: use_build_context_synchronously
@@ -813,7 +879,7 @@ class _CartScreenState extends State<CartScreen> {
           ).show();
           Future.delayed(const Duration(seconds: 1), () {
             widget.callbackFunction(null);
-            if (widget.isFromTempOrder == null) {
+            if (widget.isOrder == null) {
               Navigator.of(context).pop();
             }
             Navigator.of(context).pop();
@@ -840,11 +906,15 @@ class _CartScreenState extends State<CartScreen> {
             startDate: widget.startDate)));
   }
 
-  callback(List<DateTime> servingDates) {
+  callback(List<DateTime> servingDates, double total) {
     setState(() {
       _servingDates = servingDates;
+      finalTotal = total;
       selectedDays = servingDates.length;
     });
+    final rs = Utils().getHolidayServingDates(holidays, _servingDates);
+    holidayServingDates = rs['holidayServingDates'];
+    normalServingDates = rs['normalServingDates'];
     servingDates.sort((a, b) => a.compareTo(b));
   }
 }

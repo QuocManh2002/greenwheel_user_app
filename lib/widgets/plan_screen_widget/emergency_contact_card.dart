@@ -106,7 +106,7 @@ class EmergencyContactCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       SizedBox(
-                        width: 80.w,
+                        width: 75.w,
                         child: Text(
                           emergency.name!,
                           overflow: TextOverflow.clip,
@@ -170,7 +170,7 @@ class EmergencyContactCard extends StatelessWidget {
                           width: 1.h,
                         ),
                         SizedBox(
-                          width: 80.w,
+                          width: 75.w,
                           child: Text(
                             emergency.address == null ? "" : emergency.address!,
                             overflow: TextOverflow.ellipsis,

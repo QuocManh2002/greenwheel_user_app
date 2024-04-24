@@ -99,7 +99,7 @@ class TransactionService {
               name
             }
             utcDepartAt
-            endDate
+            utcEndAt
             maxMemberCount
             memberCount
             maxMemberWeight

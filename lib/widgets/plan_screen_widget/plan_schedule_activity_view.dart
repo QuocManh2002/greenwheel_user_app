@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
@@ -29,7 +28,6 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
   bool isLoading = true;
   List<int> ids = [];
   List<ProductViewModel>? products = [];
-  ProductService _productService = ProductService();
   dynamic _order;
   @override
   void initState() {
@@ -189,7 +187,7 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                                               CrossAxisAlignment.start,
                                           children: [
                                             SizedBox(
-                                              width: 65.w,
+                                              width: 60.w,
                                               child: Text(
                                                 detail.productName,
                                                 style: const TextStyle(
@@ -331,7 +329,7 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                 Row(
                   children: [
                     SizedBox(
-                      width: 70.w,
+                      width: 65.w,
                       child: Text(
                         widget.item.shortDescription ?? 'Không có mô tả',
                         style: const TextStyle(

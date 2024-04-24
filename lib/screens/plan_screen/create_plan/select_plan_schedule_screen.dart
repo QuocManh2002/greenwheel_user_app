@@ -83,7 +83,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             ? ((widget.plan!.numOfExpPeriod! + 1) / 2).ceil()
             : (widget.plan!.numOfExpPeriod! / 2).ceil();
     var list = _planService.GetPlanScheduleFromJsonNew(
-        json.decode(widget.plan!.schedule!), widget.plan!.startDate!, duration, false);
+        json.decode(widget.plan!.schedule!), widget.plan!.startDate!, duration);
     scheduleList = list;
 
     var finalList = _planService.convertPlanScheduleToJson(scheduleList);
@@ -113,9 +113,9 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
       }
     } else {
       var list = _planService.GetPlanScheduleFromJsonNew(
-          json.decode(_scheduleText ?? '[]'), _startDate, duration, true);
+          json.decode(_scheduleText ?? '[]'), _startDate, duration);
       scheduleList = _planService.GetPlanScheduleClone(list);
-      var finalList = _planService.convertPlanScheduleToJson(scheduleList);
+      var finalList = _planService.convertPlanScheduleToJson(list);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
     }
   }
@@ -308,10 +308,33 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
 
   _deleteItem(PlanScheduleItem item) {
     setState(() {
-      scheduleList
-          .firstWhere((element) => element.date == item.date)
-          .items
-          .remove(item);
+      if (item.orderUUID == null) {
+        scheduleList
+            .firstWhere((element) => element.date == item.date)
+            .items
+            .remove(item);
+      } else {
+        final uuid = item.orderUUID;
+        scheduleList
+            .firstWhere((element) => element.date == item.date)
+            .items
+            .remove(item);
+        for (final day in scheduleList) {
+          for (final _item in day.items) {
+            if (_item.orderUUID != null && _item.orderUUID == uuid) {
+              _item.orderUUID = null;
+            }
+          }
+        }
+        
+        var orderList =
+            json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+        final order =
+            orderList.firstWhere((e) => e['orderUUID'] == uuid);
+        orderList.remove(order);
+        
+        sharedPreferences.setString('plan_temp_order', json.encode(orderList));
+      }
     });
     var finalList = _planService.convertPlanScheduleToJson(scheduleList);
     sharedPreferences.setString('plan_schedule', json.encode(finalList));

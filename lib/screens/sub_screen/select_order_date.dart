@@ -2,11 +2,12 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/models/holiday.dart';
+import 'package:greenwheel_user_app/models/configuration.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/service/config_service.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
+import 'package:greenwheel_user_app/widgets/order_screen_widget/order_total_infor.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/shimmer_widget.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
@@ -33,7 +34,8 @@ class SelectOrderDateScreen extends StatefulWidget {
   final String iniNote;
   final int numberOfMember;
   final List<DateTime>? selectedDate;
-  final void Function(List<DateTime> servingsDates) callbackFunction;
+  final void Function(List<DateTime> servingsDates, double total)
+      callbackFunction;
 
   @override
   State<SelectOrderDateScreen> createState() => _SelectOrderDateScreenState();
@@ -43,8 +45,10 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
   List<DateTime> servingDates = [];
   List<DateTime> _selectedDays = [];
   ConfigService _configService = ConfigService();
-  List<Holiday> holidays = [];
+  ConfigurationModel? config;
   bool isLoading = true;
+  List<DateTime> _selectedHolidays = [];
+  int holidayUpPCT = 0;
 
   @override
   void initState() {
@@ -54,16 +58,26 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
   }
 
   setUpData() async {
-    final rs = await _configService.getConfig();
+    final rs = await _configService.getOrderConfig();
     if (rs != null) {
       setState(() {
-        holidays = rs;
+        config = rs;
         isLoading = false;
         _selectedDays = [
           DateTime(widget.startDate.year, widget.startDate.month,
               widget.startDate.day, 0, 0, 0)
         ];
       });
+      switch (widget.serviceType.id) {
+        case 1:
+          holidayUpPCT = config!.HOLIDAY_MEAL_UP_PCT!;
+          break;
+        case 2:
+          holidayUpPCT = config!.HOLIDAY_LODGING_UP_PCT!;
+          break;
+        case 3:
+          holidayUpPCT = config!.HOLIDAY_RIDING_UP_PCT!;
+      }
       _selectedDays = widget.selectedDate != null
           ? widget.selectedDate!
           : [
@@ -207,8 +221,45 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                             btnOkText: 'Ok')
                         .show();
                   } else {
-                    widget.callbackFunction(dates);
-                    Navigator.of(context).pop();
+                    _selectedHolidays = [];
+                    for (final date in _selectedDays) {
+                      if (isHoliday(date)) {
+                        _selectedHolidays.add(date);
+                      }
+                    }
+                    if (_selectedHolidays.isEmpty) {
+                      widget.callbackFunction(
+                          dates, widget.total * _selectedDays.length);
+                      Navigator.of(context).pop();
+                    } else {
+                      for (final date in _selectedHolidays) {
+                        _selectedDays.remove(date);
+                      }
+                      AwesomeDialog(
+                              context: context,
+                              animType: AnimType.leftSlide,
+                              dialogType: DialogType.info,
+                              body: OrderTotalInformationDialog(
+                                  selectedDate: _selectedDays,
+                                  holidayUpPCT: holidayUpPCT,
+                                  selectedHolidays: _selectedHolidays,
+                                  total: widget.total),
+                              btnOkColor: Colors.blueAccent,
+                              btnOkOnPress: () {
+                                widget.callbackFunction(
+                                    dates,
+                                    widget.total * _selectedDays.length +
+                                        widget.total *
+                                            _selectedHolidays.length *
+                                            (1 + holidayUpPCT / 100));
+                                Navigator.of(context).pop();
+                              },
+                              btnOkText: 'Đồng ý',
+                              btnCancelColor: Colors.amber,
+                              btnCancelOnPress: () {},
+                              btnCancelText: 'Chọn lại')
+                          .show();
+                    }
                   }
                 },
                 selectionMode: DateRangePickerSelectionMode.multiple,
@@ -218,7 +269,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
   }
 
   isHoliday(DateTime date) {
-    return holidays.any((element) =>
+    return config!.HOLIDAYS!.any((element) =>
         element.from.isBefore(date) && element.to.isAfter(date) ||
         date.isAtSameMomentAs(element.from) ||
         date.isAtSameMomentAs(element.to));

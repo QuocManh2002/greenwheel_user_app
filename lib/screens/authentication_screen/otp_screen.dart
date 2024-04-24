@@ -50,7 +50,7 @@ class _OTPScreenState extends State<OTPScreen> {
     );
     return SafeArea(
       child: Scaffold(
-        resizeToAvoidBottomInset: true,
+        resizeToAvoidBottomInset: false,
         body: Container(
           decoration: const BoxDecoration(
             color: Colors.white,

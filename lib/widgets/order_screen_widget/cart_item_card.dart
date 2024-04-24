@@ -8,12 +8,10 @@ class CartItemCard extends StatefulWidget {
   const CartItemCard({
     super.key,
     required this.cartItem,
-    required this.updateFinalCart,
     this.days,
     required this.serviceType,
   });
   final ItemCart cartItem;
-  final Function updateFinalCart;
   final int? days;
   final ServiceType serviceType;
 
@@ -43,8 +41,8 @@ class _CartItemCardState extends State<CartItemCard>
             child: Row(
               children: [
                 SizedBox(
-                  height: 7.h,
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Padding(
@@ -84,24 +82,6 @@ class _CartItemCardState extends State<CartItemCard>
                   alignment: Alignment.center,
                   margin: const EdgeInsets.only(right: 10),
                   child: 
-                  // InputQty(
-                  //   maxVal: 100,
-                  //   initVal: widget.cartItem.qty!,
-                  //   minVal: 0,
-                  //   steps: 1,
-                  //   decoration: const QtyDecorationProps(
-                  //     contentPadding: EdgeInsets.symmetric(
-                  //       horizontal: 2,
-                  //       vertical: 10,
-                  //     ),
-                  //     width: 8,
-                  //     isBordered: false,
-                  //     fillColor: Colors.black12,
-                  //   ),
-                  //   onQtyChanged: (val) async {
-                  //     widget.updateFinalCart(widget.cartItem, val.toInt());
-                  //   },
-                  // ),
                   Text('x${widget.cartItem.qty}', 
                   style:const TextStyle(color: Colors.grey, fontSize: 19, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),)
                 )

@@ -46,7 +46,7 @@ class ConfirmMemberDialogBody extends StatelessWidget {
               Text(
                 '${DateFormat('dd/MM/yyyy').format(plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(plan.utcEndAt!)}',
                 style: const TextStyle(
-                  fontSize: 17,
+                  fontSize: 14,
                   fontWeight: FontWeight.w500,
                 ),
               )

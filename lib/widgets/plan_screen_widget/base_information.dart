@@ -191,7 +191,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                     Row(
                       children: [
                         const Text(
-                          "Thành viên đã tham gia: ",
+                          "Đã tham gia: ",
                           style: TextStyle(
                               fontSize: 18,
                               fontFamily: 'NotoSans',
