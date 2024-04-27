@@ -3,7 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/models/order_input_model.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
@@ -68,8 +67,7 @@ class SupplierCard extends StatelessWidget {
                           supplier: supplier,
                           serviceType: serviceType,
                           isOrder: isOrder,
-                          session:
-                              serviceType.id == 1 ? initSession : sessions[1],
+                          session: initSession,
                           availableGcoinAmount: availableGcoinAmount,
                           callbackFunction: callbackFunction,
                         ),
@@ -110,90 +108,82 @@ class SupplierCard extends StatelessWidget {
                     children: [
                       SizedBox(
                         width: 50.w,
-                        child: Padding(
-                          padding: const EdgeInsets.only(left: 8, top: 10),
-                          child: Text(
-                            supplier.name!,
-                            overflow: TextOverflow.clip,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black,
-                              fontFamily: 'NotoSans',
-                            ),
+                        child: Text(
+                          supplier.name!,
+                          overflow: TextOverflow.clip,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            fontFamily: 'NotoSans',
                           ),
                         ),
                       ),
                       if (supplier.standard != null)
-                        Padding(
-                          padding: EdgeInsets.only(left: 8, top: 0.5.h),
-                          child: RatingBar.builder(
-                              itemCount: 5,
-                              itemSize: 20,
-                              initialRating: supplier.standard!,
-                              allowHalfRating: true,
-                              ignoreGestures: true,
-                              unratedColor: Colors.grey.withOpacity(0.5),
-                              itemBuilder: (context, index) => const Icon(
-                                    Icons.star,
-                                    color: Colors.amber,
-                                  ),
-                              onRatingUpdate: (value) {}),
+                        const SizedBox(
+                          height: 2,
                         ),
+                      if (supplier.standard != null)
+                        RatingBar.builder(
+                            itemCount: 5,
+                            itemSize: 20,
+                            initialRating: supplier.standard!,
+                            allowHalfRating: true,
+                            ignoreGestures: true,
+                            unratedColor: Colors.grey.withOpacity(0.5),
+                            itemBuilder: (context, index) => const Icon(
+                                  Icons.star,
+                                  color: Colors.amber,
+                                ),
+                            onRatingUpdate: (value) {}),
                       const SizedBox(
                         height: 2,
                       ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 8, top: 0.5.h),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.phone,
-                              color: primaryColor,
-                              size: 20,
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.phone,
+                            color: primaryColor,
+                            size: 20,
+                          ),
+                          SizedBox(
+                            width: 1.w,
+                          ),
+                          Text(
+                            '0${supplier.phone!.substring(2)}',
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                              color: Colors.black54,
+                              fontFamily: 'NotoSans',
                             ),
-                            SizedBox(
-                              width: 1.w,
-                            ),
-                            Text(
-                              '0${supplier.phone!.substring(2)}',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 2,
+                      ),
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.home,
+                            color: primaryColor,
+                            size: 20,
+                          ),
+                          SizedBox(
+                            width: 1.w,
+                          ),
+                          SizedBox(
+                            width: 45.w,
+                            child: Text(
+                              supplier.address!,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                color: Colors.black54,
+                                color: Colors.grey,
                                 fontFamily: 'NotoSans',
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(
-                        height: 2,
-                      ),
-                      Padding(
-                        padding: EdgeInsets.only(left: 8, top: 0.5.h),
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.home,
-                              color: primaryColor,
-                              size: 20,
-                            ),
-                            SizedBox(
-                              width: 1.w,
-                            ),
-                            SizedBox(
-                              width: 45.w,
-                              child: Text(
-                                supplier.address!,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontFamily: 'NotoSans',
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       )
                     ],
                   ),

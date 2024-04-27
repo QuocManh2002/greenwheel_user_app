@@ -132,6 +132,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   }
 
   buildServiceInfor() async {
+    if(widget.isInfo){
+      
+    }
     final rs = widget.orderList!.groupListsBy(
         (e) => e.runtimeType == OrderViewModel ? e.type : e['type']);
     newRoomOrderList = rs.values.firstWhereOrNull((e) =>
@@ -839,9 +842,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               locale: 'vi_VN', decimalDigits: 0, name: '')
                           .format(((order.runtimeType == OrderViewModel
                                   ? (order.total)
-                                  : order['type'] == 'CHECKIN'
+                                  : 
+                                  order['type'] == 'CHECKIN'
                                       ? order['total']
-                                      : order['total'] *
+                                      :
+                                       order['total'] *
                                           order['serveDates'].length))
                               .toInt()),
                       style: const TextStyle(

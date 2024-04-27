@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/notification_list_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:greenwheel_user_app/service/notification_service.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 import 'package:sizer2/sizer2.dart';

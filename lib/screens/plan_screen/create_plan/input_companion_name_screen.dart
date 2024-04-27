@@ -113,102 +113,95 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
           ],
         ),
       ),
-      body: Column(
-        children: [
-          SizedBox(
-            height: 80.h,
-            child: SingleChildScrollView(
-              child: Column(
-                children: [
-                  for (int i = 0; i < names.length; i++)
-                    Container(
-                      width: 100.w,
-                      decoration: BoxDecoration(
-                        color: i.isOdd
-                            ? Colors.white
-                            : lightPrimaryTextColor,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            for (int i = 0; i < names.length; i++)
+              Container(
+                width: 100.w,
+                decoration: BoxDecoration(
+                  color: i.isOdd
+                      ? Colors.white
+                      : lightPrimaryTextColor,
+                ),
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 24, vertical: 12),
+                child: Row(
+                  children: [
+                    SizedBox(
+                      width: 70.w,
+                      child: Text(
+                        '${i + 1}. ${names[i]}',
+                        overflow: TextOverflow.clip,
+                        style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.grey),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 24, vertical: 12),
-                      child: Row(
-                        children: [
-                          SizedBox(
-                            width: 70.w,
-                            child: Text(
-                              '${i + 1}. ${names[i]}',
-                              overflow: TextOverflow.clip,
-                              style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey),
-                            ),
-                          ),
-                          const Spacer(),
-                          PopupMenuButton(
-                            itemBuilder: (ctx) => [
-                              const PopupMenuItem(
-                                value: 0,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.edit_square,
-                                      color: Colors.blueAccent,
-                                      size: 32,
-                                    ),
-                                    SizedBox(
-                                      width: 8,
-                                    ),
-                                    Text(
-                                      'Cập nhật',
-                                      style: TextStyle(
-                                          color: Colors.blueAccent,
-                                          fontSize: 18),
-                                    )
-                                  ],
-                                ),
+                    ),
+                    const Spacer(),
+                    PopupMenuButton(
+                      itemBuilder: (ctx) => [
+                        const PopupMenuItem(
+                          value: 0,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.edit_square,
+                                color: Colors.blueAccent,
+                                size: 32,
                               ),
-                              const PopupMenuItem(
-                                value: 1,
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.delete,
-                                      color: Colors.redAccent,
-                                      size: 32,
-                                    ),
-                                    SizedBox(
-                                      width: 8,
-                                    ),
-                                    Text(
-                                      'Xoá',
-                                      style: TextStyle(
-                                          color: Colors.redAccent,
-                                          fontSize: 18),
-                                    )
-                                  ],
-                                ),
+                              SizedBox(
+                                width: 8,
                               ),
+                              Text(
+                                'Cập nhật',
+                                style: TextStyle(
+                                    color: Colors.blueAccent,
+                                    fontSize: 18),
+                              )
                             ],
-                            child: const Icon(
-                              Icons.more_horiz,
-                              color: Colors.grey,
-                            ),
-                            onSelected: (value) {
-                              if (value == 0) {
-                                onUpdateName(i);
-                              } else {
-                                onDeleteName(i);
-                              }
-                            },
-                          )
-                        ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 1,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete,
+                                color: Colors.redAccent,
+                                size: 32,
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Text(
+                                'Xoá',
+                                style: TextStyle(
+                                    color: Colors.redAccent,
+                                    fontSize: 18),
+                              )
+                            ],
+                          ),
+                        ),
+                      ],
+                      child: const Icon(
+                        Icons.more_horiz,
+                        color: Colors.grey,
                       ),
+                      onSelected: (value) {
+                        if (value == 0) {
+                          onUpdateName(i);
+                        } else {
+                          onDeleteName(i);
+                        }
+                      },
                     )
-                ],
-              ),
-            ),
-          ),
-        ],
+                  ],
+                ),
+              )
+          ],
+        ),
       ),
     ));
   }

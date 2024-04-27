@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
@@ -9,7 +11,6 @@ class ProductService extends Iterable {
   Future<List<ProductViewModel>> getProductsBySupplierId(
       int supplierId, String session) async {
     try {
-
       switch (session) {
         case "Buổi sáng":
           session = "MORNING";
@@ -76,10 +77,32 @@ class ProductService extends Iterable {
 
   Future<List<ProductViewModel>> getListProduct(List<int> productIds) async {
     try {
-      final QueryResult result =
-          await client.query(QueryOptions(document: gql("""
-{
+      GraphQLClient newClient = config.getClient();
+log(
+  '''{
   products(where: { id: { in: $productIds } }) {
+    nodes {
+      id
+      name
+      price
+      imagePath
+      partySize
+      provider {
+        id
+        name
+        imagePath
+        phone
+        address
+        type
+      }
+    }
+  }
+}'''
+);
+      final QueryResult result =
+          await newClient.query(QueryOptions(document: gql("""
+{
+  products(first: 50 where: { id: { in: $productIds } }) {
     nodes {
       id
       name

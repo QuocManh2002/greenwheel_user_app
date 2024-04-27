@@ -16,13 +16,18 @@ import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/menu_item_cart.dart';
+import 'package:greenwheel_user_app/models/order_input_model.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
+import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:greenwheel_user_app/view_models/product.dart';
+import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:intl/intl.dart';
@@ -37,10 +42,12 @@ class NewScheduleItemScreen extends StatefulWidget {
       required this.selectedIndex,
       required this.maxActivityTime,
       required this.location,
+      required this.onDelete,
       this.plan,
       this.item});
   final void Function(
       PlanScheduleItem item, bool isCreate, PlanScheduleItem? oldItem) callback;
+  final void Function(PlanScheduleItem item, String? orderUUID) onDelete;
   final DateTime startDate;
   final PlanScheduleItem? item;
   final int selectedIndex;
@@ -152,8 +159,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
       final orderList =
           json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
       if (orderList.isNotEmpty) {
-        tempOrder =
+        final tempOrders =
             orderList.where((e) => e['orderUUID'] == widget.item!.orderUUID);
+        if (tempOrders.isNotEmpty) {
+          tempOrder = tempOrders.first;
+          _isOrderedActivity = true;
+        }
       }
     } else {
       setState(() {
@@ -232,7 +243,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           fontSize: 18.0);
                     } else {
                       if (tempOrder != null) {
-                        saveTempOrder();
                         DateTime? endDate;
                         if (widget.plan == null) {
                           endDate = DateTime.parse(
@@ -241,52 +251,16 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           endDate = widget.plan!.endDate;
                         }
                         if (_selectedType == 'Check-in') {
-                          widget.callback(
-                              PlanScheduleItem(
-                                  isStarred: _isStarEvent,
-                                  shortDescription:
-                                      _shortDescriptionController.text,
-                                  description: _descriptionController.text,
-                                  date: DateTime.parse(
-                                      tempOrder['serveDates'].first.toString()),
-                                  orderUUID: tempOrder['orderUUID'],
-                                  activityTime:
-                                      int.parse(_activityTimeController.text),
-                                  type: _selectedType,
-                                  id: widget.item?.id),
-                              widget.item == null,
-                              widget.item);
-                          widget.callback(
-                              PlanScheduleItem(
-                                  isStarred: _isStarEvent,
-                                  shortDescription: 'Check-out',
-                                  description: 'Check-out nhà nghỉ/khách sạn',
-                                  date: DateTime.parse(
-                                              tempOrder['serveDates'].last) ==
-                                          endDate
-                                      ? DateTime.parse(tempOrder['serveDates']
-                                          .last
-                                          .toString())
-                                      : DateTime.parse(tempOrder['serveDates']
-                                              .last
-                                              .toString())
-                                          .add(const Duration(days: 1)),
-                                  orderUUID: tempOrder['orderUUID'],
-                                  activityTime:
-                                      int.parse(_activityTimeController.text),
-                                  type: 'Check-out',
-                                  id: widget.item?.id),
-                              widget.item == null,
-                              widget.item);
-                        } else {
-                          for (final day in tempOrder['serveDates']) {
+                          if (widget.item == null) {
                             widget.callback(
                                 PlanScheduleItem(
                                     isStarred: _isStarEvent,
                                     shortDescription:
                                         _shortDescriptionController.text,
                                     description: _descriptionController.text,
-                                    date: DateTime.parse(day.toString()),
+                                    date: DateTime.parse(tempOrder['serveDates']
+                                        .first
+                                        .toString()),
                                     orderUUID: tempOrder['orderUUID'],
                                     activityTime:
                                         int.parse(_activityTimeController.text),
@@ -294,8 +268,237 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     id: widget.item?.id),
                                 widget.item == null,
                                 widget.item);
+                            widget.callback(
+                                PlanScheduleItem(
+                                    isStarred: _isStarEvent,
+                                    shortDescription: 'Check-out',
+                                    description: 'Check-out nhà nghỉ/khách sạn',
+                                    type: 'Check-out',
+                                    date: DateTime.parse(
+                                                tempOrder['serveDates'].last) ==
+                                            endDate
+                                        ? DateTime.parse(tempOrder['serveDates']
+                                            .last
+                                            .toString())
+                                        : DateTime.parse(tempOrder['serveDates']
+                                                .last
+                                                .toString())
+                                            .add(const Duration(days: 1)),
+                                    orderUUID: tempOrder['orderUUID'],
+                                    activityTime:
+                                        int.parse(_activityTimeController.text),
+                                    id: widget.item?.id),
+                                widget.item == null,
+                                widget.item);
+                          } else {
+                            final order = json
+                                .decode(sharedPreferences
+                                        .getString('plan_temp_order') ??
+                                    '[]')
+                                .where((e) =>
+                                    e['orderUUID'] == tempOrder['orderUUID']);
+                            if (order.isNotEmpty) {
+                              if (order.first['serveDates'].first !=
+                                  tempOrder['serveDates'].first) {
+                                widget.onDelete(
+                                    PlanScheduleItem(
+                                        orderUUID: null,
+                                        date: order.first['serveDates'].first),
+                                    tempOrder['orderUUID']);
+                                widget.callback(
+                                    PlanScheduleItem(
+                                        isStarred: _isStarEvent,
+                                        shortDescription:
+                                            _shortDescriptionController.text,
+                                        description:
+                                            _descriptionController.text,
+                                        date: DateTime.parse(
+                                            tempOrder['serveDates']
+                                                .first
+                                                .toString()),
+                                        orderUUID: tempOrder['orderUUID'],
+                                        activityTime: int.parse(
+                                            _activityTimeController.text),
+                                        type: _selectedType,
+                                        id: widget.item?.id),
+                                    true,
+                                    widget.item);
+                              }
+                              if (order.first['serveDates'].last !=
+                                  tempOrder['serveDates'].last) {
+                                widget.onDelete(
+                                    PlanScheduleItem(
+                                      orderUUID: null,
+                                      date: DateTime.parse(order
+                                                  .first['serveDates'].last) ==
+                                              endDate
+                                          ? DateTime.parse(order
+                                              .first['serveDates'].last
+                                              .toString())
+                                          : DateTime.parse(order
+                                                  .first['serveDates'].last
+                                                  .toString())
+                                              .add(const Duration(days: 1)),
+                                    ),
+                                    tempOrder['orderUUID']);
+                                widget.callback(
+                                    PlanScheduleItem(
+                                        isStarred: _isStarEvent,
+                                        shortDescription: 'Check-out',
+                                        description:
+                                            'Check-out nhà nghỉ/khách sạn',
+                                        type: 'Check-out',
+                                        date: DateTime.parse(
+                                                    tempOrder['serveDates']
+                                                        .last) ==
+                                                endDate
+                                            ? DateTime.parse(
+                                                tempOrder['serveDates']
+                                                    .last
+                                                    .toString())
+                                            : DateTime.parse(
+                                                    tempOrder['serveDates']
+                                                        .last
+                                                        .toString())
+                                                .add(const Duration(days: 1)),
+                                        orderUUID: tempOrder['orderUUID'],
+                                        activityTime: int.parse(
+                                            _activityTimeController.text),
+                                        id: widget.item?.id),
+                                    true,
+                                    widget.item);
+                              }
+                            }
+                          }
+                        } else {
+                          if (widget.item == null) {
+                            for (final day in tempOrder['serveDates']) {
+                              widget.callback(
+                                  PlanScheduleItem(
+                                      isStarred: _isStarEvent,
+                                      shortDescription:
+                                          _shortDescriptionController.text,
+                                      description: _descriptionController.text,
+                                      date: DateTime.parse(day.toString()),
+                                      orderUUID: tempOrder['orderUUID'],
+                                      activityTime: int.parse(
+                                          _activityTimeController.text),
+                                      type: _selectedType,
+                                      id: widget.item?.id),
+                                  true,
+                                  null);
+                            }
+                          } else {
+                            final order = json
+                                .decode(sharedPreferences
+                                        .getString('plan_temp_order') ??
+                                    '[]')
+                                .where((e) =>
+                                    e['orderUUID'] == tempOrder['orderUUID']);
+
+                            if (order.isEmpty) {
+                              for (final day in tempOrder['serveDates']) {
+                                if (widget.item != null) {
+                                  widget.item!.date =
+                                      DateTime.parse(day.toString());
+                                }
+                                widget.callback(
+                                    PlanScheduleItem(
+                                        isStarred: _isStarEvent,
+                                        shortDescription:
+                                            _shortDescriptionController.text,
+                                        description:
+                                            _descriptionController.text,
+                                        date: DateTime.parse(day.toString()),
+                                        orderUUID: tempOrder['orderUUID'],
+                                        activityTime: int.parse(
+                                            _activityTimeController.text),
+                                        type: _selectedType,
+                                        id: widget.item?.id),
+                                    widget.item == null,
+                                    widget.item);
+                              }
+                            } else {
+                              List<String> invalidOrderDate = [];
+                              List<String> validOrderDate = [];
+                              List<String> newOrderDate = [];
+                              for (final date in order.first['serveDates']) {
+                                if (!tempOrder['serveDates'].contains(date)) {
+                                  invalidOrderDate.add(date);
+                                } else {
+                                  validOrderDate.add(date);
+                                }
+                              }
+
+                              for (final date in tempOrder['serveDates']) {
+                                if (!validOrderDate.contains(date)) {
+                                  newOrderDate.add(date);
+                                }
+                              }
+                              for (final invalidDate in invalidOrderDate) {
+                                widget.onDelete(
+                                    PlanScheduleItem(
+                                        isStarred: _isStarEvent,
+                                        shortDescription:
+                                            _shortDescriptionController.text,
+                                        description:
+                                            _descriptionController.text,
+                                        date: DateTime.parse(
+                                            invalidDate.toString()),
+                                        orderUUID: null,
+                                        activityTime: int.parse(
+                                            _activityTimeController.text),
+                                        type: _selectedType,
+                                        id: widget.item?.id),
+                                    tempOrder['orderUUID']);
+                              }
+
+                              for (final newDay in newOrderDate) {
+                                widget.callback(
+                                    PlanScheduleItem(
+                                        isStarred: _isStarEvent,
+                                        shortDescription:
+                                            _shortDescriptionController.text,
+                                        description:
+                                            _descriptionController.text,
+                                        date: DateTime.parse(newDay.toString()),
+                                        orderUUID: tempOrder['orderUUID'],
+                                        activityTime: int.parse(
+                                            _activityTimeController.text),
+                                        type: _selectedType,
+                                        id: widget.item?.id),
+                                    true,
+                                    widget.item);
+                              }
+
+                              // for (final day in order.first['serveDates']) {
+                              //   widget.item!.date =
+                              //       DateTime.parse(day.toString());
+                              //   PlanScheduleItem tempItem = PlanScheduleItem(
+                              //       isStarred: _isStarEvent,
+                              //       shortDescription:
+                              //           _shortDescriptionController.text,
+                              //       description: _descriptionController.text,
+                              //       date: DateTime.parse(day.toString()),
+                              //       orderUUID:
+                              //           tempOrder['serveDates'].contains(day)
+                              //               ? tempOrder['orderUUID']
+                              //               : null,
+                              //       activityTime:
+                              //           int.parse(_activityTimeController.text),
+                              //       type: _selectedType,
+                              //       id: widget.item?.id);
+                              //   if (tempOrder['serveDates'].contains(day)) {
+                              //     widget.callback(tempItem, false, widget.item);
+                              //   } else {
+                              //     widget.onDelete(
+                              //         tempItem, tempOrder['orderUUID']);
+                              //   }
+                              // }
+                            }
                           }
                         }
+                        saveTempOrder();
                       } else {
                         widget.callback(
                             PlanScheduleItem(
@@ -313,6 +516,9 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             widget.item);
                       }
                       Navigator.of(context).pop();
+                      if (widget.item != null) {
+                        Navigator.of(context).pop();
+                      }
                     }
                   }
                 }
@@ -552,46 +758,52 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                       ),
                       Container(
                         width: 100.w,
-                        alignment: Alignment.center,
                         height: 7.8.h,
+                        alignment: Alignment.centerLeft,
                         padding: const EdgeInsets.only(left: 12, right: 8),
                         decoration: BoxDecoration(
                             border: Border.all(color: Colors.grey),
                             borderRadius:
                                 const BorderRadius.all(Radius.circular(14))),
-                        child: DropdownButton<String>(
-                          hint: const Text(
-                            'Dạng hoạt động',
-                            style: TextStyle(fontSize: 18),
-                          ),
-                          disabledHint: Text('aaa'),
-                          iconEnabledColor: primaryColor,
-                          iconSize: 36,
-                          underline: const SizedBox(),
-                          isExpanded: true,
-                          dropdownColor: Colors.white,
-                          icon: const Icon(Icons.arrow_drop_down),
-                          style: const TextStyle(
-                              color: Colors.black, fontSize: 18),
-                          value: _selectedType,
-                          onChanged: (value) {
-                            setState(() {
-                              _selectedType = value;
-                              _isModify = true;
-                            });
-                            setState(() {
-                              _isFoodActivity = value == 'Ăn uống';
-                              _isRoomActivity = value == 'Check-in';
-                              _isVisitActivity = value == 'Tham quan';
-                            });
-                          },
-                          items: schedule_item_types_vn
-                              .map(
-                                (e) =>
-                                    DropdownMenuItem(value: e, child: Text(e)),
+                        child: _isOrderedActivity
+                            ? Text(
+                                _selectedType!,
+                                textAlign: TextAlign.start,
+                                style: TextStyle(fontSize: 18),
                               )
-                              .toList(),
-                        ),
+                            : DropdownButton<String>(
+                                hint: const Text(
+                                  'Dạng hoạt động',
+                                  style: TextStyle(fontSize: 18),
+                                ),
+                                disabledHint: const Text('aaa'),
+                                iconEnabledColor: primaryColor,
+                                iconSize: 36,
+                                underline: const SizedBox(),
+                                isExpanded: true,
+                                dropdownColor: Colors.white,
+                                icon: const Icon(Icons.arrow_drop_down),
+                                style: const TextStyle(
+                                    color: Colors.black, fontSize: 18),
+                                value: _selectedType,
+                                onChanged: (value) {
+                                  setState(() {
+                                    _selectedType = value;
+                                    _isModify = true;
+                                  });
+                                  setState(() {
+                                    _isFoodActivity = value == 'Ăn uống';
+                                    _isRoomActivity = value == 'Check-in';
+                                    _isVisitActivity = value == 'Tham quan';
+                                  });
+                                },
+                                items: schedule_item_types_vn
+                                    .map(
+                                      (e) => DropdownMenuItem(
+                                          value: e, child: Text(e)),
+                                    )
+                                    .toList(),
+                              ),
                       ),
                       SizedBox(
                         height: 2.h,
@@ -768,8 +980,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             SizedBox(
                               height: 0.5.h,
                             ),
-                            if (tempOrder != null &&
-                                _selectedType == 'Check-in')
+                            if (tempOrder != null)
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -801,8 +1012,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   )
                                 ],
                               ),
-                            if (tempOrder != null &&
-                                _selectedType == 'Check-in')
+                            if (tempOrder != null)
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 0.5.h),
                                 child: const Divider(
@@ -862,6 +1072,79 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   height: 18,
                                 )
                               ],
+                            ),
+                            SizedBox(
+                              height: 1.h,
+                            ),
+                            Container(
+                              alignment: Alignment.centerRight,
+                              child: ElevatedButton(
+                                  style: elevatedButtonStyle.copyWith(
+                                      maximumSize: MaterialStatePropertyAll(
+                                          Size(50.w, 6.h)),
+                                      minimumSize: MaterialStatePropertyAll(
+                                          Size(50.w, 6.h))),
+                                  onPressed: () {
+                                    List<DateTime> dates = [];
+                                    List<ItemCart> cart = [];
+                                    for (final date
+                                        in tempOrder['serveDates']) {
+                                      dates.add(DateTime.parse(date));
+                                    }
+                                    for (final detail in tempOrder['details']) {
+                                      cart.add(ItemCart(
+                                          qty: detail['quantity'],
+                                          product: ProductViewModel(
+                                              id: detail['productId'],
+                                              name: detail['productName'],
+                                              price: detail['price'].toInt())));
+                                    }
+
+                                    Navigator.push(
+                                        context,
+                                        PageTransition(
+                                            child: ServiceMenuScreen(
+                                              inputModel: OrderInputModel(
+                                                  endDate: endDate,
+                                                  startDate: startDate,
+                                                  iniNote: tempOrder['note'],
+                                                  isOrder: false,
+                                                  period: tempOrder['period'],
+                                                  servingDates: dates,
+                                                  supplier: SupplierViewModel(
+                                                      id: tempOrder[
+                                                          'providerId'],
+                                                      name: tempOrder[
+                                                          'providerName'],
+                                                      phone: tempOrder[
+                                                          'providerPhone'],
+                                                      thumbnailUrl: tempOrder[
+                                                          'providerImageUrl'],
+                                                      address: tempOrder[
+                                                          'providerAddress']),
+                                                  orderGuid:
+                                                      tempOrder['orderUUID'],
+                                                  numberOfMember:
+                                                      numberOfMember,
+                                                  session: sessions.firstWhere(
+                                                      (element) =>
+                                                          element.enumName ==
+                                                          tempOrder['period']),
+                                                  serviceType: services
+                                                      .firstWhere((element) =>
+                                                          element.name ==
+                                                          tempOrder['type']),
+                                                  callbackFunction: callback,
+                                                  currentCart: cart,
+                                                  availableGcoinAmount: 0),
+                                            ),
+                                            type: PageTransitionType
+                                                .rightToLeft));
+                                  },
+                                  child: const Text(
+                                    'Chỉnh sửa dự trù kinh phí',
+                                    style: TextStyle(fontSize: 12),
+                                  )),
                             )
                           ],
                         ))
@@ -996,6 +1279,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
     setState(() {
       _isOrderedActivity = true;
     });
+    _isModify = true;
     tempOrder = _tempOrder;
   }
 
@@ -1006,7 +1290,15 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
       sharedPreferences.setString('plan_temp_order', tempEncode);
     } else {
       final tempDecode = json.decode(temp);
-      tempDecode.add(tempOrder);
+      final _temp = tempDecode
+          .where((e) => e['orderUUID'] == tempOrder['orderUUID'])
+          .toList();
+      if (_temp == null || _temp.isEmpty) {
+        tempDecode.add(tempOrder);
+      } else {
+        tempDecode.remove(_temp.first);
+        tempDecode.add(tempOrder);
+      }
       sharedPreferences.setString('plan_temp_order', json.encode(tempDecode));
     }
   }

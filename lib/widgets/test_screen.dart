@@ -26,6 +26,19 @@ class _TestScreenState extends State<TestScreen> {
 
   double total = 100000;
 
+  final originialList = [
+    "2024-04-26",
+    "2024-04-28",
+    "2024-04-30",
+  ];
+  final newList = [
+    "2024-04-26",
+    "2024-04-27",
+    "2024-04-29",
+  ];
+
+  final invalidList = [];
+
   @override
   void initState() {
     super.initState();
@@ -33,14 +46,14 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   setUpData() async {
-    final rs = await _configService.getOrderConfig();
-    if (rs != null) {
-      setState(() {
-        config = rs;
-        isLoading = false;
-        _selectedDays = [DateTime.now()];
-      });
+    for(final item in originialList){
+      if(!newList.contains(item)){
+        invalidList.add(item);
+      }
     }
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -48,118 +61,14 @@ class _TestScreenState extends State<TestScreen> {
     return SafeArea(
         child: Scaffold(
             body: Center(
-      child: isLoading
-          ? const Center(
-              child: Text('Loading...'),
-            )
-          : SfDateRangePicker(
-              onSelectionChanged: (dateRangePickerSelectionChangedArgs) {
-                _selectedDays = dateRangePickerSelectionChangedArgs.value;
-              },
-              confirmText: "XÁC NHẬN",
-              backgroundColor: Colors.white,
-              headerStyle: const DateRangePickerHeaderStyle(
-                  backgroundColor: Colors.white),
-              cancelText: 'HUỶ',
-              minDate: DateTime.now().add(const Duration(days: 5)),
-              maxDate: DateTime.now().add(const Duration(days: 12)),
-              showActionButtons: true,
-              selectionColor: Colors.white,
-              todayHighlightColor: primaryColor,
-              initialSelectedDates: [],
-              onCancel: () {
-                Navigator.of(context).pop();
-              },
-              cellBuilder: (context, cellDetails) {
-                final bool _isHoliday = isHoliday(cellDetails.date);
-                final bool _isSelectedDay = isSelectedDay(cellDetails.date);
-                final bool _isAvaiableDay = isAvaiableDay(cellDetails.date);
-                return Padding(
-                  padding: const EdgeInsets.all(4),
-                  child: Container(
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: _isHoliday
-                          ? Border.all(
-                              color: Colors.redAccent,
-                              width: 2,
-                            )
-                          : const Border(),
-                      color: _isSelectedDay ? primaryColor : Colors.white,
-                    ),
-                    child: Text(
-                      cellDetails.date.day.toString(),
-                      style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'NotoSans',
-                          color: _isSelectedDay
-                              ? Colors.white
-                              : _isAvaiableDay
-                                  ? Colors.black
-                                  : Colors.grey),
-                    ),
-                  ),
-                );
-              },
-              onSubmit: (dates) {
-                if ((dates as List<DateTime>).isEmpty) {
-                  AwesomeDialog(
-                          context: context,
-                          animType: AnimType.leftSlide,
-                          dialogType: DialogType.warning,
-                          padding: const EdgeInsets.symmetric(horizontal: 12),
-                          title: 'Vui lòng chọn ít nhất 1 ngày phục vụ',
-                          titleTextStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'NotoSans'),
-                          btnOkColor: Colors.amber,
-                          btnOkOnPress: () {},
-                          btnOkText: 'Ok')
-                      .show();
-                } else {
-                  _selectedHolidays = [];
-                  for (final date in _selectedDays) {
-                    if (isHoliday(date)) {
-                      _selectedHolidays.add(date);
-                    }
-                  }
-                  showDialog(
-                      context: context,
-                      builder: (_) => AlertDialog(
-                            content: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                const Text(
-                                  'Ngày chọn: ',
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                for (final date in _selectedDays)
-                                  Text(DateFormat('dd/MM/yyyy').format(date)),
-                                if (_selectedHolidays.isNotEmpty)
-                                  const Text(
-                                    'Ngày lễ:',
-                                    style:
-                                        TextStyle(fontWeight: FontWeight.bold),
-                                  ),
-                                if (_selectedHolidays.isNotEmpty)
-                                  for (final date in _selectedHolidays)
-                                    if (date != null)
-                                      Text(DateFormat('dd/MM/yyyy')
-                                          .format(date)),
-                                const Text('Tổng cộng:', style: TextStyle(fontWeight: FontWeight.bold),),
-                                Text(total.toString()),
-                                const Text('Tổng cộng gồm lễ:', style: TextStyle(fontWeight: FontWeight.bold),),
-                                Text(getTotal().toString(),)
-                              ],
-                            ),
-                          ));
-                }
-              },
-              selectionMode: DateRangePickerSelectionMode.multiple,
-            ),
-    )));
+                child: isLoading
+                    ? const Center(
+                        child: Text('Loading...'),
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [for (final item in invalidList) Text(item,)],
+                      ))));
   }
 
   isHoliday(DateTime date) {

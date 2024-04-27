@@ -4,7 +4,6 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -17,7 +16,6 @@ import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_service_infor.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
@@ -87,11 +85,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
     scheduleList = list;
 
     var finalList = _planService.convertPlanScheduleToJson(scheduleList);
-    // if (widget.plan == null) {
-    //   sharedPreferences.setString('plan_schedule', json.encode(finalList));
-    // } else {
     widget.plan!.schedule = json.encode(finalList);
-    // }
   }
 
   setUpDataCreate() async {
@@ -112,10 +106,9 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       }
     } else {
-      var list = _planService.GetPlanScheduleFromJsonNew(
+      scheduleList = _planService.GetPlanScheduleFromJsonNew(
           json.decode(_scheduleText ?? '[]'), _startDate, duration);
-      scheduleList = _planService.GetPlanScheduleClone(list);
-      var finalList = _planService.convertPlanScheduleToJson(list);
+      var finalList = _planService.convertPlanScheduleToJson(scheduleList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
     }
   }
@@ -142,10 +135,24 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
       }
     } else {
       setState(() {
-        scheduleList
+        var itemList = scheduleList
             .firstWhere((element) => element.date == oldItem!.date)
-            .items
-            .remove(oldItem);
+            .items;
+        if (oldItem!.orderUUID == null) {
+          itemList.remove(oldItem);
+        } else {
+          if (item.type == 'Check-in') {
+            
+          } else {
+            final tempItem = itemList.firstWhereOrNull(
+                (element) => element.orderUUID == oldItem.orderUUID);
+            if (tempItem == null) {
+            } else {
+              itemList.remove(tempItem);
+            }
+          }
+        }
+
         scheduleList
             .firstWhere((element) => element.date == item.date)
             .items
@@ -153,13 +160,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
       });
       var finalList = _planService.convertPlanScheduleToJson(scheduleList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
-      Navigator.of(context).pop();
     }
-  }
-
-  getDuration() {
-    int? numOfExpPeriod = sharedPreferences.getInt('numOfPeriod');
-    if (numOfExpPeriod! % 2 == 0) {}
   }
 
   _showBottomSheet(PlanScheduleItem item) {
@@ -210,7 +211,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                   ),
                   minimumSize: Size(70.w, 5.h)),
               onPressed: () {
-                _deleteItem(item);
+                _deleteItem(item, null);
                 Navigator.of(context).pop();
               },
               label: const Text(
@@ -301,18 +302,25 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             maxActivityTime: 12,
             callback: callback,
             location: widget.location,
+            onDelete: _deleteItem,
             selectedIndex: _currentPage.toInt(),
             item: item,
             startDate: scheduleList.first.date!)));
   }
 
-  _deleteItem(PlanScheduleItem item) {
+  _deleteItem(PlanScheduleItem item, String? orderUUID) {
     setState(() {
       if (item.orderUUID == null) {
-        scheduleList
+        var itemList = scheduleList
             .firstWhere((element) => element.date == item.date)
-            .items
-            .remove(item);
+            .items;
+        if (orderUUID == null) {
+          itemList.remove(item);
+        } else {
+          itemList.removeWhere(
+            (element) => element.orderUUID == orderUUID,
+          );
+        }
       } else {
         final uuid = item.orderUUID;
         scheduleList
@@ -326,13 +334,12 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             }
           }
         }
-        
+
         var orderList =
             json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
-        final order =
-            orderList.firstWhere((e) => e['orderUUID'] == uuid);
+        final order = orderList.firstWhere((e) => e['orderUUID'] == uuid);
         orderList.remove(order);
-        
+
         sharedPreferences.setString('plan_temp_order', json.encode(orderList));
       }
     });
@@ -438,62 +445,6 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
               SizedBox(
                 width: 2.h,
               ),
-              // if (sharedPreferences.getString('plan_temp_order') != null)
-              //   IconButton(
-              //       style: ButtonStyle(
-              //           shape: const MaterialStatePropertyAll(CircleBorder(
-              //               side: BorderSide(color: primaryColor, width: 1))),
-              //           backgroundColor: MaterialStatePropertyAll(
-              //               Colors.white.withOpacity(0.7))),
-              //       onPressed: () async {
-              //         final orderListJson = json.decode(
-              //             sharedPreferences.getString('plan_temp_order')!);
-              //         final orderList =
-              //             _orderService.getOrderFromJson(orderListJson);
-              //         final orderListGroupBy =
-              //             orderList.groupListsBy((element) => element.type);
-              //         List<OrderViewModel> listMotelOrder =
-              //             orderListGroupBy.values.firstWhereOrNull((element) =>
-              //                     element.first.type == services[1].name) ??
-              //                 [];
-              //         List<OrderViewModel> listRestaurantOrder =
-              //             orderListGroupBy.values.firstWhereOrNull((element) =>
-              //                     element.first.type == services[0].name) ??
-              //                 [];
-              //         List<OrderViewModel> listVehicleOrder =
-              //             orderListGroupBy.values.firstWhereOrNull((element) =>
-              //                     element.first.type == services[2].name) ??
-              //                 [];
-              //         var total = orderList.fold(
-              //             0.0,
-              //             (previousValue, element) =>
-              //                 previousValue + element.total!);
-              //         showModalBottomSheet(
-              //             context: context,
-              //             builder: (ctx) => ConfirmServiceInfor(
-              //                   listVehicle: listVehicleOrder,
-              //                   listSurcharges: sharedPreferences
-              //                               .getString('plan_surcharge') ==
-              //                           null
-              //                       ? []
-              //                       : json.decode(sharedPreferences
-              //                           .getString('plan_surcharge')!),
-              //                   total: (total / 1000).toDouble(),
-              //                   budgetPerCapita: ((total /
-              //                               sharedPreferences.getInt(
-              //                                   'plan_number_of_member')!) /
-              //                           1000)
-              //                       .ceil()
-              //                       .toDouble(),
-              //                   listFood: listRestaurantOrder,
-              //                   listRest: listMotelOrder,
-              //                 ));
-              //       },
-              //       icon: const Icon(
-              //         Icons.attach_money_rounded,
-              //         color: primaryColor,
-              //         size: 23,
-              //       )),
               const Spacer(),
               Padding(
                 padding: const EdgeInsets.only(right: 12),
@@ -523,6 +474,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                         Navigator.of(context).push(MaterialPageRoute(
                             builder: (ctx) => NewScheduleItemScreen(
                                   callback: callback,
+                                  onDelete: _deleteItem,
                                   location: widget.location,
                                   plan: widget.plan,
                                   maxActivityTime: 12 - consumedTime,
@@ -554,7 +506,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
               shrinkWrap: false,
               scrollDirection: Axis.horizontal,
               itemBuilder: (context, index) => Padding(
-                padding: EdgeInsets.all(2.w),
+                padding: EdgeInsets.all(1.w),
                 child: InkWell(
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                     onTap: () {
@@ -563,7 +515,6 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                         _pageController.animateToPage(index,
                             duration: const Duration(milliseconds: 300),
                             curve: Curves.bounceIn);
-                        // _pageController.jumpToPage(index);
                       });
                     },
                     child: PlanScheduleTitle(
@@ -759,6 +710,21 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
     }
     return Container(
         alignment: Alignment.centerLeft,
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+            color: index.isOdd
+                ? primaryColor.withOpacity(0.1)
+                : lightPrimaryTextColor.withOpacity(0.5),
+            borderRadius: BorderRadius.only(
+              topLeft: index == 0 ? const Radius.circular(10) : Radius.zero,
+              topRight: index == 0 ? const Radius.circular(10) : Radius.zero,
+              bottomLeft: index == duration - 1
+                  ? const Radius.circular(10)
+                  : Radius.zero,
+              bottomRight: index == duration - 1
+                  ? const Radius.circular(10)
+                  : Radius.zero,
+            )),
         child: Column(
           children: [
             RichText(
@@ -783,7 +749,6 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
   }
 
   showConfirmScheduleDialog() {
-    final _duration = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
     AwesomeDialog(
         context: context,
         dialogType: DialogType.info,
@@ -807,26 +772,31 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
         btnCancelColor: Colors.orange,
         btnCancelText: 'Chỉnh sửa',
         btnCancelOnPress: () {},
-        body: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                alignment: Alignment.center,
-                child: const Text(
-                  'Xác nhận lịch trình chuyến đi',
-                  style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'NotoSans'),
+        body: Container(
+          height: 50.h,
+          padding: EdgeInsets.symmetric(horizontal: 2.w),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'Xác nhận lịch trình chuyến đi',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'NotoSans'),
+                  ),
                 ),
-              ),
-              const SizedBox(
-                height: 8,
-              ),
-              for (int i = 0; i < _duration; i++) buildConfirmScheduleItem(i),
-            ],
+                const SizedBox(
+                  height: 8,
+                ),
+                for (int i = 0; i < duration; i++) buildConfirmScheduleItem(i),
+              ],
+            ),
           ),
         )).show();
   }

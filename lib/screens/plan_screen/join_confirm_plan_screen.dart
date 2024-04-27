@@ -10,6 +10,7 @@ import 'package:greenwheel_user_app/screens/payment_screen/payment_result_screen
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/input_companion_name_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
+import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
@@ -24,11 +25,13 @@ class JoinConfirmPlanScreen extends StatefulWidget {
       this.callback,
       required this.isView,
       this.onPublicizePlan,
+      this.member,
       required this.isConfirm});
   final PlanDetail plan;
   final bool isPublic;
   final bool isConfirm;
   final bool isView;
+  final PlanMemberViewModel? member;
   final void Function(bool isFromJoinScreen, int? amount)? onPublicizePlan;
   final void Function()? callback;
 
@@ -48,9 +51,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   bool isLoading = true;
 
   onChangeWeight(bool isAdd) {
-    if (isAdd &&
-        weight < widget.plan.maxMemberWeight! &&
-        weight < widget.plan.maxMemberCount! - widget.plan.memberCount!) {
+    // isEnableToAdd = widget.member == null
+    //     ? (weight < widget.plan.maxMemberWeight! &&
+    //         weight < widget.plan.maxMemberCount! - widget.plan.memberCount!)
+    //     : (weight < widget.plan.maxMemberWeight! - widget.member!.weight &&
+    //         weight < widget.plan.maxMemberCount! - widget.plan.memberCount!);
+    if (isAdd && isEnableToAdd) {
       setState(() {
         weight += 1;
       });
@@ -59,8 +65,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
           isEnableToSubtract = true;
         });
       }
-      if (weight == widget.plan.maxMemberWeight ||
-          weight == widget.plan.maxMemberCount! - widget.plan.memberCount!) {
+      if (widget.member == null
+          ? (weight == widget.plan.maxMemberWeight ||
+              weight == widget.plan.maxMemberCount! - widget.plan.memberCount!)
+          : (weight == widget.plan.maxMemberWeight! - widget.member!.weight ||
+              weight ==
+                  widget.plan.maxMemberCount! - widget.plan.memberCount!)) {
         setState(() {
           isEnableToAdd = false;
         });
@@ -94,8 +104,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
     if (widget.isConfirm) {
       weight = widget.plan.maxMemberCount! - widget.plan.memberCount!;
     }
-    isEnableToAdd = !(weight == widget.plan.maxMemberWeight! ||
-        weight == widget.plan.maxMemberCount! - widget.plan.memberCount!);
+    isEnableToAdd = widget.member == null
+        ? (weight < widget.plan.maxMemberWeight! &&
+            weight < widget.plan.maxMemberCount! - widget.plan.memberCount!)
+        : (weight < widget.plan.maxMemberWeight! - widget.member!.weight &&
+            weight < widget.plan.maxMemberCount! - widget.plan.memberCount!);
+
     isEnableToSubtract = weight > 1;
     travelerBalance = await _customerService
         .getTravelerBalance(sharedPreferences.getInt('userId')!);
@@ -112,7 +126,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
         child: Scaffold(
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        title: const Text('Xác nhận tham gia'),
+        title:
+            Text(widget.isConfirm ? 'Xác nhận bù tiền' : 'Xác nhận tham gia'),
       ),
       body: isLoading
           ? const TransactionDetailLoadingScreen()
@@ -202,7 +217,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                 overflow: TextOverflow.clip,
                                 style: const TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.black),
                               ),
                             )
@@ -225,7 +240,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                 overflow: TextOverflow.clip,
                                 style: const TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.black),
                               ),
                             )
@@ -243,12 +258,12 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                             SizedBox(
                               width: 60.w,
                               child: Text(
-                                '${DateFormat('dd/MM/yyyy').format(widget.plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan.utcEndAt!)}',
+                                '${DateFormat('dd/MM').format(widget.plan.utcDepartAt!)} - ${DateFormat('dd/MM').format(widget.plan.utcEndAt!)}',
                                 textAlign: TextAlign.end,
                                 overflow: TextOverflow.clip,
                                 style: const TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.black),
                               ),
                             )
@@ -273,7 +288,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                 overflow: TextOverflow.clip,
                                 style: const TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.black),
                               ),
                             )
@@ -283,26 +298,53 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                         if (widget.plan.maxMemberWeight! > 1)
                           Row(
                             children: [
-                              const Text(
-                                'Số người đi cùng tối đa',
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.grey),
+                              SizedBox(
+                                width: 60.w,
+                                child: const Text(
+                                  'Thành viên tối đa của 1 nhóm',
+                                  overflow: TextOverflow.clip,
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.grey),
+                                ),
                               ),
                               const Spacer(),
+                              Text(
+                                widget.plan.maxMemberWeight! < 10
+                                    ? '0${widget.plan.maxMemberWeight!}'
+                                    : '${widget.plan.maxMemberWeight!}',
+                                textAlign: TextAlign.end,
+                                overflow: TextOverflow.clip,
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
+                              )
+                            ],
+                          ),
+                        if (widget.isConfirm) buildDivider(),
+                        if (widget.isConfirm)
+                          Row(
+                            children: [
                               SizedBox(
-                                width: 30.w,
-                                child: Text(
-                                  widget.plan.maxMemberWeight! < 11 &&
-                                          widget.plan.maxMemberWeight! > 1
-                                      ? '0${widget.plan.maxMemberWeight! - 1}'
-                                      : '${widget.plan.maxMemberWeight! - 1}',
-                                  textAlign: TextAlign.end,
+                                width: 60.w,
+                                child: const Text(
+                                  'Đã tham gia',
                                   overflow: TextOverflow.clip,
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.w500,
-                                      color: Colors.black),
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.grey),
                                 ),
+                              ),
+                              const Spacer(),
+                              Text(
+                                widget.plan.memberCount! < 10
+                                    ? '0${widget.plan.memberCount!}'
+                                    : '${widget.plan.memberCount!}',
+                                textAlign: TextAlign.end,
+                                overflow: TextOverflow.clip,
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black),
                               )
                             ],
                           ),
@@ -359,16 +401,13 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                   overflow: TextOverflow.clip,
                                   style: const TextStyle(
                                       fontSize: 18,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.bold,
                                       color: Colors.black),
                                 ),
                               ),
-                              SizedBox(
-                                width: 1.h,
-                              ),
                               SvgPicture.asset(
                                 gcoin_logo,
-                                height: 30,
+                                height: 25,
                               )
                             ],
                           ),
@@ -389,7 +428,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                   overflow: TextOverflow.clip,
                                   style: const TextStyle(
                                       fontSize: 18,
-                                      fontWeight: FontWeight.w500,
+                                      fontWeight: FontWeight.bold,
                                       color: Colors.black),
                                 ),
                               ),
@@ -398,14 +437,17 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                           buildDivider(),
                           Row(
                             children: [
-                              const Text(
-                                'Số người của nhóm bạn',
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.grey),
+                              Text(
+                                widget.isConfirm
+                                    ? 'Số thành viên phải bù'
+                                    : 'Số người của nhóm',
+                                style: const TextStyle(
+                                    fontSize: 16, color: Colors.grey),
                               ),
                               const Spacer(),
                               if (!widget.isConfirm &&
-                                  widget.plan.maxMemberWeight != 1)
+                                  widget.plan.maxMemberWeight != 1 &&
+                                  isEnableToSubtract)
                                 InkWell(
                                   overlayColor: const MaterialStatePropertyAll(
                                       Colors.transparent),
@@ -425,16 +467,18 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                               Container(
                                 decoration: BoxDecoration(
                                     border: widget.isConfirm ||
-                                            widget.plan.maxMemberWeight == 1
+                                            (!isEnableToAdd &&
+                                                !isEnableToSubtract)
                                         ? const Border()
                                         : Border.all(
                                             color: Colors.grey, width: 1.5),
                                     borderRadius: const BorderRadius.all(
                                         Radius.circular(8))),
-                                alignment: widget.plan.maxMemberWeight == 1 ||
-                                        widget.isConfirm
-                                    ? Alignment.centerRight
-                                    : Alignment.center,
+                                alignment:
+                                    (!isEnableToAdd && !isEnableToSubtract) ||
+                                            widget.isConfirm
+                                        ? Alignment.centerRight
+                                        : Alignment.center,
                                 width: 6.h,
                                 child: Text(
                                   weight.toString(),
@@ -447,7 +491,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                 width: 0.5.h,
                               ),
                               if (!widget.isConfirm &&
-                                  widget.plan.maxMemberWeight != 1)
+                                  widget.plan.maxMemberWeight != 1 &&
+                                  isEnableToAdd)
                                 InkWell(
                                   overlayColor: const MaterialStatePropertyAll(
                                       Colors.transparent),
@@ -483,7 +528,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                 overflow: TextOverflow.clip,
                                 style: const TextStyle(
                                     fontSize: 18,
-                                    fontWeight: FontWeight.w500,
+                                    fontWeight: FontWeight.bold,
                                     color: Colors.black),
                               ),
                               SizedBox(
@@ -491,7 +536,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                               ),
                               SvgPicture.asset(
                                 gcoin_logo,
-                                height: 30,
+                                height: 25,
                               )
                             ],
                           ),
@@ -501,76 +546,72 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(
-                      height: 2.h,
-                    ),
-                    const Spacer(),
-                    Column(
-                      children: [
-                        Row(
-                          children: [
-                            const Text(
-                              'Tổng cộng',
-                              style:
-                                  TextStyle(fontSize: 16, color: Colors.grey),
-                            ),
-                            const Spacer(),
-                            Text(
-                              NumberFormat.simpleCurrency(
-                                      locale: 'vi-VN',
-                                      decimalDigits: 0,
-                                      name: "")
-                                  .format(weight *
-                                      widget.plan.gcoinBudgetPerCapita!),
-                              textAlign: TextAlign.end,
-                              overflow: TextOverflow.clip,
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.black),
-                            ),
-                            SizedBox(
-                              width: 1.h,
-                            ),
-                            SvgPicture.asset(
-                              gcoin_logo,
-                              height: 30,
-                            )
-                          ],
-                        ),
-                        SizedBox(
-                          height: 1.h,
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            if (!widget.isConfirm) {
-                              if (weight == 1) {
-                                handleJoin();
-                              } else {
-                                handleInputInformation();
-                              }
-                            } else {
-                              handleConfirm();
-                            }
-                          },
-                          style: elevatedButtonStyle.copyWith(
-                              minimumSize:
-                                  MaterialStatePropertyAll(Size(100.w, 50))),
-                          child: Text(
-                            widget.isConfirm || weight == 1
-                                ? 'Thanh toán'
-                                : 'Nhập thông tin',
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold),
-                          ),
-                        ),
-                        SizedBox(
-                          height: 1.h,
-                        )
-                      ],
-                    )
                   ]),
             ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 12),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            Row(
+              children: [
+                Text(
+                  widget.isConfirm ? 'Tổng cộng tiền bù' : 'Tổng cộng',
+                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                ),
+                const Spacer(),
+                Text(
+                  NumberFormat.simpleCurrency(
+                          locale: 'vi-VN', decimalDigits: 0, name: "")
+                      .format(weight * widget.plan.gcoinBudgetPerCapita!),
+                  textAlign: TextAlign.end,
+                  overflow: TextOverflow.clip,
+                  style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black),
+                ),
+                SizedBox(
+                  width: 1.h,
+                ),
+                SvgPicture.asset(
+                  gcoin_logo,
+                  height: 30,
+                )
+              ],
+            ),
+            SizedBox(
+              height: 1.h,
+            ),
+            ElevatedButton(
+              onPressed: () {
+                if (!widget.isConfirm) {
+                  if (weight != 1 || widget.member != null) {
+                    handleInputInformation();
+                  } else {
+                    handleJoin();
+                  }
+                } else {
+                  handleConfirm();
+                }
+              },
+              style: elevatedButtonStyle.copyWith(
+                  minimumSize: MaterialStatePropertyAll(Size(100.w, 50))),
+              child: Text(
+                widget.isConfirm || (widget.member == null && weight == 1)
+                    ? 'Thanh toán'
+                    : 'Nhập thông tin',
+                style:
+                    const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            SizedBox(
+              height: 1.h,
+            )
+          ],
+        ),
+      ),
     ));
   }
 
@@ -587,7 +628,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
         PageTransition(
             child: InputCompanionNameScreen(
               initNames: companionNames,
-              weight: weight - 1,
+              weight: widget.member == null ? weight - 1 : weight,
               callback: callback,
               onJoin: handleJoin,
             ),

@@ -10,13 +10,13 @@ class PlanScheduleItem {
   final String id;
   final String? description;
   TimeOfDay? time;
-  final DateTime? date;
+  DateTime? date;
   final String? orderId;
   final String? type;
   final String? shortDescription;
   final int? activityTime;
   final bool? isStarred;
-   String? orderUUID;
+  String? orderUUID;
 
   PlanScheduleItem(
       {String? id,

@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -41,7 +41,6 @@ class PlanCard extends StatelessWidget {
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           clipBehavior: Clip.hardEdge,
-          elevation: 2,
           child: Padding(
             padding: const EdgeInsets.only(right: 16),
             child: Row(children: [
@@ -63,39 +62,22 @@ class PlanCard extends StatelessWidget {
               const SizedBox(
                 width: 8,
               ),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(plan.name ?? 'Chuyen di chua dat ten',
-                              overflow: TextOverflow.clip,
-                              maxLines: 2,
-                              style: const TextStyle(
-                                  fontSize: 18, fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Text(
-                      plan.province.name,
-                      style: const TextStyle(fontWeight: FontWeight.w500),
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Text(
-                        '${DateFormat('dd/MM/yyyy').format(plan.utcStartAt)} - ${DateFormat('dd/MM/yyyy').format(plan.utcEndAt)}')
-                  ],
-                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(plan.name ?? 'Chuyen di chua dat ten',
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  Text(
+                    plan.province.name,
+                    style: const TextStyle(fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                      '${DateFormat('dd/MM/yyyy').format(plan.utcStartAt)} - ${DateFormat('dd/MM/yyyy').format(plan.utcEndAt)}')
+                ],
               )
             ]),
           ),

@@ -33,7 +33,7 @@ class OrderViewModel {
       id: json["id"],
       uuid: json['uuid'],
       note: json["note"],
-      serveDates: json["serveDates"],
+      serveDates: json["serveDates"].map((e) => DateTime.parse(e)).toList(),
       total: double.parse(json["total"].toString()),
       createdAt: DateTime.parse(json["createdAt"]),
       type: json['type'],

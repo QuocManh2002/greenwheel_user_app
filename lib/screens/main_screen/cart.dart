@@ -110,7 +110,7 @@ class _CartScreenState extends State<CartScreen> {
     noteController.text = widget.note;
     _servingDates = widget.isOrder != null && widget.isOrder!
         ? widget.servingDates!
-        : [widget.startDate];
+        : widget.servingDates ?? [widget.startDate];
     if (widget.isOrder == null || !widget.isOrder!) {
       callback(_servingDates, widget.total);
     }
@@ -777,7 +777,7 @@ class _CartScreenState extends State<CartScreen> {
         _serveDates
             .map((e) => DateTime.parse(e).difference(widget.startDate).inDays)
             .toList(),
-        null,
+        widget.orderGuid,
         widget.serviceType.id == 2 ? total * _serveDates.length : total);
     if (!widget.isOrder!) {
       AwesomeDialog(
@@ -795,7 +795,10 @@ class _CartScreenState extends State<CartScreen> {
 
       Future.delayed(const Duration(seconds: 1), () {
         widget.callbackFunction(tempOrder);
-        Navigator.of(context).pop();
+        if ((widget.isOrder == null || !widget.isOrder!) &&
+            widget.orderGuid == null) {
+          Navigator.of(context).pop();
+        }
         Navigator.of(context).pop();
         Navigator.of(context).pop();
         Navigator.of(context).pop();
@@ -896,12 +899,11 @@ class _CartScreenState extends State<CartScreen> {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (ctx) => SelectOrderDateScreen(
             callbackFunction: callback,
-            supplier: widget.supplier,
-            list: list,
+            isOrder: widget.isOrder ?? false,
+            session: widget.session,
             total: widget.total,
             selectedDate: _servingDates.isEmpty ? [] : _servingDates,
             serviceType: widget.serviceType,
-            numberOfMember: widget.numberOfMember,
             endDate: widget.endDate,
             startDate: widget.startDate)));
   }

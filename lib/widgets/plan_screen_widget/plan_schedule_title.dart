@@ -51,7 +51,7 @@ class PlanScheduleTitle extends StatelessWidget {
         Text(
           DateFormat.EEEE('vi_VN').format(date),
           style: TextStyle(
-              fontSize: 15,
+              fontSize: 14,
               fontFamily: 'NotoSans',
               fontWeight: FontWeight.bold,
               color: isSelected ? Colors.white : Colors.grey),

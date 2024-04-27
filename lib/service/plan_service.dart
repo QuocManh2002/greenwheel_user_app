@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
@@ -247,7 +248,8 @@ mutation{
         case 'PUBLISH':
           type = 'publishedPlans';
       }
-      QueryResult result = await client.query(
+      GraphQLClient newClient = graphQlConfig.getClient();
+      QueryResult result = await newClient.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
   $type(where: { id: { eq: $planId } }) {
@@ -341,7 +343,8 @@ mutation{
           planType = 'publishedPlans';
           break;
       }
-      QueryResult result = await client.query(QueryOptions(
+      GraphQLClient newClient = graphQlConfig.getClient();
+      QueryResult result = await newClient.query(QueryOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 {
@@ -562,7 +565,10 @@ mutation{
       if (i < schedules.length) {
         for (final planItem in schedules[i]) {
           item.add(PlanScheduleItem(
-              orderUUID: planItem['orderUUID'],
+              orderUUID:
+                  planItem['orderUUID'].toString().substring(0, 1) == '\"'
+                      ? json.decode(planItem['orderUUID'])
+                      : planItem['orderUUID'],
               isStarred: planItem['isStarred'],
               activityTime: DateFormat.Hms()
                   .parse(planItem['duration'].toString().substring(0, 1) == '\"'
@@ -596,7 +602,8 @@ mutation{
         final type = schedule_item_types_vn
             .firstWhere((element) => element == item.type);
         items.add({
-          'orderUUID': json.encode(item.orderUUID),
+          'orderUUID':
+              item.orderUUID == null ? null : json.encode(item.orderUUID),
           'isStarred': item.isStarred,
           'duration': json.encode("${item.activityTime}:00:00"),
           'description': json.encode(item.description),
@@ -1062,8 +1069,25 @@ mutation{
     }
   }
 
-  handleShowPlanInformation(
-      BuildContext context, LocationViewModel location, PlanCreate? plan) {
+  handleShowPlanInformation(BuildContext context, LocationViewModel location,
+      PlanCreate? plan) async {
+    showDialog(
+        context: context,
+        builder: (_) => AlertDialog(
+              content: SizedBox(
+                height: 10.h,
+                width: 100.w,
+                child: const Center(
+                  child: CircularProgressIndicator(
+                    color: primaryColor,
+                  ),
+                ),
+              ),
+            ));
+    await Utils().updateProductPrice();
+
+    // ignore: use_build_context_synchronously
+    Navigator.of(context).pop();
     DateTime? _travelDuration =
         sharedPreferences.getDouble('plan_duration_value') != null
             ? DateTime(0, 0, 0).add(Duration(
@@ -1072,6 +1096,7 @@ mutation{
                         .toInt()))
             : null;
     showModalBottomSheet(
+        // ignore: use_build_context_synchronously
         context: context,
         builder: (ctx) => ConfirmPlanBottomSheet(
               isFromHost: false,

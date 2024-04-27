@@ -35,8 +35,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   PlanDetail? plan;
   List<ProductViewModel> list = [];
   List<ItemCart> items = [];
-  DateTime? pickupDate;
-  DateTime? returnDate;
   String note = "";
   String title = "";
   bool isLoading = true;
@@ -117,7 +115,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
 
     if (widget.inputModel.serviceType!.id == 1) {
       title = "Món ăn";
-      if (widget.inputModel.isOrder != null && widget.inputModel.isOrder!) {
+      if (widget.inputModel.currentCart != null) {
         List<int> qtys = [];
         for (final item in widget.inputModel.currentCart!) {
           int index = widget.inputModel.currentCart!.indexOf(item);
@@ -132,18 +130,45 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
         }
       }
     } else if (widget.inputModel.serviceType!.id == 2) {
-      if (widget.inputModel.serviceType!.id == 2) {
-        title = "Phòng nghỉ";
-      }
-      findSumCombinations(list, widget.inputModel.numberOfMember!);
-      List<ProductViewModel> rs = getResult(_listResult);
-      Map gr = rs.groupListsBy((element) => element.id);
-      for (final item in gr.keys) {
-        updateCart(list.firstWhere((element) => element.id == item),
-            rs.where((element) => element.id == item).toList().length);
+      title = "Phòng nghỉ";
+      if (widget.inputModel.currentCart != null) {
+        List<int> qtys = [];
+        for (final item in widget.inputModel.currentCart!) {
+          int index = widget.inputModel.currentCart!.indexOf(item);
+          qtys.add(item.qty = (widget.inputModel.numberOfMember! /
+                  list
+                      .firstWhere((element) => element.id == item.product.id)
+                      .partySize!)
+              .ceil());
+          updateCart(
+              list.firstWhere((element) => element.id == item.product.id),
+              qtys[index]);
+        }
+      } else {
+        findSumCombinations(list, widget.inputModel.numberOfMember!);
+        List<ProductViewModel> rs = getResult(_listResult);
+        Map gr = rs.groupListsBy((element) => element.id);
+        for (final item in gr.keys) {
+          updateCart(list.firstWhere((element) => element.id == item),
+              rs.where((element) => element.id == item).toList().length);
+        }
       }
     } else {
       title = 'Thuê phương tiện';
+      if (widget.inputModel.currentCart != null) {
+        List<int> qtys = [];
+        for (final item in widget.inputModel.currentCart!) {
+          int index = widget.inputModel.currentCart!.indexOf(item);
+          qtys.add(item.qty = (widget.inputModel.numberOfMember! /
+                  list
+                      .firstWhere((element) => element.id == item.product.id)
+                      .partySize!)
+              .ceil());
+          updateCart(
+              list.firstWhere((element) => element.id == item.product.id),
+              qtys[index]);
+        }
+      } 
     }
   }
 
@@ -419,9 +444,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                         ItemCart? itemCart =
                             getItemCartByMenuItemId(list[index].id);
                         if (itemCart != null) {
-                          // setState(() {
                           qty = itemCart.qty;
-                          // });
                         }
                         return MenuItemCard(
                           product: list[index],
@@ -788,8 +811,6 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
       }
 
       if (items.isEmpty) {
-        pickupDate = null;
-        returnDate = null;
         note = "";
       }
     });

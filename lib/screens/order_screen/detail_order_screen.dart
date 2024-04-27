@@ -77,14 +77,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   setUpData() async {
-    if (widget.order.note == null || widget.order.note!.isEmpty) {
-      noteController.text = 'Không có ghi chú';
-    } else {
-      noteController.text = widget.order.note!;
-    }
+    noteController.text = widget.order.note ?? '';
     _servingDates = (widget.order.serveDates ?? [])
-        .map((e) => DateTime(DateTime.parse(e).year, DateTime.parse(e).month,
-            DateTime.parse(e).day, 0, 0, 0))
+        .map((e) => DateTime(e.year, e.month, e.day, 0, 0, 0))
         .toList();
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
@@ -412,60 +407,63 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 const SizedBox(
                                   height: 12,
                                 ),
-                                const Row(
-                                  children: [
-                                    Icon(
-                                      Icons.description,
-                                      color: yellowColor,
-                                    ),
-                                    SizedBox(
-                                      width: 8,
-                                    ),
-                                    Text(
-                                      'Ghi chú:',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                  ],
-                                ),
-                                Container(
-                                  height: 10.h,
-                                  margin: EdgeInsets.symmetric(
-                                      horizontal: 5.w, vertical: 1.h),
-                                  padding:
-                                      EdgeInsets.symmetric(horizontal: 4.w),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(
-                                        10.0), // Set the border radius
-                                    color: Colors.grey.withOpacity(0.2),
+                                if (widget.order.note != null &&
+                                    widget.order.note!.isNotEmpty)
+                                  Column(
+                                    children: [
+                                      const Row(
+                                        children: [
+                                          Icon(
+                                            Icons.description,
+                                            color: yellowColor,
+                                          ),
+                                          SizedBox(
+                                            width: 8,
+                                          ),
+                                          Text(
+                                            'Ghi chú:',
+                                            style: TextStyle(
+                                                fontSize: 18,
+                                                fontWeight: FontWeight.bold),
+                                          ),
+                                        ],
+                                      ),
+                                      Container(
+                                        height: 10.h,
+                                        margin: EdgeInsets.symmetric(
+                                            horizontal: 5.w, vertical: 1.h),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 4.w),
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                              10.0), // Set the border radius
+                                          color: Colors.grey.withOpacity(0.2),
+                                        ),
+                                        child: TextField(
+                                          readOnly: true,
+                                          controller: noteController,
+                                          maxLines:
+                                              null, // Allow for multiple lines of text
+                                          decoration: const InputDecoration(
+                                            border: InputBorder
+                                                .none, // Remove the bottom border
+                                            contentPadding: EdgeInsets.all(
+                                                8.0), // Set the padding
+                                          ),
+                                          style: const TextStyle(
+                                            height:
+                                                1.8, // Adjust the line height (e.g., 1.5 for 1.5 times the font size)
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  child: TextField(
-                                    readOnly: true,
-                                    controller: noteController,
-                                    maxLines:
-                                        null, // Allow for multiple lines of text
-                                    decoration: const InputDecoration(
-                                      border: InputBorder
-                                          .none, // Remove the bottom border
-                                      contentPadding: EdgeInsets.all(
-                                          8.0), // Set the padding
-                                    ),
-                                    style: const TextStyle(
-                                      height:
-                                          1.8, // Adjust the line height (e.g., 1.5 for 1.5 times the font size)
-                                    ),
-                                  ),
-                                ),
                                 const SizedBox(
                                   height: 8,
                                 ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey.withOpacity(0.7),
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(12))),
-                                  height: 0.3.h,
+                                Divider(
+                                  color: Colors.grey.withOpacity(0.7),
+                                  thickness: 0.2.h,
                                 ),
                                 const SizedBox(
                                   height: 12,
@@ -529,12 +527,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 const SizedBox(
                                   height: 6,
                                 ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey.withOpacity(0.7),
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(12))),
-                                  height: 0.3.h,
+                                Divider(
+                                  color: Colors.grey.withOpacity(0.7),
+                                  thickness: 0.2.h,
                                 ),
                                 const SizedBox(
                                   height: 6,
@@ -596,12 +591,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 const SizedBox(
                                   height: 12,
                                 ),
-                                Container(
-                                  decoration: BoxDecoration(
-                                      color: Colors.grey.withOpacity(0.7),
-                                      borderRadius: const BorderRadius.all(
-                                          Radius.circular(12))),
-                                  height: 0.3.h,
+                                Divider(
+                                  color: Colors.grey.withOpacity(0.7),
+                                  thickness: 0.2.h,
                                 ),
                                 const SizedBox(
                                   height: 6,

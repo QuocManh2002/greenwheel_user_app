@@ -9,10 +9,12 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
+import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
 import 'package:greenwheel_user_app/service/config_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
+import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
@@ -419,8 +421,13 @@ class Utils {
           e.serveDates!.map((date) => date.toString()).toList(),
           e.serveDates!
               .map((date) => DateTime.parse(date.toString())
-                  .difference(DateTime(plan.utcStartAt!.year,
-                      plan.utcStartAt!.month, plan.utcStartAt!.day, 0, 0, 0))
+                  .difference(DateTime(
+                      plan.utcStartAt!.toLocal().year,
+                      plan.utcStartAt!.toLocal().month,
+                      plan.utcStartAt!.toLocal().day,
+                      0,
+                      0,
+                      0))
                   .inDays)
               .toList(),
           e.uuid,
@@ -611,25 +618,50 @@ class Utils {
   updateScheduleAndOrder() {
     int duration = (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil();
     var schedule = json.decode(sharedPreferences.getString('plan_schedule')!);
-    var tempOrder =
+    var tempOrders =
         json.decode(sharedPreferences.getString('plan_temp_order')!);
     var newSchedule = [];
 
     for (int i = 0; i < duration; i++) {
-      newSchedule.add(schedule[i]);
+      if (i < schedule.length) {
+        newSchedule.add(schedule[i]);
+      } else {
+        newSchedule.add([]);
+      }
     }
 
-    var invalidOrder =[];
-    for(final order in tempOrder){
-      if(
-        order['serveDateIndexes'].any((index) => int.parse(index.toString()) >= duration )
-      ){
+    var invalidOrder = [];
+    for (final order in tempOrders) {
+      if (order['serveDateIndexes']
+          .any((index) => int.parse(index.toString()) >= duration)) {
         invalidOrder.add(order);
+      }
+    }
+    final arrivedText = sharedPreferences.getString('plan_arrivedTime');
+    if (arrivedText != null) {
+      final arrivedTime = DateTime.parse(arrivedText);
+      final startSession = sessions.firstWhereOrNull((aTime) =>
+              aTime.from <= arrivedTime.hour && aTime.to > arrivedTime.hour) ??
+          sessions[0];
+
+      for (final item in newSchedule[0]) {
+        if (item['orderUUID'] != null) {
+          final order =
+              tempOrders.firstWhere((e) => e['orderUUID'] == item['orderUUID']);
+          final session = sessions
+              .firstWhere((element) => element.enumName == order['period']);
+          if (session.index < startSession.index &&
+              !invalidOrder.any(
+                  (element) => element['orderUUID'] == item['orderUUID'])) {
+            invalidOrder.add(order);
+          }
+        }
       }
     }
 
     for (final order in invalidOrder) {
-      tempOrder.remove(order);
+      tempOrders.remove(
+          tempOrders.firstWhere((e) => e['orderUUID'] == order['orderUUID']));
       for (final day in newSchedule) {
         for (final item in day) {
           if (item['orderUUID'] != null &&
@@ -639,8 +671,46 @@ class Utils {
         }
       }
     }
-
     sharedPreferences.setString('plan_schedule', json.encode(newSchedule));
-    sharedPreferences.setString('plan_temp_order', json.encode(tempOrder));
+    sharedPreferences.setString('plan_temp_order', json.encode(tempOrders));
+  }
+
+  updateProductPrice() async {
+    var orders =
+        json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+    List<int> ids = [];
+    List<double> newPrice = [];
+
+    if (orders.isNotEmpty) {
+      for (final order in orders) {
+        for (final detail in order['details']) {
+          if (!ids.contains(detail['productId'])) {
+            ids.add(detail['productId']);
+          }
+        }
+      }
+      ids.sort();
+      ProductService _productService = ProductService();
+      final products = await _productService.getListProduct(ids);
+      newPrice = products
+          .map((e) => e.price.toDouble() / GlobalConstant().VND_CONVERT_RATE)
+          .toList();
+      for (final order in orders) {
+        for (final detail in order['details']) {
+          final index = ids.indexOf(detail['productId']);
+          detail['price'] = newPrice[index];
+          detail['unitPrice'] = newPrice[index];
+        }
+        order['total'] = order['details'].fold(
+            0,
+            (previousValue, element) =>
+                previousValue +
+                num.parse(
+                        (element['unitPrice'] * element['quantity']).toString())
+                    .toInt());
+      }
+    }
+
+    sharedPreferences.setString('plan_temp_order', json.encode(orders));
   }
 }

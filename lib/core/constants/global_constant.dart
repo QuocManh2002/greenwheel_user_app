@@ -79,5 +79,11 @@ class GlobalConstant {
   final int ACTIVITY_DESCRIPTION_MAX_LENGTH = 300;
   final int PLAN_MIN_MEMBER_COUNT = 1;
   final int PLAN_MAX_MEMBER_COUNT = 20;
-
+  final int HALF_EVENING = 20;
+  final int HALF_AFTERNOON = 16;
+  final int MORNING_START = 6;
+  final int NOON_START = 10;
+  final int AFTERNOON_START = 14;
+  final int EVENING_START = 18;
+  final int EVENING_END = 22;
 }

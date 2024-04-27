@@ -4,7 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -245,11 +245,11 @@ class PaymentResultScreen extends StatelessWidget {
                                   type: PageTransitionType.topToBottom),
                             );
                           } else {
-                            Navigator.push(
+                            Navigator.pushAndRemoveUntil(
                                 context,
                                 PageTransition(
                                     child: const TabScreen(pageIndex: 4),
-                                    type: PageTransitionType.rightToLeft));
+                                    type: PageTransitionType.rightToLeft), (route) => false,);
                           }
                         },
                         child: buildButton('Quay lại', Icons.keyboard_return),

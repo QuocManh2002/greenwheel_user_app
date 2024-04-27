@@ -6,7 +6,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_new_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/suggest_plan.dart';
 import 'package:intl/intl.dart';
@@ -92,8 +92,7 @@ class SuggestPlanCard extends StatelessWidget {
                       SizedBox(
                         width: 45.w,
                         child: Text(plan.planName,
-                            overflow: TextOverflow.clip,
-                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                             style: const TextStyle(
                                 fontSize: 20, fontWeight: FontWeight.bold)),
                       ),

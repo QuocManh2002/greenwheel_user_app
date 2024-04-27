@@ -674,10 +674,11 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
             Expanded(
                 child: ElevatedButton(
               style: elevatedButtonStyle,
-              onPressed: () {
+              onPressed: () async{
                 if (formKey.currentState!.validate()) {
                   if (widget.isClone) {
-                    Utils().updateTempOrder(false);
+                    await Utils().updateTempOrder(false);
+                    Utils().updateScheduleAndOrder();
                   }
                   Navigator.push(
                       context,

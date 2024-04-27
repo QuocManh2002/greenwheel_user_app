@@ -28,7 +28,7 @@ class ProductViewModel {
       ProductViewModel(
           id: json["id"],
           name: json["name"],
-          price: json["price"],
+          price: json["price"].toInt(),
           thumbnailUrl: json["imagePath"],
           supplierId: json["provider"]["id"],
           supplierName: json["provider"]["name"],

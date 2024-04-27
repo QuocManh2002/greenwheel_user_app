@@ -94,6 +94,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       NumberFormat.simpleCurrency(locale: 'vi_VN', name: '', decimalDigits: 0);
   bool _isEnableToConfirm = false;
   String comboDateText = '';
+  bool _isEnableToRegisterMore = false;
+  PlanMemberViewModel? myAccount;
 
   @override
   void initState() {
@@ -166,9 +168,17 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             weight: mem.weight));
       }
     }
+
     _isAlreadyJoin = _planMembers.any((element) =>
         element.accountId == sharedPreferences.getInt('userId')! &&
         element.status == 'JOINED');
+    if (_isAlreadyJoin) {
+      myAccount = _planMembers.firstWhere((element) =>
+          element.accountId == sharedPreferences.getInt('userId')!);
+      _isEnableToRegisterMore =
+          myAccount!.weight < _planDetail!.maxMemberWeight! &&
+              _planDetail!.memberCount! < _planDetail!.maxMemberCount!;
+    }
   }
 
   getTempOrder() => _planDetail!.tempOrders!.map((e) {
@@ -300,6 +310,18 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                 backgroundColor: _isEnableToInvite
                                     ? Colors.blue
                                     : const Color.fromARGB(97, 15, 7, 7)),
+                          if (_isEnableToRegisterMore)
+                            SpeedDialChild(
+                                child: const Icon(Icons.person_add),
+                                labelStyle: const TextStyle(
+                                    fontSize: 18, color: Colors.white),
+                                label: 'Đăng ký thêm',
+                                onTap: () {
+                                  confirmJoin(false, myAccount);
+                                },
+                                labelBackgroundColor: Colors.pinkAccent,
+                                foregroundColor: Colors.white,
+                                backgroundColor: Colors.pinkAccent),
                           if (_isEnableToConfirm)
                             SpeedDialChild(
                                 child: const Icon(
@@ -307,20 +329,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                   size: 30,
                                 ),
                                 label: 'Chốt',
-                                onTap: _isEnableToConfirm
-                                    ? onConfirmMember
-                                    : () {},
+                                onTap: onConfirmMember,
                                 labelStyle: const TextStyle(
                                   fontSize: 18,
                                   color: Colors.white,
                                 ),
-                                labelBackgroundColor: _isEnableToConfirm
-                                    ? primaryColor.withOpacity(0.8)
-                                    : Colors.white30,
+                                labelBackgroundColor:
+                                    primaryColor.withOpacity(0.8),
                                 foregroundColor: Colors.white,
-                                backgroundColor: _isEnableToConfirm
-                                    ? primaryColor
-                                    : Colors.white38),
+                                backgroundColor: primaryColor),
                           SpeedDialChild(
                               child: const Icon(Icons.share),
                               labelStyle: const TextStyle(
@@ -977,7 +994,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         .toList(),
                     isJoin: true,
                     onJoinPlan: () {
-                      confirmJoin(isPublic);
+                      confirmJoin(isPublic, null);
                     },
                     onCancel: () {
                       Navigator.of(context).pop();
@@ -1022,13 +1039,14 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     }
   }
 
-  confirmJoin(bool isPublic) {
+  confirmJoin(bool isPublic, PlanMemberViewModel? member) {
     Navigator.of(context).push(MaterialPageRoute(
         builder: (ctx) => JoinConfirmPlanScreen(
               plan: _planDetail!,
               isPublic: isPublic,
               isConfirm: false,
               isView: false,
+              member: member,
               onPublicizePlan: handlePublicizePlan,
             )));
   }
@@ -1086,7 +1104,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               body: ConfirmMemberDialogBody(
                 plan: _planDetail!,
               ),
-              btnOkColor: Colors.blue,
+              btnOkColor: Colors.amber,
               btnOkOnPress: () {
                 Navigator.push(
                     context,
@@ -1100,7 +1118,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         type: PageTransitionType.rightToLeft));
               },
               btnOkText: 'Đồng ý',
-              btnCancelColor: Colors.amber,
+              btnCancelColor: Colors.blueAccent,
               btnCancelOnPress: () {},
               btnCancelText: 'Huỷ')
           .show();
