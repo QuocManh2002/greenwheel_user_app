@@ -102,7 +102,7 @@ log(
       final QueryResult result =
           await newClient.query(QueryOptions(document: gql("""
 {
-  products(first: 50 where: { id: { in: $productIds } }) {
+  products( where: { id: { in: $productIds } }) {
     nodes {
       id
       name

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -79,7 +80,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
     int? numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
     int? _maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
     ComboDate _selectedComboDate;
-    _memberController.text = '2';
+    _memberController.text = GlobalConstant().PLAN_MIN_MEMBER_COUNT.toString();
     _maxMemberWeightController.text = '0';
     if (numOfExpPeriod != null) {
       _selectedComboDate = listComboDate.firstWhere(
@@ -110,7 +111,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       });
       maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
     } else {
-      sharedPreferences.setInt('plan_number_of_member', 2);
+      sharedPreferences.setInt('plan_number_of_member', 1);
     }
 
     if (_maxMemberWeight != null && _maxMemberWeight > 0) {
@@ -270,7 +271,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                             }
 
                             Future.delayed(
-                              const Duration(seconds: 1),
+                              const Duration(seconds: 2),
                               () {
                                 setState(() {
                                   _isSelecting = false;
@@ -283,7 +284,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                             .decode(sharedPreferences
                                                 .getString('plan_schedule')!)
                                             .length) {
-                                  if (!_isSelecting && !isShowDialog )  {
+                                  if (!_isSelecting && !isShowDialog) {
                                     isShowDialog = true;
                                     AwesomeDialog(
                                             context: context,
@@ -338,7 +339,6 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                   isShowDialog = false;
                                   if (!_isSelecting) {
                                     _previousSelection = value;
-
                                   }
                                 }
                               },
@@ -599,7 +599,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                 style: elevatedButtonStyle,
                 onPressed: () {
                   if (int.tryParse(_memberController.text) == null ||
-                      int.parse(_memberController.text) < 2 ||
+                      int.parse(_memberController.text) < 1 ||
                       int.parse(_memberController.text) > 20) {
                     AwesomeDialog(
                             context: context,
@@ -638,19 +638,53 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                     if (widget.isClone) {
                       Utils().updateTempOrder(true);
                     }
-                    if (isChangeScheduleAndOrder) {
-                      Utils().updateScheduleAndOrder();
+
+                    if (widget.isClone) {
+                      if (isChangeScheduleAndOrder ||
+                          (sharedPreferences.getInt('initNumOfExpPeriod')! / 2)
+                                  .ceil() <
+                              json
+                                  .decode(sharedPreferences
+                                      .getString('plan_schedule')!)
+                                  .length) {
+                        Utils().updateScheduleAndOrder(context, () {
+                          Navigator.push(
+                              context,
+                              PageTransition(
+                                  child: SelectStartLocationScreen(
+                                    isCreate: widget.isCreate,
+                                    plan: widget.plan,
+                                    location: widget.location,
+                                    isClone: widget.isClone,
+                                  ),
+                                  type: PageTransitionType.rightToLeft));
+                        });
+                      } else {
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                                child: SelectStartLocationScreen(
+                                  isCreate: widget.isCreate,
+                                  plan: widget.plan,
+                                  location: widget.location,
+                                  isClone: widget.isClone,
+                                ),
+                                type: PageTransitionType.rightToLeft));
+                      }
                     }
-                    Navigator.push(
-                        context,
-                        PageTransition(
-                            child: SelectStartLocationScreen(
-                              isCreate: widget.isCreate,
-                              plan: widget.plan,
-                              location: widget.location,
-                              isClone: widget.isClone,
-                            ),
-                            type: PageTransitionType.rightToLeft));
+
+                    if (!widget.isClone) {
+                      Navigator.push(
+                          context,
+                          PageTransition(
+                              child: SelectStartLocationScreen(
+                                isCreate: widget.isCreate,
+                                plan: widget.plan,
+                                location: widget.location,
+                                isClone: widget.isClone,
+                              ),
+                              type: PageTransitionType.rightToLeft));
+                    }
                   }
                 },
                 child: const Text('Tiếp tục'))

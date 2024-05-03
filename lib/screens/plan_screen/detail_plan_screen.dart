@@ -8,18 +8,15 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
-import 'package:greenwheel_user_app/core/constants/clone_plan_options.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/plan_detail_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/payment_screen/payment_result_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/history_order_screen.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/clone_plan_options_bottom_sheet.dart';
@@ -72,11 +69,10 @@ class DetailPlanNewScreen extends StatefulWidget {
 class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     with TickerProviderStateMixin {
   bool isLoading = true;
-  PlanService _planService = PlanService();
-  LocationService _locationService = LocationService();
-  ProductService _productService = ProductService();
-  CustomerService _customerService = CustomerService();
-  OrderService _orderService = OrderService();
+  final PlanService _planService = PlanService();
+  final LocationService _locationService = LocationService();
+  final ProductService _productService = ProductService();
+  final CustomerService _customerService = CustomerService();
   PlanDetail? _planDetail;
   List<PlanMemberViewModel> _planMembers = [];
   double total = 0;

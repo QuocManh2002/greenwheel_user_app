@@ -1,7 +1,5 @@
 import 'dart:convert';
-import 'dart:developer';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
@@ -27,8 +25,8 @@ class CreatePlanSurcharge extends StatefulWidget {
 
 class _CreatePlanSurchargeState extends State<CreatePlanSurcharge> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _amountController = TextEditingController();
-  TextEditingController _noteController = TextEditingController();
+  final TextEditingController _amountController = TextEditingController();
+  final TextEditingController _noteController = TextEditingController();
   bool alreadyDivided = false;
   int amount = 0;
   onCreateSurcharge() {

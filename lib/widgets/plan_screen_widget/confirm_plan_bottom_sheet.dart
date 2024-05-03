@@ -70,10 +70,10 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         if (order.runtimeType == OrderViewModel) {
           total += order.total;
         } else {
-          if (order['type'] == 'CHECKIN') {
-            total += order['total'];
+          if (order['type'] == 'CHECKIN' || order['type'] == 'VISIT') {
+            total += order['total'] ;
           } else {
-            total += order['total'] * order['serveDates'].length;
+            total += order['total'] ;
           }
         }
       }
@@ -843,11 +843,10 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           .format(((order.runtimeType == OrderViewModel
                                   ? (order.total)
                                   : 
-                                  order['type'] == 'CHECKIN'
+                                  order['type'] == 'CHECKIN' || order['type'] == 'VISIT'
                                       ? order['total']
                                       :
-                                       order['total'] *
-                                          order['serveDates'].length))
+                                       order['total'] ))
                               .toInt()),
                       style: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.bold),

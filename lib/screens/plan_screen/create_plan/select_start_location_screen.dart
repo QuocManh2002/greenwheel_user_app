@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
@@ -33,11 +35,11 @@ class SelectStartLocationScreen extends StatefulWidget {
 }
 
 class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   var distanceText = '';
   var durationText = '';
-  var distanceValue;
-  var durationValue;
+  double? distanceValue;
+  double? durationValue;
   List<SearchStartLocationResult> _resultList = [];
   bool isShowResult = false;
   CircleAnnotationManager? _circleAnnotationManagerStart;
@@ -71,8 +73,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
 
       sharedPreferences.setString('plan_duration_text', durationText);
       sharedPreferences.setString('plan_distance_text', distanceText);
-      sharedPreferences.setDouble('plan_duration_value', durationValue);
-      sharedPreferences.setDouble('plan_distance_value', distanceValue);
+      sharedPreferences.setDouble('plan_duration_value', durationValue!);
+      sharedPreferences.setDouble('plan_distance_value', distanceValue!);
     }
   }
 
@@ -135,13 +137,13 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   setUpDataCreate() async {
-    double? plan_distance = sharedPreferences.getDouble('plan_distance_value');
-    if (plan_distance != null) {
-      double? plan_duration =
+    double? planDistance = sharedPreferences.getDouble('plan_distance_value');
+    if (planDistance != null) {
+      double? planDuration =
           sharedPreferences.getDouble('plan_duration_value');
       setState(() {
-        durationValue = plan_duration!;
-        distanceValue = plan_distance;
+        durationValue = planDuration!;
+        distanceValue = planDistance;
       });
     }
     double? startLat = sharedPreferences.getDouble('plan_start_lat');

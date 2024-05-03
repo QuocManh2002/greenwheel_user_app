@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:draggable_fab/draggable_fab.dart';
 import 'package:flutter/cupertino.dart';
@@ -8,7 +9,6 @@ import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/order_input_model.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/service_menu_loading_screen.dart';
@@ -168,7 +168,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
               list.firstWhere((element) => element.id == item.product.id),
               qtys[index]);
         }
-      } 
+      }
     }
   }
 
@@ -806,32 +806,32 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
           items.removeAt(existingItemIndex);
         }
       } else if (qty != 0) {
-        items.add(ItemCart(product: prod, qty: qty));
-        total += prod.price * qty;
+        if (items.length == GlobalConstant().ORDER_ITEM_MAX_COUNT) {
+          AwesomeDialog(
+                  context: context,
+                  animType: AnimType.leftSlide,
+                  dialogType: DialogType.warning,
+                  title:
+                      'Đơn hàng chỉ được đặt tối đa ${GlobalConstant().ORDER_ITEM_MAX_COUNT} loại sản phẩm',
+                  titleTextStyle: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.bold,
+                    fontFamily: 'NotoSans',
+                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  btnOkColor: Colors.amber,
+                  btnOkOnPress: () {},
+                  btnOkText: 'OK')
+              .show();
+        } else {
+          items.add(ItemCart(product: prod, qty: qty));
+          total += prod.price * qty;
+        }
       }
 
       if (items.isEmpty) {
         note = "";
       }
     });
-  }
-
-  bool? compareTwoCart() {
-    List<int> currentIds = [];
-    List<String>? ids = sharedPreferences.getStringList('initCartIds');
-    if (ids != null) {
-      for (final curItem in items) {
-        if (!currentIds.contains(curItem.product.id)) {
-          currentIds.add(curItem.product.id);
-        }
-      }
-      currentIds.sort();
-      bool isEqual = ids.length == currentIds.length &&
-          ids.every(
-              (String element) => currentIds.contains(int.parse(element)));
-      return isEqual;
-    } else {
-      return true;
-    }
   }
 }

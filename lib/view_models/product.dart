@@ -1,7 +1,7 @@
 class ProductViewModel {
   int id;
   String name;
-  int price;
+  double price;
   String? thumbnailUrl;
   int? partySize;
   int? supplierId;
@@ -28,7 +28,7 @@ class ProductViewModel {
       ProductViewModel(
           id: json["id"],
           name: json["name"],
-          price: json["price"].toInt(),
+          price: json["price"].toDouble(),
           thumbnailUrl: json["imagePath"],
           supplierId: json["provider"]["id"],
           supplierName: json["provider"]["name"],

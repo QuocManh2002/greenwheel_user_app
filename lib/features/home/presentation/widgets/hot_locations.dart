@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/features/home/business/entities/home_location_entity.dart';
 import 'package:greenwheel_user_app/features/home/presentation/providers/home_provider.dart';
 import 'package:greenwheel_user_app/features/home/presentation/widgets/location_card.dart';
 import 'package:provider/provider.dart';

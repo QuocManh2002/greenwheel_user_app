@@ -1,15 +1,15 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_jts/dart_jts.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
+import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
 import 'package:greenwheel_user_app/service/config_service.dart';
@@ -21,6 +21,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:sizer2/sizer2.dart';
 
 import '../models/holiday.dart';
 
@@ -283,18 +284,13 @@ class Utils {
         ? DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!)
         : plan.arrivedAt!;
     var dayEqualNight = (plan == null
-            ? sharedPreferences.getInt('numOfExpPeriod')!
+            ? sharedPreferences.getInt('initNumOfExpPeriod')!
             : plan.numOfExpPeriod)!
         .isEven;
     var arrivedAtNight = _arrivedTime.hour >= 20;
     var arrivedAtEvening = !arrivedAtNight && _arrivedTime.hour >= 16;
     return (arrivedAtEvening && dayEqualNight) ||
         (!arrivedAtEvening && !dayEqualNight);
-  }
-
-  double ceilToDecimal(double number, int decimalPlaces) {
-    double scale = pow(10, decimalPlaces).toDouble();
-    return (number * scale).ceil() / scale;
   }
 
   handleUpdatePlanDuration(
@@ -432,7 +428,7 @@ class Utils {
               .toList(),
           e.uuid,
           (orderDetailList.fold(
-                  0,
+                  0.0,
                   (previousValue, element) =>
                       previousValue +
                       num.parse(
@@ -615,7 +611,7 @@ class Utils {
     sharedPreferences.setString('plan_temp_order', json.encode(orderList));
   }
 
-  updateScheduleAndOrder() {
+  updateScheduleAndOrder(BuildContext context, void Function() onConfirm) {
     int duration = (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil();
     var schedule = json.decode(sharedPreferences.getString('plan_schedule')!);
     var tempOrders =
@@ -658,21 +654,158 @@ class Utils {
         }
       }
     }
-
-    for (final order in invalidOrder) {
-      tempOrders.remove(
-          tempOrders.firstWhere((e) => e['orderUUID'] == order['orderUUID']));
-      for (final day in newSchedule) {
-        for (final item in day) {
-          if (item['orderUUID'] != null &&
-              order['orderUUID'] == item['orderUUID']) {
-            item['orderUUID'] = null;
-          }
-        }
-      }
+    if (invalidOrder.isNotEmpty) {
+      AwesomeDialog(
+              context: context,
+              animType: AnimType.leftSlide,
+              dialogType: DialogType.infoReverse,
+              body: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Thay đổi quan trọng',
+                        style: TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'NotoSans'),
+                      ),
+                    ),
+                    Container(
+                      alignment: Alignment.center,
+                      child: const Text(
+                        'Với thay đổi trên các đơn hàng sau đây sẽ không còn khả dụng',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontFamily: 'NotoSans',
+                            color: Colors.grey),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 1.h,
+                    ),
+                    for (int index = 0; index < invalidOrder.length; index++)
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                            color: index.isOdd
+                                ? primaryColor.withOpacity(0.1)
+                                : lightPrimaryTextColor.withOpacity(0.5),
+                            borderRadius: BorderRadius.only(
+                              topLeft: index == 0
+                                  ? const Radius.circular(10)
+                                  : Radius.zero,
+                              topRight: index == 0
+                                  ? const Radius.circular(10)
+                                  : Radius.zero,
+                              bottomLeft: index == invalidOrder.length - 1
+                                  ? const Radius.circular(10)
+                                  : Radius.zero,
+                              bottomRight: index == invalidOrder.length - 1
+                                  ? const Radius.circular(10)
+                                  : Radius.zero,
+                            )),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              invalidOrder[index]['type'] == 'EAT'
+                                  ? 'Dùng bữa tại:'
+                                  : invalidOrder[index]['type'] == 'VISIT'
+                                      ? 'Thuê phương tiện:'
+                                      : 'Nghỉ ngơi tại:',
+                              style: const TextStyle(
+                                  fontSize: 13, fontFamily: 'NotoSans'),
+                            ),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                SizedBox(
+                                  width: 30.w,
+                                  child: Text(
+                                    invalidOrder[index]['providerName'],
+                                    overflow: TextOverflow.clip,
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'NotoSans'),
+                                  ),
+                                ),
+                                const Spacer(),
+                                SizedBox(
+                                  width: 15.w,
+                                  child: Text(
+                                    NumberFormat.simpleCurrency(
+                                            locale: 'vi_VN',
+                                            name: '',
+                                            decimalDigits: 0)
+                                        .format(invalidOrder[index]['total']),
+                                    textAlign: TextAlign.end,
+                                    overflow: TextOverflow.clip,
+                                    style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: 'NotoSans'),
+                                  ),
+                                ),
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 4),
+                                  child: SvgPicture.asset(
+                                    gcoin_logo,
+                                    height: 16,
+                                  ),
+                                )
+                              ],
+                            )
+                          ],
+                        ),
+                      ),
+                    SizedBox(
+                      height: 1.h,
+                    ),
+                    Container(
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Đồng ý với các thay đổi này, chúng tôi sẽ xoá danh sách đơn hàng không khả dụng của chuyến đi',
+                          textAlign: TextAlign.center,
+                          style:
+                              TextStyle(fontSize: 15, fontFamily: 'NotoSans'),
+                        ))
+                  ],
+                ),
+              ),
+              btnOkColor: Colors.blueAccent,
+              btnOkOnPress: () {
+                for (final order in invalidOrder) {
+                  tempOrders.remove(tempOrders
+                      .firstWhere((e) => e['orderUUID'] == order['orderUUID']));
+                  for (final day in newSchedule) {
+                    for (final item in day) {
+                      if (item['orderUUID'] != null &&
+                          order['orderUUID'] == item['orderUUID']) {
+                        item['orderUUID'] = null;
+                      }
+                    }
+                  }
+                }
+                sharedPreferences.setString(
+                    'plan_schedule', json.encode(newSchedule));
+                sharedPreferences.setString(
+                    'plan_temp_order', json.encode(tempOrders));
+                onConfirm();
+              },
+              btnOkText: 'Đồng ý',
+              btnCancelColor: Colors.amber,
+              btnCancelOnPress: () {},
+              btnCancelText: 'Huỷ')
+          .show();
+    }else{
+      onConfirm();
     }
-    sharedPreferences.setString('plan_schedule', json.encode(newSchedule));
-    sharedPreferences.setString('plan_temp_order', json.encode(tempOrders));
   }
 
   updateProductPrice() async {

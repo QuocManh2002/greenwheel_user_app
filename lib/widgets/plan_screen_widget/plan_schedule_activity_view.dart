@@ -42,32 +42,12 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
         isLoading = false;
       });
     } else {
-      if(widget.order.runtimeType == OrderViewModel){
+      if (widget.order.runtimeType == OrderViewModel) {
         _order = widget.order;
         setState(() {
           isLoading = false;
         });
       }
-      // order = widget.orderList.firstWhere((e) => (e.runtimeType == OrderViewModel ? e.uuid : e['orderUUID'] ) == widget.item.orderUUID);
-      // if (order['cart'] != null) {
-      //   dynamic cart = (widget.orderList
-      //       .firstWhere((e) => e['orderUUID'] == widget.item.orderUUID))['cart'];
-      //   for (final proId in cart.keys.toList()) {
-      //     if (!ids.contains(int.parse(proId.toString()))) {
-      //       ids.add(int.parse(proId));
-      //     }
-      //   }
-      //   products = await _productService.getListProduct(ids);
-      //   if (products != null) {
-      //     setState(() {
-      //       isLoading = false;
-      //     });
-      //   }
-      // } else if (order['details'] != null) {
-      //   setState(() {
-      //     isLoading = false;
-      //   });
-      // }
     }
   }
 
@@ -116,12 +96,13 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                             ),
                             BottomSheetContainerWidget(
                                 content:
-                                    '${widget.item.activityTime!.toString()} giờ',
+                                    '${widget.item.activityTime!.inHours > 0 ? '${widget.item.activityTime!.inHours} giờ' : ''}${widget.item.activityTime!.inMinutes.remainder(60) > 0 ? ' ${widget.item.activityTime!.inMinutes.remainder(60)} phút' : ''}',
                                 title: 'Thời gian'),
                             SizedBox(
                               height: 2.h,
                             ),
-                            if (widget.item.orderUUID != null && widget.isLeader)
+                            if (widget.item.orderUUID != null &&
+                                widget.isLeader)
                               Container(
                                 width: 100.w,
                                 padding: const EdgeInsets.symmetric(
@@ -286,7 +267,10 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                                             textAlign: TextAlign.end,
                                           ),
                                         ),
-                                        SvgPicture.asset(gcoin_logo, height: 18,)
+                                        SvgPicture.asset(
+                                          gcoin_logo,
+                                          height: 18,
+                                        )
                                       ],
                                     ),
                                     SizedBox(
@@ -370,9 +354,9 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                       width: 1.h,
                     ),
                     Text(
-                      '${widget.item.activityTime} giờ',
-                      style:
-                          const TextStyle(fontFamily: 'NotoSans', fontSize: 16),
+                      '${widget.item.activityTime!.inHours > 0 ? '${widget.item.activityTime!.inHours} giờ' : ''}${widget.item.activityTime!.inMinutes.remainder(60) > 0 ? ' ${widget.item.activityTime!.inMinutes.remainder(60)} phút' : ''}',
+                      style: const TextStyle(
+                          fontSize: 17, fontWeight: FontWeight.bold),
                     )
                   ],
                 ),

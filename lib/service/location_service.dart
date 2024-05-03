@@ -351,19 +351,19 @@ mutation {
       GraphQLClient client1 = graphQlConfig.getClient();
       QueryResult result = await client1.query(QueryOptions(document: gql("""
 {
-  destinationComments(
-    where: { destinationId: { eq: $destinationId } }
-    order: { createdAt: DESC }
-  ){
-    edges{
-      node{
-        id
-        comment
-        createdAt
-        account{
+  destinations(where: { id: { eq: $destinationId } }) {
+    edges {
+      node {
+        comments {
           id
-          name
-          avatarPath
+          comment
+          createdAt
+          account {
+            id
+            name
+            avatarPath
+            isMale
+          }
         }
       }
     }
@@ -373,12 +373,12 @@ mutation {
       if (result.hasException) {
         throw Exception(result.exception);
       }
-      List? res = result.data!['destinationComments']['edges'];
+      List? res = result.data!['destinations']['edges'].first['node']['comments'];
       if (res == null || res.isEmpty) {
         return [];
       }
       List<CommentViewModel> comments = res
-          .map((comment) => CommentViewModel.fromJson(comment['node']))
+          .map((comment) => CommentViewModel.fromJson(comment))
           .toList();
       return comments;
     } catch (error) {

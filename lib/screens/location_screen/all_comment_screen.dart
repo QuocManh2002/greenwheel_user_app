@@ -39,6 +39,7 @@ class _AllCommentScreenState extends State<AllCommentScreen> {
   setUpData() async {
     final rs = await _locationService.getComments(widget.destinationId);
     if (rs != null) {
+      rs.sort((a, b) => b.date.compareTo(a.date),);
       setState(() {
         commentList = rs;
         isLoading = false;

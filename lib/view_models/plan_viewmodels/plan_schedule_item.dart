@@ -14,7 +14,7 @@ class PlanScheduleItem {
   final String? orderId;
   final String? type;
   final String? shortDescription;
-  final int? activityTime;
+  final Duration? activityTime;
   final bool? isStarred;
   String? orderUUID;
 

@@ -81,7 +81,7 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
         30000);
     totalContacts = await _supplierService.getEmergencyContacts(
         PointLatLng(widget.location.latitude, widget.location.longitude),
-        ['TAXI', 'REPAIR', 'GROCERY'],
+        ['REPAIR', 'GROCERY'],
         10000);
     totalContacts!.addAll(emergencyContacts!);
     if (totalContacts != null) {
@@ -99,12 +99,8 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
             .firstWhereOrNull((element) => element.first.type == 'GROCERY') ??
         [];
     vehicleContacts = totalContactsGroup.values
-            .firstWhereOrNull((element) => element.first.type == 'TAXI') ??
-        [];
-    var _repairContacts = totalContactsGroup.values
             .firstWhereOrNull((element) => element.first.type == 'REPAIR') ??
         [];
-    vehicleContacts!.addAll(_repairContacts);
 
     _tabController = TabController(length: 3, vsync: this);
     if (widget.isCreate) {
@@ -121,20 +117,134 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
     getSelectedContact(_selectedIndex!);
   }
 
-  getSelectedContact(List<String> selectedIndexes) {
-    setState(() {
-      selectedEmergencyContacts = [];
-      for (var index =0 ; index < selectedIndexes.length; index ++) {
-        final contact = totalContacts!
-            .firstWhereOrNull((element) => element.id == int.parse(selectedIndexes[index]));
-        if (contact == null) {
-          selectedIndexes.removeAt(index);
-          sharedPreferences.setStringList('selectedIndex', selectedIndexes);
-        } else {
-          selectedEmergencyContacts!.add(contact);
-        }
+  getSelectedContact(List<String> selectedIndexes) async {
+    selectedEmergencyContacts = [];
+    List<String> newIndexes = selectedIndexes.map((e) => e).toList();
+    List<int> invalidIds = [];
+    for (final index in selectedIndexes) {
+      final contact = totalContacts!
+          .firstWhereOrNull((element) => element.id == int.parse(index));
+      if (contact == null) {
+        invalidIds.add(int.parse(index));
+        newIndexes.remove(index);
+      } else {
+        selectedEmergencyContacts!.add(contact);
       }
+    }
+    sharedPreferences.setStringList('selectedIndex', newIndexes);
 
+    if (invalidIds.isNotEmpty) {
+      final invalidContacts =
+          await _supplierService.getEmergencyContactByIds(invalidIds);
+      if (invalidContacts != null) {
+        AwesomeDialog(
+          // ignore: use_build_context_synchronously
+          context: context,
+          animType: AnimType.leftSlide,
+          dialogType: DialogType.infoReverse,
+          body: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'Thay đổi quan trọng',
+                    style: TextStyle(
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'NotoSans'),
+                  ),
+                ),
+                Container(
+                  alignment: Alignment.center,
+                  child: const Text(
+                    'Các liên lạc khẩn cấp dưới đây không còn khả dụng',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        fontSize: 15,
+                        fontFamily: 'NotoSans',
+                        color: Colors.grey),
+                  ),
+                ),
+                SizedBox(
+                  height: 1.h,
+                ),
+                for (int index = 0; index < invalidContacts.length; index++)
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: index.isOdd
+                            ? primaryColor.withOpacity(0.1)
+                            : lightPrimaryTextColor.withOpacity(0.5),
+                        borderRadius: BorderRadius.only(
+                          topLeft: index == 0
+                              ? const Radius.circular(10)
+                              : Radius.zero,
+                          topRight: index == 0
+                              ? const Radius.circular(10)
+                              : Radius.zero,
+                          bottomLeft: index == invalidContacts.length - 1
+                              ? const Radius.circular(10)
+                              : Radius.zero,
+                          bottomRight: index == invalidContacts.length - 1
+                              ? const Radius.circular(10)
+                              : Radius.zero,
+                        )),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 60.w,
+                          child: Text(
+                            invalidContacts[index].name ?? 'Không có thông tin',
+                            style: const TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans',
+                            ),
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.phone,
+                              color: primaryColor,
+                              size: 20,
+                            ),
+                            SizedBox(
+                              width: 1.5.w,
+                            ),
+                            Text(
+                              invalidContacts[index].phone == null ?
+                                  'Không có thông tin' : '0${invalidContacts[index].phone!.substring(2)}',
+                              style: const TextStyle(
+                                  fontSize: 13, fontFamily: 'NotoSans'),
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
+                SizedBox(
+                  height: 1.h,
+                ),
+                const Text(
+                  'Hãy lựa chọn thêm các liên lạc khác để chuyến đi của bạn thêm an toàn',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 14, fontFamily: 'NotoSans'),
+                )
+              ],
+            ),
+          ),
+          btnOkColor: Colors.blueAccent,
+          btnOkOnPress: () {},
+          btnOkText: 'OK',
+        ).show();
+      }
+    }
+    setState(() {
       rsList = selectedEmergencyContacts!
           .map((e) => EmergencyContactViewModel().toJson(e))
           .toList();

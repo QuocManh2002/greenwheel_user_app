@@ -283,6 +283,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
         widget.endDate.year, widget.endDate.month, widget.endDate.day, 0, 0, 0);
     if (widget.isOrder) {
     } else {
+      bool isValidEndDateService = false;
       final arrivedAt =
           DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!);
       var arrivedAtNight = arrivedAt.hour >= GlobalConstant().HALF_EVENING ||
@@ -293,7 +294,11 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
           (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil().isEven;
       var isEndAtNoon = (arrivedAtEvening && dayEqualNight) ||
           (!arrivedAtEvening && !dayEqualNight);
-      bool isValidEndDateService = !isEndAtNoon || widget.session.index <= 1;
+      if (widget.serviceType.id == 2) {
+        isValidEndDateService = !isEndAtNoon;
+      } else {
+        isValidEndDateService = !isEndAtNoon || widget.session.index <= 1;
+      }
       if (isValidEndDateService) {
         return (date.isAfter(startDate) && date.isBefore(endDate)) ||
             date.isAtSameMomentAs(startDate) ||

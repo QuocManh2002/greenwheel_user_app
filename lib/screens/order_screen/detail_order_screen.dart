@@ -693,7 +693,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               product: ProductViewModel(
                                 id: detail.productId,
                                 name: detail.productName,
-                                price: detail.price!.toInt(),
+                                price: detail.price!,
                               ),
                               qty: detail.quantity));
                         }

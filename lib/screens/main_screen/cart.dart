@@ -744,7 +744,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   addOrder() async {
-    var total = 0;
+    var total = 0.0;
     var order = convertCart();
     List<OrderDetailViewModel> details = [];
     List<Map> detailsMap = [];

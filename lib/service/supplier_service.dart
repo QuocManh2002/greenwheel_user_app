@@ -197,34 +197,6 @@ query getSupplierById(\$id: [Int]!) {
       PointLatLng coordinate, List<String> types, int lte) async {
     try {
       GraphQLClient newClient = config.getClient();
-
-      log('''
-{
-  providers(
-    where: {
-      and: [
-        {
-          coordinate: {
-            distance: {
-              lte: $lte
-              geometry: { type: Point, coordinates: [${coordinate.longitude}, ${coordinate.latitude}] }
-            }
-          }
-        }
-        { type: { in: $types } }
-      ]
-    }
-  ) {
-    nodes {
-      id
-      name
-      address
-      phone
-      imagePath
-      type
-    }
-  }
-}''');
       QueryResult result = await newClient.query(QueryOptions(document: gql("""
 {
   providers(
@@ -266,6 +238,45 @@ query getSupplierById(\$id: [Int]!) {
           .toList();
       return rs;
     } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<EmergencyContactViewModel>?> getEmergencyContactByIds(List<int> ids)async{
+    try{
+GraphQLClient newClient = config.getClient();
+      QueryResult result = await newClient.query(QueryOptions(document: gql("""
+{
+  providers(
+    where: {
+      id:{
+        in:$ids
+      }
+    }
+  ) {
+    nodes {
+      id
+      name
+      address
+      phone
+      imagePath
+      type
+    }
+  }
+}
+""")));
+      if (result.hasException) {
+        throw Exception(result.exception);
+      }
+      List? res = result.data!['providers']['nodes'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+      List<EmergencyContactViewModel> rs = res
+          .map((e) => EmergencyContactViewModel.fromJsonByLocation(e))
+          .toList();
+      return rs;
+    }catch (error) {
       throw Exception(error);
     }
   }

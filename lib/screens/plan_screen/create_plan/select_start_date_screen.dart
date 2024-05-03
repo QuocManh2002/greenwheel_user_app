@@ -52,9 +52,9 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
 
   handleChangeComboDate() {
     dynamic rs;
-    final departureDate = widget.isCreate
-        ? DateTime.parse(sharedPreferences.getString('plan_departureDate')!)
-        : widget.plan!.departAt!.toLocal();
+    // final departureDate = widget.isCreate
+    //     ? DateTime.parse(sharedPreferences.getString('plan_departureDate')!)
+    //     : widget.plan!.departAt!.toLocal();
     if (widget.isCreate) {
       final arrivedTime = Utils().getArrivedTimeFromLocal();
       sharedPreferences.setString('plan_arrivedTime', arrivedTime.toString());
@@ -376,107 +376,25 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                       inputType: TextInputType.datetime,
                       text: 'Giờ',
                       onTap: () async {
-                        // TimeOfDay? newTime = await showTimePicker(
-                        //   context: context,
-                        //   initialTime: _selectTime,
-                        //   confirmText: 'CHỌN',
-                        //   cancelText: 'HUỶ',
-                        //   initialEntryMode: TimePickerEntryMode.dial,
-                        //   builder: (context, child) {
-                        //     return Theme(
-                        //         data: ThemeData().copyWith(
-                        //             colorScheme: const ColorScheme.light(
-                        //                 primary: primaryColor,
-                        //                 onPrimary: Colors.white)),
-                        //         child: MediaQuery(
-                        //           data: MediaQuery.of(context)
-                        //               .copyWith(alwaysUse24HourFormat: false),
-                        //           child: Localizations.override(
-                        //             context: context,
-                        //             locale: const Locale('vi', ''),
-                        //             child: child!,
-                        //           ),
-                        //         ));
-                        //   },
-                        // ).then((value) {
-                        //   if (!Utils().checkTimeAfterNow1Hour(
-                        //       value!,
-                        //       DateTime(_selectedDate!.year,
-                        //           _selectedDate!.month, _selectedDate!.day))) {
-                        //     AwesomeDialog(
-                        //         context: context,
-                        //         dialogType: DialogType.warning,
-                        //         btnOkColor: Colors.orange,
-                        //         body: const Padding(
-                        //           padding: EdgeInsets.symmetric(horizontal: 16),
-                        //           child: Center(
-                        //             child: Text(
-                        //               'Thời gian xuất phát của chuyến đi phải sau thời điểm hiện tại ít nhất 1 giờ',
-                        //               style: TextStyle(
-                        //                   fontSize: 18,
-                        //                   fontWeight: FontWeight.bold),
-                        //               textAlign: TextAlign.center,
-                        //             ),
-                        //           ),
-                        //         ),
-                        //         btnOkOnPress: () {
-                        //           _selectTime = TimeOfDay.fromDateTime(
-                        //               DateTime.now()
-                        //                   .add(const Duration(hours: 1)));
-                        //           _timeController.text = DateFormat.Hm().format(
-                        //               DateTime(0, 0, 0, _selectTime.hour,
-                        //                   _selectTime.minute));
-                        //           sharedPreferences.setString(
-                        //               'plan_start_time',
-                        //               DateTime(0, 0, 0, _selectTime.hour,
-                        //                       _selectTime.minute)
-                        //                   .toString());
-                        //         }).show();
-                        //   } else {
-                        //     _timeController.text = DateFormat.Hm().format(
-                        //         DateTime(0, 0, 0, value.hour, value.minute));
-                        //     if (widget.isCreate) {
-                        //       sharedPreferences.setString(
-                        //           'plan_start_time',
-                        //           DateTime(0, 0, 0, value.hour, value.minute)
-                        //               .toString());
-                        //     } else {
-                        //       setState(() {
-                        //         final departTime =
-                        //             DateFormat.Hm().parse(_timeController.text);
-                        //         final departDate = DateFormat('dd/MM/yyyy')
-                        //             .parse(_dateController.text);
-                        //         widget.plan!.departAt = DateTime(
-                        //             departDate.year,
-                        //             departDate.month,
-                        //             departDate.day,
-                        //             departTime.hour,
-                        //             departTime.minute);
-                        //       });
-                        //     }
-                        //     setState(() {
-                        //       _selectTime = value;
-                        //     });
-                        //     handleChangeComboDate();
-                        //   }
-                        // });
-                        var newTime;
+                        Duration newTime = Duration(
+                            hours: _selectTime.hour,
+                            minutes: _selectTime.minute);
                         showDialog(
                             context: context,
                             builder: (_) => AlertDialog(
                                   backgroundColor: Colors.white,
                                   content: SizedBox(
-                                    width: 100.w,
-                                    height: 25.h,
-                                    child: CupertinoDatePicker(
-                                      use24hFormat: true,
-                                      onDateTimeChanged: (value) {
-                                        newTime = value;
-                                      },
-                                      initialDateTime: DateTime.now(),
-                                      mode: CupertinoDatePickerMode.time,
-                                    ),
-                                  ),
+                                      width: 100.w,
+                                      height: 25.h,
+                                      child: CupertinoTimerPicker(
+                                        mode: CupertinoTimerPickerMode.hm,
+                                        initialTimerDuration: Duration(
+                                            hours: _selectTime.hour,
+                                            minutes: _selectTime.minute),
+                                        onTimerDurationChanged: (value) {
+                                          newTime = value;
+                                        },
+                                      )),
                                   actions: [
                                     TextButton(
                                         style: const ButtonStyle(
@@ -494,7 +412,10 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                                     primaryColor)),
                                         onPressed: () {
                                           if (!Utils().checkTimeAfterNow1Hour(
-                                              TimeOfDay.fromDateTime(newTime!),
+                                              TimeOfDay(
+                                                  hour: newTime.inHours,
+                                                  minute: newTime.inMinutes
+                                                      .remainder(60)),
                                               DateTime(
                                                   _selectedDate!.year,
                                                   _selectedDate!.month,
@@ -550,8 +471,9 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                                     0,
                                                     0,
                                                     0,
-                                                    newTime.hour,
-                                                    newTime.minute));
+                                                    newTime.inHours,
+                                                    newTime.inMinutes
+                                                        .remainder(60)));
                                             if (widget.isCreate) {
                                               sharedPreferences.setString(
                                                   'plan_start_time',
@@ -559,8 +481,9 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                                           0,
                                                           0,
                                                           0,
-                                                          newTime.hour,
-                                                          newTime.minute)
+                                                          newTime.inHours,
+                                                          newTime.inMinutes
+                                                              .remainder(60))
                                                       .toString());
                                             } else {
                                               setState(() {
@@ -581,9 +504,10 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                               });
                                             }
                                             setState(() {
-                                              _selectTime =
-                                                  TimeOfDay.fromDateTime(
-                                                      newTime);
+                                              _selectTime = TimeOfDay(
+                                                  hour: newTime.inHours,
+                                                  minute: newTime.inMinutes
+                                                      .remainder(60));
                                             });
                                             Navigator.of(context).pop();
                                             handleChangeComboDate();
@@ -674,22 +598,35 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
             Expanded(
                 child: ElevatedButton(
               style: elevatedButtonStyle,
-              onPressed: () async{
+              onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   if (widget.isClone) {
-                    await Utils().updateTempOrder(false);
-                    Utils().updateScheduleAndOrder();
+                    Utils().updateTempOrder(false);
+                    // ignore: use_build_context_synchronously
+                    Utils().updateScheduleAndOrder(context, () {
+                      Navigator.push(
+                          context,
+                          PageTransition(
+                              child: SelectEmergencyService(
+                                location: widget.location,
+                                isCreate: widget.isCreate,
+                                plan: widget.plan,
+                                isClone: widget.isClone,
+                              ),
+                              type: PageTransitionType.rightToLeft));
+                    });
+                  } else {
+                    Navigator.push(
+                        context,
+                        PageTransition(
+                            child: SelectEmergencyService(
+                              location: widget.location,
+                              isCreate: widget.isCreate,
+                              plan: widget.plan,
+                              isClone: widget.isClone,
+                            ),
+                            type: PageTransitionType.rightToLeft));
                   }
-                  Navigator.push(
-                      context,
-                      PageTransition(
-                          child: SelectEmergencyService(
-                            location: widget.location,
-                            isCreate: widget.isCreate,
-                            plan: widget.plan,
-                            isClone: widget.isClone,
-                          ),
-                          type: PageTransitionType.rightToLeft));
                 }
               },
               child: const Text('Tiếp tục'),

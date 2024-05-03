@@ -86,4 +86,8 @@ class GlobalConstant {
   final int AFTERNOON_START = 14;
   final int EVENING_START = 18;
   final int EVENING_END = 22;
+  final Duration MAX_SUM_ACTIVITY_TIME = const Duration(hours: 16);
+  final Duration MIN_ACTIVITY_TIME = const Duration(minutes: 15);
+  final int ORDER_ITEM_MAX_COUNT = 10;
+  final int PLAN_SURCHARGE_MAX_COUNT = 10; 
 }

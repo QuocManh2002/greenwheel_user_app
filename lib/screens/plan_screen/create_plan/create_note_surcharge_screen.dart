@@ -5,22 +5,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_plan_surcharge.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/clone_plan_options_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -53,7 +53,6 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   double _totalSurcharge = 0;
   List<Widget> _listSurcharges = [];
   PlanService _planService = PlanService();
-  OrderService _orderService = OrderService();
   int? memberLimit;
   PlanCreate? _plan;
 
@@ -112,11 +111,19 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
           if (_selectedIndex == 0)
             IconButton(
                 onPressed: () {
-                  Navigator.of(context).push(MaterialPageRoute(
+                  if(_listSurcharges.length == 10){
+                    DialogStyle().basicDialog(
+                      context: context,
+                      title: 'Chỉ được tạo tối đa ${GlobalConstant().PLAN_SURCHARGE_MAX_COUNT}',
+                      type: DialogType.warning,
+                    );
+                  }else{
+                    Navigator.of(context).push(MaterialPageRoute(
                       builder: (ctx) => CreatePlanSurcharge(
                             callback: callbackSurcharge,
                             isCreate: true,
                           )));
+                  }
                 },
                 icon: const Icon(
                   Icons.add,
@@ -417,9 +424,6 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
         : widget.plan!.surcharges!;
     _listSurchargeObjects = surcharges
         .map((e) => {
-              // 'alreadyDivided': e.runtimeType == SurchargeViewModel
-              //     ? e.alreadyDivided
-              //     : e['alreadyDivided'],
               'gcoinAmount': e.runtimeType == SurchargeViewModel
                   ? e.alreadyDivided
                       ? e.amount
@@ -520,22 +524,6 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                 isJoin: false,
               ),
             ));
-  //   showModalBottomSheet(
-  //     context: context,
-  //     builder: (_) => ClonePlanOptionsBottomSheet(
-  //       options: {
-  //         0: false,
-  //         1: false,
-  //         2: false,
-  //         3: false,
-  //         4: false,
-  //         5: false,
-  //         6: false,
-  //         7: false,
-  //         8: false,
-  //       },
-  //     ),
-  //   );
   }
 
   onCompletePlan() async {

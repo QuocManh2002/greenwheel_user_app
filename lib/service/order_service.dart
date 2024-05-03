@@ -322,7 +322,7 @@ mutation {
           List<String> serveDates,
           List<int> serveDateIndexes,
           String? uuid,
-          int total) =>
+          double total) =>
       {
         'orderUUID': uuid ?? const Uuid().v4(),
         'total': total / GlobalConstant().VND_CONVERT_RATE,

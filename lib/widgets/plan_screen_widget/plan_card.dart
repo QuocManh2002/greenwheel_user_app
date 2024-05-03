@@ -65,12 +65,14 @@ class PlanCard extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 mainAxisAlignment: MainAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(plan.name ?? 'Chuyen di chua dat ten',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
+                  SizedBox(
+                    width: 55.w,
+                    child: Text(plan.name ?? 'Chuyen di chua dat ten',
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                  ),
                   Text(
                     plan.province.name,
                     style: const TextStyle(fontWeight: FontWeight.w500),

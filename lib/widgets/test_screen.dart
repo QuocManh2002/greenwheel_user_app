@@ -1,13 +1,9 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
+import 'dart:math';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/models/configuration.dart';
-import 'package:greenwheel_user_app/models/holiday.dart';
-import 'package:greenwheel_user_app/service/config_service.dart';
-import 'package:intl/intl.dart';
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+import 'package:sizer2/sizer2.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
@@ -17,27 +13,11 @@ class TestScreen extends StatefulWidget {
 }
 
 class _TestScreenState extends State<TestScreen> {
-  List<DateTime> servingDates = [];
-  List<DateTime> _selectedDays = [];
-  List<DateTime?> _selectedHolidays = [];
-  ConfigService _configService = ConfigService();
-  ConfigurationModel? config;
-  bool isLoading = true;
+  bool isLoading = false;
 
-  double total = 100000;
-
-  final originialList = [
-    "2024-04-26",
-    "2024-04-28",
-    "2024-04-30",
-  ];
-  final newList = [
-    "2024-04-26",
-    "2024-04-27",
-    "2024-04-29",
-  ];
-
-  final invalidList = [];
+  List<DateTime> selectedList = [];
+  DateTime? selectValue = DateTime(0, 0, 0, 1, 0, 0);
+  Duration? totalDuration = Duration.zero;
 
   @override
   void initState() {
@@ -46,14 +26,11 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   setUpData() async {
-    for(final item in originialList){
-      if(!newList.contains(item)){
-        invalidList.add(item);
-      }
-    }
-    setState(() {
-      isLoading = false;
-    });
+    List<int> list = [1, 2, 3, 4, 5];
+    print(list.sublist(0,7).fold(
+        0,
+        (previousValue, element) =>
+            int.parse(previousValue.toString()) + element));
   }
 
   @override
@@ -67,34 +44,58 @@ class _TestScreenState extends State<TestScreen> {
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [for (final item in invalidList) Text(item,)],
+                        children: [
+                          InkWell(
+                            child: const Text('pick time'),
+                            onTap: () {
+                              showDialog(
+                                  context: context,
+                                  builder: (_) => AlertDialog(
+                                        content: SizedBox(
+                                          width: 100.w,
+                                          height: 15.h,
+                                          child: CupertinoDatePicker(
+                                            use24hFormat: true,
+                                            onDateTimeChanged: (value) {
+                                              selectValue = value;
+                                            },
+                                            initialDateTime:
+                                                DateTime(0, 0, 0, 1, 0, 0),
+                                            mode: CupertinoDatePickerMode.time,
+                                          ),
+                                        ),
+                                        actions: [
+                                          TextButton(
+                                              onPressed: () {
+                                                selectedList.add(selectValue!);
+                                                Navigator.of(context).pop();
+                                              },
+                                              child: const Text("Chọn"))
+                                        ],
+                                      ));
+                            },
+                          ),
+                          InkWell(
+                            child: const Text('print total duration'),
+                            onTap: () {
+                              totalDuration = selectedList.fold(Duration.zero,
+                                  (previousValue, element) {
+                                {
+                                  return previousValue! +
+                                      Duration(
+                                          hours: element.hour,
+                                          minutes: element.minute);
+                                }
+                              });
+
+                              print(totalDuration!
+                                  .compareTo(Duration(hours: 16)));
+
+                              print(
+                                  '${totalDuration!.inHours} ${totalDuration!.inMinutes.remainder(60)}');
+                            },
+                          )
+                        ],
                       ))));
-  }
-
-  isHoliday(DateTime date) {
-    return config!.HOLIDAYS!.any((element) =>
-        element.from.isBefore(date) && element.to.isAfter(date) ||
-        date.isAtSameMomentAs(element.from) ||
-        date.isAtSameMomentAs(element.to));
-  }
-
-  isSelectedDay(DateTime date) {
-    return _selectedDays.contains(date);
-  }
-
-  isAvaiableDay(DateTime date) {
-    final startDate = DateTime.now().add(const Duration(days: 5));
-    final endDate = DateTime.now().add(const Duration(days: 12));
-    return (date.isAfter(startDate) && date.isBefore(endDate)) ||
-        date.isAtSameMomentAs(startDate) ||
-        date.isAtSameMomentAs(endDate);
-  }
-
-  getTotal() {
-    final everage = total / _selectedDays.length;
-    return everage * (_selectedDays.length - _selectedHolidays.length) +
-        everage *
-            _selectedHolidays.length *
-            (1 + config!.HOLIDAY_LODGING_UP_PCT! / 100);
   }
 }

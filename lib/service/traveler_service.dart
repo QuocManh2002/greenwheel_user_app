@@ -1,7 +1,5 @@
 import 'dart:convert';
 import 'dart:developer';
-
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
@@ -17,11 +15,6 @@ class CustomerService {
   GraphQlConfig graphQlConfig = GraphQlConfig();
 
   Future<CustomerViewModel?> GetCustomerByPhone(String phone) async {
-    //     defaultAddress
-    // defaultCoordinate {
-    //   coordinates
-    // }
-    // avatarUrl
     GraphQLClient client = graphQlConfig.getClient();
     try {
       QueryResult result = await client.query(
@@ -61,7 +54,6 @@ class CustomerService {
       if (res == null || res.isEmpty) {
         return null;
       }
-      print(res);
       List<CustomerViewModel> users =
           res.map((users) => CustomerViewModel.fromJson(users)).toList();
       return users[0];
@@ -96,27 +88,6 @@ mutation{
   Future<RegisterModel?> registerTraveler(RegisterViewModel model) async {
     GraphQLClient client = graphQlConfig.getClient();
     try {
-      log('''mutation register{
-  travelerRegister(dto: {
-    deviceToken:"${model.deviceToken}"
-    isMale:${model.isMale}
-    name:"${model.name}" 
-    avatarUrl: ${model.avatarUrl == null ? null : json.encode('$baseBucketImage${model.avatarUrl}')}
-  }){
-    authResult{
-      accessToken
-      refreshToken
-    }
-    account{
-      id
-      name
-      isMale
-      gcoinBalance
-      phone
-      avatarPath
-    }
-  }
-}''');
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''
 mutation register{
@@ -156,66 +127,13 @@ mutation register{
     }
   }
 
-  Future<bool?> sendDeviceToken() async {
-    try {
-      GraphQLClient client = graphQlConfig.getClient();
-      String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
-      print(deviceToken);
-      if (deviceToken != '') {
-        QueryResult result =
-            await client.mutate(MutationOptions(document: gql("""
-mutation{
-    startReceiveNotification(deviceToken: "$deviceToken")
-}
-""")));
-        if (result.hasException) {
-          throw Exception(result.exception);
-        }
-        bool? res = result.data!['startReceiveNotification'];
-        if (res == null) {
-          return null;
-        }
-        print("Devicetoken sended!");
-        return res;
-      }
-      return false;
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<int> travelerSignIn(String deviceToken) async {
-    try {
-      GraphQLClient client = graphQlConfig.getClient();
-      QueryResult result = await client.mutate(
-          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-mutation{
-  travelerSignIn(deviceToken: "$deviceToken"){
-    id
-  }
-}
-""")));
-      if (result.hasException) {
-        throw Exception(result.exception);
-      }
-      final int? rs = result.data!['travelerSignIn']['id'];
-      if (rs == null) {
-        return 0;
-      } else {
-        return rs;
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
   Future<int> travelerSignOut() async {
     try {
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-mutation {
-  travelerSignOut{
+mutation removeDevice{
+  removeDevice{
     id
   }
 }
@@ -223,7 +141,7 @@ mutation {
       if (result.hasException) {
         throw Exception(result.exception);
       }
-      final int? rs = result.data!['travelerSignOut']['id'];
+      final int? rs = result.data!['removeDevice']['id'];
       if (rs == null) {
         return 0;
       } else {
@@ -271,7 +189,6 @@ mutation {
       if (res == null || res.isEmpty) {
         return [];
       }
-      print(res);
       List<CustomerViewModel> users =
           res.map((users) => CustomerViewModel.fromJson(users)).toList();
       return users;
@@ -282,17 +199,6 @@ mutation {
 
   Future<int?> updateTravelerProfile(CustomerViewModel model) async {
     try {
-      log('''mutation{
-  travelerUpdate(dto:{
-    avatarUrl:${model.avatarUrl == null ? null : json.encode(model.avatarUrl)}
-    address:"${model.defaultAddress}"
-    coordinate:[${model.defaultCoordinate!.longitude},${model.defaultCoordinate!.latitude}]
-    isMale:${model.isMale}
-    name:"${model.name}"
-  }){
-    id
-  }
-}''');
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(MutationOptions(document: gql('''
 mutation{
@@ -348,21 +254,8 @@ mutation{
   }
 
   Future<LoginModel?> travelerRequestAuthorize(
-      String phoneNumber, String otp, String deviceToken) async {
+      String phoneNumber, String otp) async {
     try {
-      log("""
-mutation auth{
-  travelerRequestAuthorize(dto: {
-    channel: VONAGE
-    phone: "84${phoneNumber.substring(1).toString()}"
-    otp: "$otp"
-    deviceToken: "$deviceToken"
-  }){
-    accessToken
-    refreshToken
-  }
-}
-""");
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(MutationOptions(document: gql("""
 mutation auth{
@@ -370,10 +263,10 @@ mutation auth{
     channel: VONAGE
     phone: "84${phoneNumber.substring(1).toString()}"
     otp: "$otp"
-    deviceToken: "$deviceToken"
   }){
     accessToken
     refreshToken
+    deviceToken
   }
 }
 """)));
@@ -454,8 +347,34 @@ mutation {
       sharedPreferences.setString('userAvatarPath', traveler.avatarUrl!);
     }
     sharedPreferences.setInt('userId', traveler.id);
+    sharedPreferences.setBool('userIsMale', traveler.isMale);
     sharedPreferences.setString('userPhone', traveler.phone);
     sharedPreferences.setString('userName', traveler.name);
     sharedPreferences.setInt('userBalance', traveler.balance.toInt());
+  }
+
+  Future<int?> setDevice(String deviceToken, BuildContext context) async{
+    try{
+      GraphQLClient client = graphQlConfig.getClient();
+      QueryResult result = await client.mutate(
+        MutationOptions(document: gql('''
+mutation setDevice{
+  setDevice(deviceToken: "$deviceToken"){
+    id
+  }
+}
+'''))
+      );
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      return result.data!['setDevice']['id'];
+    }catch(error){
+      throw Exception(error);
+    }
   }
 }

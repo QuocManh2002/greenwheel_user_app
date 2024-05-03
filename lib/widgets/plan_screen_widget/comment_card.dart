@@ -33,7 +33,7 @@ class CommentCard extends StatelessWidget {
                   height: 5.h,
                   width: 5.h,
                   placeholder: (context, url) => Image.memory(kTransparentImage),
-                  errorWidget: (context, url, error) => Image.asset(no_image),
+                  errorWidget: (context, url, error) => Image.asset(comment.isMale ? male_default_avatar : female_default_avatar),
                   fit: BoxFit.cover,
                   imageUrl: '$baseBucketImage${comment.imgUrl}',
                   ),

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -12,18 +14,30 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class PlanScheduleActivity extends StatefulWidget {
-  const PlanScheduleActivity(
-      {super.key,
-      required this.item,
-      required this.showBottomSheet,
-      required this.isCreate,
-      required this.orderList,
-      required this.isSelected});
+  const PlanScheduleActivity({
+    super.key,
+    required this.item,
+    required this.isCreate,
+    required this.orderList,
+    required this.onAdd,
+    required this.onDetele,
+    required this.onUpdate,
+    required this.callback,
+    this.itemIndex,
+  });
   final PlanScheduleItem item;
-  final void Function(PlanScheduleItem item) showBottomSheet;
-  final bool isSelected;
   final bool isCreate;
   final dynamic orderList;
+  final int? itemIndex;
+  final void Function(PlanScheduleItem item) onUpdate;
+  final void Function(PlanScheduleItem item, String? orderUUID) onDetele;
+  final void Function(bool isUpper, int itemIndex) onAdd;
+  final void Function(
+      {required PlanScheduleItem item,
+      required bool isCreate,
+      PlanScheduleItem? oldItem,
+      bool? isUpper,
+      int? itemIndex}) callback;
 
   @override
   State<PlanScheduleActivity> createState() => _PlanScheduleActivityState();
@@ -34,6 +48,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
   ProductService _productService = ProductService();
   bool isLoading = true;
   dynamic order;
+  bool isSelected = false;
 
   @override
   void initState() {
@@ -50,8 +65,11 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
       });
     } else {
       if (widget.orderList.isNotEmpty) {
-        order = widget.orderList
-            .firstWhere((e) => e['orderUUID'] == widget.item.orderUUID);
+        order = widget.orderList.firstWhere((e) =>
+            e['orderUUID'] ==
+            (widget.item.orderUUID!.substring(0, 2) == '\"\"'
+                ? json.decode(widget.item.orderUUID!)
+                : widget.item.orderUUID));
         if (order != null) {
           if (order['cart'] != null) {
             dynamic cart = order['cart'];
@@ -135,7 +153,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                 ),
                                 BottomSheetContainerWidget(
                                     content:
-                                        '${widget.item.activityTime.toString()} giờ',
+                                        '${widget.item.activityTime!.inHours > 0 ? '${widget.item.activityTime!.inHours} giờ' : ''}${widget.item.activityTime!.inMinutes.remainder(60) > 0 ? ' ${widget.item.activityTime!.inMinutes.remainder(60)} phút' : ''}',
                                     title: 'Thời gian'),
                                 SizedBox(
                                   height: 1.h,
@@ -307,7 +325,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
               width: 100.w,
               clipBehavior: Clip.hardEdge,
               decoration: BoxDecoration(
-                  color: widget.isSelected
+                  color: isSelected
                       ? primaryColor.withOpacity(0.3)
                       : lightPrimaryTextColor.withOpacity(0.8),
                   boxShadow: const [
@@ -325,12 +343,12 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                               ? Border.all(color: primaryColor, width: 2)
                               : const Border(),
                   borderRadius: const BorderRadius.all(Radius.circular(12))),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 12),
+                    child: Row(
                       children: [
                         Expanded(
                           child: Text(
@@ -340,70 +358,189 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                             overflow: TextOverflow.clip,
                           ),
                         ),
-                        IconButton(
-                            highlightColor: Colors.transparent,
-                            splashColor: Colors.transparent,
-                            onPressed: () {
-                              widget.showBottomSheet(widget.item);
-                            },
-                            icon: const Icon(
-                              Icons.more_horiz,
-                            ))
-                      ],
-                    ),
-                    Container(
-                      color: widget.item.isStarred != null &&
-                              widget.item.isStarred!
-                          ? Colors.amber
-                          : widget.item.type == 'Ăn uống'
-                              ? primaryColor
-                              : Colors.black54,
-                      height: 2,
-                    ),
-                    SizedBox(
-                      height: 1.h,
-                    ),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.local_activity,
-                          size: 22,
-                        ),
-                        SizedBox(
-                          width: 2.w,
-                        ),
-                        Text(
-                          widget.item.type!,
-                          style: const TextStyle(
-                              fontSize: 17, fontWeight: FontWeight.bold),
-                          overflow: TextOverflow.clip,
-                        ),
-                      ],
-                    ),
-                    SizedBox(
-                      height: 0.5.h,
-                    ),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.watch_later_outlined,
-                          size: 22,
-                        ),
-                        SizedBox(
-                          width: 2.w,
-                        ),
-                        Text(
-                          '${widget.item.activityTime.toString()} giờ',
-                          style: const TextStyle(
-                              fontSize: 17, fontWeight: FontWeight.bold),
+                        PopupMenuButton(
+                          itemBuilder: (context) => [
+                            PopupMenuItem(
+                                value: 0,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.arrow_upward,
+                                      color: primaryColor,
+                                    ),
+                                    SizedBox(
+                                      width: 1.w,
+                                    ),
+                                    const Text(
+                                      'Thêm',
+                                      style: TextStyle(
+                                          color: primaryColor,
+                                          fontSize: 16,
+                                          fontFamily: 'NotoSans'),
+                                    )
+                                  ],
+                                )),
+                            PopupMenuItem(
+                                value: 1,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.edit_square,
+                                      color: Colors.blueAccent,
+                                    ),
+                                    SizedBox(
+                                      width: 1.w,
+                                    ),
+                                    const Text(
+                                      'Chỉnh sửa',
+                                      overflow: TextOverflow.clip,
+                                      style: TextStyle(
+                                          color: Colors.blueAccent,
+                                          fontSize: 16,
+                                          fontFamily: 'NotoSans'),
+                                    )
+                                  ],
+                                )),
+                            PopupMenuItem(
+                                value: 2,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.delete_outline,
+                                      color: Colors.redAccent,
+                                    ),
+                                    SizedBox(
+                                      width: 1.w,
+                                    ),
+                                    const Text(
+                                      'Xoá',
+                                      style: TextStyle(
+                                          color: Colors.redAccent,
+                                          fontSize: 16,
+                                          fontFamily: 'NotoSans'),
+                                    )
+                                  ],
+                                )),
+                            PopupMenuItem(
+                                value: 3,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    const Icon(
+                                      Icons.arrow_downward,
+                                      color: primaryColor,
+                                    ),
+                                    SizedBox(
+                                      width: 1.w,
+                                    ),
+                                    const Text(
+                                      'Thêm',
+                                      style: TextStyle(
+                                          color: primaryColor,
+                                          fontSize: 16,
+                                          fontFamily: 'NotoSans'),
+                                    )
+                                  ],
+                                ))
+                          ],
+                          onOpened: () {
+                            setState(() {
+                              isSelected = true;
+                            });
+                          },
+                          onSelected: (value) {
+                            setState(() {
+                              isSelected = false;
+                            });
+                            switch (value) {
+                              case 0:
+                                widget.onAdd(true, widget.itemIndex!);
+                                break;
+                              case 1:
+                                widget.onUpdate(
+                                  widget.item,
+                                );
+                                break;
+                              case 2:
+                                widget.onDetele(widget.item, null);
+                                break;
+                              case 3:
+                                widget.onAdd(false, widget.itemIndex!);
+                                break;
+                            }
+                          },
+                          constraints: BoxConstraints(maxWidth: 35.w),
+                          onCanceled: () {
+                            setState(() {
+                              isSelected = false;
+                            });
+                          },
                         )
                       ],
                     ),
-                    SizedBox(
-                      height: 1.h,
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    child: Column(
+                      children: [
+                        Container(
+                          color: widget.item.isStarred != null &&
+                                  widget.item.isStarred!
+                              ? Colors.amber
+                              : widget.item.type == 'Ăn uống'
+                                  ? primaryColor
+                                  : Colors.black54,
+                          height: 2,
+                        ),
+                        SizedBox(
+                          height: 1.h,
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.local_activity,
+                              size: 22,
+                            ),
+                            SizedBox(
+                              width: 2.w,
+                            ),
+                            Text(
+                              widget.item.type!,
+                              style: const TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.bold),
+                              overflow: TextOverflow.clip,
+                            ),
+                          ],
+                        ),
+                        SizedBox(
+                          height: 0.5.h,
+                        ),
+                        Row(
+                          children: [
+                            const Icon(
+                              Icons.watch_later_outlined,
+                              size: 22,
+                            ),
+                            SizedBox(
+                              width: 2.w,
+                            ),
+                            Text(
+                              '${widget.item.activityTime!.inHours > 0 ? '${widget.item.activityTime!.inHours} giờ' : ''}${widget.item.activityTime!.inMinutes.remainder(60) > 0 ? ' ${widget.item.activityTime!.inMinutes.remainder(60)} phút' : ''}',
+                              style: const TextStyle(
+                                  fontSize: 17, fontWeight: FontWeight.bold),
+                            )
+                          ],
+                        ),
+                        SizedBox(
+                          height: 1.h,
+                        ),
+                      ],
                     ),
-                  ],
-                ),
+                  )
+                ],
               ),
             ),
           ),

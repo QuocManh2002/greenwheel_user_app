@@ -621,6 +621,7 @@ class _LocationScreenState extends State<LocationScreen> {
     await getNumberOfComment(true, 0);
     var comments = await _locationService.getComments(location!.id);
     if (comments != null) {
+      comments.sort((a, b) => b.date.compareTo(a.date));
       setState(() {
         _comments = comments;
       });

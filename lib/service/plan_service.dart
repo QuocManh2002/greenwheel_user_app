@@ -51,8 +51,8 @@ class PlanService {
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedProviderIds:$emerIds
-    schedule:$schedule
-    surcharges:${surcharges}
+    schedule:${model.schedule!}
+    surcharges:$surcharges
     travelDuration:"${model.travelDuration}"
     tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
   }){
@@ -77,7 +77,7 @@ class PlanService {
     periodCount:${model.numOfExpPeriod}
     savedProviderIds:$emerIds
     schedule:$schedule
-    surcharges:${surcharges}
+    surcharges:$surcharges
     travelDuration:"${model.travelDuration}"
     tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
   }){
@@ -182,7 +182,7 @@ mutation{
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedProviderIds:$emerIds
-    schedule:$schedule
+    schedule:${convertToFinalSchedule(schedule)}
     surcharges:$surcharges
     travelDuration:"${model.travelDuration}"
     sourceId:${sharedPreferences.getInt('planId')}
@@ -208,7 +208,7 @@ mutation{
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedProviderIds:$emerIds
-    schedule:$schedule
+    schedule:${convertToFinalSchedule(schedule)}
     surcharges:$surcharges
     travelDuration:"${model.travelDuration}"
     sourceId:${sharedPreferences.getInt('planId')}
@@ -532,11 +532,14 @@ mutation{
     for (final sche in _scheduleList) {
       List<PlanScheduleItem> eventList = [];
       for (final event in sche) {
+        // final duration = DateFormat.Hm().parse(json.decode(event['duration']));
+        final duration = DateFormat.Hm().parse(event['duration']);
+
         eventList.add(PlanScheduleItem(
             orderUUID: event['orderUUID'],
             isStarred: event['isStarred'],
-            activityTime: int.parse(
-                json.decode(event['duration']).toString().split(':')[0]),
+            activityTime:
+                Duration(hours: duration.hour, minutes: duration.minute),
             description: json.decode(event['description']),
             shortDescription: json.decode(event['shortDescription']),
             type: schedule_item_types_vn[
@@ -564,17 +567,15 @@ mutation{
       final date = startDate.add(Duration(days: i));
       if (i < schedules.length) {
         for (final planItem in schedules[i]) {
+          final duration = DateFormat.Hm().parse(planItem['duration']);
           item.add(PlanScheduleItem(
               orderUUID:
                   planItem['orderUUID'].toString().substring(0, 1) == '\"'
                       ? json.decode(planItem['orderUUID'])
                       : planItem['orderUUID'],
               isStarred: planItem['isStarred'],
-              activityTime: DateFormat.Hms()
-                  .parse(planItem['duration'].toString().substring(0, 1) == '\"'
-                      ? json.decode(planItem['duration'])
-                      : planItem['duration'])
-                  .hour,
+              activityTime:
+                  Duration(hours: duration.hour, minutes: duration.minute),
               shortDescription:
                   planItem['shortDescription'].toString().substring(0, 1) ==
                           '\"'
@@ -602,13 +603,45 @@ mutation{
         final type = schedule_item_types_vn
             .firstWhere((element) => element == item.type);
         items.add({
-          'orderUUID':
-              item.orderUUID == null ? null : json.encode(item.orderUUID),
+          'orderUUID': item.orderUUID == null ? null : item.orderUUID,
           'isStarred': item.isStarred,
-          'duration': json.encode("${item.activityTime}:00:00"),
-          'description': json.encode(item.description),
-          'shortDescription': json.encode(item.shortDescription),
+          'duration':
+              // json.encode(
+              DateFormat.Hm().format(DateTime(
+                  0,
+                  0,
+                  0,
+                  item.activityTime!.inHours,
+                  item.activityTime!.inMinutes.remainder(60)
+                  // )
+                  )),
+          'description': item.description,
+          //  json.encode(item.description),
+          'shortDescription': item.shortDescription,
+          // json.encode(item.shortDescription),
           'type': schedule_item_types[schedule_item_types_vn.indexOf(type)]
+        });
+      }
+      rs.add(items);
+    }
+    return rs;
+  }
+
+  List<dynamic> convertToFinalSchedule(List<dynamic> list) {
+    List<dynamic> rs = [];
+    for (final schedule in list) {
+      var items = [];
+      for (final item in schedule) {
+        final type = schedule_item_types
+            .firstWhere((element) => element == item['type']);
+        items.add({
+          'orderUUID':
+              item['orderUUID'] == null ? null : json.encode(item['orderUUID']),
+          'isStarred': item['isStarred'],
+          'duration': json.encode(item['duration']),
+          'description': json.encode(item['description']),
+          'shortDescription': json.encode(item['shortDescription']),
+          'type': type
         });
       }
       rs.add(items);

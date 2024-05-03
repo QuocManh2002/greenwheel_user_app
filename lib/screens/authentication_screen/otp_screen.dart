@@ -154,12 +154,15 @@ class _OTPScreenState extends State<OTPScreen> {
         sharedPreferences.setString('deviceToken', deviceToken);
       }
       LoginModel? model = await customerService.travelerRequestAuthorize(
-          widget.phoneNumber, otpController.text, deviceToken);
+          widget.phoneNumber, otpController.text);
       if (model != null) {
         log('access: ${model.accessToken}');
         log('refresh: ${model.refreshToken}');
         sharedPreferences.setString('userToken', model.accessToken);
         sharedPreferences.setString('userRefreshToken', model.refreshToken);
+        if (model.deviceToken != deviceToken) {
+          await customerService.setDevice(deviceToken, context);
+        }
         CustomerViewModel? traveler = await customerService.GetCustomerByPhone(
             '84${widget.phoneNumber.substring(1)}');
         if (traveler == null) {
@@ -170,19 +173,7 @@ class _OTPScreenState extends State<OTPScreen> {
                   type: PageTransitionType.rightToLeft),
               (ctx) => false);
         } else {
-          if (traveler.defaultAddress != null &&
-              traveler.defaultCoordinate != null) {
-            Utils().SaveDefaultAddressToSharedPref(
-                traveler.defaultAddress!, traveler.defaultCoordinate!);
-          }
-          if (traveler.avatarUrl != null && traveler.avatarUrl!.isNotEmpty) {
-            sharedPreferences.setString('userAvatarUrl', traveler.avatarUrl!);
-          }
-          sharedPreferences.setInt('userId', traveler.id);
-          sharedPreferences.setBool('userIsMale', traveler.isMale);
-          sharedPreferences.setString('userPhone', traveler.phone);
-          sharedPreferences.setString('userName', traveler.name);
-          sharedPreferences.setInt('userBalance', traveler.balance.toInt());
+          customerService.saveAccountToSharePref(traveler);
           Navigator.pushAndRemoveUntil(
               context,
               PageTransition(
@@ -192,7 +183,7 @@ class _OTPScreenState extends State<OTPScreen> {
         }
       }
     } on PlatformException catch (e) {
-      print(e.message);
+      throw Exception(e);
     }
   }
 }

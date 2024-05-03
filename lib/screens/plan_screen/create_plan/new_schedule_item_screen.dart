@@ -6,7 +6,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/meal_text.dart';
@@ -29,6 +28,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_it
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
@@ -39,19 +39,29 @@ class NewScheduleItemScreen extends StatefulWidget {
       {super.key,
       required this.callback,
       required this.startDate,
-      required this.selectedIndex,
-      required this.maxActivityTime,
+      required this.dayIndex,
+      required this.sumActivityTime,
       required this.location,
       required this.onDelete,
+      this.itemIndex,
+      this.isUpper,
       this.plan,
+      required this.startActivityTime,
       this.item});
   final void Function(
-      PlanScheduleItem item, bool isCreate, PlanScheduleItem? oldItem) callback;
+      {required PlanScheduleItem item,
+      required bool isCreate,
+      PlanScheduleItem? oldItem,
+      bool? isUpper,
+      int? itemIndex}) callback;
   final void Function(PlanScheduleItem item, String? orderUUID) onDelete;
   final DateTime startDate;
   final PlanScheduleItem? item;
-  final int selectedIndex;
-  final int maxActivityTime;
+  final int dayIndex;
+  final bool? isUpper;
+  final int? itemIndex;
+  final Duration sumActivityTime;
+  final Duration startActivityTime;
   final LocationViewModel location;
   final PlanCreate? plan;
 
@@ -62,10 +72,10 @@ class NewScheduleItemScreen extends StatefulWidget {
 class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _descriptionController = TextEditingController();
-  final TextEditingController _activityTimeController = TextEditingController();
   final TextEditingController _shortDescriptionController =
       TextEditingController();
   DateTime _selectedDate = DateTime.now();
+  Duration _selectedTime = const Duration(hours: 1);
   String? _selectedType;
   bool _isModify = false;
   bool _isFoodActivity = false;
@@ -77,6 +87,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   bool _isFirstDay = false;
   bool _isEndDay = false;
   DateTime? arrivedTime;
+  Duration? _maxActivityTime;
+  DateTime? _startActivityTime;
 
   int? numberOfMember;
   DateTime? startDate;
@@ -102,39 +114,22 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
     startDate = widget.plan!.startDate;
     endDate = widget.plan!.endDate;
 
-    if (widget.selectedIndex == 0) {
+    if (widget.dayIndex == 0) {
       startSession = sessions.firstWhereOrNull((element) =>
           element.from <= widget.plan!.arrivedAt!.hour &&
           element.to > widget.plan!.arrivedAt!.hour);
-    } else if (widget.selectedIndex >=
+    } else if (widget.dayIndex >=
         (widget.plan!.numOfExpPeriod! / 2).ceil() - 1) {
       _isEndAtNoon = Utils().isEndAtNoon(widget.plan);
     }
     setUpData();
   }
 
-  onChangeQuantity(String type) {
-    setState(() {
-      _isModify = true;
-    });
-    if (type == "add") {
-      setState(() {
-        _activityTimeController.text =
-            (int.parse(_activityTimeController.text) + 1).toString();
-      });
-    } else {
-      setState(() {
-        _activityTimeController.text =
-            (int.parse(_activityTimeController.text) - 1).toString();
-      });
-    }
-  }
-
   setUpDataCreate() {
     numberOfMember = sharedPreferences.getInt('plan_number_of_member')!;
     startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
     endDate = DateTime.parse(sharedPreferences.getString('plan_end_date')!);
-    if (widget.selectedIndex == 0) {
+    if (widget.dayIndex == 0) {
       final arrivedTime = Utils().getArrivedTimeFromLocal();
       startSession = sessions.firstWhereOrNull((element) =>
           element.from <= arrivedTime.hour && element.to > arrivedTime.hour);
@@ -143,15 +138,24 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   }
 
   setUpData() {
-    _isFirstDay = widget.selectedIndex == 0;
-    _isEndDay = widget.selectedIndex >=
+    _isFirstDay = widget.dayIndex == 0;
+    _isEndDay = widget.dayIndex >=
         (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil() - 1;
+    if (_isEndDay) {
+      _isEndAtNoon = Utils().isEndAtNoon(null);
+    }
+    _startActivityTime = getStartActivityTime();
     if (widget.item != null) {
+      _maxActivityTime = GlobalConstant().MAX_SUM_ACTIVITY_TIME -
+          widget.sumActivityTime +
+          widget.item!.activityTime!;
+      _maxActivityTime =
+          GlobalConstant().MAX_SUM_ACTIVITY_TIME - widget.sumActivityTime;
+      _selectedTime = widget.item!.activityTime!;
       _selectedDate = widget.item!.date!;
       _descriptionController.text = widget.item!.description!;
       _selectedType = widget.item!.type;
       _shortDescriptionController.text = widget.item!.shortDescription!;
-      _activityTimeController.text = widget.item!.activityTime!.toString();
       _isStarEvent = widget.item!.isStarred!;
       _isFoodActivity = widget.item!.type == 'Ăn uống';
       _isRoomActivity = widget.item!.type == 'Check-in';
@@ -167,10 +171,11 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
         }
       }
     } else {
+      _maxActivityTime = _isFirstDay ? 
+          DateTime(0,0,0,22,0).difference(arrivedTime!) - widget.sumActivityTime:
+          GlobalConstant().MAX_SUM_ACTIVITY_TIME - widget.sumActivityTime;
       setState(() {
-        _selectedDate =
-            widget.startDate.add(Duration(days: widget.selectedIndex));
-        _activityTimeController.text = '1';
+        _selectedDate = widget.startDate.add(Duration(days: widget.dayIndex));
       });
     }
   }
@@ -185,9 +190,9 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
         ),
         onPressed: () {
           Navigator.of(ctx).pop();
-          if (widget.item != null) {
-            Navigator.of(ctx).pop();
-          }
+          // if (widget.item != null) {
+          //   Navigator.of(ctx).pop();
+          // }
         },
       ),
       actions: [
@@ -198,49 +203,14 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                   foregroundColor: _isModify ? Colors.white : Colors.grey,
                   backgroundColor:
                       _isModify ? primaryColor : Colors.grey.withOpacity(0.5)),
-              onPressed: () async {
+              onPressed: () {
                 if (_isModify) {
                   if (_formKey.currentState!.validate()) {
                     if (_selectedType == null) {
-                      await AwesomeDialog(
-                        context: context,
-                        dialogType: DialogType.warning,
-                        body: const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(12),
-                            child: Text(
-                              'Hãy chọn dạng hoạt động',
-                              style: TextStyle(
-                                  fontSize: 20, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ),
-                        btnOkColor: Colors.orange,
-                        btnOkText: 'Ok',
-                        btnOkOnPress: () {},
-                      ).show();
-                    } else if (_activityTimeController.text.trim() == '' ||
-                        int.tryParse(_activityTimeController.text) == null) {
-                      Fluttertoast.showToast(
-                          msg: "Thời gian hoạt động không hợp lệ",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.white,
-                          textColor: Colors.black,
-                          fontSize: 18.0);
-                    } else if (int.tryParse(_activityTimeController.text)! <
-                            0 ||
-                        int.tryParse(_activityTimeController.text)! >
-                            widget.maxActivityTime) {
-                      Fluttertoast.showToast(
-                          msg: "Thời gian hoạt động không hợp lệ",
-                          toastLength: Toast.LENGTH_SHORT,
-                          gravity: ToastGravity.CENTER,
-                          timeInSecForIosWeb: 1,
-                          backgroundColor: Colors.white,
-                          textColor: Colors.black,
-                          fontSize: 18.0);
+                      DialogStyle().basicDialog(
+                          context: context,
+                          title: 'Hãy chọn dạng hoạt động',
+                          type: DialogType.warning);
                     } else {
                       if (tempOrder != null) {
                         DateTime? endDate;
@@ -253,7 +223,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         if (_selectedType == 'Check-in') {
                           if (widget.item == null) {
                             widget.callback(
-                                PlanScheduleItem(
+                                item: PlanScheduleItem(
                                     isStarred: _isStarEvent,
                                     shortDescription:
                                         _shortDescriptionController.text,
@@ -262,34 +232,33 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         .first
                                         .toString()),
                                     orderUUID: tempOrder['orderUUID'],
-                                    activityTime:
-                                        int.parse(_activityTimeController.text),
+                                    activityTime: _selectedTime,
                                     type: _selectedType,
                                     id: widget.item?.id),
-                                widget.item == null,
-                                widget.item);
+                                isCreate: widget.item == null,
+                                oldItem: widget.item);
                             widget.callback(
-                                PlanScheduleItem(
-                                    isStarred: _isStarEvent,
-                                    shortDescription: 'Check-out',
-                                    description: 'Check-out nhà nghỉ/khách sạn',
-                                    type: 'Check-out',
-                                    date: DateTime.parse(
-                                                tempOrder['serveDates'].last) ==
-                                            endDate
-                                        ? DateTime.parse(tempOrder['serveDates']
-                                            .last
-                                            .toString())
-                                        : DateTime.parse(tempOrder['serveDates']
-                                                .last
-                                                .toString())
-                                            .add(const Duration(days: 1)),
-                                    orderUUID: tempOrder['orderUUID'],
-                                    activityTime:
-                                        int.parse(_activityTimeController.text),
-                                    id: widget.item?.id),
-                                widget.item == null,
-                                widget.item);
+                              item: PlanScheduleItem(
+                                  isStarred: _isStarEvent,
+                                  shortDescription: 'Check-out',
+                                  description: 'Check-out nhà nghỉ/khách sạn',
+                                  type: 'Check-out',
+                                  date: DateTime.parse(
+                                              tempOrder['serveDates'].last) ==
+                                          endDate
+                                      ? DateTime.parse(tempOrder['serveDates']
+                                          .last
+                                          .toString())
+                                      : DateTime.parse(tempOrder['serveDates']
+                                              .last
+                                              .toString())
+                                          .add(const Duration(days: 1)),
+                                  orderUUID: tempOrder['orderUUID'],
+                                  activityTime: _selectedTime,
+                                  id: widget.item?.id),
+                              isCreate: widget.item == null,
+                              oldItem: widget.item,
+                            );
                           } else {
                             final order = json
                                 .decode(sharedPreferences
@@ -306,23 +275,22 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         date: order.first['serveDates'].first),
                                     tempOrder['orderUUID']);
                                 widget.callback(
-                                    PlanScheduleItem(
-                                        isStarred: _isStarEvent,
-                                        shortDescription:
-                                            _shortDescriptionController.text,
-                                        description:
-                                            _descriptionController.text,
-                                        date: DateTime.parse(
-                                            tempOrder['serveDates']
-                                                .first
-                                                .toString()),
-                                        orderUUID: tempOrder['orderUUID'],
-                                        activityTime: int.parse(
-                                            _activityTimeController.text),
-                                        type: _selectedType,
-                                        id: widget.item?.id),
-                                    true,
-                                    widget.item);
+                                  item: PlanScheduleItem(
+                                      isStarred: _isStarEvent,
+                                      shortDescription:
+                                          _shortDescriptionController.text,
+                                      description: _descriptionController.text,
+                                      date: DateTime.parse(
+                                          tempOrder['serveDates']
+                                              .first
+                                              .toString()),
+                                      orderUUID: tempOrder['orderUUID'],
+                                      activityTime: _selectedTime,
+                                      type: _selectedType,
+                                      id: widget.item?.id),
+                                  isCreate: true,
+                                  oldItem: widget.item,
+                                );
                               }
                               if (order.first['serveDates'].last !=
                                   tempOrder['serveDates'].last) {
@@ -342,31 +310,31 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     ),
                                     tempOrder['orderUUID']);
                                 widget.callback(
-                                    PlanScheduleItem(
-                                        isStarred: _isStarEvent,
-                                        shortDescription: 'Check-out',
-                                        description:
-                                            'Check-out nhà nghỉ/khách sạn',
-                                        type: 'Check-out',
-                                        date: DateTime.parse(
-                                                    tempOrder['serveDates']
-                                                        .last) ==
-                                                endDate
-                                            ? DateTime.parse(
-                                                tempOrder['serveDates']
-                                                    .last
-                                                    .toString())
-                                            : DateTime.parse(
-                                                    tempOrder['serveDates']
-                                                        .last
-                                                        .toString())
-                                                .add(const Duration(days: 1)),
-                                        orderUUID: tempOrder['orderUUID'],
-                                        activityTime: int.parse(
-                                            _activityTimeController.text),
-                                        id: widget.item?.id),
-                                    true,
-                                    widget.item);
+                                  item: PlanScheduleItem(
+                                      isStarred: _isStarEvent,
+                                      shortDescription: 'Check-out',
+                                      description:
+                                          'Check-out nhà nghỉ/khách sạn',
+                                      type: 'Check-out',
+                                      date: DateTime.parse(
+                                                  tempOrder['serveDates']
+                                                      .last) ==
+                                              endDate
+                                          ? DateTime.parse(
+                                              tempOrder['serveDates']
+                                                  .last
+                                                  .toString())
+                                          : DateTime.parse(
+                                                  tempOrder['serveDates']
+                                                      .last
+                                                      .toString())
+                                              .add(const Duration(days: 1)),
+                                      orderUUID: tempOrder['orderUUID'],
+                                      activityTime: _selectedTime,
+                                      id: widget.item?.id),
+                                  isCreate: true,
+                                  oldItem: widget.item,
+                                );
                               }
                             }
                           }
@@ -374,19 +342,19 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           if (widget.item == null) {
                             for (final day in tempOrder['serveDates']) {
                               widget.callback(
-                                  PlanScheduleItem(
-                                      isStarred: _isStarEvent,
-                                      shortDescription:
-                                          _shortDescriptionController.text,
-                                      description: _descriptionController.text,
-                                      date: DateTime.parse(day.toString()),
-                                      orderUUID: tempOrder['orderUUID'],
-                                      activityTime: int.parse(
-                                          _activityTimeController.text),
-                                      type: _selectedType,
-                                      id: widget.item?.id),
-                                  true,
-                                  null);
+                                item: PlanScheduleItem(
+                                    isStarred: _isStarEvent,
+                                    shortDescription:
+                                        _shortDescriptionController.text,
+                                    description: _descriptionController.text,
+                                    date: DateTime.parse(day.toString()),
+                                    orderUUID: tempOrder['orderUUID'],
+                                    activityTime: _selectedTime,
+                                    type: _selectedType,
+                                    id: widget.item?.id),
+                                isCreate: true,
+                                oldItem: null,
+                              );
                             }
                           } else {
                             final order = json
@@ -403,20 +371,19 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       DateTime.parse(day.toString());
                                 }
                                 widget.callback(
-                                    PlanScheduleItem(
-                                        isStarred: _isStarEvent,
-                                        shortDescription:
-                                            _shortDescriptionController.text,
-                                        description:
-                                            _descriptionController.text,
-                                        date: DateTime.parse(day.toString()),
-                                        orderUUID: tempOrder['orderUUID'],
-                                        activityTime: int.parse(
-                                            _activityTimeController.text),
-                                        type: _selectedType,
-                                        id: widget.item?.id),
-                                    widget.item == null,
-                                    widget.item);
+                                  item: PlanScheduleItem(
+                                      isStarred: _isStarEvent,
+                                      shortDescription:
+                                          _shortDescriptionController.text,
+                                      description: _descriptionController.text,
+                                      date: DateTime.parse(day.toString()),
+                                      orderUUID: tempOrder['orderUUID'],
+                                      activityTime: _selectedTime,
+                                      type: _selectedType,
+                                      id: widget.item?.id),
+                                  isCreate: widget.item == null,
+                                  oldItem: widget.item,
+                                );
                               }
                             } else {
                               List<String> invalidOrderDate = [];
@@ -446,8 +413,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         date: DateTime.parse(
                                             invalidDate.toString()),
                                         orderUUID: null,
-                                        activityTime: int.parse(
-                                            _activityTimeController.text),
+                                        activityTime: _selectedTime,
                                         type: _selectedType,
                                         id: widget.item?.id),
                                     tempOrder['orderUUID']);
@@ -455,70 +421,45 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
 
                               for (final newDay in newOrderDate) {
                                 widget.callback(
-                                    PlanScheduleItem(
-                                        isStarred: _isStarEvent,
-                                        shortDescription:
-                                            _shortDescriptionController.text,
-                                        description:
-                                            _descriptionController.text,
-                                        date: DateTime.parse(newDay.toString()),
-                                        orderUUID: tempOrder['orderUUID'],
-                                        activityTime: int.parse(
-                                            _activityTimeController.text),
-                                        type: _selectedType,
-                                        id: widget.item?.id),
-                                    true,
-                                    widget.item);
+                                  item: PlanScheduleItem(
+                                      isStarred: _isStarEvent,
+                                      shortDescription:
+                                          _shortDescriptionController.text,
+                                      description: _descriptionController.text,
+                                      date: DateTime.parse(newDay.toString()),
+                                      orderUUID: tempOrder['orderUUID'],
+                                      activityTime: _selectedTime,
+                                      type: _selectedType,
+                                      id: widget.item?.id),
+                                  isCreate: true,
+                                  oldItem: widget.item,
+                                );
                               }
-
-                              // for (final day in order.first['serveDates']) {
-                              //   widget.item!.date =
-                              //       DateTime.parse(day.toString());
-                              //   PlanScheduleItem tempItem = PlanScheduleItem(
-                              //       isStarred: _isStarEvent,
-                              //       shortDescription:
-                              //           _shortDescriptionController.text,
-                              //       description: _descriptionController.text,
-                              //       date: DateTime.parse(day.toString()),
-                              //       orderUUID:
-                              //           tempOrder['serveDates'].contains(day)
-                              //               ? tempOrder['orderUUID']
-                              //               : null,
-                              //       activityTime:
-                              //           int.parse(_activityTimeController.text),
-                              //       type: _selectedType,
-                              //       id: widget.item?.id);
-                              //   if (tempOrder['serveDates'].contains(day)) {
-                              //     widget.callback(tempItem, false, widget.item);
-                              //   } else {
-                              //     widget.onDelete(
-                              //         tempItem, tempOrder['orderUUID']);
-                              //   }
-                              // }
                             }
                           }
                         }
                         saveTempOrder();
                       } else {
                         widget.callback(
-                            PlanScheduleItem(
+                            item: PlanScheduleItem(
                                 isStarred: _isStarEvent,
                                 shortDescription:
                                     _shortDescriptionController.text,
                                 description: _descriptionController.text,
                                 date: _selectedDate,
                                 orderUUID: null,
-                                activityTime:
-                                    int.parse(_activityTimeController.text),
+                                activityTime: _selectedTime,
                                 type: _selectedType,
                                 id: widget.item?.id),
-                            widget.item == null,
-                            widget.item);
+                            isCreate: widget.item == null,
+                            oldItem: widget.item,
+                            itemIndex: widget.itemIndex,
+                            isUpper: widget.isUpper);
                       }
                       Navigator.of(context).pop();
-                      if (widget.item != null) {
-                        Navigator.of(context).pop();
-                      }
+                      // if (widget.item != null) {
+                      //   Navigator.of(context).pop();
+                      // }
                     }
                   }
                 }
@@ -590,134 +531,102 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                               width: 12,
                             ),
                             SizedBox(
-                              width: 40.w,
-                              child: RichText(
-                                  text: TextSpan(
-                                      text: 'Thời gian hoạt động',
-                                      style: const TextStyle(
-                                        color: Colors.black,
-                                        fontSize: 18,
-                                      ),
-                                      children: [
-                                    TextSpan(
-                                        text: ' (giờ)',
-                                        style: TextStyle(
-                                            fontSize: 17,
-                                            color:
-                                                Colors.grey.withOpacity(0.8)))
-                                  ])),
+                              width: 35.w,
+                              child: const Text(
+                                'Thời gian hoạt động',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 18,
+                                ),
+                              ),
                             ),
                             const Spacer(),
-                            SizedBox(
-                              width: 40.w,
-                              child: Column(
-                                children: [
-                                  Row(
-                                    children: [
-                                      IconButton(
-                                          color: primaryColor,
-                                          iconSize: 24,
-                                          onPressed: () {
-                                            if (int.parse(
-                                                    _activityTimeController
-                                                        .text) >
-                                                1) {
-                                              onChangeQuantity("subtract");
-                                            }
-                                          },
-                                          icon: const Icon(Icons.remove)),
-                                      SizedBox(
-                                          width: 7.h,
-                                          height: 5.h,
-                                          child: defaultTextFormField(
-                                              onValidate: (value) {
-                                                if (value == null ||
-                                                    value.isEmpty ||
-                                                    int.parse(value) <= 0) {
-                                                  return "Thời gian hoạt động không hợp lệ";
-                                                }
-                                                return null;
+                            InkWell(
+                              onTap: () {
+                                var tempValue = _selectedTime;
+                                showDialog(
+                                    context: context,
+                                    builder: (_) => AlertDialog(
+                                          content: SizedBox(
+                                            height: 15.h,
+                                            width: 100.w,
+                                            child: CupertinoTimerPicker(
+                                              initialTimerDuration: tempValue,
+                                              onTimerDurationChanged: (value) {
+                                                tempValue = value;
                                               },
-                                              onChange: (value) {
-                                                if (value == null ||
-                                                    value.isEmpty) {
-                                                  Fluttertoast.showToast(
-                                                      msg:
-                                                          "Thời gian hoạt động không được để trống",
-                                                      toastLength:
-                                                          Toast.LENGTH_SHORT,
-                                                      gravity:
-                                                          ToastGravity.CENTER,
-                                                      timeInSecForIosWeb: 1,
-                                                      backgroundColor:
-                                                          Colors.white,
-                                                      textColor: Colors.black,
-                                                      fontSize: 18.0);
-                                                } else {
-                                                  var selectedNumber =
-                                                      int.tryParse(
-                                                          _activityTimeController
-                                                              .text);
-                                                  if (selectedNumber == null) {
-                                                    Fluttertoast.showToast(
-                                                        msg:
-                                                            "Thời gian hoạt động không hợp lệ",
-                                                        toastLength:
-                                                            Toast.LENGTH_SHORT,
-                                                        gravity:
-                                                            ToastGravity.CENTER,
-                                                        timeInSecForIosWeb: 1,
-                                                        backgroundColor:
-                                                            Colors.white,
-                                                        textColor: Colors.black,
-                                                        fontSize: 18.0);
+                                              mode: CupertinoTimerPickerMode.hm,
+                                            ),
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                                style: const ButtonStyle(
+                                                  foregroundColor:
+                                                      MaterialStatePropertyAll(
+                                                          primaryColor),
+                                                ),
+                                                onPressed: () {
+                                                  Navigator.of(context).pop();
+                                                },
+                                                child: const Text('HUỶ')),
+                                            TextButton(
+                                                style: const ButtonStyle(
+                                                  foregroundColor:
+                                                      MaterialStatePropertyAll(
+                                                          primaryColor),
+                                                ),
+                                                onPressed: () {
+                                                  if (tempValue.compareTo(
+                                                          _maxActivityTime!) >
+                                                      0) {
+                                                    DialogStyle().basicDialog(
+                                                      context: context,
+                                                      title:
+                                                          'Đã vượt quá thời gian hoạt động cho một ngày',
+                                                      type: DialogType.warning,
+                                                      desc:
+                                                          'Thời gian tối đa cho hoạt động này là ${_maxActivityTime!.inHours > 0 ? '${_maxActivityTime!.inHours} giờ${_maxActivityTime!.inMinutes.remainder(60) > 0 ? ' ${_maxActivityTime!.inMinutes.remainder(60)} phút' : ''}' : '${_maxActivityTime!.inMinutes.remainder(60)} phút'}',
+                                                    );
+                                                  } else if (tempValue.compareTo(
+                                                          GlobalConstant()
+                                                              .MIN_ACTIVITY_TIME) <
+                                                      0) {
+                                                    DialogStyle().basicDialog(
+                                                        title:
+                                                            'Thời gian tối thiểu cho hoạt động là 15 phút',
+                                                        type:
+                                                            DialogType.warning,
+                                                        context: context);
                                                   } else {
-                                                    if (selectedNumber < 0) {
-                                                      Fluttertoast.showToast(
-                                                          msg:
-                                                              "Thời gian hoạt động không hợp lệ",
-                                                          toastLength: Toast
-                                                              .LENGTH_SHORT,
-                                                          gravity: ToastGravity
-                                                              .CENTER,
-                                                          timeInSecForIosWeb: 1,
-                                                          backgroundColor:
-                                                              Colors.white,
-                                                          textColor:
-                                                              Colors.black,
-                                                          fontSize: 18.0);
-                                                    } else {}
+                                                    setState(() {
+                                                      _selectedTime = tempValue;
+                                                      _isModify = true;
+                                                    });
+                                                    Navigator.of(context).pop();
                                                   }
-                                                }
-                                              },
-                                              borderSize: 2,
-                                              textAlign: TextAlign.center,
-                                              controller:
-                                                  _activityTimeController,
-                                              inputType: TextInputType.number)),
-                                      IconButton(
-                                          color: primaryColor,
-                                          iconSize: 24,
-                                          onPressed: () {
-                                            if (int.parse(
-                                                    _activityTimeController
-                                                        .text) ==
-                                                widget.maxActivityTime) {
-                                              Utils()
-                                                  .ShowFullyActivityTimeDialog(
-                                                      context);
-                                            } else {
-                                              onChangeQuantity("add");
-                                            }
-                                          },
-                                          icon: const Icon(Icons.add)),
-                                    ],
-                                  ),
-                                  SizedBox(
-                                    height: 1.h,
-                                  ),
-                                ],
-                              ),
+                                                },
+                                                child: const Text('CHỌN'))
+                                          ],
+                                        ));
+                              },
+                              child: Container(
+                                  alignment: Alignment.centerRight,
+                                  padding: EdgeInsets.symmetric(
+                                      horizontal: 4.w, vertical: 1.h),
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                          color: Colors.black, width: 1),
+                                      borderRadius: const BorderRadius.all(
+                                          Radius.circular(12))),
+                                  child: Text(
+                                    _selectedTime.inHours > 0
+                                        ? '${_selectedTime.inHours} giờ${_selectedTime.inMinutes.remainder(60) > 0 ? ', ${_selectedTime.inMinutes.remainder(60)} phút' : ''}'
+                                        : '${_selectedTime.inMinutes.remainder(60)} phút',
+                                    style: const TextStyle(
+                                        fontSize: 17,
+                                        fontWeight: FontWeight.w700,
+                                        fontFamily: 'NotoSans'),
+                                  )),
                             ),
                           ],
                         ),
@@ -787,15 +696,46 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     color: Colors.black, fontSize: 18),
                                 value: _selectedType,
                                 onChanged: (value) {
-                                  setState(() {
-                                    _selectedType = value;
-                                    _isModify = true;
-                                  });
-                                  setState(() {
-                                    _isFoodActivity = value == 'Ăn uống';
-                                    _isRoomActivity = value == 'Check-in';
-                                    _isVisitActivity = value == 'Tham quan';
-                                  });
+                                  // final startSession = getStartEndSession();
+                                  if (value == 'Check-in') {
+                                    if (_isEndDay && _isEndAtNoon!) {
+                                      DialogStyle().basicDialog(
+                                          context: context,
+                                          title:
+                                              'Thời gian kết thúc chuyến đi không phù hợp với dịch vụ',
+                                          type: DialogType.warning);
+                                    // } 
+                                    // else if (startSession.index == 0) {
+                                    //   DialogStyle().basicDialog(
+                                    //       context: context,
+                                    //       title:
+                                    //           'Thời gian bắt đầu hoạt động không phù hợp với dịch vụ',
+                                    //       type: DialogType.warning,
+                                    //       desc:
+                                    //           'Chỉ được check-in nhà nghỉ/khách sạn từ 12:00 (Hiện tại: ${DateFormat.Hm().format(_startActivityTime!)})');
+                                    
+                                    } else {
+                                      setState(() {
+                                        if (!_isModify) {
+                                          _isModify = true;
+                                        }
+                                        _selectedType = value;
+                                        _isRoomActivity = true;
+                                        _isFoodActivity = false;
+                                        _isVisitActivity = false;
+                                      });
+                                    }
+                                  } else {
+                                    if (!_isModify) {
+                                      _isModify = true;
+                                    }
+                                    setState(() {
+                                      _selectedType = value;
+                                      _isFoodActivity = value == 'Ăn uống';
+                                      _isRoomActivity = value == 'Check-in';
+                                      _isVisitActivity = value == 'Tham quan';
+                                    });
+                                  }
                                 },
                                 items: schedule_item_types_vn
                                     .map(
@@ -817,9 +757,11 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           minline: 2,
                           text: 'Mô tả',
                           onChange: (p0) {
-                            setState(() {
-                              _isModify = true;
-                            });
+                            if (!_isModify) {
+                              setState(() {
+                                _isModify = true;
+                              });
+                            }
                           },
                           onValidate: (value) {
                             if (value!.isEmpty) {
@@ -1097,7 +1039,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                           product: ProductViewModel(
                                               id: detail['productId'],
                                               name: detail['productName'],
-                                              price: detail['price'].toInt())));
+                                              price: detail['price'])));
                                     }
 
                                     Navigator.push(
@@ -1244,7 +1186,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     final _startEndSessionIndex =
                                         sessions.indexOf(getStartEndSession());
                                     navigateToServiceMainScreen(
-                                        sessions[_startEndSessionIndex]);
+                                        sessions[_startEndSessionIndex == 0 ? 1 : _startEndSessionIndex]);
                                   } else {
                                     final _startEndSessionIndex =
                                         sessions.indexOf(getStartEndSession());
@@ -1393,15 +1335,9 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
 
   getStartEndSession() {
     if (_isFirstDay) {
-      final initialDateTime =
-          DateTime.parse(sharedPreferences.getString('plan_start_time')!);
-      final startTime =
-          DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
-      final arrivedTime = startTime.add(Duration(
-          seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
-              .ceil()));
       startSession = sessions.firstWhereOrNull((element) =>
-          element.from <= arrivedTime.hour && element.to > arrivedTime.hour);
+          element.from <= _startActivityTime!.hour &&
+          element.to > _startActivityTime!.hour);
       return startSession ?? sessions[0];
     } else if (_isEndDay) {
       if (_isFoodActivity) {
@@ -1415,7 +1351,28 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
         return sessions[0];
       }
     } else {
-      return sessions[0];
+      return sessions.firstWhereOrNull((element) =>
+              element.from <= _startActivityTime!.hour &&
+              element.to > _startActivityTime!.hour) ??
+          sessions[0];
+    }
+  }
+
+  getStartActivityTime() {
+    if (_isFirstDay) {
+      final initialDateTime =
+          DateTime.parse(sharedPreferences.getString('plan_start_time')!);
+      final startTime =
+          DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
+      arrivedTime = startTime.add(Duration(
+          minutes: (sharedPreferences.getDouble('plan_duration_value')! * 60)
+              .floor()));
+      if (arrivedTime!.hour >= 20) {
+        arrivedTime = DateTime(0, 0, 0, 6, 0, 0);
+      }
+      return arrivedTime!.add(widget.startActivityTime);
+    } else {
+      return DateTime(0, 0, 0, 6, 0, 0).add(widget.startActivityTime);
     }
   }
 }
