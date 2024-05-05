@@ -24,7 +24,6 @@ class _TagSearchCardState extends State<TagSearchCard> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     // Check if the tag's ID is in the list of selected tags
     isPress = widget.tags.any((selectedTag) => selectedTag.id == widget.tag.id);
@@ -34,7 +33,7 @@ class _TagSearchCardState extends State<TagSearchCard> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 20),
-      child: Container(
+      child: SizedBox(
         height: 4.h,
         width: 10.h,
         child: ElevatedButton(
@@ -45,8 +44,8 @@ class _TagSearchCardState extends State<TagSearchCard> {
                 borderRadius: BorderRadius.circular(10),
               ),
               backgroundColor: isPress
-                  ? Color.fromARGB(255, 94, 212, 98)
-                  : Color.fromARGB(255, 233, 233, 233)),
+                  ? const Color.fromARGB(255, 94, 212, 98)
+                  : const Color.fromARGB(255, 233, 233, 233)),
           onPressed: () async {
             setState(() {
               isPress = !isPress;
@@ -56,11 +55,10 @@ class _TagSearchCardState extends State<TagSearchCard> {
                   widget.tag.id == "21" ||
                   widget.tag.id == "22") {
                 widget.updateProvinces!(widget.tag, isPress);
-                print("update provinces triggered!");
               }
             });
           },
-          child: Container(
+          child: SizedBox(
             // decoration: BoxDecoration(
             //   shape: BoxShape.rectangle,
             //   borderRadius: const BorderRadius.all(

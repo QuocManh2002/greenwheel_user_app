@@ -1,10 +1,9 @@
-import 'dart:developer';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localization/flutter_localization.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/token_refresher.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/features/home/presentation/providers/home_provider.dart';
@@ -13,16 +12,12 @@ import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.d
 import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
 import 'package:greenwheel_user_app/screens/offline_screen/offline_home_screen.dart';
 import 'package:greenwheel_user_app/service/config_service.dart';
-import 'package:greenwheel_user_app/widgets/test_screen.dart';
-import 'package:hive/hive.dart';
-import 'package:hive_flutter/adapters.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:intl/date_symbol_data_local.dart';
-import 'package:cron/cron.dart';
 
 late SharedPreferences sharedPreferences;
 late bool hasConnection;

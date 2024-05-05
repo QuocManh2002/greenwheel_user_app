@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:developer';
 
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -5,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/login.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
@@ -64,21 +65,19 @@ class _OTPScreenState extends State<OTPScreen> {
                     margin: EdgeInsets.only(top: 4.h),
                     alignment: Alignment.center,
                     child: SvgPicture.asset(
-                      app_logo,
+                      appLogo,
                       height: 170,
                     ),
                   ),
                   SizedBox(
                     height: 2.h,
                   ),
-                  Container(
-                    child: const Text(
-                      'Nhập OTP',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'NotoSans',
-                      ),
+                  const Text(
+                    'Nhập OTP',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'NotoSans',
                     ),
                   ),
                   const SizedBox(

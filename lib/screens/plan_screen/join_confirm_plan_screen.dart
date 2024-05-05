@@ -40,14 +40,14 @@ class JoinConfirmPlanScreen extends StatefulWidget {
 }
 
 class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
-  PlanService _planService = PlanService();
+  final PlanService _planService = PlanService();
   int weight = 1;
   double? newBalance;
   int? travelerBalance;
   List<String> companionNames = [];
   bool isEnableToAdd = false;
   bool isEnableToSubtract = false;
-  CustomerService _customerService = CustomerService();
+  final CustomerService _customerService = CustomerService();
   bool isLoading = true;
 
   onChangeWeight(bool isAdd) {
@@ -95,7 +95,6 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -134,7 +133,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
           : Padding(
               padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 12),
               child: SingleChildScrollView(
-                physics: AlwaysScrollableScrollPhysics(),
+                physics: const AlwaysScrollableScrollPhysics(),
                 child: Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -170,7 +169,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                   fontWeight: FontWeight.bold),
                             ),
                             SvgPicture.asset(
-                              gcoin_logo,
+                              gcoinLogo,
                               height: 28,
                             )
                           ],
@@ -408,7 +407,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                   ),
                                 ),
                                 SvgPicture.asset(
-                                  gcoin_logo,
+                                  gcoinLogo,
                                   height: 25,
                                 )
                               ],
@@ -537,7 +536,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                   width: 1.h,
                                 ),
                                 SvgPicture.asset(
-                                  gcoin_logo,
+                                  gcoinLogo,
                                   height: 25,
                                 )
                               ],
@@ -579,7 +578,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                   width: 1.h,
                 ),
                 SvgPicture.asset(
-                  gcoin_logo,
+                  gcoinLogo,
                   height: 30,
                 )
               ],

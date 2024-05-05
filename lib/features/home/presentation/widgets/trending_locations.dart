@@ -43,7 +43,7 @@ class TrendingLocations extends StatelessWidget {
                         child: SizedBox(
                       height: 30.h,
                       child: ListView.builder(
-                        physics: const BouncingScrollPhysics(),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: trendingLocations.length,
                         shrinkWrap: true,
                         scrollDirection: Axis.horizontal,

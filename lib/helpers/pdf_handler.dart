@@ -1,11 +1,8 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -27,7 +24,6 @@ Future<void> saveAsFile(final BuildContext context, final LayoutCallback build,
   final appDocDir = await getApplicationDocumentsDirectory();
   final appDocPath = appDocDir.path;
   final file = File('$appDocPath/document.pdf');
-  print('Saved as file ${file.path}...');
   await file.writeAsBytes(bytes);
   await OpenFile.open(file.path);
 }
@@ -70,23 +66,23 @@ buildMarkSvgImage(double size) => pw.SvgImage(
 </svg>''', fit: pw.BoxFit.cover, height: size, width: size);
 
 Future<Uint8List> generatePdf(final PdfPageFormat format) async {
-  PlanService _planService = PlanService();
-  CustomerService _cusomterService = CustomerService();
+  final PlanService planService = PlanService();
+  final CustomerService cusomterService = CustomerService();
   // List<dynamic> roomOrderList = [];
   // List<dynamic> foodOrderList = [];
   // List<PlanJoinServiceInfor> listRoom = [];
   // List<PlanJoinServiceInfor> listFood = [];
   List<dynamic>? newRoomOrderList = [];
   List<dynamic>? newFoodOrderList = [];
-  PlanDetail? _plan = await _planService.GetPlanById(
+  PlanDetail? plan = await planService.getPlanById(
       sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
-  final rs = await _cusomterService.GetCustomerById(_plan!.leaderId!);
-  final res = await _planService
+  final rs = await cusomterService.getCustomerById(plan!.leaderId!);
+  final res = await planService
       .getOrderCreatePlan(sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   if (res != null) {
-    _plan.orders = res['orders'];
+    plan.orders = res['orders'];
   }
-  CustomerViewModel _leader = rs[0];
+  CustomerViewModel leader = rs[0];
   final doc = pw.Document(
     title: 'Test Generate PDF',
   );
@@ -103,8 +99,8 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   // List<int> indexRoomOrder = [];
   // List<int> indexFoodOrder = [];
 
-  if (_plan.orders != null) {
-    final serviceMap = _plan.orders!.groupListsBy((e) => e.type);
+  if (plan.orders != null) {
+    final serviceMap = plan.orders!.groupListsBy((e) => e.type);
     newRoomOrderList = serviceMap.values
         .where((e) => e.first.type == 'LODGING')
         .toList()
@@ -181,7 +177,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                       pw.Padding(padding: const pw.EdgeInsets.only(top: 20)),
                       pw.Container(
                         alignment: pw.Alignment.center,
-                        child: pw.Text(_plan.name!.toUpperCase(),
+                        child: pw.Text(plan.name!.toUpperCase(),
                             style: pw.TextStyle(
                                 fontSize: 30,
                                 font: boldTtf,
@@ -190,18 +186,18 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                       ),
                       pw.SizedBox(height: 20),
                       buildInfoRow(
-                          boldTtf, ttf, ' Địa điểm', _plan.locationName!),
+                          boldTtf, ttf, ' Địa điểm', plan.locationName!),
                       buildInfoRow(boldTtf, ttf, ' Ngày khởi hành',
-                          DateFormat('dd/MM/yyyy').format(_plan.utcDepartAt!)),
+                          DateFormat('dd/MM/yyyy').format(plan.utcDepartAt!)),
                       buildInfoRow(boldTtf, ttf, ' Ngày kết thúc',
-                          DateFormat('dd/MM/yyyy').format(_plan.utcEndAt!)),
+                          DateFormat('dd/MM/yyyy').format(plan.utcEndAt!)),
                       buildInfoRow(
                           boldTtf,
                           ttf,
                           ' Số lượng thành viên',
-                          _plan.maxMemberCount! < 10
-                              ? '0${_plan.maxMemberCount}'
-                              : '${_plan.maxMemberCount}'),
+                          plan.maxMemberCount! < 10
+                              ? '0${plan.maxMemberCount}'
+                              : '${plan.maxMemberCount}'),
                       pw.SizedBox(height: 20),
                       pw.Text('LỊCH TRÌNH',
                           style: pw.TextStyle(
@@ -210,7 +206,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                               fontSize: 17,
                               fontWeight: pw.FontWeight.bold)),
                       pw.SizedBox(height: 10),
-                      for (final day in _plan.schedule!)
+                      for (final day in plan.schedule!)
                         pw.Padding(
                             padding: const pw.EdgeInsets.only(bottom: 10),
                             child: pw.Column(
@@ -219,7 +215,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                                 pw.Padding(
                                   padding: const pw.EdgeInsets.only(left: 10),
                                   child: pw.Text(
-                                      'NGÀY ${_plan.schedule!.indexOf(day) + 1}',
+                                      'NGÀY ${plan.schedule!.indexOf(day) + 1}',
                                       style: const pw.TextStyle(
                                           fontSize: 15,
                                           color: PdfColor.fromInt(0xffE4080A))),
@@ -271,7 +267,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                                           const PdfColor.fromInt(0xffE4080A))),
                               pw.Spacer(),
                               pw.Text(
-                                  '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(_plan.gcoinBudgetPerCapita! * 100)} VND/ NGƯỜI',
+                                  '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(plan.gcoinBudgetPerCapita! * 100)} VND/ NGƯỜI',
                                   style: pw.TextStyle(
                                       font: boldTtf,
                                       fontSize: 16,
@@ -316,12 +312,12 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                           ),
                           pw.Column(
                             children: [
-                              pw.Text(_leader.name,
+                              pw.Text(leader.name,
                                   style: pw.TextStyle(
                                       fontSize: 15,
                                       font: boldTtf,
                                       fontWeight: pw.FontWeight.bold)),
-                              pw.Text('0${_leader.phone.substring(3)}',
+                              pw.Text('0${leader.phone.substring(3)}',
                                   style: pw.TextStyle(
                                       fontSize: 15,
                                       font: boldTtf,

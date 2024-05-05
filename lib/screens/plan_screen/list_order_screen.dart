@@ -67,7 +67,7 @@ class ListOrderScreen extends StatelessWidget {
                         height: 15.h,
                       ),
                       Image.asset(
-                        empty_plan,
+                        emptyPlan,
                         height: 30.h,
                       ),
                       SizedBox(

@@ -8,10 +8,11 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 
-class NotificationService {
+class AnnouncementService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
 
@@ -44,13 +45,9 @@ class NotificationService {
         sound: true);
 
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
-      print('user granted permission');
     } else if (settings.authorizationStatus ==
         AuthorizationStatus.provisional) {
-      print('user granted provisional permission');
-    } else {
-      print('user denied permission');
-    }
+    } else {}
   }
 
   void firebaseInit(BuildContext context) {
@@ -98,11 +95,11 @@ class NotificationService {
     // Future.delayed(
     //   Duration.zero,
     //   () {
-        _flutterLocalNotificationsPlugin.show(
-            0,
-            message.notification!.title.toString(),
-            message.notification!.body.toString(),
-            notificationDetails);
+    _flutterLocalNotificationsPlugin.show(
+        0,
+        message.notification!.title.toString(),
+        message.notification!.body.toString(),
+        notificationDetails);
     //   },
     // );
   }
@@ -122,6 +119,7 @@ class NotificationService {
     RemoteMessage? initialMessage =
         await FirebaseMessaging.instance.getInitialMessage();
     if (initialMessage != null) {
+      // ignore: use_build_context_synchronously
       handleMessage(context, initialMessage);
     }
 
@@ -130,7 +128,7 @@ class NotificationService {
     });
   }
 
-  Future<List<NotificationViewModel>> getNotificationList() async {
+  Future<List<AnnouncementViewModel>> getNotificationList() async {
     try {
       int travelerId = sharedPreferences.getInt('userId')!;
       QueryResult result = await client.query(QueryOptions(
@@ -157,6 +155,7 @@ class NotificationService {
         createdAt
         accountId
         planId
+        isRead
       }
     }
   }
@@ -171,9 +170,53 @@ class NotificationService {
       if (res == null || res.isEmpty) {
         return [];
       }
-      List<NotificationViewModel> notifications =
-          res.map((noti) => NotificationViewModel.fromJson(noti['node'])).toList();
+      List<AnnouncementViewModel> notifications = res
+          .map((noti) => AnnouncementViewModel.fromJson(noti['node']))
+          .toList();
       return notifications;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<void> markAnnouncementAsRead(
+      int announcementId, BuildContext context) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql('''
+mutation{
+  markAnnouncementAsRead(announcementId: $announcementId)
+}
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(),
+            // ignore: use_build_context_synchronously
+            context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<void> markAllAnnouncementsAsRead(BuildContext context) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql('''
+mutation{
+  markAllAnnouncementsAsRead
+}
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(),
+            // ignore: use_build_context_synchronously
+            context);
+
+        throw Exception(result.exception!.linkException!);
+      }
     } catch (error) {
       throw Exception(error);
     }

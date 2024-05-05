@@ -15,11 +15,6 @@ class LocationService extends Iterable {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
 
-  String _capitalize(String word) {
-    if (word.isEmpty) return word;
-    return word[0].toUpperCase() + word.substring(1);
-  }
-
   Future<List<LocationViewModel>> searchLocations(
       String search, List<Tag> tags) async {
     try {
@@ -275,7 +270,7 @@ class LocationService extends Iterable {
     }
   }
 
-  Future<LocationViewModel?> GetLocationById(int locationId) async {
+  Future<LocationViewModel?> getLocationById(int locationId) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
@@ -373,13 +368,13 @@ mutation {
       if (result.hasException) {
         throw Exception(result.exception);
       }
-      List? res = result.data!['destinations']['edges'].first['node']['comments'];
+      List? res =
+          result.data!['destinations']['edges'].first['node']['comments'];
       if (res == null || res.isEmpty) {
         return [];
       }
-      List<CommentViewModel> comments = res
-          .map((comment) => CommentViewModel.fromJson(comment))
-          .toList();
+      List<CommentViewModel> comments =
+          res.map((comment) => CommentViewModel.fromJson(comment)).toList();
       return comments;
     } catch (error) {
       throw Exception(error);
@@ -387,7 +382,6 @@ mutation {
   }
 
   @override
-  // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();
 
   Future<List<LocationCardViewModel>> getLocationCard() async {
@@ -523,7 +517,9 @@ mutation {
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
-            rs.parsedResponse.errors.first.message.toString(), context);
+            rs.parsedResponse.errors.first.message.toString(),
+            // ignore: use_build_context_synchronously
+            context);
 
         throw Exception(result.exception!.linkException!);
       }

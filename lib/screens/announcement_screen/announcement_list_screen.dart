@@ -1,27 +1,27 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/loading_screen/notification_list_loading_screen.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
-import 'package:greenwheel_user_app/service/notification_service.dart';
+import 'package:greenwheel_user_app/service/announcement_service.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 import 'package:sizer2/sizer2.dart';
 
-class NotificationScreen extends StatefulWidget {
-  const NotificationScreen({super.key});
+class AnnouncementListScreen extends StatefulWidget {
+  const AnnouncementListScreen({super.key});
 
   @override
-  State<NotificationScreen> createState() => _NotificationScreenState();
+  State<AnnouncementListScreen> createState() => _AnnouncementListScreenState();
 }
 
-class _NotificationScreenState extends State<NotificationScreen> {
-  final NotificationService _notificationService = NotificationService();
-  List<NotificationViewModel>? _notiList;
+class _AnnouncementListScreenState extends State<AnnouncementListScreen> {
+  final AnnouncementService _notificationService = AnnouncementService();
+  List<AnnouncementViewModel>? _notiList;
   bool _isLoading = true;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -47,18 +47,62 @@ class _NotificationScreenState extends State<NotificationScreen> {
           style: TextStyle(
               fontSize: 24, fontWeight: FontWeight.bold, color: Colors.black),
         ),
+        actions: [
+          if ((_notiList ?? []).any(
+            (element) => !element.isRead!,
+          ))
+            IconButton(
+                onPressed: () {
+                  AwesomeDialog(
+                          context: context,
+                          animType: AnimType.leftSlide,
+                          dialogType: DialogType.question,
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          title: 'Đánh dấu tất cả là đã đọc',
+                          titleTextStyle: const TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                          btnOkColor: Colors.deepOrangeAccent,
+                          btnOkOnPress: () async {
+                            setState(() {
+                              for (final noti in _notiList!) {
+                                noti.isRead = true;
+                              }
+                            });
+                            await _notificationService
+                                .markAllAnnouncementsAsRead(context);
+                          },
+                          btnOkText: 'Đồng ý',
+                          btnCancelColor: Colors.blueAccent,
+                          btnCancelOnPress: () {},
+                          btnCancelText: 'Huyr')
+                      .show();
+                },
+                icon: const Icon(
+                  Icons.checklist,
+                  color: primaryColor,
+                  size: 25,
+                )),
+          SizedBox(
+            width: 2.w,
+          )
+        ],
       ),
       body: _isLoading
           ? const NotificationListLoadingScreen()
           : _notiList!.isEmpty
               ? Container(
-                color: lightPrimaryTextColor,
-                alignment: Alignment.center,
+                  color: lightPrimaryTextColor,
+                  alignment: Alignment.center,
                   child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        Image.asset(empty_plan, width: 70.w,),
+                        Image.asset(
+                          emptyPlan,
+                          width: 70.w,
+                        ),
                         SizedBox(
                           height: 1.h,
                         ),
@@ -76,11 +120,18 @@ class _NotificationScreenState extends State<NotificationScreen> {
                   child: Column(children: [
                     for (final noti in _notiList!)
                       InkWell(
-                        onTap: () {
-                          if (noti.type == 'PLAN'
-                          && noti.title != 'Bị loại khỏi kế hoạch.'
-                          && noti.title != 'Bị chặn khỏi kế hoạch.'
-                          ) {
+                        onTap: () async {
+                          if (!noti.isRead!) {
+                            await _notificationService.markAnnouncementAsRead(
+                                noti.id, context);
+                            setState(() {
+                              noti.isRead = true;
+                            });
+                          }
+                          if (noti.type == 'PLAN' &&
+                              noti.title != 'Bị loại khỏi kế hoạch.' &&
+                              noti.title != 'Bị chặn khỏi kế hoạch.') {
+                            // ignore: use_build_context_synchronously
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (ctx) => DetailPlanNewScreen(
                                       isEnableToJoin: true,
@@ -96,13 +147,13 @@ class _NotificationScreenState extends State<NotificationScreen> {
                           child: Column(
                             children: [
                               Padding(
-                                padding: const EdgeInsets.only(
-                                    top: 12, left: 12, right: 12),
+                                padding: EdgeInsets.only(
+                                    top: 12, left: 2.w, right: 2.w),
                                 child: Row(
                                   children: [
                                     Container(
-                                      height: 8.h,
-                                      width: 8.h,
+                                      height: 15.w,
+                                      width: 15.w,
                                       clipBehavior: Clip.hardEdge,
                                       decoration: const BoxDecoration(
                                           shape: BoxShape.circle),
@@ -119,7 +170,7 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                       width: 2.w,
                                     ),
                                     SizedBox(
-                                      width: 65.w,
+                                      width: 70.w,
                                       child: Text(
                                         noti.body,
                                         style: const TextStyle(
@@ -128,7 +179,19 @@ class _NotificationScreenState extends State<NotificationScreen> {
                                             fontFamily: 'NotoSans'),
                                         overflow: TextOverflow.clip,
                                       ),
-                                    )
+                                    ),
+                                    if (!noti.isRead!)
+                                      Padding(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 2.w),
+                                        child: Container(
+                                          width: 3.5.w,
+                                          height: 3.5.w,
+                                          decoration: const BoxDecoration(
+                                              color: primaryColor,
+                                              shape: BoxShape.circle),
+                                        ),
+                                      )
                                   ],
                                 ),
                               ),

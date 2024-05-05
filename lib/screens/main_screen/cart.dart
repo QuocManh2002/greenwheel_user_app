@@ -1,9 +1,7 @@
 import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
@@ -98,7 +96,6 @@ class _CartScreenState extends State<CartScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpdata();
   }
@@ -116,8 +113,8 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     if (widget.isOrder == null || !widget.isOrder!) {
-      ConfigService _configService = ConfigService();
-      final config = await _configService.getOrderConfig();
+      final ConfigService configService = ConfigService();
+      final config = await configService.getOrderConfig();
       holidays = config!.HOLIDAYS!;
       final rs = Utils().getHolidayServingDates(holidays, _servingDates);
       holidayServingDates = rs['holidayServingDates'];
@@ -239,19 +236,17 @@ class _CartScreenState extends State<CartScreen> {
                         ConstrainedBox(
                           constraints:
                               BoxConstraints(maxHeight: 40.h, minHeight: 20.h),
-                          child: Container(
-                            child: ListView.builder(
-                              physics: const BouncingScrollPhysics(),
-                              shrinkWrap: true,
-                              itemCount: list.length,
-                              itemBuilder: (context, index) {
-                                return CartItemCard(
-                                  cartItem: list[index],
-                                  days: selectedDays,
-                                  serviceType: widget.serviceType,
-                                );
-                              },
-                            ),
+                          child: ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            shrinkWrap: true,
+                            itemCount: list.length,
+                            itemBuilder: (context, index) {
+                              return CartItemCard(
+                                cartItem: list[index],
+                                days: selectedDays,
+                                serviceType: widget.serviceType,
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(
@@ -645,7 +640,7 @@ class _CartScreenState extends State<CartScreen> {
                                       fontFamily: 'NotoSans'),
                                 ),
                                 SvgPicture.asset(
-                                  gcoin_logo,
+                                  gcoinLogo,
                                   height: 18,
                                 )
                               ],
@@ -748,7 +743,7 @@ class _CartScreenState extends State<CartScreen> {
     var order = convertCart();
     List<OrderDetailViewModel> details = [];
     List<Map> detailsMap = [];
-    List<String> _serveDates =
+    List<String> serveDates =
         _servingDates.map((e) => e.toLocal().toString().split(' ')[0]).toList();
     for (final item in list) {
       total += item.product.price * item.qty!;
@@ -773,12 +768,12 @@ class _CartScreenState extends State<CartScreen> {
         widget.serviceType.name,
         detailsMap,
         order.period,
-        _serveDates,
-        _serveDates
+        serveDates,
+        serveDates
             .map((e) => DateTime.parse(e).difference(widget.startDate).inDays)
             .toList(),
         widget.orderGuid,
-        widget.serviceType.id == 2 ? total * _serveDates.length : total);
+        widget.serviceType.id == 2 ? total * serveDates.length : total);
     if (!widget.isOrder!) {
       AwesomeDialog(
               context: context,

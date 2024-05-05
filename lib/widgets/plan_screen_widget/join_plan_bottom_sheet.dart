@@ -74,7 +74,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
                     style: const TextStyle(fontSize: 20, color: Colors.black),
                   ),
                   SvgPicture.asset(
-                    gcoin_logo,
+                    gcoinLogo,
                     height: 28,
                   )
                 ],
@@ -250,7 +250,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
                         width: 1.h,
                       ),
                       SvgPicture.asset(
-                        gcoin_logo,
+                        gcoinLogo,
                         height: 30,
                       )
                     ],
@@ -345,7 +345,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
                         width: 1.h,
                       ),
                       SvgPicture.asset(
-                        gcoin_logo,
+                        gcoinLogo,
                         height: 30,
                       )
                     ],
@@ -381,7 +381,7 @@ class _JoinPlanBottomSheetState extends State<JoinPlanBottomSheet> {
                       width: 1.h,
                     ),
                     SvgPicture.asset(
-                      gcoin_logo,
+                      gcoinLogo,
                       height: 30,
                     )
                   ],

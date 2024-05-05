@@ -1,7 +1,5 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
@@ -38,7 +36,6 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
   List<OrderDetailViewModel> details = [];
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     final tmp =
         widget.order.details!.groupListsBy((element) => element.productId);
@@ -158,7 +155,7 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                   ),
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
-                    child: SvgPicture.asset(gcoin_logo, height: 20,),
+                    child: SvgPicture.asset(gcoinLogo, height: 20,),
                   )
                 ],
               ),

@@ -39,7 +39,7 @@ class Provinces extends StatelessWidget {
                         child: SizedBox(
                       height: 25.h,
                       child: ListView.builder(
-                        physics: const BouncingScrollPhysics(),
+                        physics: const AlwaysScrollableScrollPhysics(),
                         itemCount: provinces.length,
                         shrinkWrap: true,
                         scrollDirection: Axis.horizontal,

@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
@@ -152,7 +151,7 @@ mutation removeDevice{
     }
   }
 
-  Future<List<CustomerViewModel>> GetCustomerById(int id) async {
+  Future<List<CustomerViewModel>> getCustomerById(int id) async {
     try {
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(
@@ -243,6 +242,7 @@ mutation{
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
+            // ignore: use_build_context_synchronously
             rs.parsedResponse.errors.first.message.toString(), context);
 
         throw Exception(result.exception!.linkException!);
@@ -340,7 +340,7 @@ mutation {
 
   void saveAccountToSharePref(CustomerViewModel traveler) {
     if (traveler.defaultAddress != null && traveler.defaultCoordinate != null) {
-      Utils().SaveDefaultAddressToSharedPref(
+      Utils().saveDefaultAddressToSharedPref(
           traveler.defaultAddress!, traveler.defaultCoordinate!);
     }
     if (traveler.avatarUrl != null && traveler.avatarUrl!.isNotEmpty) {
@@ -368,6 +368,7 @@ mutation setDevice{
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
+            // ignore: use_build_context_synchronously
             rs.parsedResponse.errors.first.message.toString(), context);
 
         throw Exception(result.exception!.linkException!);

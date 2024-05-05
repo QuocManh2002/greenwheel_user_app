@@ -1,4 +1,3 @@
-
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -27,17 +26,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   bool isMale = true;
   bool isPolicyAccept = false;
-  String? avatarPath;
+  String? _avatarPath;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     nameController.dispose();
   }
@@ -80,11 +77,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   child: InkWell(
                     splashColor: Colors.transparent,
                     onTap: () async {
-                      final _avatarPath =
+                      final avatarPath =
                           await ImageHandler().handlePickImage(context);
-                      if (_avatarPath != null) {
+                      if (avatarPath != null) {
                         setState(() {
-                          avatarPath = _avatarPath;
+                          _avatarPath = avatarPath;
                         });
                       }
                     },
@@ -96,7 +93,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                           shape: BoxShape.circle,
                           border: Border.all(color: primaryColor, width: 1.5)),
                       child: CachedNetworkImage(
-                        imageUrl: '$baseBucketImage$avatarPath',
+                        imageUrl: '$baseBucketImage$_avatarPath',
                         height: 40.w,
                         fit: BoxFit.contain,
                         placeholder: (context, url) =>
@@ -104,7 +101,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         width: double.infinity,
                         key: UniqueKey(),
                         errorWidget: (context, url, error) => SvgPicture.asset(
-                          no_image,
+                          noImage,
                           fit: BoxFit.contain,
                         ),
                       ),
@@ -275,14 +272,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
           .show();
     } else {
       if (_formKey.currentState!.validate()) {
-        final CustomerService _newService = CustomerService();
-        var rs = await _newService.registerTraveler(RegisterViewModel(
+        final CustomerService newService = CustomerService();
+        var rs = await newService.registerTraveler(RegisterViewModel(
             deviceToken: sharedPreferences.getString('deviceToken')!,
             isMale: isMale,
-            avatarUrl: avatarPath,
+            avatarUrl: _avatarPath,
             name: nameController.text));
         if (rs != null) {
-          _newService.saveAccountToSharePref(rs.traveler);
+          newService.saveAccountToSharePref(rs.traveler);
           sharedPreferences.setString('userRefreshToken', rs.refreshToken);
           sharedPreferences.setString('userToken', rs.accessToken);
           Restart.restartApp(); // ignore: use_build_context_synchronously

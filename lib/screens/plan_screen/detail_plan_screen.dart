@@ -79,7 +79,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   int _selectedTab = 0;
   bool _isPublic = false;
   bool _isEnableToInvite = false;
-  bool _isEnableToOrder = false;
   List<ProductViewModel> products = [];
   List<OrderViewModel>? tempOrders = [];
   List<OrderViewModel> orderList = [];
@@ -95,7 +94,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setupData();
     sharedPreferences.setInt('planId', widget.planId);
@@ -106,7 +104,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       isLoading = true;
     });
     _planDetail = null;
-    final plan = await _planService.GetPlanById(widget.planId, widget.planType);
+    final plan = await _planService.getPlanById(widget.planId, widget.planType);
     List<int> productIds = [];
     if (plan != null) {
       setState(() {
@@ -213,7 +211,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       }).toList();
 
   getOrderList() async {
-    var _total = 0.0;
+    var total = 0.0;
     if (_planDetail!.status == plan_statuses[0].engName ||
         _planDetail!.status == plan_statuses[1].engName) {
       orderList = tempOrders!;
@@ -228,17 +226,17 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         });
       }
     }
-    _total = orderList.fold(0, (sum, obj) => sum + obj.total!);
+    total = orderList.fold(0, (sum, obj) => sum + obj.total!);
     setState(() {
-      total = _total;
+      total = total;
     });
   }
 
   updatePlan() async {
     final location =
-        await _locationService.GetLocationById(_planDetail!.locationId!);
+        await _locationService.getLocationById(_planDetail!.locationId!);
     if (location != null) {
-      PlanCreate _plan = PlanCreate(
+      PlanCreate plan = PlanCreate(
           surcharges: _planDetail!.surcharges,
           travelDuration: _planDetail!.travelDuration,
           departAt: _planDetail!.utcDepartAt,
@@ -268,7 +266,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               child: SelectComboDateScreen(
                 isCreate: false,
                 location: location,
-                plan: _plan,
+                plan: plan,
                 isClone: false,
               ),
               type: PageTransitionType.rightToLeft));
@@ -708,9 +706,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                           },
                                           child: TabIconButton(
                                             iconDefaultUrl:
-                                                basic_information_green,
+                                                basicInformationGreen,
                                             iconSelectedUrl:
-                                                basic_information_white,
+                                                basicInformationWhite,
                                             text: 'Thông tin',
                                             isSelected: _selectedTab == 0,
                                             index: 0,
@@ -730,8 +728,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                             });
                                           },
                                           child: TabIconButton(
-                                            iconDefaultUrl: schedule_green,
-                                            iconSelectedUrl: schedule_white,
+                                            iconDefaultUrl: scheduleGreen,
+                                            iconSelectedUrl: scheduleWhite,
                                             text: 'Lịch trình',
                                             isSelected: _selectedTab == 1,
                                             index: 1,
@@ -751,8 +749,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                             });
                                           },
                                           child: TabIconButton(
-                                            iconDefaultUrl: service_green,
-                                            iconSelectedUrl: service_white,
+                                            iconDefaultUrl: serviceGreen,
+                                            iconSelectedUrl: serviceWhite,
                                             text: 'Dịch vụ',
                                             isSelected: _selectedTab == 2,
                                             index: 2,
@@ -772,8 +770,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                             });
                                           },
                                           child: TabIconButton(
-                                            iconDefaultUrl: surcharge_green,
-                                            iconSelectedUrl: surcharge_white,
+                                            iconDefaultUrl: surchargeGreen,
+                                            iconSelectedUrl: surchargeWhite,
                                             text: 'Phụ thu & ghi chú',
                                             isSelected: _selectedTab == 3,
                                             index: 3,
@@ -1140,7 +1138,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         setState(() {
           _planDetail!.status = 'READY';
           _isEnableToInvite = false;
-          _isEnableToOrder = true;
         });
       });
     }

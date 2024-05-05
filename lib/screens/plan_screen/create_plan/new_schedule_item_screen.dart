@@ -3,8 +3,9 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
@@ -94,13 +95,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   DateTime? startDate;
   DateTime? endDate;
 
-  dynamic tempOrder;
-  dynamic surcharge;
+  dynamic _tempOrder;
+  dynamic _surcharge;
   Session? startSession;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.plan == null) {
       setUpDataCreate();
@@ -166,7 +166,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
         final tempOrders =
             orderList.where((e) => e['orderUUID'] == widget.item!.orderUUID);
         if (tempOrders.isNotEmpty) {
-          tempOrder = tempOrders.first;
+          _tempOrder = tempOrders.first;
           _isOrderedActivity = true;
         }
       }
@@ -212,7 +212,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           title: 'Hãy chọn dạng hoạt động',
                           type: DialogType.warning);
                     } else {
-                      if (tempOrder != null) {
+                      if (_tempOrder != null) {
                         DateTime? endDate;
                         if (widget.plan == null) {
                           endDate = DateTime.parse(
@@ -228,10 +228,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     shortDescription:
                                         _shortDescriptionController.text,
                                     description: _descriptionController.text,
-                                    date: DateTime.parse(tempOrder['serveDates']
+                                    date: DateTime.parse(_tempOrder['serveDates']
                                         .first
                                         .toString()),
-                                    orderUUID: tempOrder['orderUUID'],
+                                    orderUUID: _tempOrder['orderUUID'],
                                     activityTime: _selectedTime,
                                     type: _selectedType,
                                     id: widget.item?.id),
@@ -244,16 +244,16 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   description: 'Check-out nhà nghỉ/khách sạn',
                                   type: 'Check-out',
                                   date: DateTime.parse(
-                                              tempOrder['serveDates'].last) ==
+                                              _tempOrder['serveDates'].last) ==
                                           endDate
-                                      ? DateTime.parse(tempOrder['serveDates']
+                                      ? DateTime.parse(_tempOrder['serveDates']
                                           .last
                                           .toString())
-                                      : DateTime.parse(tempOrder['serveDates']
+                                      : DateTime.parse(_tempOrder['serveDates']
                                               .last
                                               .toString())
                                           .add(const Duration(days: 1)),
-                                  orderUUID: tempOrder['orderUUID'],
+                                  orderUUID: _tempOrder['orderUUID'],
                                   activityTime: _selectedTime,
                                   id: widget.item?.id),
                               isCreate: widget.item == null,
@@ -265,15 +265,15 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         .getString('plan_temp_order') ??
                                     '[]')
                                 .where((e) =>
-                                    e['orderUUID'] == tempOrder['orderUUID']);
+                                    e['orderUUID'] == _tempOrder['orderUUID']);
                             if (order.isNotEmpty) {
                               if (order.first['serveDates'].first !=
-                                  tempOrder['serveDates'].first) {
+                                  _tempOrder['serveDates'].first) {
                                 widget.onDelete(
                                     PlanScheduleItem(
                                         orderUUID: null,
                                         date: order.first['serveDates'].first),
-                                    tempOrder['orderUUID']);
+                                    _tempOrder['orderUUID']);
                                 widget.callback(
                                   item: PlanScheduleItem(
                                       isStarred: _isStarEvent,
@@ -281,10 +281,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                           _shortDescriptionController.text,
                                       description: _descriptionController.text,
                                       date: DateTime.parse(
-                                          tempOrder['serveDates']
+                                          _tempOrder['serveDates']
                                               .first
                                               .toString()),
-                                      orderUUID: tempOrder['orderUUID'],
+                                      orderUUID: _tempOrder['orderUUID'],
                                       activityTime: _selectedTime,
                                       type: _selectedType,
                                       id: widget.item?.id),
@@ -293,7 +293,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                 );
                               }
                               if (order.first['serveDates'].last !=
-                                  tempOrder['serveDates'].last) {
+                                  _tempOrder['serveDates'].last) {
                                 widget.onDelete(
                                     PlanScheduleItem(
                                       orderUUID: null,
@@ -308,7 +308,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                                   .toString())
                                               .add(const Duration(days: 1)),
                                     ),
-                                    tempOrder['orderUUID']);
+                                    _tempOrder['orderUUID']);
                                 widget.callback(
                                   item: PlanScheduleItem(
                                       isStarred: _isStarEvent,
@@ -317,19 +317,19 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                           'Check-out nhà nghỉ/khách sạn',
                                       type: 'Check-out',
                                       date: DateTime.parse(
-                                                  tempOrder['serveDates']
+                                                  _tempOrder['serveDates']
                                                       .last) ==
                                               endDate
                                           ? DateTime.parse(
-                                              tempOrder['serveDates']
+                                              _tempOrder['serveDates']
                                                   .last
                                                   .toString())
                                           : DateTime.parse(
-                                                  tempOrder['serveDates']
+                                                  _tempOrder['serveDates']
                                                       .last
                                                       .toString())
                                               .add(const Duration(days: 1)),
-                                      orderUUID: tempOrder['orderUUID'],
+                                      orderUUID: _tempOrder['orderUUID'],
                                       activityTime: _selectedTime,
                                       id: widget.item?.id),
                                   isCreate: true,
@@ -340,7 +340,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           }
                         } else {
                           if (widget.item == null) {
-                            for (final day in tempOrder['serveDates']) {
+                            for (final day in _tempOrder['serveDates']) {
                               widget.callback(
                                 item: PlanScheduleItem(
                                     isStarred: _isStarEvent,
@@ -348,7 +348,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         _shortDescriptionController.text,
                                     description: _descriptionController.text,
                                     date: DateTime.parse(day.toString()),
-                                    orderUUID: tempOrder['orderUUID'],
+                                    orderUUID: _tempOrder['orderUUID'],
                                     activityTime: _selectedTime,
                                     type: _selectedType,
                                     id: widget.item?.id),
@@ -362,10 +362,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         .getString('plan_temp_order') ??
                                     '[]')
                                 .where((e) =>
-                                    e['orderUUID'] == tempOrder['orderUUID']);
+                                    e['orderUUID'] == _tempOrder['orderUUID']);
 
                             if (order.isEmpty) {
-                              for (final day in tempOrder['serveDates']) {
+                              for (final day in _tempOrder['serveDates']) {
                                 if (widget.item != null) {
                                   widget.item!.date =
                                       DateTime.parse(day.toString());
@@ -377,7 +377,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                           _shortDescriptionController.text,
                                       description: _descriptionController.text,
                                       date: DateTime.parse(day.toString()),
-                                      orderUUID: tempOrder['orderUUID'],
+                                      orderUUID: _tempOrder['orderUUID'],
                                       activityTime: _selectedTime,
                                       type: _selectedType,
                                       id: widget.item?.id),
@@ -390,14 +390,14 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                               List<String> validOrderDate = [];
                               List<String> newOrderDate = [];
                               for (final date in order.first['serveDates']) {
-                                if (!tempOrder['serveDates'].contains(date)) {
+                                if (!_tempOrder['serveDates'].contains(date)) {
                                   invalidOrderDate.add(date);
                                 } else {
                                   validOrderDate.add(date);
                                 }
                               }
 
-                              for (final date in tempOrder['serveDates']) {
+                              for (final date in _tempOrder['serveDates']) {
                                 if (!validOrderDate.contains(date)) {
                                   newOrderDate.add(date);
                                 }
@@ -416,7 +416,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         activityTime: _selectedTime,
                                         type: _selectedType,
                                         id: widget.item?.id),
-                                    tempOrder['orderUUID']);
+                                    _tempOrder['orderUUID']);
                               }
 
                               for (final newDay in newOrderDate) {
@@ -427,7 +427,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                           _shortDescriptionController.text,
                                       description: _descriptionController.text,
                                       date: DateTime.parse(newDay.toString()),
-                                      orderUUID: tempOrder['orderUUID'],
+                                      orderUUID: _tempOrder['orderUUID'],
                                       activityTime: _selectedTime,
                                       type: _selectedType,
                                       id: widget.item?.id),
@@ -478,12 +478,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   }
 
   bool checkValidStartItem(TimeOfDay time) {
-    var startTime = sharedPreferences.getString('plan_start_time');
-    final startDateTime = DateFormat.Hm().parse(startTime!);
-    final _startDateTime =
-        DateTime(0, 0, 0, startDateTime.hour, startDateTime.minute, 0);
-    final _startActivityDateTime = DateTime(0, 0, 0, time.hour, time.minute);
-    return _startActivityDateTime.isAfter(_startDateTime);
+    var startTimeText = sharedPreferences.getString('plan_start_time');
+    final startTime = DateFormat.Hm().parse(startTimeText!);
+    final startDateTime =
+        DateTime(0, 0, 0, startTime.hour, startTime.minute, 0);
+    final startActivityDateTime = DateTime(0, 0, 0, time.hour, time.minute);
+    return startActivityDateTime.isAfter(startDateTime);
   }
 
   @override
@@ -678,7 +678,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             ? Text(
                                 _selectedType!,
                                 textAlign: TextAlign.start,
-                                style: TextStyle(fontSize: 18),
+                                style: const TextStyle(fontSize: 18),
                               )
                             : DropdownButton<String>(
                                 hint: const Text(
@@ -818,7 +818,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Chi tiết ${tempOrder != null ? 'dự trù kinh phí' : 'phụ thu'}',
+                              'Chi tiết ${_tempOrder != null ? 'dự trù kinh phí' : 'phụ thu'}',
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontFamily: 'NotoSans',
@@ -834,8 +834,8 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             SizedBox(
                               height: 0.5.h,
                             ),
-                            if (tempOrder != null)
-                              for (final detail in tempOrder['details'])
+                            if (_tempOrder != null)
+                              for (final detail in _tempOrder['details'])
                                 Row(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment:
@@ -865,12 +865,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     )
                                   ],
                                 ),
-                            if (surcharge != null)
+                            if (_surcharge != null)
                               Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    json.decode(surcharge['note']),
+                                    json.decode(_surcharge['note']),
                                     overflow: TextOverflow.clip,
                                     style: const TextStyle(
                                         fontSize: 18,
@@ -887,14 +887,14 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                                 locale: 'vi_VN',
                                                 decimalDigits: 0,
                                                 name: '')
-                                            .format(surcharge['gcoinAmount']),
+                                            .format(_surcharge['gcoinAmount']),
                                         style: const TextStyle(
                                             fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                             fontFamily: 'NotoSans'),
                                       ),
-                                      SvgPicture.asset(gcoin_logo, height: 18),
-                                      if (surcharge['alreadyDivided'])
+                                      SvgPicture.asset(gcoinLogo, height: 18),
+                                      if (_surcharge['alreadyDivided'])
                                         const Text(
                                           ' /',
                                           style: TextStyle(
@@ -902,7 +902,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                               fontWeight: FontWeight.bold,
                                               fontFamily: 'NotoSans'),
                                         ),
-                                      if (surcharge['alreadyDivided'])
+                                      if (_surcharge['alreadyDivided'])
                                         const Icon(
                                           Icons.person,
                                           color: primaryColor,
@@ -922,7 +922,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                             SizedBox(
                               height: 0.5.h,
                             ),
-                            if (tempOrder != null)
+                            if (_tempOrder != null)
                               Row(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -936,7 +936,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   const Spacer(),
                                   Column(
                                     children: [
-                                      for (final day in tempOrder['serveDates'])
+                                      for (final day in _tempOrder['serveDates'])
                                         SizedBox(
                                           width: 40.w,
                                           child: Text(
@@ -954,7 +954,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   )
                                 ],
                               ),
-                            if (tempOrder != null)
+                            if (_tempOrder != null)
                               Padding(
                                 padding: EdgeInsets.symmetric(vertical: 0.5.h),
                                 child: const Divider(
@@ -973,7 +973,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   ),
                                 ),
                                 const Spacer(),
-                                if (tempOrder != null)
+                                if (_tempOrder != null)
                                   SizedBox(
                                     width: 50.w,
                                     child: Text(
@@ -981,7 +981,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                               locale: 'vi_VN',
                                               decimalDigits: 0,
                                               name: '')
-                                          .format(tempOrder['total']),
+                                          .format(_tempOrder['total']),
                                       style: const TextStyle(
                                           fontSize: 18,
                                           fontFamily: 'NotoSans',
@@ -989,7 +989,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       textAlign: TextAlign.end,
                                     ),
                                   ),
-                                if (surcharge != null)
+                                if (_surcharge != null)
                                   SizedBox(
                                     width: 40.w,
                                     child: Text(
@@ -997,11 +997,11 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                               locale: 'vi_VN',
                                               decimalDigits: 0,
                                               name: '')
-                                          .format(surcharge['alreadyDivided']
-                                              ? surcharge['gcoinAmount'] *
+                                          .format(_surcharge['alreadyDivided']
+                                              ? _surcharge['gcoinAmount'] *
                                                   sharedPreferences.getInt(
                                                       'plan_number_of_member')!
-                                              : surcharge['gcoinAmount']),
+                                              : _surcharge['gcoinAmount']),
                                       style: const TextStyle(
                                           fontSize: 20,
                                           fontFamily: 'NotoSans',
@@ -1010,7 +1010,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     ),
                                   ),
                                 SvgPicture.asset(
-                                  gcoin_logo,
+                                  gcoinLogo,
                                   height: 18,
                                 )
                               ],
@@ -1030,10 +1030,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     List<DateTime> dates = [];
                                     List<ItemCart> cart = [];
                                     for (final date
-                                        in tempOrder['serveDates']) {
+                                        in _tempOrder['serveDates']) {
                                       dates.add(DateTime.parse(date));
                                     }
-                                    for (final detail in tempOrder['details']) {
+                                    for (final detail in _tempOrder['details']) {
                                       cart.add(ItemCart(
                                           qty: detail['quantity'],
                                           product: ProductViewModel(
@@ -1049,33 +1049,33 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                               inputModel: OrderInputModel(
                                                   endDate: endDate,
                                                   startDate: startDate,
-                                                  iniNote: tempOrder['note'],
+                                                  iniNote: _tempOrder['note'],
                                                   isOrder: false,
-                                                  period: tempOrder['period'],
+                                                  period: _tempOrder['period'],
                                                   servingDates: dates,
                                                   supplier: SupplierViewModel(
-                                                      id: tempOrder[
+                                                      id: _tempOrder[
                                                           'providerId'],
-                                                      name: tempOrder[
+                                                      name: _tempOrder[
                                                           'providerName'],
-                                                      phone: tempOrder[
+                                                      phone: _tempOrder[
                                                           'providerPhone'],
-                                                      thumbnailUrl: tempOrder[
+                                                      thumbnailUrl: _tempOrder[
                                                           'providerImageUrl'],
-                                                      address: tempOrder[
+                                                      address: _tempOrder[
                                                           'providerAddress']),
                                                   orderGuid:
-                                                      tempOrder['orderUUID'],
+                                                      _tempOrder['orderUUID'],
                                                   numberOfMember:
                                                       numberOfMember,
                                                   session: sessions.firstWhere(
                                                       (element) =>
                                                           element.enumName ==
-                                                          tempOrder['period']),
+                                                          _tempOrder['period']),
                                                   serviceType: services
                                                       .firstWhere((element) =>
                                                           element.name ==
-                                                          tempOrder['type']),
+                                                          _tempOrder['type']),
                                                   callbackFunction: callback,
                                                   currentCart: cart,
                                                   availableGcoinAmount: 0),
@@ -1113,10 +1113,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                         context,
                                         PageTransition(
                                             child: CreatePlanSurcharge(
-                                              callback: (dynamic _surcharge) {
+                                              callback: (dynamic surcharge) {
                                                 setState(() {
                                                   _isOrderedActivity = true;
-                                                  surcharge = _surcharge;
+                                                  _surcharge = surcharge;
                                                 });
                                               },
                                               isCreate: true,
@@ -1142,32 +1142,32 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                                 .toLowerCase()
                                                 .contains(e)));
                                     if (temp == null) {
-                                      final _startSession =
+                                      final startSession =
                                           getStartEndSession();
                                       navigateToServiceSessionScreen(
-                                          _startSession);
+                                          startSession);
                                     } else {
-                                      final _startEndSessionIndex = sessions
+                                      final startEndSessionIndex = sessions
                                           .indexOf(getStartEndSession());
                                       final mealTextIndex =
                                           mealText.indexOf(temp);
                                       if (_isFirstDay) {
                                         if (mealTextIndex <
-                                            _startEndSessionIndex) {
+                                            startEndSessionIndex) {
                                           handleInvalidActivityBasedOnStartTime(
                                               () {
                                             navigateToServiceSessionScreen(
                                                 sessions[
-                                                    _startEndSessionIndex]);
+                                                    startEndSessionIndex]);
                                           }, () {});
                                         } else if (mealTextIndex >=
-                                            _startEndSessionIndex) {
+                                            startEndSessionIndex) {
                                           navigateToServiceMainScreen(
                                               sessions[mealTextIndex]);
                                         }
                                       } else if (_isEndDay) {
                                         if (mealTextIndex >
-                                            _startEndSessionIndex) {
+                                            startEndSessionIndex) {
                                           handleInvalidActivityBasedOnEndTime(
                                               () {
                                             navigateToServiceSessionScreen(
@@ -1183,15 +1183,15 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       }
                                     }
                                   } else if (_isRoomActivity) {
-                                    final _startEndSessionIndex =
+                                    final startEndSessionIndex =
                                         sessions.indexOf(getStartEndSession());
                                     navigateToServiceMainScreen(
-                                        sessions[_startEndSessionIndex == 0 ? 1 : _startEndSessionIndex]);
+                                        sessions[startEndSessionIndex == 0 ? 1 : startEndSessionIndex]);
                                   } else {
-                                    final _startEndSessionIndex =
+                                    final startEndSessionIndex =
                                         sessions.indexOf(getStartEndSession());
                                     navigateToServiceMainScreen(
-                                        sessions[_startEndSessionIndex]);
+                                        sessions[startEndSessionIndex]);
                                   }
                                 },
                                 icon: Icon(_isFoodActivity
@@ -1217,31 +1217,31 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
     ));
   }
 
-  callback(dynamic _tempOrder) {
+  callback(dynamic tempOrder) {
     setState(() {
       _isOrderedActivity = true;
     });
     _isModify = true;
-    tempOrder = _tempOrder;
+    _tempOrder = tempOrder;
   }
 
   saveTempOrder() {
-    var temp = sharedPreferences.getString('plan_temp_order');
-    if (temp == null) {
-      final tempEncode = json.encode([tempOrder]);
+    var tempOrderText = sharedPreferences.getString('plan_temp_order');
+    if (tempOrderText == null) {
+      final tempEncode = json.encode([_tempOrder]);
       sharedPreferences.setString('plan_temp_order', tempEncode);
     } else {
-      final tempDecode = json.decode(temp);
-      final _temp = tempDecode
-          .where((e) => e['orderUUID'] == tempOrder['orderUUID'])
+      final tempOrderDecode = json.decode(tempOrderText);
+      final temp = tempOrderDecode
+          .where((e) => e['orderUUID'] == _tempOrder['orderUUID'])
           .toList();
-      if (_temp == null || _temp.isEmpty) {
-        tempDecode.add(tempOrder);
+      if (temp == null || temp.isEmpty) {
+        tempOrderDecode.add(_tempOrder);
       } else {
-        tempDecode.remove(_temp.first);
-        tempDecode.add(tempOrder);
+        tempOrderDecode.remove(temp.first);
+        tempOrderDecode.add(_tempOrder);
       }
-      sharedPreferences.setString('plan_temp_order', json.encode(tempDecode));
+      sharedPreferences.setString('plan_temp_order', json.encode(tempOrderDecode));
     }
   }
 
@@ -1266,7 +1266,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
             type: PageTransitionType.rightToLeft));
   }
 
-  navigateToServiceSessionScreen(Session? _startSession) {
+  navigateToServiceSessionScreen(Session? startSession) {
     Navigator.push(
         context,
         PageTransition(
@@ -1276,7 +1276,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                 location: widget.location,
                 numberOfMember: numberOfMember!,
                 isEndAtNoon: _isEndAtNoon,
-                initSession: _startSession,
+                initSession: startSession,
                 startDate: _selectedDate,
                 endDate: endDate!,
                 callbackFunction: callback),
@@ -1374,5 +1374,10 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
     } else {
       return DateTime(0, 0, 0, 6, 0, 0).add(widget.startActivityTime);
     }
+  }
+  @override
+  void debugFillProperties(DiagnosticPropertiesBuilder properties) {
+    super.debugFillProperties(properties);
+    properties.add(DiagnosticsProperty('tempOrder', _tempOrder));
   }
 }

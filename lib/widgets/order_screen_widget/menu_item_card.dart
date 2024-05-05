@@ -34,7 +34,6 @@ class _MenuItemCardState extends State<MenuItemCard> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.quantity != null) {
       setState(() {
@@ -81,7 +80,7 @@ class _MenuItemCardState extends State<MenuItemCard> {
                           '$baseBucketImage${widget.product.thumbnailUrl!}',
                       fit: BoxFit.cover,
                       errorWidget: (context, url, error) =>
-                          Image.asset(empty_plan),
+                          Image.asset(emptyPlan),
                       width: 15.h,
                       filterQuality: FilterQuality.high,
                     ),

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/features/home/presentation/pages/home_screen.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/notification_screen/notificationscreen.dart';
+import 'package:greenwheel_user_app/screens/announcement_screen/announcement_list_screen.dart';
 import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
 import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
-import 'package:greenwheel_user_app/service/notification_service.dart';
+import 'package:greenwheel_user_app/service/announcement_service.dart';
 
 class TabScreen extends StatefulWidget {
   const TabScreen({super.key, required this.pageIndex});
@@ -17,8 +17,7 @@ class TabScreen extends StatefulWidget {
 
 class _TabScreenState extends State<TabScreen> {
   int _selectedPageIndex = 0;
-  NotificationService _notificationService = NotificationService();
-  // CustomerService _customerService = CustomerService();
+  final AnnouncementService _notificationService = AnnouncementService();
 
   void selectPage(int index) {
     setState(() {
@@ -61,7 +60,7 @@ class _TabScreenState extends State<TabScreen> {
         break;
       case 3:
         //switch to Noti page;
-        activePage = const NotificationScreen();
+        activePage = const AnnouncementListScreen();
         break;
       case 4:
         //switch to profie page;

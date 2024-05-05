@@ -38,7 +38,6 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _pageController.addListener(() {
       setState(() {
@@ -50,7 +49,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
 
   setUpData() async {
     setState(() {
-      _scheduleList = _planService.GetPlanScheduleFromJsonNew(
+      _scheduleList = _planService.getPlanScheduleFromJsonNew(
           widget.schedule,
           widget.startDate,
           widget.endDate.difference(widget.startDate).inDays + 1);
@@ -67,15 +66,15 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
     }
   }
 
-  Widget getPageView(int _index) {
+  Widget getPageView(int index) {
     return SizedBox(
       width: 100.w,
-      child: _scheduleList[_index].items.isEmpty
+      child: _scheduleList[index].items.isEmpty
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  empty_plan,
+                  emptyPlan,
                   width: 60.w,
                 ),
                 const SizedBox(
@@ -98,11 +97,11 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
               child: ListView.builder(
               physics: const BouncingScrollPhysics(),
               shrinkWrap: true,
-              itemCount: _scheduleList[_index].items.length,
+              itemCount: _scheduleList[index].items.length,
               itemBuilder: (context, index) => PlanScheduleActivityView(
                 order: widget.orders!.firstWhereOrNull((e) =>
-                    e.uuid == _scheduleList[_index].items[index].orderUUID),
-                item: _scheduleList[_index].items[index],
+                    e.uuid == _scheduleList[index].items[index].orderUUID),
+                item: _scheduleList[index].items[index],
                 isLeader: widget.isLeader,
               ),
             )),
@@ -135,7 +134,6 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                     }).then((value) {
                   if (value != null) {
                     _scheduleList.map((e) {
-                      print(e.date!.difference(value).inDays);
                     });
                     setState(() {
                       _currentPage = _scheduleList
@@ -169,7 +167,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                         )
                       ],
                       shape: BoxShape.circle),
-                  child: Image.asset(calendar_search, fit: BoxFit.contain),
+                  child: Image.asset(calendarSearch, fit: BoxFit.contain),
                 ),
               ),
             ),

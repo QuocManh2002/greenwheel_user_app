@@ -20,14 +20,13 @@ class LocateStartLocation extends StatefulWidget {
 
 class _LocateStartLocationState extends State<LocateStartLocation> {
   CircleAnnotationManager? _circleAnnotationManagerStart;
-  CircleAnnotationManager? _circleAnnotationManagerEnd;
   PolylinePoints polylinePoints = PolylinePoints();
   PointLatLng? _selectedLocation;
-  var distanceText;
-  var durationText;
+  String distanceText = '';
+  String durationText = '';
 
-  var distanceValue;
-  var durationValue;
+  double distanceValue = 0;
+  double durationValue = 0;
   bool _isHasLine = false;
   MapboxMap? _mapboxMap;
   String? address;
@@ -59,7 +58,6 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
       _mapboxMap!.annotations
           .createCircleAnnotationManager()
           .then((value) async {
-        _circleAnnotationManagerEnd = value;
         value.create(
           CircleAnnotationOptions(
             geometry: Point(
@@ -155,10 +153,10 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
   }
 
   _onSelectLocation(PointLatLng selectedLocation) async {
-    if (!await Utils().CheckLoationInSouthSide(
+    if (!await Utils().checkLoationInSouthSide(
         lon: selectedLocation.longitude, lat: selectedLocation.latitude)) {
-      // ignore: use_build_context_synchronously
       AwesomeDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         dialogType: DialogType.warning,
         body: const Center(

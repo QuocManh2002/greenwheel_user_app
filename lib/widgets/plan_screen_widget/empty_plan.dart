@@ -12,7 +12,7 @@ class EmptyPlan extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Image.asset(
-            empty_plan,
+            emptyPlan,
             height: 40.h,
           ),
           const SizedBox(height: 16,),

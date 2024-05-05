@@ -196,7 +196,7 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                                   height: 20.h,
                                 ),
                                 Image.asset(
-                                  empty_plan,
+                                  emptyPlan,
                                   height: 30.h,
                                   fit: BoxFit.cover,
                                 ),

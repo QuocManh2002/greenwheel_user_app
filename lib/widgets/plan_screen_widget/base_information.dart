@@ -35,7 +35,7 @@ class BaseInformationWidget extends StatefulWidget {
 
 class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   int _currentIndexEmergencyCard = 0;
-  PlanService _planService = PlanService();
+  final PlanService _planService = PlanService();
   String status = '';
   String travelDurationText = '';
   String maxMemberText = '';
@@ -43,7 +43,6 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   String comboDateText = '';
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     status = plan_statuses
         .firstWhere((element) => element.engName == widget.plan.status)
@@ -262,8 +261,8 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                                       errorWidget: (context, url, error) =>
                                           Image.asset(
                                             widget.members[i].isMale
-                                                ? male_default_avatar
-                                                : female_default_avatar,
+                                                ? maleDefaultAvatar
+                                                : femaleDefaultAvatar,
                                             height: 25,
                                             fit: BoxFit.cover,
                                           ))),

@@ -11,8 +11,7 @@ import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectDefaultAddress extends StatefulWidget {
-  const SelectDefaultAddress(
-      {super.key, required this.callback});
+  const SelectDefaultAddress({super.key, required this.callback});
   final void Function(SearchStartLocationResult? selectedLocation,
       PointLatLng? selectLatLng) callback;
 
@@ -24,9 +23,8 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
   MapboxMap? _mapboxMap;
   final Location _locationController = Location();
   PointLatLng? _currentLocation;
-  CircleAnnotationManager? _circleAnnotationCurrent;
   CircleAnnotationManager? _circleAnnotationSelected;
-  final PointLatLng _defaultLocation = PointLatLng(10.8406, 106.8117);
+  final PointLatLng _defaultLocation = const PointLatLng(10.8406, 106.8117);
   final TextEditingController _searchController = TextEditingController();
   bool _isShowResult = false;
   List<SearchStartLocationResult> _resultList = [];
@@ -39,23 +37,23 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
   }
 
   Future<void> requirePermission() async {
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-    _serviceEnabled = await _locationController.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await _locationController.requestService();
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+    serviceEnabled = await _locationController.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await _locationController.requestService();
     }
-    _permissionGranted = await _locationController.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await _locationController.requestPermission();
+    permissionGranted = await _locationController.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await _locationController.requestPermission();
     }
 
-    if (_permissionGranted == PermissionStatus.granted) {
-      LocationData _locationData = await _locationController.getLocation();
-      if (_locationData.latitude != null) {
+    if (permissionGranted == PermissionStatus.granted) {
+      LocationData locationData = await _locationController.getLocation();
+      if (locationData.latitude != null) {
         setState(() {
           _currentLocation =
-              PointLatLng(_locationData.latitude!, _locationData.longitude!);
+              PointLatLng(locationData.latitude!, locationData.longitude!);
           getMapStyle();
         });
       }
@@ -80,8 +78,7 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
 
     _mapboxMap?.annotations.createCircleAnnotationManager().then((value) async {
       setState(() {
-        _circleAnnotationCurrent =
-            value; // Store the reference to the circle annotation manager
+// Store the reference to the circle annotation manager
       });
       value.create(
         CircleAnnotationOptions(
@@ -96,11 +93,11 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
     });
   }
 
-  _onSelectLocation(PointLatLng _selectedLocation) async {
-    if (!await Utils().CheckLoationInSouthSide(
-        lon: _selectedLocation.longitude, lat: _selectedLocation.latitude)) {
-      // ignore: use_build_context_synchronously
+  _onSelectLocation(PointLatLng selectedLocation) async {
+    if (!await Utils().checkLoationInSouthSide(
+        lon: selectedLocation.longitude, lat: selectedLocation.latitude)) {
       AwesomeDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         dialogType: DialogType.warning,
         body: const Center(
@@ -126,7 +123,7 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
       _mapboxMap!.setCamera(CameraOptions(
           center: Point(
                   coordinates: Position(
-                      _selectedLocation.longitude, _selectedLocation.latitude))
+                      selectedLocation.longitude, selectedLocation.latitude))
               .toJson(),
           zoom: 12));
       _mapboxMap?.flyTo(
@@ -148,8 +145,8 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
         value.create(
           CircleAnnotationOptions(
             geometry: Point(
-                    coordinates: Position(_selectedLocation.longitude,
-                        _selectedLocation.latitude))
+                    coordinates: Position(
+                        selectedLocation.longitude, selectedLocation.latitude))
                 .toJson(),
             circleColor: Colors.blue.value,
             circleRadius: 12.0,
@@ -161,7 +158,6 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     requirePermission();
   }
@@ -188,8 +184,8 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
     } else {
       var result = await getSearchResult(_searchController.text);
       if (result == [] || result == null) {
-        // ignore: use_build_context_synchronously
         AwesomeDialog(
+          // ignore: use_build_context_synchronously
           context: context,
           dialogType: DialogType.warning,
           body: const Center(

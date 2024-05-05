@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -30,7 +29,6 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -139,7 +137,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),
-                              SvgPicture.asset(gcoin_logo, height: 18,),
+                              SvgPicture.asset(gcoinLogo, height: 18,),
                               SizedBox(
                                 width: 5.w,
                               )
@@ -167,7 +165,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            SvgPicture.asset(gcoin_logo, height: 18,),
+                            SvgPicture.asset(gcoinLogo, height: 18,),
                             SizedBox(
                               width: 5.w,
                             )

@@ -59,7 +59,6 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _pageController.addListener(() {
       setState(() {
@@ -78,7 +77,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
         widget.plan!.arrivedAt!.hour > 16 && widget.plan!.arrivedAt!.hour < 20
             ? ((widget.plan!.numOfExpPeriod! + 1) / 2).ceil()
             : (widget.plan!.numOfExpPeriod! / 2).ceil();
-    var list = _planService.GetPlanScheduleFromJsonNew(
+    var list = _planService.getPlanScheduleFromJsonNew(
         json.decode(widget.plan!.schedule!), widget.plan!.startDate!, duration);
     scheduleList = list;
 
@@ -88,23 +87,23 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
 
   setUpDataCreate() async {
     duration = (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil();
-    String? _scheduleText = sharedPreferences.getString('plan_schedule');
+    String? scheduleText = sharedPreferences.getString('plan_schedule');
     startDate = DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-    final DateTime _endDate = startDate!.add(Duration(days: duration));
+    final DateTime endDate = startDate!.add(Duration(days: duration));
     if (!widget.isClone) {
-      if (_scheduleText == null) {
-        scheduleList = _planService.generateEmptySchedule(startDate!, _endDate);
+      if (scheduleText == null) {
+        scheduleList = _planService.generateEmptySchedule(startDate!, endDate);
         var finalList = _planService.convertPlanScheduleToJson(scheduleList);
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       } else {
-        scheduleList = _planService.ConvertPLanJsonToObject(
-            duration, startDate!, _scheduleText);
+        scheduleList = _planService.convertPLanJsonToObject(
+            duration, startDate!, scheduleText);
         var finalList = _planService.convertPlanScheduleToJson(scheduleList);
         sharedPreferences.setString('plan_schedule', json.encode(finalList));
       }
     } else {
-      scheduleList = _planService.GetPlanScheduleFromJsonNew(
-          json.decode(_scheduleText ?? '[]'), startDate!, duration);
+      scheduleList = _planService.getPlanScheduleFromJsonNew(
+          json.decode(scheduleText ?? '[]'), startDate!, duration);
       var finalList = _planService.convertPlanScheduleToJson(scheduleList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
       // sharedPreferences.setString('plan_schedule', finalList.toString());
@@ -177,16 +176,16 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
     }
   }
 
-  Widget getPageView(int _index) {
+  Widget getPageView(int index) {
     return Container(
       color: Colors.white,
       width: 100.w,
-      child: scheduleList[_index].items.isEmpty
+      child: scheduleList[index].items.isEmpty
           ? Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Image.asset(
-                  empty_plan,
+                  emptyPlan,
                   width: 60.w,
                 ),
                 const SizedBox(
@@ -209,13 +208,13 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
               height: 50.h,
               child: ReorderableListView(
                 children: List.generate(
-                  scheduleList[_index].items.length,
+                  scheduleList[index].items.length,
                   (index) => PlanScheduleActivity(
                     orderList: json.decode(
                         sharedPreferences.getString('plan_temp_order') ?? '[]'),
                     isCreate: widget.isCreate,
                     key: UniqueKey(),
-                    item: scheduleList[_index].items[index],
+                    item: scheduleList[index].items[index],
                     onUpdate: _updateItem,
                     onDetele: _deleteItem,
                     onAdd: _addItem,
@@ -229,8 +228,8 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                       newIndex -= 1;
                     }
                     final PlanScheduleItem item =
-                        scheduleList[_index].items.removeAt(oldIndex);
-                    scheduleList[_index].items.insert(newIndex, item);
+                        scheduleList[index].items.removeAt(oldIndex);
+                    scheduleList[index].items.insert(newIndex, item);
                   });
                   var finalList =
                       _planService.convertPlanScheduleToJson(scheduleList);
@@ -243,11 +242,11 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
   }
 
   _updateItem(PlanScheduleItem item) {
-    var _currentSchedule = scheduleList.firstWhere((element) =>
+    var currentSchedule = scheduleList.firstWhere((element) =>
         element.date ==
         scheduleList[0].date!.add(Duration(days: _currentPage.toInt())));
     var consumedTime =
-        _currentSchedule.items.fold(const Duration(), (previousValue, element) {
+        currentSchedule.items.fold(const Duration(), (previousValue, element) {
       return previousValue + element.activityTime!;
     });
     Navigator.of(context).push(MaterialPageRoute(
@@ -258,7 +257,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             onDelete: _deleteItem,
             dayIndex: _currentPage.toInt(),
             item: item,
-            startActivityTime: Duration(),
+            startActivityTime: const Duration(),
             startDate: scheduleList.first.date!)));
   }
 
@@ -282,9 +281,9 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             .items
             .remove(item);
         for (final day in scheduleList) {
-          for (final _item in day.items) {
-            if (_item.orderUUID != null && _item.orderUUID == uuid) {
-              _item.orderUUID = null;
+          for (final item in day.items) {
+            if (item.orderUUID != null && item.orderUUID == uuid) {
+              item.orderUUID = null;
             }
           }
         }
@@ -302,19 +301,19 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
   }
 
   _addItem(bool? isUpper, int? itemIndex) {
-    var _currentSchedule = scheduleList.firstWhere((element) =>
+    var currentSchedule = scheduleList.firstWhere((element) =>
         element.date ==
         scheduleList[0].date!.add(Duration(days: _currentPage.toInt())));
     var consumedTime =
-        _currentSchedule.items.fold(const Duration(), (previousValue, element) {
+        currentSchedule.items.fold(const Duration(), (previousValue, element) {
       return previousValue + element.activityTime!;
     });
     if (consumedTime.compareTo(GlobalConstant().MAX_SUM_ACTIVITY_TIME) == 0) {
-      Utils().ShowFullyActivityTimeDialog(context);
+      Utils().showFullyActivityTimeDialog(context);
     } else {
-      var _startActivityTime = isUpper == null
+      var startActivityTime = isUpper == null
           ? const Duration()
-          : _currentSchedule.items
+          : currentSchedule.items
               .sublist(0, isUpper ? itemIndex : itemIndex! + 1)
               .fold(const Duration(), (previousValue, element) {
               return previousValue + element.activityTime!;
@@ -330,7 +329,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                   location: widget.location,
                   isUpper: isUpper,
                   itemIndex: itemIndex,
-                  startActivityTime: _startActivityTime,
+                  startActivityTime: startActivityTime,
                   onDelete: _deleteItem),
               type: PageTransitionType.rightToLeft));
     }
@@ -425,7 +424,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                           )
                         ],
                         shape: BoxShape.circle),
-                    child: Image.asset(calendar_search, fit: BoxFit.contain),
+                    child: Image.asset(calendarSearch, fit: BoxFit.contain),
                   ),
                 ),
               ),
@@ -473,7 +472,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
               itemBuilder: (context, index) => Padding(
                 padding: EdgeInsets.all(1.w),
                 child: InkWell(
-                    overlayColor: MaterialStatePropertyAll(Colors.transparent),
+                    overlayColor: const MaterialStatePropertyAll(Colors.transparent),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                     onTap: () {
                       setState(() {
@@ -554,9 +553,9 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                           btnOkOnPress: () {})
                       .show();
                 } else if (checkValidNumberOfFoodActivity()) {
-                  bool _notAskScheduleAgain =
+                  bool notAskScheduleAgain =
                       sharedPreferences.getBool('notAskScheduleAgain') ?? false;
-                  if (_notAskScheduleAgain) {
+                  if (notAskScheduleAgain) {
                     showConfirmScheduleDialog();
                   } else {
                     AwesomeDialog(
@@ -593,15 +592,15 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                                   children: [
                                     Checkbox(
                                       activeColor: primaryColor,
-                                      value: _notAskScheduleAgain,
+                                      value: notAskScheduleAgain,
                                       onChanged: (value) {
                                         setState(() {
-                                          _notAskScheduleAgain =
-                                              !_notAskScheduleAgain;
+                                          notAskScheduleAgain =
+                                              !notAskScheduleAgain;
                                         });
                                         sharedPreferences.setBool(
                                             'notAskScheduleAgain',
-                                            _notAskScheduleAgain);
+                                            notAskScheduleAgain);
                                       },
                                     ),
                                     const Text(
@@ -636,47 +635,47 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
   }
 
   bool checkValidNumberOfActivity() {
-    String? _scheduleText;
+    String? scheduleText;
     if (widget.isCreate) {
-      _scheduleText = sharedPreferences.getString('plan_schedule')!;
+      scheduleText = sharedPreferences.getString('plan_schedule')!;
     } else {
-      _scheduleText = widget.plan!.schedule;
+      scheduleText = widget.plan!.schedule;
     }
 
-    final List<dynamic> _schedule = json.decode(_scheduleText!);
-    return _schedule.any((element) => element.length == 0);
+    final List<dynamic> schedule = json.decode(scheduleText!);
+    return schedule.any((element) => element.length == 0);
   }
 
   bool checkValidNumberOfFoodActivity() {
-    String? _scheduleText;
+    String? scheduleText;
     if (widget.isCreate) {
-      _scheduleText = sharedPreferences.getString('plan_schedule')!;
+      scheduleText = sharedPreferences.getString('plan_schedule')!;
     } else {
-      _scheduleText = widget.plan!.schedule;
+      scheduleText = widget.plan!.schedule;
     }
-    final List<dynamic> _schedule = json.decode(_scheduleText!);
-    List<dynamic> events = _schedule.map((e) => e).toList();
+    final List<dynamic> schedule = json.decode(scheduleText!);
+    List<dynamic> events = schedule.map((e) => e).toList();
     return events.any((element) =>
         element.where((e) => e['type'] == 'EAT').toList().length < 3);
   }
 
   Widget buildConfirmScheduleItem(int index) {
-    String? _scheduleText;
+    String? scheduleText;
     if (widget.isCreate) {
-      _scheduleText = sharedPreferences.getString('plan_schedule')!;
+      scheduleText = sharedPreferences.getString('plan_schedule')!;
     } else {
-      _scheduleText = widget.plan!.schedule;
+      scheduleText = widget.plan!.schedule;
     }
 
-    final List<dynamic> _schedule = json.decode(_scheduleText!);
+    final List<dynamic> schedule = json.decode(scheduleText!);
     String rsText = '';
-    for (final detail in _schedule[index]) {
-      if (detail != _schedule[index].last) {
+    for (final detail in schedule[index]) {
+      if (detail != schedule[index].last) {
         rsText +=
-            '${detail['shortDescription'].toString().substring(0, 1) == '\"' ? json.decode(detail['shortDescription']) : detail['shortDescription'] ?? 'Không có mô tả'} ▷ ';
+            '${detail['shortDescription'].toString().substring(0, 1) == '"' ? json.decode(detail['shortDescription']) : detail['shortDescription'] ?? 'Không có mô tả'} ▷ ';
       } else {
         rsText +=
-            '${detail['shortDescription'].toString().substring(0, 1) == '\"' ? json.decode(detail['shortDescription']) : detail['shortDescription'] ?? 'Không có mô tả'}';
+            '${detail['shortDescription'].toString().substring(0, 1) == '"' ? json.decode(detail['shortDescription']) : detail['shortDescription'] ?? 'Không có mô tả'}';
       }
     }
     return Container(

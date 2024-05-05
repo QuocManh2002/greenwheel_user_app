@@ -1,9 +1,7 @@
 import 'dart:convert';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -70,11 +68,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         if (order.runtimeType == OrderViewModel) {
           total += order.total;
         } else {
-          if (order['type'] == 'CHECKIN' || order['type'] == 'VISIT') {
-            total += order['total'] ;
-          } else {
-            total += order['total'] ;
-          }
+          total += order['total'];
         }
       }
     }
@@ -92,15 +86,15 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   buildListScheduleText() {
     scheduleList = json.decode(widget.plan!.schedule!);
     for (final event in scheduleList) {
-      List<String> _eventTextList = [];
+      List<String> eventTextList = [];
       for (final act in event) {
-        if (act['shortDescription'].toString().substring(0, 1) == '\"') {
-          _eventTextList.add(json.decode(act['shortDescription']));
+        if (act['shortDescription'].toString().substring(0, 1) == '"') {
+          eventTextList.add(json.decode(act['shortDescription']));
         } else {
-          _eventTextList.add(act['shortDescription']);
+          eventTextList.add(act['shortDescription']);
         }
       }
-      scheduleTextList.add(_eventTextList);
+      scheduleTextList.add(eventTextList);
     }
   }
 
@@ -126,15 +120,12 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
 
   buildServiceInfor() async {
-    if(widget.isInfo){
-      
-    }
+    if (widget.isInfo) {}
     final rs = widget.orderList!.groupListsBy(
         (e) => e.runtimeType == OrderViewModel ? e.type : e['type']);
     newRoomOrderList = rs.values.firstWhereOrNull((e) =>
@@ -160,6 +151,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 12),
       child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
         child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.start,
@@ -251,7 +243,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           SizedBox(
                             width: 80.w,
                             child: Text(
-                              emer['name'].toString().substring(0, 1) == '\"'
+                              emer['name'].toString().substring(0, 1) == '"'
                                   ? json.decode(emer['name'])
                                   : emer['name'],
                               style: const TextStyle(
@@ -507,7 +499,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               SizedBox(
                                 width: 50.w,
                                 child: Text(
-                                  '${sur['note'].toString().substring(0, 1) == '\"' ? '${json.decode(sur['note'])}' : sur['note']}',
+                                  '${sur['note'].toString().substring(0, 1) == '"' ? '${json.decode(sur['note'])}' : sur['note']}',
                                   style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),
@@ -529,7 +521,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               Padding(
                                 padding: const EdgeInsets.only(top: 2),
                                 child: SvgPicture.asset(
-                                  gcoin_logo,
+                                  gcoinLogo,
                                   height: 18,
                                 ),
                               )
@@ -579,7 +571,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
                               child: SvgPicture.asset(
-                                gcoin_logo,
+                                gcoinLogo,
                                 height: 18,
                               ),
                             )
@@ -608,7 +600,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
                               child: SvgPicture.asset(
-                                gcoin_logo,
+                                gcoinLogo,
                                 height: 18,
                               ),
                             )
@@ -655,7 +647,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
                               child: SvgPicture.asset(
-                                gcoin_logo,
+                                gcoinLogo,
                                 height: 18,
                               ),
                             )
@@ -694,7 +686,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
                               child: SvgPicture.asset(
-                                gcoin_logo,
+                                gcoinLogo,
                                 height: 18,
                               ),
                             )
@@ -842,11 +834,10 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               locale: 'vi_VN', decimalDigits: 0, name: '')
                           .format(((order.runtimeType == OrderViewModel
                                   ? (order.total)
-                                  : 
-                                  order['type'] == 'CHECKIN' || order['type'] == 'VISIT'
+                                  : order['type'] == 'CHECKIN' ||
+                                          order['type'] == 'VISIT'
                                       ? order['total']
-                                      :
-                                       order['total'] ))
+                                      : order['total']))
                               .toInt()),
                       style: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.bold),
@@ -856,7 +847,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                   Padding(
                     padding: const EdgeInsets.only(top: 2),
                     child: SvgPicture.asset(
-                      gcoin_logo,
+                      gcoinLogo,
                       height: 18,
                     ),
                   )

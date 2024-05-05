@@ -13,12 +13,11 @@ class TransactionHistoryScreen extends StatefulWidget {
 }
 
 class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
-  TransactionService _transactionService = TransactionService();
+  final TransactionService _transactionService = TransactionService();
   List<Transaction>? _transactions = [];
   bool _isLoading = true;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
     
@@ -46,7 +45,7 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
                     ? Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Image.asset(empty_plan),
+                        Image.asset(emptyPlan),
                        const Text('Bạn không có giao dịch nào', style: TextStyle(fontFamily: 'NotoSans', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),)
                       ],
                     )

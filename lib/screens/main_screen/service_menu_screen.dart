@@ -1,9 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:draggable_fab/draggable_fab.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -22,7 +20,7 @@ import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ServiceMenuScreen extends StatefulWidget {
-  const ServiceMenuScreen({required this.inputModel});
+  const ServiceMenuScreen({required this.inputModel, super.key});
   final OrderInputModel inputModel;
 
   @override
@@ -39,13 +37,12 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   String title = "";
   bool isLoading = true;
   double total = 0;
-  List<List<ProductViewModel>> _listResult = [];
+  final List<List<ProductViewModel>> _listResult = [];
 
   var currencyFormat = NumberFormat.currency(symbol: 'đ', locale: 'vi_VN');
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -53,7 +50,9 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   void findSumCombinations(List<ProductViewModel> roomList, int targetSum,
       {List<ProductViewModel> combination = const [], int startIndex = 0}) {
     int currentSum = 0;
-    combination.forEach((element) => currentSum += element.partySize!);
+    for (var element in combination) {
+      currentSum += element.partySize!;
+    }
     if (currentSum == targetSum) {
       _listResult.add(combination);
       return;
@@ -83,14 +82,14 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
   List<ProductViewModel> getResult(List<List<ProductViewModel>> list) {
     List<ProductViewModel> listRoomsCheapest = [];
     double minPriceRooms = 0;
-    list[0].forEach((element) {
+    for (var element in list[0]) {
       minPriceRooms += element.price;
-    });
+    }
     for (final rooms in list) {
       double price = 0;
-      rooms.forEach((element) {
+      for (var element in rooms) {
         price += element.price;
-      });
+      }
       if (price <= minPriceRooms) {
         minPriceRooms = price;
         listRoomsCheapest = rooms;
@@ -595,7 +594,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 3),
                                   child: SvgPicture.asset(
-                                    gcoin_logo,
+                                    gcoinLogo,
                                     height: 18,
                                   ),
                                 )
@@ -723,7 +722,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 3),
                                   child: SvgPicture.asset(
-                                    gcoin_logo,
+                                    gcoinLogo,
                                     height: 15,
                                   ),
                                 )
@@ -763,7 +762,7 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 3),
                                   child: SvgPicture.asset(
-                                    gcoin_logo,
+                                    gcoinLogo,
                                     height: 15,
                                   ),
                                 )

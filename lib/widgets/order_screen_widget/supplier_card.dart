@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -92,7 +91,7 @@ class SupplierCard extends StatelessWidget {
                       imageUrl: '$baseBucketImage${supplier.thumbnailUrl!}',
                       fit: BoxFit.cover,
                       errorWidget: (context, url, error) =>
-                          Image.asset(empty_plan),
+                          Image.asset(emptyPlan),
                       width: 15.h,
                       filterQuality: FilterQuality.high,
                     ),

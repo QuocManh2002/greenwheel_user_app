@@ -1,8 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -45,14 +43,13 @@ class PlanScheduleActivity extends StatefulWidget {
 
 class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
   List<ProductViewModel>? products = [];
-  ProductService _productService = ProductService();
+  final ProductService _productService = ProductService();
   bool isLoading = true;
   dynamic order;
   bool isSelected = false;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -67,7 +64,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
       if (widget.orderList.isNotEmpty) {
         order = widget.orderList.firstWhere((e) =>
             e['orderUUID'] ==
-            (widget.item.orderUUID!.substring(0, 2) == '\"\"'
+            (widget.item.orderUUID!.substring(0, 2) == '""'
                 ? json.decode(widget.item.orderUUID!)
                 : widget.item.orderUUID));
         if (order != null) {
@@ -301,7 +298,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                               ),
                                             ),
                                             SvgPicture.asset(
-                                              gcoin_logo,
+                                              gcoinLogo,
                                               height: 18,
                                             )
                                           ],

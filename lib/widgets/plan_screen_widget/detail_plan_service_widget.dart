@@ -1,7 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
@@ -43,8 +43,8 @@ class DetailPlanServiceWidget extends StatefulWidget {
 class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
     with TickerProviderStateMixin {
   late TabController tabController;
-  LocationService _locationService = LocationService();
-  PlanService _planService = PlanService();
+  final LocationService _locationService = LocationService();
+  final PlanService _planService = PlanService();
   List<OrderViewModel> _orderList = [];
   List<OrderViewModel> roomOrderList = [];
   List<OrderViewModel> foodOrderList = [];
@@ -53,7 +53,6 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -102,7 +101,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 TextButton(
                     onPressed: () async {
                       if (widget.plan.status == 'READY') {
-                        final rs = await _locationService.GetLocationById(
+                        final rs = await _locationService.getLocationById(
                             widget.plan.locationId!);
                         if (rs != null) {
                           Navigator.of(context).push(MaterialPageRoute(
@@ -279,7 +278,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
             Padding(
               padding: const EdgeInsets.only(top: 3),
               child: SvgPicture.asset(
-                gcoin_logo,
+                gcoinLogo,
                 height: 18,
               ),
             ),

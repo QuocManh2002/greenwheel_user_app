@@ -78,7 +78,7 @@ class ConfirmMemberDialogBody extends StatelessWidget {
                 ),
               ),
               SvgPicture.asset(
-                gcoin_logo,
+                gcoinLogo,
                 height: 18,
               )
             ],

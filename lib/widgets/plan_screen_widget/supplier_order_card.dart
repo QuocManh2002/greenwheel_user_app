@@ -118,7 +118,7 @@ class SupplierOrderCard extends StatelessWidget {
                       Padding(
                         padding: const EdgeInsets.only(top: 3),
                         child: SvgPicture.asset(
-                          gcoin_logo,
+                          gcoinLogo,
                           height: 15,
                         ),
                       )

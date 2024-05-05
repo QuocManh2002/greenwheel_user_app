@@ -4,7 +4,6 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:readmore/readmore.dart';
 import 'package:sizer2/sizer2.dart';
@@ -31,8 +30,8 @@ class AddCommentScreen extends StatefulWidget {
 
 class _AddCommentScreenState extends State<AddCommentScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  TextEditingController _commentController = TextEditingController();
-  LocationService _locationService = LocationService();
+  final TextEditingController _commentController = TextEditingController();
+  final LocationService _locationService = LocationService();
 
   @override
   Widget build(BuildContext context) {
@@ -82,7 +81,6 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                       SizedBox(
                         width: 60.w,
                         child: Column(
-                          // mainAxisAlignment: MainAxisAlignment.start,
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
@@ -93,7 +91,6 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
-                            RatingBar(rating: 4),
                             ReadMoreText(
                               widget.destinationDescription,
                               trimLines: 3,
@@ -136,7 +133,7 @@ class _AddCommentScreenState extends State<AddCommentScreen> {
                             return "Bình luận của bạn phải từ 10 - 120 ký tự";
                           } else if (VNBadwordsFilter.isProfane(value)) {
                             return "Bình luận của bạn chứa từ ngữ không hợp lệ";
-                          } else if (!Utils().IsValidSentence(value)) {
+                          } else if (!Utils().isValidSentence(value)) {
                             return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
                           }
                           return null;

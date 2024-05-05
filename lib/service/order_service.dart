@@ -8,6 +8,8 @@ import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/configuration.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_create.dart';
@@ -360,6 +362,17 @@ mutation {
       } else {}
     } else {}
     return true;
+  }
+
+  void saveOrderConfigToPref(ConfigurationModel model) {
+    sharedPreferences.setStringList('HOLIDAYS',
+        (model.HOLIDAYS ?? []).map((e) => json.encode(e.toJson())).toList());
+    sharedPreferences.setInt(
+        'HOLIDAY_RIDING_UP_PCT', model.HOLIDAY_RIDING_UP_PCT ?? 0);
+    sharedPreferences.setInt(
+        'HOLIDAY_LODGING_UP_PCT', model.HOLIDAY_LODGING_UP_PCT ?? 0);
+    sharedPreferences.setInt(
+        'HOLIDAY_MEAL_UP_PCT', model.HOLIDAY_MEAL_UP_PCT ?? 0);
   }
 
   @override

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:developer';
 
@@ -323,7 +325,7 @@ mutation{
     }
   }
 
-  Future<PlanDetail?> GetPlanById(int planId, String type) async {
+  Future<PlanDetail?> getPlanById(int planId, String type) async {
     try {
       String planType = '';
       switch (type) {
@@ -502,7 +504,7 @@ mutation{
     }
   }
 
-  List<List<String>> GetPlanDetailFormJson(List<dynamic> details) {
+  List<List<String>> getPlanDetailFormJson(List<dynamic> details) {
     List<List<String>> schedule = [];
     for (final detail in details) {
       List<String> items = [];
@@ -514,7 +516,7 @@ mutation{
     return schedule;
   }
 
-  List<PlanSchedule> GetPlanScheduleClone(List<PlanSchedule> schedules) {
+  List<PlanSchedule> getPlanScheduleClone(List<PlanSchedule> schedules) {
     for (final schedule in schedules) {
       if (schedule.items.isNotEmpty) {
         for (int i = 0; i < schedule.items.length; i++) {
@@ -525,11 +527,11 @@ mutation{
     return schedules;
   }
 
-  List<PlanSchedule> ConvertPLanJsonToObject(
+  List<PlanSchedule> convertPLanJsonToObject(
       int duration, DateTime startDate, String scheduleText) {
     List<PlanSchedule> list = [];
-    List<dynamic> _scheduleList = json.decode(scheduleText);
-    for (final sche in _scheduleList) {
+    List<dynamic> scheduleList = json.decode(scheduleText);
+    for (final sche in scheduleList) {
       List<PlanScheduleItem> eventList = [];
       for (final event in sche) {
         // final duration = DateFormat.Hm().parse(json.decode(event['duration']));
@@ -544,10 +546,10 @@ mutation{
             shortDescription: json.decode(event['shortDescription']),
             type: schedule_item_types_vn[
                 schedule_item_types.indexOf(event['type'])],
-            date: startDate.add(Duration(days: _scheduleList.indexOf(sche)))));
+            date: startDate.add(Duration(days: scheduleList.indexOf(sche)))));
       }
       list.add(PlanSchedule(
-          date: startDate.add(Duration(days: _scheduleList.indexOf(sche))),
+          date: startDate.add(Duration(days: scheduleList.indexOf(sche))),
           items: eventList));
     }
     if (list.length < duration) {
@@ -559,7 +561,7 @@ mutation{
     return list;
   }
 
-  List<PlanSchedule> GetPlanScheduleFromJsonNew(
+  List<PlanSchedule> getPlanScheduleFromJsonNew(
       List<dynamic> schedules, DateTime startDate, int duration) {
     List<PlanSchedule> schedule = [];
     for (int i = 0; i < duration; i++) {
@@ -570,7 +572,7 @@ mutation{
           final duration = DateFormat.Hm().parse(planItem['duration']);
           item.add(PlanScheduleItem(
               orderUUID:
-                  planItem['orderUUID'].toString().substring(0, 1) == '\"'
+                  planItem['orderUUID'].toString().substring(0, 1) == '"'
                       ? json.decode(planItem['orderUUID'])
                       : planItem['orderUUID'],
               isStarred: planItem['isStarred'],
@@ -578,13 +580,13 @@ mutation{
                   Duration(hours: duration.hour, minutes: duration.minute),
               shortDescription:
                   planItem['shortDescription'].toString().substring(0, 1) ==
-                          '\"'
+                          '"'
                       ? json.decode(planItem['shortDescription'])
                       : planItem['shortDescription'],
               type: schedule_item_types_vn[
                   schedule_item_types.indexOf(planItem['type'].toString())],
               description:
-                  planItem['description'].toString().substring(0, 1) == '\"'
+                  planItem['description'].toString().substring(0, 1) == '"'
                       ? json.decode(planItem['description'])
                       : planItem['description'],
               date: date));
@@ -603,7 +605,7 @@ mutation{
         final type = schedule_item_types_vn
             .firstWhere((element) => element == item.type);
         items.add({
-          'orderUUID': item.orderUUID == null ? null : item.orderUUID,
+          'orderUUID': item.orderUUID,
           'isStarred': item.isStarred,
           'duration':
               // json.encode(
@@ -995,11 +997,11 @@ mutation{
 
         throw Exception(result.exception!.linkException!);
       }
-      String? _imagePath = result.data!['updateSurcharge']['imagePath'];
-      if (_imagePath == null) {
+      String? surchargeImagePath = result.data!['updateSurcharge']['imagePath'];
+      if (surchargeImagePath == null) {
         return null;
       }
-      return _imagePath;
+      return surchargeImagePath;
     } catch (error) {
       throw Exception(error);
     }
@@ -1083,23 +1085,24 @@ mutation{
   }
 
   Future<PointLatLng?> getCurrentLocation() async {
-    bool _serviceEnabled;
-    PermissionStatus _permissionGranted;
-    _serviceEnabled = await _locationController.serviceEnabled();
-    if (!_serviceEnabled) {
-      _serviceEnabled = await _locationController.requestService();
+    bool serviceEnabled;
+    PermissionStatus permissionGranted;
+    serviceEnabled = await _locationController.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await _locationController.requestService();
     }
-    _permissionGranted = await _locationController.hasPermission();
-    if (_permissionGranted == PermissionStatus.denied) {
-      _permissionGranted = await _locationController.requestPermission();
+    permissionGranted = await _locationController.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await _locationController.requestPermission();
     }
 
-    if (_permissionGranted == PermissionStatus.granted) {
-      LocationData _locationData = await _locationController.getLocation();
-      if (_locationData.latitude != null) {
-        return PointLatLng(_locationData.latitude!, _locationData.longitude!);
+    if (permissionGranted == PermissionStatus.granted) {
+      LocationData locationData = await _locationController.getLocation();
+      if (locationData.latitude != null) {
+        return PointLatLng(locationData.latitude!, locationData.longitude!);
       }
     }
+    return null;
   }
 
   handleShowPlanInformation(BuildContext context, LocationViewModel location,
@@ -1118,18 +1121,15 @@ mutation{
               ),
             ));
     await Utils().updateProductPrice();
-
-    // ignore: use_build_context_synchronously
     Navigator.of(context).pop();
-    DateTime? _travelDuration =
+    DateTime? travelDuration =
         sharedPreferences.getDouble('plan_duration_value') != null
             ? DateTime(0, 0, 0).add(Duration(
-                seconds:
-                    (sharedPreferences.getDouble('plan_duration_value')! * 3600)
+                minutes:
+                    (sharedPreferences.getDouble('plan_duration_value')! * 60)
                         .toInt()))
             : null;
     showModalBottomSheet(
-        // ignore: use_build_context_synchronously
         context: context,
         builder: (ctx) => ConfirmPlanBottomSheet(
               isFromHost: false,
@@ -1163,9 +1163,9 @@ mutation{
                   note: sharedPreferences.getString('plan_note'),
                   savedContacts:
                       sharedPreferences.getString('plan_saved_emergency'),
-                  travelDuration: _travelDuration == null
+                  travelDuration: travelDuration == null
                       ? null
-                      : DateFormat.Hm().format(_travelDuration)),
+                      : DateFormat.Hm().format(travelDuration)),
             ));
   }
 

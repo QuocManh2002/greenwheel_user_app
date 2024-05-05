@@ -1,5 +1,4 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -26,20 +25,18 @@ class SelectStartLocationScreen extends StatefulWidget {
 }
 
 class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   var distanceText = '';
   var durationText = '';
-  var distanceValue;
-  var durationValue;
+  double distanceValue = 0;
+  double durationValue = 0;
   List<SearchStartLocationResult> _resultList = [];
   bool isShowResult = false;
   CircleAnnotationManager? _circleAnnotationManagerStart;
   PolylinePoints polylinePoints = PolylinePoints();
   PointLatLng? _selectedLocation;
-  bool _isSearching = false;
   String? defaultAddress = '';
   PointLatLng? defaultLatLng;
-  PointLatLng? _selectedLatLng;
   bool _isSelectedLocation = false;
 
   Future<void> getMapInfo() async {
@@ -67,10 +64,10 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   _onSelectLocation(PointLatLng selectedLocation) async {
-    if (!await Utils().CheckLoationInSouthSide(
+    if (!await Utils().checkLoationInSouthSide(
         lon: selectedLocation.longitude, lat: selectedLocation.latitude)) {
-      // ignore: use_build_context_synchronously
       AwesomeDialog(
+        // ignore: use_build_context_synchronously
         context: context,
         dialogType: DialogType.warning,
         body: const Center(
@@ -105,7 +102,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     defaultAddress = sharedPreferences.getString('defaultAddress');
     final defaultCoordinate =
@@ -125,13 +121,13 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   setUpDataCreate() async {
-    double? plan_distance = sharedPreferences.getDouble('plan_distance_value');
-    if (plan_distance != null) {
-      double? plan_duration =
+    double? planDistance = sharedPreferences.getDouble('plan_distance_value');
+    if (planDistance != null) {
+      double? planDuration =
           sharedPreferences.getDouble('plan_duration_value');
       setState(() {
-        durationValue = plan_duration!;
-        distanceValue = plan_distance;
+        durationValue = planDuration!;
+        distanceValue = planDistance;
       });
     }
     double? startLat = sharedPreferences.getDouble('plan_start_lat');
@@ -139,9 +135,9 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       double? startLng = sharedPreferences.getDouble('plan_start_lng');
       _selectedLocation = PointLatLng(startLat, startLng!);
       distanceText = sharedPreferences.getString('plan_distance_text')!;
-      distanceValue = sharedPreferences.getDouble('plan_distance_value');
+      distanceValue = sharedPreferences.getDouble('plan_distance_value')!;
       durationText = sharedPreferences.getString('plan_duration_text')!;
-      durationValue = sharedPreferences.getDouble('plan_duration_value');
+      durationValue = sharedPreferences.getDouble('plan_duration_value')!;
       setState(() {
         _searchController.text =
             sharedPreferences.getString('plan_start_address')!;
@@ -182,9 +178,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                     maxLines: 1,
                     autofocus: true,
                     onTap: () {
-                      setState(() {
-                        _isSearching = true;
-                      });
                     },
                     decoration: InputDecoration(
                         suffixIcon: IconButton(
@@ -213,7 +206,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                   borderRadius: const BorderRadius.all(Radius.circular(14)),
                   onTap: () {
                     setState(() {
-                      _isSearching = false;
                       _searchController.text =
                           defaultAddress == null || defaultAddress!.isEmpty
                               ? 'Không có dữ liệu'
@@ -459,7 +451,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                         ),
                         const Spacer(),
                         Text(
-                          '$durationText',
+                          durationText,
                           style: const TextStyle(fontSize: 15),
                         ),
                         SizedBox(
@@ -498,8 +490,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     } else {
       var result = await getSearchResult(_searchController.text);
       if (result == [] || result == null) {
-        // ignore: use_build_context_synchronously
         AwesomeDialog(
+          // ignore: use_build_context_synchronously
           context: context,
           dialogType: DialogType.warning,
           body: const Center(
@@ -575,7 +567,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     var result = await getPlaceDetail(point!);
     if (result != null) {
       setState(() {
-        _selectedLatLng = point;
         _searchController.text = result['results'][0]['formatted_address'];
       });
       _onSelectLocation(point);

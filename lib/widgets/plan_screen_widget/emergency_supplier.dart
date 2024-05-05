@@ -20,7 +20,6 @@ class _EmergencySupplierState extends State<EmergencySupplier> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (serviceList != null) {
       if (serviceList!.any((element) => element == widget.supplier.id.toString())) {

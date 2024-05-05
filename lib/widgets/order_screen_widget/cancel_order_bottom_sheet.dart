@@ -1,5 +1,4 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/cancel_reasons.dart';
@@ -29,7 +28,7 @@ class CancelOrderBottomSheet extends StatefulWidget {
 
 class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
   int selectedReason = 0;
-  TextEditingController _reasonController = TextEditingController();
+  final TextEditingController _reasonController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final OrderService _orderService = OrderService();
   int refundAmount = 0;
@@ -47,7 +46,6 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     refundAmount = getRefundAmount();
   }
@@ -114,7 +112,7 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                 ],
               ),
             ),
-            for (final reason in cancel_reasons)
+            for (final reason in cancelReasons)
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -239,7 +237,7 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                               fontFamily: 'NotoSans'),
                         ),
                         SvgPicture.asset(
-                          gcoin_logo,
+                          gcoinLogo,
                           height: 20,
                         )
                       ],
@@ -272,7 +270,7 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                         context,
                         selectedReason == 4
                             ? _reasonController.text
-                            : cancel_reasons
+                            : cancelReasons
                                 .firstWhere(
                                     (element) => element.id == selectedReason)
                                 .text);

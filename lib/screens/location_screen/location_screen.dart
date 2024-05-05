@@ -54,16 +54,15 @@ class _LocationScreenState extends State<LocationScreen> {
   int? numberOfPublishedPlan = 0;
   int numberOfComment = 0;
 
-  var default_address = sharedPreferences.getString('defaultAddress');
+  var defaultAddress = sharedPreferences.getString('defaultAddress');
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
 
   setUpData() async {
-    location = await _locationService.GetLocationById(widget.locationId);
+    location = await _locationService.getLocationById(widget.locationId);
     numberOfPublishedPlan =
         await _locationService.getNumberOfPublishedPlan(widget.locationId);
     if (location != null && numberOfPublishedPlan != null) {
@@ -95,6 +94,7 @@ class _LocationScreenState extends State<LocationScreen> {
                     children: [
                       Expanded(
                         child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
@@ -289,7 +289,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                 alignment: Alignment.center,
                                 child: ElevatedButton.icon(
                                   onPressed: () {
-                                    if (default_address == null) {
+                                    if (defaultAddress == null) {
                                       handleNonDefaultAddress(false);
                                     } else {
                                       Navigator.of(context).push(
@@ -298,7 +298,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                                   location: location!)));
                                     }
                                   },
-                                  icon: default_address == null
+                                  icon: defaultAddress == null
                                       ? Icon(
                                           Icons.warning,
                                           color: Colors.red.withOpacity(0.5),
@@ -311,11 +311,11 @@ class _LocationScreenState extends State<LocationScreen> {
                                   ),
                                   style: elevatedButtonStyle.copyWith(
                                       backgroundColor: MaterialStatePropertyAll(
-                                          default_address == null
+                                          defaultAddress == null
                                               ? Colors.grey.withOpacity(0.2)
                                               : Colors.grey.withOpacity(0.6)),
                                       foregroundColor: MaterialStatePropertyAll(
-                                          default_address == null
+                                          defaultAddress == null
                                               ? Colors.grey
                                               : Colors.black)),
                                 ),
@@ -524,7 +524,7 @@ class _LocationScreenState extends State<LocationScreen> {
                             alignment: Alignment.center,
                             child: ElevatedButton(
                                 onPressed: () {
-                                  if (default_address != null) {
+                                  if (defaultAddress != null) {
                                     String? locationName = sharedPreferences
                                         .getString('plan_location_name');
                                     if (locationName != null) {
@@ -577,7 +577,7 @@ class _LocationScreenState extends State<LocationScreen> {
         handleInvalidAddress();
       } else {
         setState(() {
-          default_address = selectedAddress.address;
+          defaultAddress = selectedAddress.address;
         });
         isValid = true;
       }
@@ -589,7 +589,7 @@ class _LocationScreenState extends State<LocationScreen> {
           handleInvalidAddress();
         } else {
           setState(() {
-            default_address = result['results'][0]['formatted_address'];
+            defaultAddress = result['results'][0]['formatted_address'];
           });
           isValid = true;
         }
@@ -603,13 +603,13 @@ class _LocationScreenState extends State<LocationScreen> {
           avatarUrl: sharedPreferences.getString('userAvatarUrl'),
           phone: sharedPreferences.getString('userPhone')!,
           balance: 0,
-          defaultAddress: default_address,
+          defaultAddress: defaultAddress,
           defaultCoordinate: selectedAddress != null
               ? PointLatLng(selectedAddress.lat, selectedAddress.lng)
               : selectedLatLng));
       if (rs != null) {
-        Utils().SaveDefaultAddressToSharedPref(
-            default_address!,
+        Utils().saveDefaultAddressToSharedPref(
+            defaultAddress!,
             selectedAddress == null
                 ? selectedLatLng!
                 : PointLatLng(selectedAddress.lat, selectedAddress.lng));
@@ -664,7 +664,7 @@ class _LocationScreenState extends State<LocationScreen> {
         dialogType: DialogType.warning,
       ).show();
 
-  getNumberOfComment(bool isFromQuery, int _numberOfComment) async {
+  getNumberOfComment(bool isFromQuery, int numberOfComment) async {
     if (isFromQuery) {
       final rs = await _locationService.getNumberOfComments(
           widget.locationId, context);
@@ -675,7 +675,7 @@ class _LocationScreenState extends State<LocationScreen> {
       }
     } else {
       setState(() {
-        numberOfComment = _numberOfComment;
+        numberOfComment = numberOfComment;
       });
     }
   }

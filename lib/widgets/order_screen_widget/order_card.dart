@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/order.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/screens/main_screen/order_detail_screen.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
@@ -85,16 +84,16 @@ class OrderCard extends StatelessWidget {
                       const SizedBox(
                         height: 6,
                       ),
-                      Padding(
-                        padding: const EdgeInsets.only(left: 5),
-                        child: Row(
-                          children: [
-                            RatingBar(
-                              rating: order.rating,
-                            ),
-                          ],
-                        ),
-                      ),
+                      // Padding(
+                      //   padding: const EdgeInsets.only(left: 5),
+                      //   child: Row(
+                      //     children: [
+                      //       RatingBar(
+                      //         rating: order.rating,
+                      //       ),
+                      //     ],
+                      //   ),
+                      // ),
                       const SizedBox(
                         height: 6,
                       ),

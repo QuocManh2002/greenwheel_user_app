@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -71,7 +70,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -191,7 +189,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                 placeholder: (context, url) =>
                                     Image.memory(kTransparentImage),
                                 errorWidget: (context, url, error) =>
-                                    Image.asset(empty_plan),
+                                    Image.asset(emptyPlan),
                                 imageUrl:
                                     '$baseBucketImage${widget.order.supplier!.thumbnailUrl!}'),
                             Container(
@@ -650,7 +648,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                           fontWeight: FontWeight.bold),
                                     ),
                                     SvgPicture.asset(
-                                      gcoin_logo,
+                                      gcoinLogo,
                                       height: 18,
                                     )
                                   ],

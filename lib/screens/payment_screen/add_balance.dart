@@ -40,7 +40,6 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     newBalanceController.dispose();
   }
@@ -101,7 +100,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),
                               SvgPicture.asset(
-                                gcoin_logo,
+                                gcoinLogo,
                                 height: 32,
                               )
                             ],
@@ -295,7 +294,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                         ),
                         child: ListTile(
                           minLeadingWidth: 0,
-                          leading: Image.asset(vnpay_logo, height: 50),
+                          leading: Image.asset(vnpayLogo, height: 50),
                           title: const Text(
                             "VNPay",
                             style: TextStyle(fontWeight: FontWeight.bold),

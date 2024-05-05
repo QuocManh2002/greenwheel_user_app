@@ -27,7 +27,7 @@ class HomeHeader extends StatelessWidget {
               width: double.infinity,
               fit: BoxFit.cover,
               placeholder: 'No Image',
-              image: empty_plan,
+              image: emptyPlan,
             ),
           ),
           Padding(

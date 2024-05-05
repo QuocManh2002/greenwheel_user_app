@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/models/login.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 
 class TokenRefresher {
-  static CustomerService _customerService = CustomerService();
+  static final CustomerService _customerService = CustomerService();
 
   static Future<void> refreshToken() async {
     String? refreshToken = sharedPreferences.getString('userRefreshToken');

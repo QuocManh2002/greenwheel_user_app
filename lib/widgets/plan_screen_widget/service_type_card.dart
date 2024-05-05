@@ -23,12 +23,6 @@ class _ServiceTypeCardState extends State<ServiceTypeCard>
   @override
   bool get wantKeepAlive => true;
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    // Check if the tag's ID is in the list of selected tags
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -49,7 +43,7 @@ class _ServiceTypeCardState extends State<ServiceTypeCard>
                 widget.serviceType); // Call the callback function
           });
         },
-        child: Container(
+        child: SizedBox(
           width: 11.h,
           child: Container(
             alignment: Alignment.center,

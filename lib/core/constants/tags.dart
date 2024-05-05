@@ -1,4 +1,4 @@
-// ignore_for_file: constant_pattern_never_matches_value_type
+// ignore_for_file: prefer_const_constructors
 
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/models/tag.dart';

@@ -50,7 +50,7 @@ class _HistoryOrderScreenState extends State<HistoryOrderScreen> {
       _orderList!.isEmpty ? 
         Column(
           children: [
-            Image.asset(empty_plan, height: 50.w,),
+            Image.asset(emptyPlan, height: 50.w,),
             SizedBox(height: 1.h,),
             const Text('Chuyến đi này không có đơn hàng nào', style: TextStyle(
               fontSize: 18, fontWeight: FontWeight.bold, color: Colors.grey, fontFamily: 'NotoSans'

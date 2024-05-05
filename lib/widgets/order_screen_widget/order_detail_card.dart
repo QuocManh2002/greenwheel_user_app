@@ -68,7 +68,7 @@ class _OrderDetailCardState extends State<OrderDetailCard> {
                     ],
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Container(
                   margin: const EdgeInsets.only(right: 10),
                   padding: const EdgeInsets.all(8), // Add padding

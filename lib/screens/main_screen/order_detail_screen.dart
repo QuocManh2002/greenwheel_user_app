@@ -3,7 +3,6 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/models/order.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/order_detail_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/rating_bar.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -26,7 +25,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     noteController.text = widget.order.note;
   }
@@ -298,17 +296,15 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ),
               ConstrainedBox(
                 constraints: BoxConstraints(maxHeight: 40.h, minHeight: 20.h),
-                child: Container(
-                  child: ListView.builder(
-                    physics: const BouncingScrollPhysics(),
-                    shrinkWrap: true,
-                    itemCount: widget.order.items.length,
-                    itemBuilder: (context, index) {
-                      return OrderDetailCard(
-                        cartItem: widget.order.items[index],
-                      );
-                    },
-                  ),
+                child: ListView.builder(
+                  physics: const BouncingScrollPhysics(),
+                  shrinkWrap: true,
+                  itemCount: widget.order.items.length,
+                  itemBuilder: (context, index) {
+                    return OrderDetailCard(
+                      cartItem: widget.order.items[index],
+                    );
+                  },
                 ),
               ),
               const SizedBox(
@@ -424,7 +420,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ),
                     ),
                   ),
-                  Spacer(),
+                  const Spacer(),
                   Padding(
                     padding: const EdgeInsets.only(right: 20),
                     child: Text(
@@ -463,18 +459,18 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   const SizedBox(
                     height: 4,
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(left: 14),
-                    child: Row(
-                      children: [
-                        RatingBar(
-                          rating: widget.order.rating,
-                          size: 24,
-                        ),
-                      ],
-                    ),
-                  ),
-                  Spacer(),
+                  // Padding(
+                  //   padding: const EdgeInsets.only(left: 14),
+                  //   child: Row(
+                  //     children: [
+                  //       RatingBar(
+                  //         rating: widget.order.rating,
+                  //         size: 24,
+                  //       ),
+                  //     ],
+                  //   ),
+                  // ),
+                  const Spacer(),
                   Padding(
                     padding: const EdgeInsets.only(right: 20),
                     child: ElevatedButton(

@@ -1,4 +1,3 @@
-import 'dart:ffi';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
@@ -45,10 +44,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   CircleAnnotationManager? _circleAnnotationManagerStart;
   PolylinePoints polylinePoints = PolylinePoints();
   PointLatLng? _selectedLocation;
-  bool _isSearching = false;
   String? defaultAddress = '';
   PointLatLng? defaultLatLng;
-  PointLatLng? _selectedLatLng;
   bool _isSelectedLocation = false;
   final PlanService _planService = PlanService();
 
@@ -79,7 +76,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   }
 
   _onSelectLocation(PointLatLng selectedLocation) async {
-    if (!await Utils().CheckLoationInSouthSide(
+    if (!await Utils().checkLoationInSouthSide(
         lon: selectedLocation.longitude, lat: selectedLocation.latitude)) {
       AwesomeDialog(
         // ignore: use_build_context_synchronously
@@ -117,7 +114,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     defaultAddress = sharedPreferences.getString('defaultAddress');
     final defaultCoordinate =
@@ -190,8 +186,8 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     } else {
       var result = await getSearchResult(_searchController.text);
       if (result == [] || result == null) {
-        // ignore: use_build_context_synchronously
         AwesomeDialog(
+        // ignore: use_build_context_synchronously
           context: context,
           dialogType: DialogType.warning,
           body: const Center(
@@ -267,7 +263,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     var result = await getPlaceDetail(point!);
     if (result != null) {
       setState(() {
-        _selectedLatLng = point;
         _searchController.text = result['results'][0]['formatted_address'];
       });
       _onSelectLocation(point);
@@ -326,9 +321,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                 maxLines: 1,
                 autofocus: true,
                 onTap: () {
-                  setState(() {
-                    _isSearching = true;
-                  });
                 },
                 decoration: InputDecoration(
                     suffixIcon: IconButton(
@@ -353,7 +345,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
               borderRadius: const BorderRadius.all(Radius.circular(14)),
               onTap: () {
                 setState(() {
-                  _isSearching = false;
                   _searchController.text =
                       defaultAddress == null || defaultAddress!.isEmpty
                           ? 'Không có dữ liệu'

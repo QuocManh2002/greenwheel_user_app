@@ -1,8 +1,7 @@
-import 'dart:math';
+
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:sizer2/sizer2.dart';
 
 class TestScreen extends StatefulWidget {
@@ -26,11 +25,6 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   setUpData() async {
-    List<int> list = [1, 2, 3, 4, 5];
-    print(list.sublist(0,7).fold(
-        0,
-        (previousValue, element) =>
-            int.parse(previousValue.toString()) + element));
   }
 
   @override
@@ -87,12 +81,6 @@ class _TestScreenState extends State<TestScreen> {
                                           minutes: element.minute);
                                 }
                               });
-
-                              print(totalDuration!
-                                  .compareTo(Duration(hours: 16)));
-
-                              print(
-                                  '${totalDuration!.inHours} ${totalDuration!.inMinutes.remainder(60)}');
                             },
                           )
                         ],

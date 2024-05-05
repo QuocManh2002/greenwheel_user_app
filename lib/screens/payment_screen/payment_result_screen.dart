@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -51,7 +50,7 @@ class PaymentResultScreen extends StatelessWidget {
                     height: 2.h,
                   ),
                   SvgPicture.asset(
-                    app_logo,
+                    appLogo,
                     height: 5.h,
                     fit: BoxFit.cover,
                   ),

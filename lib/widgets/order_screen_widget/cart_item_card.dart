@@ -76,7 +76,7 @@ class _CartItemCardState extends State<CartItemCard>
                     ],
                   ),
                 ),
-                Spacer(),
+                const Spacer(),
                 Container(
                   height: 7.h,
                   alignment: Alignment.center,

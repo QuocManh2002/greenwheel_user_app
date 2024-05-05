@@ -52,13 +52,12 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   List<dynamic> _listSurchargeObjects = [];
   double _totalSurcharge = 0;
   List<Widget> _listSurcharges = [];
-  PlanService _planService = PlanService();
+  final PlanService _planService = PlanService();
   int? memberLimit;
   PlanCreate? _plan;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -255,7 +254,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                                 height: 20.h,
                               ),
                               Image.asset(
-                                empty_plan,
+                                emptyPlan,
                                 height: 30.h,
                                 fit: BoxFit.cover,
                               ),
@@ -336,7 +335,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                       ),
                     ),
                     SvgPicture.asset(
-                      gcoin_logo,
+                      gcoinLogo,
                       height: 18,
                     )
                   ],
@@ -366,7 +365,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                       ),
                     ),
                     SvgPicture.asset(
-                      gcoin_logo,
+                      gcoinLogo,
                       height: 18,
                     )
                   ],
@@ -480,7 +479,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
           DateTime(departureDate.year, departureDate.month, departureDate.day)
               .add(Duration(hours: departureTime.hour))
               .add(Duration(minutes: departureTime.minute));
-      DateTime _travelDuration = DateTime(0, 0, 0).add(Duration(
+      DateTime travelDuration = DateTime(0, 0, 0).add(Duration(
           seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
               .toInt()));
       rs = json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
@@ -501,7 +500,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
         departAt: departureDate,
         schedule: sharedPreferences.getString('plan_schedule'),
         endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
-        travelDuration: DateFormat.Hm().format(_travelDuration),
+        travelDuration: DateFormat.Hm().format(travelDuration),
         note: sharedPreferences.getString('plan_note'),
         maxMemberWeight: sharedPreferences.getInt('plan_max_member_weight'),
       );
@@ -564,7 +563,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
     //     (route) => false,
     //   );
     // } else {
-    var rs;
+    int? rs;
     if (widget.plan == null) {
       if (widget.isClone) {
         rs = await _planService.clonePlan(
@@ -603,7 +602,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
             (route) => false);
         Navigator.of(context).push(MaterialPageRoute(
             builder: (ctx) => DetailPlanNewScreen(
-                  planId: rs,
+                  planId: rs!,
                   isEnableToJoin: false,
                   planType: "OWNED",
                 )));

@@ -1,3 +1,4 @@
+
 class Holiday {
   int? id;
   DateTime from;
@@ -10,4 +11,8 @@ class Holiday {
       name: json['name'],
       from: DateTime.parse(json['from']),
       to: DateTime.parse(json['to']));
+  Map<String, dynamic> toJson() =>
+      {"name": name, 
+      "from": from.toString().split(' ')[0], 
+      "to": to.toString().split(' ')[0]};
 }

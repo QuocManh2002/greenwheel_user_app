@@ -1,8 +1,6 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/clone_plan_options.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
@@ -33,7 +31,6 @@ class _ClonePlanOptionsBottomSheetState
   bool isSelectAll = false;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -164,7 +161,7 @@ class _ClonePlanOptionsBottomSheetState
                               ),
                             );
                             final location =
-                                await _locationService.GetLocationById(
+                                await _locationService.getLocationById(
                                     widget.plan.locationId!);
                             String? locationName = sharedPreferences
                                 .getString('plan_location_name');

@@ -62,8 +62,8 @@ class MemberListWidget extends StatelessWidget {
                             errorWidget: (context, url, error) =>
                                 Image.asset(
                               mem.isMale
-                                  ? male_default_avatar
-                                  : female_default_avatar,
+                                  ? maleDefaultAvatar
+                                  : femaleDefaultAvatar,
                               height: 6.h,
                               fit: BoxFit.cover,
                             ),

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -17,7 +19,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   TextEditingController phoneController = TextEditingController();
 
-  CustomerService _customerService = CustomerService();
+  final CustomerService _customerService = CustomerService();
 
   @override
   Widget build(BuildContext context) {
@@ -46,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               margin: EdgeInsets.only(top: 4.h),
                               alignment: Alignment.center,
                               child: SvgPicture.asset(
-                                app_logo,
+                                appLogo,
                                 height: 170,
                               ),
                             ),
@@ -69,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ],
               ),
               Expanded(
-                  child: Container(
+                  child: SizedBox(
                 width: size.width,
                 child: Padding(
                   padding:
@@ -124,8 +126,8 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(
                         height: 8,
                       ),
-                      Spacer(),
-                      Container(
+                      const Spacer(),
+                      SizedBox(
                         height: 7.h,
                         width: 90.w,
                         child: ElevatedButton(

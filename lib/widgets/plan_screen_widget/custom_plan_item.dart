@@ -140,7 +140,7 @@ class _CustomPlanItemState extends State<CustomPlanItem> {
                           widget.onDismiss(
                               widget.details[index], widget.details);
                         },
-                        child: Container(
+                        child: SizedBox(
                           height: double.infinity,
                           width: double.infinity,
                           child: Padding(

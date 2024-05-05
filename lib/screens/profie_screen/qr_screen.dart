@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/config/token_generator.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -19,7 +20,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:sizer2/sizer2.dart';
 
 class QRScreen extends StatefulWidget {
-  QRScreen({super.key});
+  const QRScreen({super.key});
 
   @override
   State<QRScreen> createState() => _QRScreenState();
@@ -54,7 +55,6 @@ class _QRScreenState extends State<QRScreen> {
       if (qrCorde.isNotEmpty) {
         final jwt = JWT.decode(qrCorde);
         if (jwt.payload['planId'] != null) {
-          print("Payload: ${jwt.payload}");
           // ignore: use_build_context_synchronously
           Navigator.of(context).push(MaterialPageRoute(
               builder: (ctx) => DetailPlanNewScreen(
@@ -64,11 +64,10 @@ class _QRScreenState extends State<QRScreen> {
                     planType: 'SCAN',
                   )));
         } else {
-          print('Payload for travelerId!');
         }
       }
     } on PlatformException {
-      print("exception");
+      throw Exception(this);
     }
   }
 
@@ -93,16 +92,14 @@ class _QRScreenState extends State<QRScreen> {
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1, // Duration in seconds
         );
-        print('Image saved!');
         String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
         sharedPreferences.setString('deviceToken', deviceToken);
-        print(deviceToken);
       } else {
-        print('Something wrong when saving image!');
-        print('${result['error']}');
+        // ignore: use_build_context_synchronously
+        Utils().handleServerException('Đã xảy ra lỗi khi lưu hình ảnh', context);
       }
     } catch (e) {
-      print(e);
+      throw Exception(e);
     }
   }
 

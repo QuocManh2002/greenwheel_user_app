@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:dart_jts/dart_jts.dart';
@@ -75,7 +76,7 @@ class Utils {
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {
-    var rsBytes;
+    Uint8List rsBytes;
     final response = await http.get(Uri.parse(imageUrl));
 
     if (response.statusCode == 200) {
@@ -95,7 +96,7 @@ class Utils {
             .add(const Duration(minutes: 59)));
   }
 
-  Future<bool> CheckLoationInSouthSide(
+  Future<bool> checkLoationInSouthSide(
       {required double lon, required double lat}) async {
     String geoString =
         await rootBundle.loadString('assets/geojson/southside.wkt');
@@ -105,11 +106,10 @@ class Utils {
     var features = reader.read(geoString);
     var coordinate = Coordinate(lon, lat);
     var point = factory.createPoint(coordinate);
-    print('Test result: ${features!.contains(point)}');
-    return features.contains(point);
+    return features!.contains(point);
   }
 
-  SaveDefaultAddressToSharedPref(
+  saveDefaultAddressToSharedPref(
       String addressText, PointLatLng addressLatLng) {
     sharedPreferences.setString('defaultAddress', addressText);
     sharedPreferences.setStringList('defaultCoordinate', [
@@ -118,7 +118,7 @@ class Utils {
     ]);
   }
 
-  ShowFullyActivityTimeDialog(BuildContext context) {
+  showFullyActivityTimeDialog(BuildContext context) {
     AwesomeDialog(
         context: context,
         dialogType: DialogType.warning,
@@ -135,7 +135,7 @@ class Utils {
         )).show();
   }
 
-  bool IsValidSentence(String sentence) {
+  bool isValidSentence(String sentence) {
     List<String> words = sentence.split(' ');
     Map<String, int> wordFrequency = {};
     for (String word in words) {
@@ -144,20 +144,6 @@ class Utils {
         return false;
       }
     }
-    return true;
-  }
-
-  bool _isValidSentence(String sentence) {
-    List<String> words = sentence.split(' ');
-    Map<String, int> wordFrequency = {};
-
-    for (String word in words) {
-      wordFrequency[word] = (wordFrequency[word] ?? 0) + 1;
-      if (wordFrequency[word]! >= 3) {
-        return false;
-      }
-    }
-
     return true;
   }
 
@@ -258,14 +244,14 @@ class Utils {
 
   getNumOfExpPeriod(DateTime? arrivedTime, int initNumOfExpPeriod,
       DateTime startTime, DateTime? travelDuration, bool isCreate) {
-    final _startTime = DateTime(0, 0, 0, startTime.hour, startTime.minute);
-    final _arrivedTime = arrivedTime ??
-        _startTime
+    final startDateTime = DateTime(0, 0, 0, startTime.hour, startTime.minute);
+    final arrivedDateTime = arrivedTime ??
+        startDateTime
             .add(Duration(hours: travelDuration!.hour))
             .add(Duration(minutes: travelDuration.minute));
-    if (_arrivedTime.isAfter(DateTime(0, 0, 0, 16, 0)) &&
-        _arrivedTime.isBefore(DateTime(0, 0, 1, 6, 0))) {
-      if (_arrivedTime.isBefore(DateTime(0, 0, 0, 20, 0))) {
+    if (arrivedDateTime.isAfter(DateTime(0, 0, 0, 16, 0)) &&
+        arrivedDateTime.isBefore(DateTime(0, 0, 1, 6, 0))) {
+      if (arrivedDateTime.isBefore(DateTime(0, 0, 0, 20, 0))) {
         return {
           'numOfExpPeriod':
               isCreate ? initNumOfExpPeriod + 1 : initNumOfExpPeriod - 1,
@@ -280,15 +266,15 @@ class Utils {
   }
 
   isEndAtNoon(PlanCreate? plan) {
-    final DateTime _arrivedTime = plan == null
+    final DateTime arrivedTime = plan == null
         ? DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!)
         : plan.arrivedAt!;
     var dayEqualNight = (plan == null
             ? sharedPreferences.getInt('initNumOfExpPeriod')!
             : plan.numOfExpPeriod)!
         .isEven;
-    var arrivedAtNight = _arrivedTime.hour >= 20;
-    var arrivedAtEvening = !arrivedAtNight && _arrivedTime.hour >= 16;
+    var arrivedAtNight = arrivedTime.hour >= 20;
+    var arrivedAtEvening = !arrivedAtNight && arrivedTime.hour >= 16;
     return (arrivedAtEvening && dayEqualNight) ||
         (!arrivedAtEvening && !dayEqualNight);
   }
@@ -353,7 +339,7 @@ class Utils {
   }
 
   setUpDataClonePlan(PlanDetail plan, List<bool> options) {
-    OrderService _orderService = OrderService();
+    final OrderService orderService = OrderService();
     sharedPreferences.setInt('planId', plan.id!);
     sharedPreferences.setString('plan_location_name', plan.locationName!);
     sharedPreferences.setInt('plan_location_id', plan.locationId!);
@@ -394,48 +380,51 @@ class Utils {
               e.supplier!.isActive! &&
               e.details!.every((element) => element.isAvailable))
           .toList();
-      final list = availableOrder.map((e) {
+
+      final list = availableOrder.map((order) {
         final orderDetailGroupList =
-            e.details!.groupListsBy((e) => e.productId);
+            order.details!.groupListsBy((e) => e.productId);
         final orderDetailList =
             orderDetailGroupList.entries.map((e) => e.value.first).toList();
-        return _orderService.convertToTempOrder(
-          e.supplier!,
-          e.note ?? "",
-          e.type!,
-          orderDetailList
-              .map((item) => {
-                    'productId': item.productId,
-                    'productName': item.productName,
-                    'quantity': item.quantity,
-                    'partySize': item.partySize,
-                    'unitPrice': item.unitPrice.toDouble(),
-                    'price': item.price.toDouble()
-                  })
-              .toList(),
-          e.period!,
-          e.serveDates!.map((date) => date.toString()).toList(),
-          e.serveDates!
-              .map((date) => DateTime.parse(date.toString())
-                  .difference(DateTime(
-                      plan.utcStartAt!.toLocal().year,
-                      plan.utcStartAt!.toLocal().month,
-                      plan.utcStartAt!.toLocal().day,
-                      0,
-                      0,
-                      0))
-                  .inDays)
-              .toList(),
-          e.uuid,
-          (orderDetailList.fold(
-                  0.0,
-                  (previousValue, element) =>
-                      previousValue +
-                      num.parse(
-                              (element.unitPrice * element.quantity).toString())
-                          .toInt()) *
-              e.serveDates!.length),
-        );
+        return orderService.convertToTempOrder(
+            order.supplier!,
+            order.note ?? "",
+            order.type!,
+            orderDetailList
+                .map((item) => {
+                      'productId': item.productId,
+                      'productName': item.productName,
+                      'quantity': item.quantity,
+                      'partySize': item.partySize,
+                      'unitPrice': item.unitPrice.toDouble(),
+                      'price': item.price.toDouble()
+                    })
+                .toList(),
+            order.period!,
+            order.serveDates!.map((date) => date.toString()).toList(),
+            order.serveDates!
+                .map((date) => DateTime.parse(date.toString())
+                    .difference(DateTime(
+                        plan.utcStartAt!.toLocal().year,
+                        plan.utcStartAt!.toLocal().month,
+                        plan.utcStartAt!.toLocal().day,
+                        0,
+                        0,
+                        0))
+                    .inDays)
+                .toList(),
+            order.uuid,
+            // (orderDetailList.fold(
+            //         0.0,
+            //         (previousValue, element) =>
+            //             previousValue +
+            //             num.parse(
+            //                     (element.unitPrice * element.quantity).toString())
+            //                 .toInt()) *
+            //     e.serveDates!.length
+
+            //     ),
+            order.total!);
       }).toList();
       for (final date in plan.schedule!) {
         for (final item in date) {
@@ -565,19 +554,19 @@ class Utils {
             GlobalConstant().VND_CONVERT_RATE;
       }
     } else {
-      ConfigService _config = ConfigService();
+      final ConfigService configService = ConfigService();
       DateTime startDate =
           DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-      final config = await _config.getOrderConfig();
+      final config = await configService.getOrderConfig();
       final holidays = config!.HOLIDAYS;
       var listedPrice = 0.0;
       for (final order in orderList) {
         listedPrice = order['total'] / order['serveDates'].length;
-        List<DateTime> _servingDates = [];
+        List<DateTime> servingDates = [];
         for (final index in order['serveDateIndexes']) {
-          _servingDates.add(startDate.add(Duration(days: index)));
+          servingDates.add(startDate.add(Duration(days: index)));
         }
-        final rs = getHolidayServingDates(holidays!, _servingDates);
+        final rs = getHolidayServingDates(holidays!, servingDates);
 
         order['serveDates'] = order['serveDateIndexes']
             .map((e) =>
@@ -755,7 +744,7 @@ class Utils {
                                 Padding(
                                   padding: const EdgeInsets.only(top: 4),
                                   child: SvgPicture.asset(
-                                    gcoin_logo,
+                                    gcoinLogo,
                                     height: 16,
                                   ),
                                 )
@@ -803,7 +792,7 @@ class Utils {
               btnCancelOnPress: () {},
               btnCancelText: 'Huỷ')
           .show();
-    }else{
+    } else {
       onConfirm();
     }
   }
@@ -823,8 +812,8 @@ class Utils {
         }
       }
       ids.sort();
-      ProductService _productService = ProductService();
-      final products = await _productService.getListProduct(ids);
+      final ProductService productService = ProductService();
+      final products = await productService.getListProduct(ids);
       newPrice = products
           .map((e) => e.price.toDouble() / GlobalConstant().VND_CONVERT_RATE)
           .toList();
@@ -834,16 +823,45 @@ class Utils {
           detail['price'] = newPrice[index];
           detail['unitPrice'] = newPrice[index];
         }
+        final numberHoliday = order['serveDates']
+            .where((date) => isHoliday(DateTime.parse(date)))
+            .toList()
+            .length;
+        final upPct = getHolidayUpPct(order['type']);
         order['total'] = order['details'].fold(
             0,
             (previousValue, element) =>
                 previousValue +
-                num.parse(
-                        (element['unitPrice'] * element['quantity']).toString())
-                    .toInt());
+                (element['unitPrice'] * element['quantity']) *
+                    ((1 + upPct / 100) * numberHoliday +
+                        (order['serveDates'].length - numberHoliday)));
       }
     }
 
     sharedPreferences.setString('plan_temp_order', json.encode(orders));
+  }
+
+  bool isHoliday(
+    DateTime date,
+  ) {
+    final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
+    List<Holiday> holidays =
+        holidaysText!.map((e) => Holiday.fromJson(json.decode(e))).toList();
+    return holidays.any((element) =>
+        element.from.isBefore(date) && element.to.isAfter(date) ||
+        date.isAtSameMomentAs(element.from) ||
+        date.isAtSameMomentAs(element.to));
+  }
+
+  int getHolidayUpPct(String type) {
+    switch (type) {
+      case 'EAT':
+        return sharedPreferences.getInt('HOLIDAY_MEAL_UP_PCT')!;
+      case 'CHECKIN':
+        return sharedPreferences.getInt('HOLIDAY_LODGING_UP_PCT')!;
+      case 'VISIT':
+        return sharedPreferences.getInt('HOLIDAY_RIDING_UP_PCT')!;
+    }
+    return 0;
   }
 }

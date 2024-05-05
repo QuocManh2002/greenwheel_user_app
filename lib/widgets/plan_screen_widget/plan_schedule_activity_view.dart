@@ -31,7 +31,6 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
   dynamic _order;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -268,7 +267,7 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                                           ),
                                         ),
                                         SvgPicture.asset(
-                                          gcoin_logo,
+                                          gcoinLogo,
                                           height: 18,
                                         )
                                       ],

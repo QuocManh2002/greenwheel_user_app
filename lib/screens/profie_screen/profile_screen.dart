@@ -1,7 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -29,13 +28,12 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  CustomerService _customerService = CustomerService();
+  final CustomerService _customerService = CustomerService();
   CustomerViewModel? _customer;
   bool _isLoading = true;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -206,7 +204,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             width: 8,
                                           ),
                                           SvgPicture.asset(
-                                            gcoin_logo,
+                                            gcoinLogo,
                                             height: 32,
                                           )
                                         ],
@@ -354,8 +352,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               Image.memory(kTransparentImage),
                           errorWidget: (context, url, error) => Image.asset(
                                 _customer!.isMale
-                                    ? male_default_avatar
-                                    : female_default_avatar,
+                                    ? maleDefaultAvatar
+                                    : femaleDefaultAvatar,
                                 fit: BoxFit.cover,
                               ))),
                 )

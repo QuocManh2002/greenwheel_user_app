@@ -24,31 +24,15 @@ class PlanScreen extends StatefulWidget {
 class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   final PlanService _planService = PlanService();
   final LocationService _locationService = LocationService();
-  List<PlanCardViewModel> _onGoingPlans = [];
-  List<PlanCardViewModel> _canceledPlans = [];
-  List<PlanCardViewModel> _futuredPlans = [];
-  List<PlanCardViewModel> _historyPlans = [];
-  List<List<PlanCardViewModel>> _totalPlans = [];
+  final List<List<PlanCardViewModel>> _totalPlans = [];
   List<PlanCardViewModel> _myPlans = [];
-
   int _selectedTab = 0;
-
   bool isLoading = true;
-  late TabController tabController;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _setUpData();
-    tabController = TabController(length: 4, vsync: this, initialIndex: 0);
-  }
-
-  @override
-  void dispose() {
-    // TODO: implement dispose
-    super.dispose();
-    tabController.dispose();
   }
 
   _setUpData() async {
@@ -56,7 +40,6 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
     List<PlanCardViewModel> canceledPlans = [];
     List<PlanCardViewModel> historyPlans = [];
     List<PlanCardViewModel> futurePlans = [];
-    List<PlanCardViewModel> myPlans = [];
     List<PlanCardViewModel>? totalPlans =
         await _planService.getPlanCards(false,context);
 
@@ -75,13 +58,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
         }
       }
       setState(() {
-        _canceledPlans = canceledPlans;
-        _futuredPlans = futurePlans;
-        _onGoingPlans = onGoingPlans;
-        _historyPlans = historyPlans;
-
-        _totalPlans.add(_futuredPlans);
-        _totalPlans.add(_onGoingPlans);
+        _totalPlans.add(onGoingPlans);
+        _totalPlans.add(onGoingPlans);
         _totalPlans.add(historyPlans);
         _totalPlans.add(canceledPlans);
         isLoading = false;
@@ -114,7 +92,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                         side: BorderSide(color: primaryColor, width: 1.5)))),
                 onPressed: () async {
                   LocationViewModel? location =
-                      await _locationService.GetLocationById(
+                      await _locationService.getLocationById(
                           sharedPreferences.getInt('plan_location_id')!);
                   if (location != null) {
                     Navigator.push(
@@ -161,8 +139,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                             });
                           },
                           child: TabIconButton(
-                            iconDefaultUrl: up_coming_green,
-                            iconSelectedUrl: up_coming_white,
+                            iconDefaultUrl: upComingGreen,
+                            iconSelectedUrl: upComingWhite,
                             text: 'Sắp đến',
                             isSelected: _selectedTab == 0,
                             index: 0,
@@ -183,8 +161,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                             });
                           },
                           child: TabIconButton(
-                            iconDefaultUrl: on_going_green,
-                            iconSelectedUrl: on_going_white,
+                            iconDefaultUrl: onGoingGreen,
+                            iconSelectedUrl: onGoingWhite,
                             text: 'Đang diễn ra',
                             isSelected: _selectedTab == 1,
                             index: 1,
@@ -205,8 +183,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                             });
                           },
                           child: TabIconButton(
-                            iconDefaultUrl: history_green,
-                            iconSelectedUrl: history_white,
+                            iconDefaultUrl: historyGreen,
+                            iconSelectedUrl: historyWhite,
                             text: 'Lịch sử',
                             isSelected: _selectedTab == 2,
                             index: 2,
@@ -227,8 +205,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                             });
                           },
                           child: TabIconButton(
-                            iconDefaultUrl: cancel_green,
-                            iconSelectedUrl: cancel_white,
+                            iconDefaultUrl: cancelGreen,
+                            iconSelectedUrl: cancelWhite,
                             text: 'Đã hủy',
                             isSelected: _selectedTab == 3,
                             index: 3,
@@ -258,8 +236,8 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                             }
                           },
                           child: TabIconButton(
-                            iconDefaultUrl: draft_green,
-                            iconSelectedUrl: draft_white,
+                            iconDefaultUrl: draftGreen,
+                            iconSelectedUrl: draftWhite,
                             text: 'Chuyến đi của tôi',
                             isSelected: _selectedTab == 4,
                             index: 4,
@@ -292,7 +270,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                                       },
                                     )
                               : isLoading
-                                  ? PlanLoadingScreen()
+                                  ? const PlanLoadingScreen()
                                   : _myPlans.isEmpty
                                       ? const EmptyPlan()
                                       : ListView.builder(

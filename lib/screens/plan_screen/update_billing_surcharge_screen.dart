@@ -28,7 +28,6 @@ class _UpdateBillingSurchargeScreenState
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     imagePath = widget.surcharge.imagePath;
   }
@@ -43,11 +42,11 @@ class _UpdateBillingSurchargeScreenState
           if (isChangeImage)
             IconButton(
                 onPressed: () async {
-                  var _imagePath = await _planService.updateSurcharge(
+                  var result = await _planService.updateSurcharge(
                       imagePath!, int.parse(widget.surcharge.id!), context);
-                  if (_imagePath != null) {
+                  if (result != null) {
                     setState(() {
-                      widget.surcharge.imagePath = _imagePath;
+                      widget.surcharge.imagePath = result;
                     });
                     AwesomeDialog(
                       // ignore: use_build_context_synchronously
@@ -119,13 +118,13 @@ class _UpdateBillingSurchargeScreenState
                               placeholder: (context, url) =>
                                   Image.memory(kTransparentImage),
                               errorWidget: (context, url, error) =>
-                                  SvgPicture.asset(no_image),
+                                  SvgPicture.asset(noImage),
                               imageUrl: '$baseBucketImage$imagePath')
                           : Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SvgPicture.asset(
-                                  no_image,
+                                  noImage,
                                   height: 50.w,
                                   fit: BoxFit.cover,
                                 ),

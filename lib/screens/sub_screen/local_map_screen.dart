@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -19,30 +18,24 @@ class LocalMapScreen extends StatefulWidget {
 }
 
 class _LocalMapScreenState extends State<LocalMapScreen> {
-  CircleAnnotationManager? _circleAnnotationManagerStart;
-  CircleAnnotationManager? _circleAnnotationManagerEnd;
   MapboxMap? _mapboxMap;
   bool isLoading = true;
-  var distance;
-  var duration;
+  String? distance;
+  String? duration;
   PolylinePoints polylinePoints = PolylinePoints();
   PointLatLng? _defaultCoordinate;
-  String? _defaultAddress;
 
   _onMapCreated(MapboxMap controller) {
     _mapboxMap = controller;
   }
 
   getMapInfo() async {
-    var jsonResponse = await getRouteInfo(
-        _defaultCoordinate!,
+    var jsonResponse = await getRouteInfo(_defaultCoordinate!,
         PointLatLng(widget.location.latitude, widget.location.longitude));
 
     var route = jsonResponse['routes'][0]['overview_polyline']['points'];
     duration = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
     distance = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
-    print(duration);
-    print(distance);
 
     List<PointLatLng> result = polylinePoints.decodePolyline(route);
     List<List<double>> coordinates =
@@ -64,9 +57,10 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
     }''';
 
     _mapboxMap!.setCamera(CameraOptions(
-        center:
-            Point(coordinates: Position(widget.location.longitude, widget.location.latitude))
-                .toJson(),
+        center: Point(
+                coordinates: Position(
+                    widget.location.longitude, widget.location.latitude))
+            .toJson(),
         zoom: 10));
 
     _mapboxMap?.flyTo(
@@ -78,15 +72,11 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
         MapAnimationOptions(duration: 2000, startDelay: 0));
 
     _mapboxMap?.annotations.createCircleAnnotationManager().then((value) async {
-      setState(() {
-        _circleAnnotationManagerStart =
-            value; // Store the reference to the circle annotation manager
-      });
-      var pointAnnotationStart = value;
       value.create(
         CircleAnnotationOptions(
           geometry: Point(
-                  coordinates: Position(_defaultCoordinate!.longitude, _defaultCoordinate!.latitude))
+                  coordinates: Position(_defaultCoordinate!.longitude,
+                      _defaultCoordinate!.latitude))
               .toJson(),
           circleColor: primaryColor.value,
           circleRadius: 12.0,
@@ -95,15 +85,11 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
     });
 
     _mapboxMap?.annotations.createCircleAnnotationManager().then((value) async {
-      setState(() {
-        _circleAnnotationManagerEnd =
-            value; // Store the reference to the circle annotation manager
-      });
-      var pointAnnotationStart = value;
       value.create(
         CircleAnnotationOptions(
           geometry: Point(
-                  coordinates: Position(widget.location.longitude, widget.location.latitude))
+                  coordinates: Position(
+                      widget.location.longitude, widget.location.latitude))
               .toJson(),
           circleColor: redColor.value,
           circleRadius: 12.0,
@@ -114,12 +100,12 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
     _mapboxMap!.setBounds(CameraBoundsOptions(
         bounds: CoordinateBounds(
             southwest: Point(
-                    coordinates:
-                        Position(widget.location.longitude, widget.location.latitude))
+                    coordinates: Position(
+                        widget.location.longitude, widget.location.latitude))
                 .toJson(),
             northeast: Point(
-                    coordinates:
-                        Position(_defaultCoordinate!.longitude, _defaultCoordinate!.latitude))
+                    coordinates: Position(_defaultCoordinate!.longitude,
+                        _defaultCoordinate!.latitude))
                 .toJson(),
             infiniteBounds: true),
         maxZoom: 17,
@@ -145,7 +131,6 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -156,7 +141,6 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
     if (defaultCoordinate != null) {
       _defaultCoordinate = PointLatLng(double.parse(defaultCoordinate[0]),
           double.parse(defaultCoordinate[1]));
-      _defaultAddress = sharedPreferences.getString('defaultAddress');
       getMapInfo();
     }
   }
@@ -167,28 +151,27 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
         child: Scaffold(
       appBar: AppBar(
         leading: BackButton(
-          style:const ButtonStyle(
-            foregroundColor: MaterialStatePropertyAll(Colors.white)
-          ),
-          onPressed: (){
+          style: const ButtonStyle(
+              foregroundColor: MaterialStatePropertyAll(Colors.white)),
+          onPressed: () {
             Navigator.of(context).pop();
           },
         ),
         title: const Text(
           "Bản đồ địa phương",
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+          style: TextStyle(
+              fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
-      body:
-          Stack(
+      body: Stack(
         children: [
           SizedBox(
             child: MapWidget(
               key: const ValueKey('mapWidget'),
               cameraOptions: CameraOptions(
                   center: Point(
-                          coordinates:
-                              Position(widget.location.longitude, widget.location.latitude))
+                          coordinates: Position(widget.location.longitude,
+                              widget.location.latitude))
                       .toJson(),
                   zoom: 11),
               styleUri: MapboxStyles.MAPBOX_STREETS,
@@ -229,7 +212,8 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                             child: FadeInImage(
                               height: 15.h,
                               placeholder: MemoryImage(kTransparentImage),
-                              image: NetworkImage('$baseBucketImage${widget.location.imageUrls[0]}'),
+                              image: NetworkImage(
+                                  '$baseBucketImage${widget.location.imageUrls[0]}'),
                               fit: BoxFit.cover,
                               width: 15.h,
                               filterQuality: FilterQuality.high,

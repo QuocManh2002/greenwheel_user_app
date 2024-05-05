@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -18,13 +18,12 @@ class SuggestPlansByLocationScreen extends StatefulWidget {
 
 class _SuggestPlanByLocationScreenState
     extends State<SuggestPlansByLocationScreen> {
-  PlanService _planService = PlanService();
+  final PlanService _planService = PlanService();
   List<SuggestPlanViewModel>? _suggestPlans;
   bool isLoading = true;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -68,7 +67,7 @@ class _SuggestPlanByLocationScreenState
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset(
-                      empty_plan,
+                      emptyPlan,
                       height: 30.h,
                     ),
                     SizedBox(

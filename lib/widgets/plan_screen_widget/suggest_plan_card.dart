@@ -1,7 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
@@ -77,7 +75,7 @@ class SuggestPlanCard extends StatelessWidget {
                         placeholder: (context, url) =>
                             Image.memory(kTransparentImage),
                         errorWidget: (context, url, error) =>
-                            Image.asset(empty_plan))),
+                            Image.asset(emptyPlan))),
                 const SizedBox(
                   width: 8,
                 ),
@@ -157,7 +155,7 @@ class SuggestPlanCard extends StatelessWidget {
                                 fontWeight: FontWeight.w500,
                                 fontFamily: 'NotoSans'),
                           ),
-                          SvgPicture.asset(gcoin_logo, height: 18,)
+                          SvgPicture.asset(gcoinLogo, height: 18,)
                         ],
                       ),
                       const Spacer(),

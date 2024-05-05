@@ -1,8 +1,6 @@
 import 'dart:convert';
 
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -222,7 +220,7 @@ class ConfirmServiceInfor extends StatelessWidget {
                               ),
                             ),
                             SvgPicture.asset(
-                              gcoin_logo,
+                              gcoinLogo,
                               height: 25,
                             )
                           ],
@@ -263,7 +261,7 @@ class ConfirmServiceInfor extends StatelessWidget {
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         SvgPicture.asset(
-                          gcoin_logo,
+                          gcoinLogo,
                           height: 25,
                         )
                       ],
@@ -283,7 +281,7 @@ class ConfirmServiceInfor extends StatelessWidget {
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
                         SvgPicture.asset(
-                          gcoin_logo,
+                          gcoinLogo,
                           height: 25,
                         )
                       ],

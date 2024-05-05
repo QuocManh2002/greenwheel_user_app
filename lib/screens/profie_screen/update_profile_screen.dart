@@ -1,7 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -40,7 +39,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     avatarLink = widget.traveler.avatarUrl;
     nameController.text = widget.traveler.name;
@@ -74,10 +72,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                       defaultCoordinate: _selectedAddressLatLng));
               if (rs != null) {
                 if (_selectedAddressLatLng != null) {
-                  Utils().SaveDefaultAddressToSharedPref(
+                  Utils().saveDefaultAddressToSharedPref(
                       addressController.text, _selectedAddressLatLng!);
                 }
                 AwesomeDialog(
+                    // ignore: use_build_context_synchronously
                     context: context,
                     animType: AnimType.bottomSlide,
                     dialogType: DialogType.success,
@@ -110,11 +109,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
               InkWell(
                 splashColor: Colors.transparent,
                 onTap: () async {
-                  final String? _avatarPath =
+                  final String? avatarPath =
                       await ImageHandler().handlePickImage(context);
-                  if (_avatarPath != null) {
+                  if (avatarPath != null) {
                     setState(() {
-                      avatarLink = _avatarPath;
+                      avatarLink = avatarPath;
                     });
                   }
                 },
@@ -137,8 +136,8 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                             Image.memory(kTransparentImage),
                         errorWidget: (context, url, error) => SvgPicture.asset(
                           widget.traveler.isMale
-                              ? male_default_avatar
-                              : female_default_avatar,
+                              ? maleDefaultAvatar
+                              : femaleDefaultAvatar,
                           fit: BoxFit.cover,
                         ),
                         imageUrl: '$baseBucketImage$avatarLink',

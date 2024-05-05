@@ -28,7 +28,6 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -57,7 +56,6 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
 
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     timer.cancel();
   }
@@ -104,7 +102,7 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
                     fontWeight: FontWeight.bold),
               ),
               SvgPicture.asset(
-                gcoin_logo,
+                gcoinLogo,
                 height: 25,
               ),
               const Text(

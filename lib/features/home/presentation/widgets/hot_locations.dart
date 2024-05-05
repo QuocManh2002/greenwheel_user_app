@@ -70,7 +70,7 @@ class _HotLocationsState extends State<HotLocations> {
                     height: 30.h,
                     child: ListView.builder(
                       controller: controller,
-                      physics: const BouncingScrollPhysics(),
+                      physics: const AlwaysScrollableScrollPhysics(),
                       itemCount: value.hot_locations == null
                           ? 0
                           : value.hot_locations!.length,

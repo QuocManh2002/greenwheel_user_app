@@ -67,6 +67,7 @@ Widget defaultTextFormField(
                 borderRadius: const BorderRadius.all(Radius.circular(14)))),
         validator: onValidate);
 
+// ignore: non_constant_identifier_names
 Widget TextFormFieldWithLength(
         {required TextEditingController controller,
         required TextInputType inputType,
@@ -104,7 +105,7 @@ Widget TextFormFieldWithLength(
             counterText: '',
             contentPadding:
                 const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
-            hintText: hinttext ?? null,
+            hintText: hinttext,
             prefixIcon: prefixIcon,
             suffixIcon: suffixIcon,
             prefixIconColor: primaryColor,

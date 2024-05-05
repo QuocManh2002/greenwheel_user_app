@@ -12,6 +12,7 @@ import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:greenwheel_user_app/config/token_generator.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/temp_plan.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
@@ -46,7 +47,6 @@ class SharePlanScreen extends StatefulWidget {
 class _SharePlanScreenState extends State<SharePlanScreen> {
   @override
   void dispose() {
-    // TODO: implement dispose
     super.dispose();
     phoneSearch.dispose();
   }
@@ -114,13 +114,15 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
       if (qrCorde.isNotEmpty) {
         final jwt = JWT.decode(qrCorde);
         if (jwt.payload['planId'] != null) {
-          print('Payload for planId!');
+          // ignore: use_build_context_synchronously
+          Utils().handleServerException("Đã xảy ra lỗi", context);
         } else {
-          print('Payload for travelerId!');
+          // ignore: use_build_context_synchronously
+          Utils().handleServerException("Đã xảy ra lỗi", context);
         }
       }
     } on PlatformException {
-      print("exception");
+      throw Exception();
     }
   }
 
@@ -145,16 +147,14 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1, // Duration in seconds
         );
-        print('Image saved!');
         String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
         sharedPreferences.setString('deviceToken', deviceToken);
-        print(deviceToken);
       } else {
-        print('Something wrong when saving image!');
-        print('${result['error']}');
+        // ignore: use_build_context_synchronously
+        Utils().handleServerException('Lưu hình ảnh thất bại', context);
       }
     } catch (e) {
-      print(e);
+      throw Exception(e);
     }
   }
 
@@ -199,7 +199,6 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -383,8 +382,8 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                                     child: _customer!.avatarUrl == null
                                         ? Image.asset(
                                             _customer!.isMale
-                                                ? male_default_avatar
-                                                : female_default_avatar,
+                                                ? maleDefaultAvatar
+                                                : femaleDefaultAvatar,
                                             height: 6.h,
                                             width: 6.h,
                                             fit: BoxFit.cover,

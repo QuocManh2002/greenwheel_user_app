@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
@@ -19,50 +20,49 @@ class _TopupSuccessfulScreenState extends State<TopupSuccessfulScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 
   setUpdata() async {
     // Extracting values using regular expressions
-    RegExp exp = RegExp(r"vnp_Amount: (\d+)");
-    String vnpAmount = exp.firstMatch(widget.data!)?.group(1) ?? "";
+    // RegExp exp = RegExp(r"vnp_Amount: (\d+)");
+    // String vnpAmount = exp.firstMatch(widget.data!)?.group(1) ?? "";
 
-    exp = RegExp(r"vnp_BankCode: (\w+)");
-    String vnpBankCode = exp.firstMatch(widget.data!)?.group(1) ?? "";
+    // exp = RegExp(r"vnp_BankCode: (\w+)");
+    // String vnpBankCode = exp.firstMatch(widget.data!)?.group(1) ?? "";
 
-    exp = RegExp(r"vnp_BankTranNo: (\w+)");
-    String vnpBankTranNo = exp.firstMatch(widget.data!)?.group(1) ?? "";
+    // exp = RegExp(r"vnp_BankTranNo: (\w+)");
+    // String vnpBankTranNo = exp.firstMatch(widget.data!)?.group(1) ?? "";
 
-    exp = RegExp(r"vnp_PayDate: (\d+)");
-    String vnpPayDate = exp.firstMatch(widget.data!)?.group(1) ?? "";
+    // exp = RegExp(r"vnp_PayDate: (\d+)");
+    // String vnpPayDate = exp.firstMatch(widget.data!)?.group(1) ?? "";
 
-    exp = RegExp(r"vnp_CardType: (\w+)");
-    String vnpCardType = exp.firstMatch(widget.data!)?.group(1) ?? "";
+    // exp = RegExp(r"vnp_CardType: (\w+)");
+    // String vnpCardType = exp.firstMatch(widget.data!)?.group(1) ?? "";
 
-    exp = RegExp(r"vnp_OrderInfo: (.*?),");
-    String vnpOrderInfo = exp.firstMatch(widget.data!)?.group(1) ?? "";
+    // exp = RegExp(r"vnp_OrderInfo: (.*?),");
+    // String vnpOrderInfo = exp.firstMatch(widget.data!)?.group(1) ?? "";
 
-    // Print the extracted values
-    print("vnp_Amount: $vnpAmount");
-    print("vnp_BankCode: $vnpBankCode");
-    print("vnp_BankTranNo: $vnpBankTranNo");
-    print("vnp_PayDate: $vnpPayDate");
-    print("vnp_CardType: $vnpCardType");
-    print("vnp_OrderInfo: $vnpOrderInfo");
+    // // Print the extracted values
+    // print("vnp_Amount: $vnpAmount");
+    // print("vnp_BankCode: $vnpBankCode");
+    // print("vnp_BankTranNo: $vnpBankTranNo");
+    // print("vnp_PayDate: $vnpPayDate");
+    // print("vnp_CardType: $vnpCardType");
+    // print("vnp_OrderInfo: $vnpOrderInfo");
 
-    // Convert vnp_PayDate to DateTime
-    DateTime payDateTime = DateTime(
-      int.parse(vnpPayDate.substring(0, 4)), // Year
-      int.parse(vnpPayDate.substring(4, 6)), // Month
-      int.parse(vnpPayDate.substring(6, 8)), // Day
-      int.parse(vnpPayDate.substring(8, 10)), // Hour
-      int.parse(vnpPayDate.substring(10, 12)), // Minute
-      int.parse(vnpPayDate.substring(12, 14)), // Second
-    );
+    // // Convert vnp_PayDate to DateTime
+    // DateTime payDateTime = DateTime(
+    //   int.parse(vnpPayDate.substring(0, 4)), // Year
+    //   int.parse(vnpPayDate.substring(4, 6)), // Month
+    //   int.parse(vnpPayDate.substring(6, 8)), // Day
+    //   int.parse(vnpPayDate.substring(8, 10)), // Hour
+    //   int.parse(vnpPayDate.substring(10, 12)), // Minute
+    //   int.parse(vnpPayDate.substring(12, 14)), // Second
+    // );
 
-    // Print the converted DateTime
-    print("vnp_PayDate as DateTime: $payDateTime");
+    // // Print the converted DateTime
+    // print("vnp_PayDate as DateTime: $payDateTime");
   }
 
   @override
@@ -119,7 +119,7 @@ class _TopupSuccessfulScreenState extends State<TopupSuccessfulScreen> {
                   child: Column(
                     children: [
                       Image.asset(
-                        success_icon,
+                        successIcon,
                         height: 8.h,
                         fit: BoxFit.cover,
                       ),
@@ -281,7 +281,7 @@ class _TopupSuccessfulScreenState extends State<TopupSuccessfulScreen> {
               const SizedBox(
                 height: 20,
               ),
-              Container(
+              SizedBox(
                 width: 90.w,
                 height: 6.h,
                 child: ElevatedButton(

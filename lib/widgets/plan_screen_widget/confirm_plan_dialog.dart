@@ -30,7 +30,6 @@ class _ConfirmPlanState extends State<ConfirmPlan> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -137,7 +136,7 @@ class _ConfirmPlanState extends State<ConfirmPlan> {
           ),
           if (listLuuTru.isNotEmpty)
             const Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: EdgeInsets.symmetric(horizontal: 8),
               child: Text(
                 "Lưu trú: ",
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
@@ -153,7 +152,7 @@ class _ConfirmPlanState extends State<ConfirmPlan> {
 
               if(listFood.isNotEmpty)
               const Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
+              padding: EdgeInsets.symmetric(horizontal: 8),
               child: Text(
                 "Ăn uống: ",
                 style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),

@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:page_transition/page_transition.dart';
@@ -55,14 +54,11 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
 
   setUpDataUpdate() async {
-    // _selectedIndex =
-    //     widget.plan!.savedContacts!.map((e) => e.id.toString()).toList();
     _selectedIndex = widget.plan!.savedContactIds ?? [];
     getSelectedContact(_selectedIndex!);
   }
@@ -483,7 +479,7 @@ class _SelectEmergencyServiceState extends State<SelectEmergencyService>
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Image.asset(
-            empty_plan,
+            emptyPlan,
             height: 30.h,
           ),
           const Text(
