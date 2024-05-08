@@ -1,6 +1,6 @@
 import 'package:greenwheel_user_app/models/plan_status.dart';
 
-List<PlanStatus> plan_statuses = [
+List<PlanStatus> planStatuses = [
   PlanStatus(engName: 'PENDING', name: 'Chờ xác nhận', value: 0),
   PlanStatus(engName: 'REGISTERING', name: 'Đang mời', value: 1),
   PlanStatus(engName: 'READY', name: 'Đã chốt', value: 2),

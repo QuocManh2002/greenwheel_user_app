@@ -1,4 +1,4 @@
-final schedule_item_types = [
+final scheduleItemTypes = [
   "EAT",
   "ENTERTAIN",
   "GATHER",
@@ -8,7 +8,7 @@ final schedule_item_types = [
   "FREE"
 ];
 
-final schedule_item_types_vn = [
+final scheduleItemTypesVn = [
   "Ăn uống",
   "Giải trí",
   "Sinh hoạt chung",

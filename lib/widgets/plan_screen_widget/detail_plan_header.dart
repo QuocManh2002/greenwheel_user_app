@@ -119,11 +119,11 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
               ),
             ],
           ),
-        if (widget.plan.utcRegCloseAt != null && widget.plan.status == plan_statuses[1].engName)
+        if (widget.plan.utcRegCloseAt != null && widget.plan.status == planStatuses[1].engName)
           SizedBox(
             height: 1.h,
           ),
-        if (widget.plan.utcRegCloseAt != null && widget.plan.status == plan_statuses[1].engName)
+        if (widget.plan.utcRegCloseAt != null && widget.plan.status == planStatuses[1].engName)
           const Text(
             'Thời gian đăng ký còn: ',
             style: TextStyle(
@@ -131,7 +131,7 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
               fontFamily: 'NotoSans',
             ),
           ),
-        if (widget.plan.utcRegCloseAt != null && widget.plan.status == plan_statuses[1].engName)
+        if (widget.plan.utcRegCloseAt != null && widget.plan.status == planStatuses[1].engName)
           Row(
             children: [
               buildCountDownWidget(

@@ -1,7 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -11,11 +10,13 @@ class PlanScheduleTitle extends StatelessWidget {
       required this.date,
       required this.isSelected,
       this.isValidEatActivities,
+      this.isValidPeriodOfOrder,
       required this.index});
   final DateTime date;
   final bool isSelected;
   final int index;
   final bool? isValidEatActivities;
+  final bool? isValidPeriodOfOrder;
 
   @override
   Widget build(BuildContext context) {
@@ -57,32 +58,108 @@ class PlanScheduleTitle extends StatelessWidget {
                   ),
                 ]),
           ),
-          if (isValidEatActivities != null)
+          if (isValidEatActivities != null || isValidPeriodOfOrder != null)
             Positioned(
-                right: - 0.4.w,
+                right: -0.4.w,
                 top: 0,
                 child: InkWell(
                     splashColor: Colors.transparent,
-                    overlayColor: const MaterialStatePropertyAll(Colors.transparent),
-                    onTap: isValidEatActivities!
+                    overlayColor:
+                        const MaterialStatePropertyAll(Colors.transparent),
+                    onTap: isValidEatActivities! && isValidPeriodOfOrder!
                         ? null
                         : () {
-                            DialogStyle().basicDialog(
-                                context: context,
-                                title: 'Ngày chưa đủ hoạt động ăn uống',
-                                desc: 'Hãy bổ sung cho chuyến đi thật đầy đủ nhé',
-                                type: DialogType.warning);
+                            AwesomeDialog(
+                                    context: context,
+                                    animType: AnimType.leftSlide,
+                                    dialogType: DialogType.warning,
+                                    body: Padding(
+                                      padding: EdgeInsets.symmetric(
+                                          horizontal: 2.w, vertical: 1.h),
+                                      child: Column(
+                                        children: [
+                                          if (!isValidEatActivities!)
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Padding(
+                                                  padding: EdgeInsets.only(top: 4),
+                                                  child: Icon(
+                                                    Icons.info_outline,
+                                                    color: Colors.orange,
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: 1.w,
+                                                ),
+                                                SizedBox(
+                                                  width: 60.w,
+                                                  child: const Text(
+                                                    'Ngày chưa đủ hoạt động ăn uống',
+                                                    overflow: TextOverflow.clip,
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      color: Colors.black54,
+                                                      fontFamily: 'NotoSans',
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                          SizedBox(
+                                            height: 1.h,
+                                          ),
+                                          if (!isValidPeriodOfOrder!)
+                                            Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.start,
+                                              children: [
+                                                const Padding(
+                                                  padding: EdgeInsets.only(top: 4),
+                                                  child: Icon(
+                                                    Icons.warning_amber_outlined,
+                                                    color: Colors.red,
+                                                    size: 20,
+                                                  ),
+                                                ),
+                                                SizedBox(
+                                                  width: 1.w,
+                                                ),
+                                                SizedBox(
+                                                  width: 60.w,
+                                                  child: const Text(
+                                                    'Thời gian phục vụ đơn hàng không phù hợp với lịch trình',
+                                                    style: TextStyle(
+                                                      fontSize: 15,
+                                                      color: Colors.black54,
+                                                      fontFamily: 'NotoSans',
+                                                    ),
+                                                  ),
+                                                )
+                                              ],
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                    btnOkColor: Colors.amber,
+                                    btnOkOnPress: () {},
+                                    btnOkText: 'OK')
+                                .show();
                           },
                     child: Icon(
-                      isValidEatActivities!
-                          ? Icons.check_circle
-                          : Icons.error,
+                      !isValidPeriodOfOrder!
+                          ? Icons.warning
+                          : isValidEatActivities!
+                              ? Icons.check_circle
+                              : Icons.error,
                       size: 18,
-                      color: isValidEatActivities!
+                      color: isValidEatActivities! && isValidPeriodOfOrder!
                           ? isSelected
                               ? Colors.white
                               : primaryColor
-                          : Colors.redAccent.withOpacity(0.8),
+                          : !isValidPeriodOfOrder! ? Colors.red : Colors.amber,
                     )))
         ],
       ),

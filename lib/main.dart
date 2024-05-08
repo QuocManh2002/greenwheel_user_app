@@ -11,7 +11,7 @@ import 'package:greenwheel_user_app/firebase_options.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
 import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
 import 'package:greenwheel_user_app/screens/offline_screen/offline_home_screen.dart';
-import 'package:greenwheel_user_app/service/config_service.dart';
+import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -22,7 +22,6 @@ import 'package:intl/date_symbol_data_local.dart';
 late SharedPreferences sharedPreferences;
 late bool hasConnection;
 late FlutterLocalization localization;
-ConfigService _configService = ConfigService();
 
 ThemeData theme = ThemeData(
   brightness: Brightness.light,

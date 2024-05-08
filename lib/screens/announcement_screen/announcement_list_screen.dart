@@ -76,7 +76,7 @@ class _AnnouncementListScreenState extends State<AnnouncementListScreen> {
                           btnOkText: 'Đồng ý',
                           btnCancelColor: Colors.blueAccent,
                           btnCancelOnPress: () {},
-                          btnCancelText: 'Huyr')
+                          btnCancelText: 'Huỷ')
                       .show();
                 },
                 icon: const Icon(

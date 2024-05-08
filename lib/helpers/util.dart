@@ -5,26 +5,27 @@ import 'package:collection/collection.dart';
 import 'package:dart_jts/dart_jts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
-import 'package:greenwheel_user_app/service/config_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
+import 'package:greenwheel_user_app/service/supplier_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/update_order_clone_plan_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:sizer2/sizer2.dart';
 
 import '../models/holiday.dart';
+import '../view_models/plan_viewmodels/plan_schedule_item.dart';
 
 class Utils {
   static List<Widget> modelBuilder<M>(
@@ -230,7 +231,7 @@ class Utils {
       case "RESTAURANT":
         return 'nhà hàng';
       case "VEHICLE_RENTAL":
-        return "Thuê xe";
+        return "Thuê phương tiện";
     }
   }
 
@@ -375,70 +376,69 @@ class Utils {
 
     if (options[5]) {
       sharedPreferences.setBool('notAskScheduleAgain', false);
-      final availableOrder = plan.orders!
-          .where((e) =>
-              e.supplier!.isActive! &&
-              e.details!.every((element) => element.isAvailable))
-          .toList();
+      if (options[6]) {
+        final availableOrder = plan.orders!
+            .where((e) =>
+                e.supplier!.isActive! &&
+                e.details!.every((element) => element.isAvailable))
+            .toList();
+        final list = availableOrder.map((order) {
+          final orderDetailGroupList =
+              order.details!.groupListsBy((e) => e.productId);
+          final orderDetailList =
+              orderDetailGroupList.entries.map((e) => e.value.first).toList();
+          return orderService.convertToTempOrder(
+              order.supplier!,
+              order.note ?? "",
+              order.type!,
+              orderDetailList
+                  .map((item) => {
+                        'productId': item.productId,
+                        'productName': item.productName,
+                        'quantity': item.quantity,
+                        'partySize': item.partySize,
+                        'unitPrice': item.unitPrice.toDouble(),
+                        'price': item.price.toDouble()
+                      })
+                  .toList(),
+              order.period!,
+              order.serveDates!.map((date) => date.toString()).toList(),
+              order.serveDates!
+                  .map((date) => DateTime.parse(date.toString())
+                      .difference(DateTime(
+                          plan.utcStartAt!.toLocal().year,
+                          plan.utcStartAt!.toLocal().month,
+                          plan.utcStartAt!.toLocal().day,
+                          0,
+                          0,
+                          0))
+                      .inDays)
+                  .toList(),
+              order.uuid,
+              order.total!);
+        }).toList();
+        for (final date in plan.schedule!) {
+          for (final item in date) {
+            if (item['orderUUID'] != null &&
+                !availableOrder
+                    .any((element) => element.uuid == item['orderUUID'])) {
+              item['orderUUID'] = null;
+            }
+          }
+        }
+        sharedPreferences.setString('plan_temp_order', json.encode(list));
+      } else {
+        sharedPreferences.setString('plan_temp_order', '[]');
 
-      final list = availableOrder.map((order) {
-        final orderDetailGroupList =
-            order.details!.groupListsBy((e) => e.productId);
-        final orderDetailList =
-            orderDetailGroupList.entries.map((e) => e.value.first).toList();
-        return orderService.convertToTempOrder(
-            order.supplier!,
-            order.note ?? "",
-            order.type!,
-            orderDetailList
-                .map((item) => {
-                      'productId': item.productId,
-                      'productName': item.productName,
-                      'quantity': item.quantity,
-                      'partySize': item.partySize,
-                      'unitPrice': item.unitPrice.toDouble(),
-                      'price': item.price.toDouble()
-                    })
-                .toList(),
-            order.period!,
-            order.serveDates!.map((date) => date.toString()).toList(),
-            order.serveDates!
-                .map((date) => DateTime.parse(date.toString())
-                    .difference(DateTime(
-                        plan.utcStartAt!.toLocal().year,
-                        plan.utcStartAt!.toLocal().month,
-                        plan.utcStartAt!.toLocal().day,
-                        0,
-                        0,
-                        0))
-                    .inDays)
-                .toList(),
-            order.uuid,
-            // (orderDetailList.fold(
-            //         0.0,
-            //         (previousValue, element) =>
-            //             previousValue +
-            //             num.parse(
-            //                     (element.unitPrice * element.quantity).toString())
-            //                 .toInt()) *
-            //     e.serveDates!.length
-
-            //     ),
-            order.total!);
-      }).toList();
-      for (final date in plan.schedule!) {
-        for (final item in date) {
-          if (item['orderUUID'] != null &&
-              !availableOrder
-                  .any((element) => element.uuid == item['orderUUID'])) {
-            item['orderUUID'] = null;
+        for (final date in plan.schedule!) {
+          for (final item in date) {
+            if (item['orderUUID'] != null) {
+              item['orderUUID'] = null;
+            }
           }
         }
       }
       sharedPreferences.setString('plan_schedule', json.encode(plan.schedule));
-      if (options[6]) {
-        sharedPreferences.setString('plan_temp_order', json.encode(list));
-      }
     }
 
     if (options[7]) {
@@ -543,64 +543,28 @@ class Utils {
           detail['quantity'] =
               (newMaxMemberCount! / detail['partySize']).ceil();
         }
-        order['total'] = order['details'].fold(
-                0,
-                (previousValue, element) =>
-                    previousValue +
-                    num.parse((element['unitPrice'] * element['quantity'])
-                            .toString())
-                        .toInt()) *
-            order['serveDates']!.length /
-            GlobalConstant().VND_CONVERT_RATE;
+        order['newTotal'] = getTempOrderTotal(order, false);
       }
     } else {
-      final ConfigService configService = ConfigService();
       DateTime startDate =
           DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-      final config = await configService.getOrderConfig();
-      final holidays = config!.HOLIDAYS;
-      var listedPrice = 0.0;
       for (final order in orderList) {
-        listedPrice = order['total'] / order['serveDates'].length;
         List<DateTime> servingDates = [];
         for (final index in order['serveDateIndexes']) {
           servingDates.add(startDate.add(Duration(days: index)));
         }
-        final rs = getHolidayServingDates(holidays!, servingDates);
-
         order['serveDates'] = order['serveDateIndexes']
             .map((e) =>
                 startDate.add(Duration(days: e)).toString().split(' ')[0])
             .toList();
-
-        if (rs['holidayServingDates'].isNotEmpty) {
-          switch (order['type']) {
-            case "EAT":
-              order['total'] = listedPrice * rs['normalServingDates'].length +
-                  listedPrice *
-                      rs['holidayServingDates'].length *
-                      (1 + config.HOLIDAY_MEAL_UP_PCT! / 100);
-              break;
-            case "CHECKIN":
-              order['total'] = listedPrice * rs['normalServingDates'].length +
-                  listedPrice *
-                      rs['holidayServingDates'].length *
-                      (1 + config.HOLIDAY_LODGING_UP_PCT! / 100);
-              break;
-            case "VISIT":
-              order['total'] = listedPrice * rs['normalServingDates'].length +
-                  listedPrice *
-                      rs['holidayServingDates'].length *
-                      (1 + config.HOLIDAY_RIDING_UP_PCT! / 100);
-              break;
-          }
-        }
+        order['total'] = getTempOrderTotal(order, false);
       }
     }
     sharedPreferences.setString('plan_temp_order', json.encode(orderList));
   }
 
-  updateScheduleAndOrder(BuildContext context, void Function() onConfirm) {
+  updateScheduleAndOrder(BuildContext context, void Function() onConfirm,
+      bool isChangeDate) async {
     int duration = (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil();
     var schedule = json.decode(sharedPreferences.getString('plan_schedule')!);
     var tempOrders =
@@ -614,12 +578,34 @@ class Utils {
         newSchedule.add([]);
       }
     }
-
     var invalidOrder = [];
+    var updatedOrders = [];
+    var canceledOrders = [];
     for (final order in tempOrders) {
-      if (order['serveDateIndexes']
-          .any((index) => int.parse(index.toString()) >= duration)) {
-        invalidOrder.add(order);
+      final newIndexes = [];
+      for (final index in order['serveDateIndexes']) {
+        if (index < duration) {
+          newIndexes.add(index);
+        }
+      }
+      if (newIndexes.isNotEmpty) {
+        if (isChangeDate) {
+          final startDate =
+              DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+          order['newIndexes'] = newIndexes;
+          order['newServeDates'] = newIndexes
+              .map((e) => startDate.add(Duration(days: e)).toString())
+              .toList();
+        } else {
+          order['newIndexes'] = newIndexes;
+          order['newServeDates'] =
+              order['serveDates'].sublist(0, newIndexes.length);
+        }
+        order['newTotal'] = getTempOrderTotal(order, true);
+        updatedOrders.add(order);
+      } else {
+        order['cancelReason'] = 'Ngoài ngày phục vụ';
+        canceledOrders.add(order);
       }
     }
     final arrivedText = sharedPreferences.getString('plan_arrivedTime');
@@ -643,44 +629,164 @@ class Utils {
         }
       }
     }
-    if (invalidOrder.isNotEmpty) {
-      AwesomeDialog(
-              context: context,
-              animType: AnimType.leftSlide,
-              dialogType: DialogType.infoReverse,
-              body: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 10),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'Thay đổi quan trọng',
-                        style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'NotoSans'),
-                      ),
-                    ),
-                    Container(
-                      alignment: Alignment.center,
-                      child: const Text(
-                        'Với thay đổi trên các đơn hàng sau đây sẽ không còn khả dụng',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontFamily: 'NotoSans',
-                            color: Colors.grey),
-                      ),
-                    ),
-                    SizedBox(
-                      height: 1.h,
-                    ),
-                    for (int index = 0; index < invalidOrder.length; index++)
+    if (updatedOrders.isNotEmpty || canceledOrders.isNotEmpty) {
+      showModalBottomSheet(
+        // ignore: use_build_context_synchronously
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (context) => UpdateOrderClonePlanBottomSheet(
+          cancelOrders: canceledOrders,
+          updatedOrders: updatedOrders,
+          onConfirm: () async {
+            for (final order in canceledOrders) {
+              tempOrders.removeWhere(
+                  (element) => element['orderUUID'] == order['orderUUID']);
+              for (final date in newSchedule) {
+                for (final item in date) {
+                  if (item['orderUUID'] == order['orderUUID']) {
+                    item['orderUUID'] = null;
+                  }
+                }
+              }
+            }
+            for (final order in updatedOrders) {
+              var temp = tempOrders.firstWhere(
+                  (element) => element['orderUUID'] == order['orderUUID']);
+              final index = tempOrders.indexOf(temp);
+              tempOrders[index]['total'] = order['newTotal'];
+              tempOrders[index]['serveDates'] = order['newServeDates'];
+              if (isChangeDate && order['type'] == 'CHECKIN') {
+                final List<List<DateTime>> splitServeDates =
+                    splitCheckInServeDates(order['newServeDates']);
+                final endDate = DateTime.parse(
+                    sharedPreferences.getString('plan_end_date')!);
+                final startDate = DateTime.parse(
+                    sharedPreferences.getString('plan_start_date')!);
+                for (final dateList in splitServeDates) {
+                  if (dateList.last == endDate) {
+                    if (!newSchedule.last.any((element) =>
+                        element['orderUUID'] == order['orderUUID'] &&
+                        element['type'] == 'CHECKOUT')) {
+                      await newSchedule.last.add({
+                        'isStarred': false,
+                        'shortDescription': 'Check-out',
+                        'description': 'Check-out nhà nghỉ/khách sạn',
+                        'type': 'CHECKOUT',
+                        'orderUUID': order['orderUUID'],
+                        'duration': '00:15:00'
+                      });
+                    }
+                  } else {
+                    final index =
+                        dateList.last.difference(startDate).inDays + 1;
+                    if (!newSchedule[index].any((element) =>
+                        element['orderUUID'] == order['orderUUID'] &&
+                        element['type'] == 'CHECKOUT')) {
+                      await newSchedule[index].add({
+                        'isStarred': false,
+                        'shortDescription': 'Check-out',
+                        'description': 'Check-out nhà nghỉ/khách sạn',
+                        'type': 'CHECKOUT',
+                        'orderUUID': order['orderUUID'],
+                        'duration': '00:15:00'
+                      });
+                    }
+                  }
+                }
+              }
+            }
+            sharedPreferences.setString(
+                'plan_schedule', json.encode(newSchedule));
+            sharedPreferences.setString(
+                'plan_temp_order', json.encode(tempOrders));
+            onConfirm();
+          },
+        ),
+      );
+    } else {
+      onConfirm();
+    }
+  }
+
+  updateProductPrice(BuildContext context) async {
+    var orders =
+        json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+    List<double> newPrice = [];
+    final SupplierService supplierService = SupplierService();
+    final ProductService productService = ProductService();
+    List<int> supplierIds = [];
+    List<int> productIds = [];
+    List<dynamic> invalidOrders = [];
+    if (orders.isNotEmpty) {
+      for (final order in orders) {
+        if (!supplierIds.contains(order['providerId'])) {
+          supplierIds.add(order['providerId']);
+        }
+        for (final detail in order['details']) {
+          if (!productIds.contains(detail['productId'])) {
+            productIds.add(detail['productId']);
+          }
+        }
+      }
+      final invalidSupplierIds =
+          await supplierService.getInvalidSupplierByIds(supplierIds, context);
+
+      final invalidProductIds =
+          // ignore: use_build_context_synchronously
+          await productService.getInvalidProductByIds(productIds, context);
+      for (final order in orders) {
+        if (invalidSupplierIds.contains(order['providerId'])) {
+          order['cancelReason'] = 'Nhà cung cấp không khả dụng';
+          invalidOrders.add(order);
+        } else if (order['details']
+            .any((detail) => invalidProductIds.contains(detail['productId']))) {
+          order['cancelReason'] = 'Sản phẩm không khả dụng';
+          invalidOrders.add(order);
+        }
+      }
+      if (invalidOrders.isNotEmpty) {
+        final rs = await AwesomeDialog(
+                // ignore: use_build_context_synchronously
+                context: context,
+                animType: AnimType.leftSlide,
+                dialogType: DialogType.infoReverse,
+                body: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
+                  child: Column(
+                    children: [
                       Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Thông báo quan trọng',
+                          style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 1.h,
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Các đơn hàng sau đã bị huỷ, hãy tạo lại cho chuyến đi thật đầy đủ nhé',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'NotoSans',
+                              color: Colors.grey),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 1.h,
+                      ),
+                      for (int index = 0; index < invalidOrders.length; index++)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 1.h, horizontal: 2.w),
+                          decoration: BoxDecoration(
                             color: index.isOdd
                                 ? primaryColor.withOpacity(0.1)
                                 : lightPrimaryTextColor.withOpacity(0.5),
@@ -691,153 +797,105 @@ class Utils {
                               topRight: index == 0
                                   ? const Radius.circular(10)
                                   : Radius.zero,
-                              bottomLeft: index == invalidOrder.length - 1
+                              bottomLeft: index == invalidOrders.length - 1
                                   ? const Radius.circular(10)
                                   : Radius.zero,
-                              bottomRight: index == invalidOrder.length - 1
+                              bottomRight: index == invalidOrders.length - 1
                                   ? const Radius.circular(10)
                                   : Radius.zero,
-                            )),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              invalidOrder[index]['type'] == 'EAT'
-                                  ? 'Dùng bữa tại:'
-                                  : invalidOrder[index]['type'] == 'VISIT'
-                                      ? 'Thuê phương tiện:'
-                                      : 'Nghỉ ngơi tại:',
-                              style: const TextStyle(
-                                  fontSize: 13, fontFamily: 'NotoSans'),
                             ),
-                            Row(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                SizedBox(
-                                  width: 30.w,
-                                  child: Text(
-                                    invalidOrder[index]['providerName'],
-                                    overflow: TextOverflow.clip,
-                                    style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'NotoSans'),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                invalidOrders[index]['type'] == 'EAT'
+                                    ? 'Dùng bữa tại:'
+                                    : invalidOrders[index]['type'] == 'VISIT'
+                                        ? 'Thuê phương tiện:'
+                                        : 'Nghỉ ngơi tại:',
+                                style: const TextStyle(
+                                    fontSize: 13, fontFamily: 'NotoSans'),
+                              ),
+                              RichText(
+                                  text: TextSpan(
+                                      text: invalidOrders[index]
+                                          ['providerName'],
+                                      style: const TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                          fontFamily: 'NotoSans'),
+                                      children: [
+                                    TextSpan(
+                                        text:
+                                            '  (${Utils().getPeriodString(invalidOrders[index]['period'])['text']})',
+                                        style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.normal,
+                                            fontFamily: 'NotoSans'))
+                                  ])),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.clear_outlined,
+                                    color: Colors.red,
+                                    weight: 1.5,
                                   ),
-                                ),
-                                const Spacer(),
-                                SizedBox(
-                                  width: 15.w,
-                                  child: Text(
-                                    NumberFormat.simpleCurrency(
-                                            locale: 'vi_VN',
-                                            name: '',
-                                            decimalDigits: 0)
-                                        .format(invalidOrder[index]['total']),
-                                    textAlign: TextAlign.end,
-                                    overflow: TextOverflow.clip,
-                                    style: const TextStyle(
-                                        fontSize: 15,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'NotoSans'),
+                                  SizedBox(
+                                    width: 1.w,
                                   ),
-                                ),
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 4),
-                                  child: SvgPicture.asset(
-                                    gcoinLogo,
-                                    height: 16,
-                                  ),
-                                )
-                              ],
-                            )
-                          ],
-                        ),
-                      ),
-                    SizedBox(
-                      height: 1.h,
-                    ),
-                    Container(
-                        alignment: Alignment.center,
-                        child: const Text(
-                          'Đồng ý với các thay đổi này, chúng tôi sẽ xoá danh sách đơn hàng không khả dụng của chuyến đi',
-                          textAlign: TextAlign.center,
-                          style:
-                              TextStyle(fontSize: 15, fontFamily: 'NotoSans'),
-                        ))
-                  ],
+                                  SizedBox(
+                                    width: 60.w,
+                                    child: Text(
+                                      invalidOrders[index]['cancelReason'],
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                        )
+                    ],
+                  ),
                 ),
-              ),
-              btnOkColor: Colors.blueAccent,
-              btnOkOnPress: () {
-                for (final order in invalidOrder) {
-                  tempOrders.remove(tempOrders
-                      .firstWhere((e) => e['orderUUID'] == order['orderUUID']));
-                  for (final day in newSchedule) {
-                    for (final item in day) {
-                      if (item['orderUUID'] != null &&
-                          order['orderUUID'] == item['orderUUID']) {
-                        item['orderUUID'] = null;
+                btnOkOnPress: () {
+                  var schedule = json
+                      .decode(sharedPreferences.getString('plan_schedule')!);
+                  for (final order in invalidOrders) {
+                    for (final date in schedule) {
+                      for (final item in date) {
+                        if (item['orderUUID'] == order['orderUUID']) {
+                          item['orderUUID'] = null;
+                        }
                       }
                     }
+                    orders.remove(orders.firstWhere(
+                        (e) => e['orderUUID'] == order['orderUUID']));
+                    sharedPreferences.setString(
+                        'plan_schedule', json.encode(schedule));
                   }
-                }
-                sharedPreferences.setString(
-                    'plan_schedule', json.encode(newSchedule));
-                sharedPreferences.setString(
-                    'plan_temp_order', json.encode(tempOrders));
-                onConfirm();
-              },
-              btnOkText: 'Đồng ý',
-              btnCancelColor: Colors.amber,
-              btnCancelOnPress: () {},
-              btnCancelText: 'Huỷ')
-          .show();
-    } else {
-      onConfirm();
-    }
-  }
-
-  updateProductPrice() async {
-    var orders =
-        json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
-    List<int> ids = [];
-    List<double> newPrice = [];
-
-    if (orders.isNotEmpty) {
+                },
+                btnOkColor: Colors.blueAccent,
+                btnOkText: 'OK')
+            .show();
+      } else {}
+      productIds.sort();
+      final products = await productService.getListProduct(productIds);
+      newPrice = products.map((e) => e.price.toDouble()).toList();
       for (final order in orders) {
         for (final detail in order['details']) {
-          if (!ids.contains(detail['productId'])) {
-            ids.add(detail['productId']);
-          }
-        }
-      }
-      ids.sort();
-      final ProductService productService = ProductService();
-      final products = await productService.getListProduct(ids);
-      newPrice = products
-          .map((e) => e.price.toDouble() / GlobalConstant().VND_CONVERT_RATE)
-          .toList();
-      for (final order in orders) {
-        for (final detail in order['details']) {
-          final index = ids.indexOf(detail['productId']);
+          final index = productIds.indexOf(detail['productId']);
           detail['price'] = newPrice[index];
           detail['unitPrice'] = newPrice[index];
         }
-        final numberHoliday = order['serveDates']
-            .where((date) => isHoliday(DateTime.parse(date)))
-            .toList()
-            .length;
-        final upPct = getHolidayUpPct(order['type']);
-        order['total'] = order['details'].fold(
-            0,
-            (previousValue, element) =>
-                previousValue +
-                (element['unitPrice'] * element['quantity']) *
-                    ((1 + upPct / 100) * numberHoliday +
-                        (order['serveDates'].length - numberHoliday)));
+        order['total'] = getTempOrderTotal(order, false);
       }
     }
-
     sharedPreferences.setString('plan_temp_order', json.encode(orders));
   }
 
@@ -863,5 +921,77 @@ class Utils {
         return sharedPreferences.getInt('HOLIDAY_RIDING_UP_PCT')!;
     }
     return 0;
+  }
+
+  getTempOrderTotal(dynamic order, bool isUpdate) {
+    final numberHoliday =
+        (isUpdate ? order['newServeDates'] : order['serveDates'])
+            .where((date) => isHoliday(DateTime.parse(date)))
+            .toList()
+            .length;
+    final upPct = getHolidayUpPct(order['type']);
+    return order['details'].fold(
+        0,
+        (previousValue, element) =>
+            previousValue +
+            (element['unitPrice'] * element['quantity']) *
+                ((1 + upPct / 100) * numberHoliday +
+                    ((isUpdate ? order['newServeDates'] : order['serveDates'])
+                            .length -
+                        numberHoliday)) /
+                GlobalConstant().VND_CONVERT_RATE);
+  }
+
+  splitCheckInServeDates(List<String> serveDates) {
+    List<List<DateTime>> result = [];
+    List<DateTime> current = [DateTime.parse(serveDates[0])];
+    for (int i = 1; i < serveDates.length; i++) {
+      DateTime previousDateTime = DateTime.parse(serveDates[i - 1]);
+      DateTime currentDateTime = DateTime.parse(serveDates[i]);
+      if (currentDateTime.difference(previousDateTime).inDays == 1) {
+        current.add(currentDateTime);
+      } else {
+        result.add(current);
+        current = [currentDateTime];
+      }
+    }
+    result.add(current);
+    return result;
+  }
+
+  bool isValidPeriodOfOrder(
+      PlanSchedule schedule, PlanScheduleItem item, bool isFirstDay) {
+    if (item.orderUUID == null) {
+      return true;
+    } else {
+      final orderList =
+          json.decode(sharedPreferences.getString('plan_temp_order')!);
+      final order =
+          orderList.firstWhere((order) => order['orderUUID'] == item.orderUUID);
+      final itemIndex = schedule.items.indexOf(item);
+      Duration sumActivityTime = const Duration();
+      DateTime? startActivityTime;
+      for (int i = 0; i < itemIndex; i++) {
+        sumActivityTime += schedule.items[i].activityTime!;
+      }
+      if (isFirstDay) {
+        final arrivedTime =
+            DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!);
+        if (arrivedTime.hour >= 20) {
+          startActivityTime = DateTime(0, 0, 0, 6, 0, 0).add(sumActivityTime);
+        } else {
+          startActivityTime = arrivedTime.add(sumActivityTime);
+        }
+      } else {
+        startActivityTime = DateTime(0, 0, 0, 6, 0, 0).add(sumActivityTime);
+      }
+      final startActivitySession = sessions.firstWhereOrNull((aTime) =>
+              aTime.from <= startActivityTime!.hour &&
+              aTime.to > startActivityTime.hour) ??
+          sessions[0];
+      final orderPeriod =
+          sessions.firstWhere((session) => session.enumName == order['period']);
+      return startActivitySession.index <= orderPeriod.index;
+    }
   }
 }

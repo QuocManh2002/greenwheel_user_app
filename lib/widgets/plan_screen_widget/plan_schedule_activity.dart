@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
@@ -182,41 +183,85 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                               fontFamily: 'NotoSans'),
                                         ),
                                         if (order['details'] != null)
-                                          for (final detail in order['details'])
-                                            Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment
-                                                      .spaceBetween,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
-                                              children: [
-                                                SizedBox(
-                                                  width: 60.w,
-                                                  child: Text(
-                                                    detail['productName'],
-                                                    style: const TextStyle(
+                                          Column(
+                                            children: [
+                                              SizedBox(height: 0.2.h,),
+                                              Container(
+                                                alignment: Alignment.centerLeft,
+                                                child: RichText(
+                                                  text: TextSpan(
+                                                      text:
+                                                          order['providerName'],
+                                                      style: const TextStyle(
                                                         fontSize: 18,
+                                                        color: Colors.black,
                                                         fontWeight:
                                                             FontWeight.bold,
-                                                        fontFamily: 'NotoSans'),
-                                                    overflow: TextOverflow.clip,
-                                                  ),
+                                                        fontFamily: 'NotoSans',
+                                                      ),
+                                                      children: [
+                                                        TextSpan(
+                                                            text:
+                                                                ' (${Utils().getPeriodString(order['period'])['text']})',
+                                                            style: const TextStyle(
+                                                                fontSize: 15,
+                                                                color: Colors
+                                                                    .black54,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .normal))
+                                                      ]),
+                                                  textAlign: TextAlign.start,
                                                 ),
-                                                SizedBox(
-                                                  width: 15.w,
-                                                  child: Text(
-                                                    'x${detail['quantity']}',
-                                                    textAlign: TextAlign.end,
-                                                    style: const TextStyle(
-                                                        fontSize: 18,
-                                                        fontWeight:
-                                                            FontWeight.bold,
-                                                        fontFamily: 'NotoSans'),
-                                                    overflow: TextOverflow.clip,
-                                                  ),
-                                                )
-                                              ],
-                                            ),
+                                              ),
+                                              SizedBox(height: 0.2.h,),
+                                              const Divider(
+                                                color: Colors.black54,
+                                                height: 2,
+                                              ),
+                                              for (final detail
+                                                  in order['details'])
+                                                Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceBetween,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    SizedBox(
+                                                      width: 60.w,
+                                                      child: Text(
+                                                        detail['productName'],
+                                                        style: const TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontFamily:
+                                                                'NotoSans'),
+                                                        overflow:
+                                                            TextOverflow.clip,
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 15.w,
+                                                      child: Text(
+                                                        'x${detail['quantity']}',
+                                                        textAlign:
+                                                            TextAlign.end,
+                                                        style: const TextStyle(
+                                                            fontSize: 16,
+                                                            fontWeight:
+                                                                FontWeight.w500,
+                                                            fontFamily:
+                                                                'NotoSans'),
+                                                        overflow:
+                                                            TextOverflow.clip,
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                            ],
+                                          ),
                                         if (order['cart'] != null)
                                           for (final detail
                                               in order['cart'].entries)
@@ -288,7 +333,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                         locale: 'vi_VN',
                                                         decimalDigits: 0,
                                                         name: '')
-                                                    .format(order['total']),
+                                                    .format(order['total'] / order['serveDates'].length),
                                                 style: const TextStyle(
                                                     fontSize: 18,
                                                     fontFamily: 'NotoSans',

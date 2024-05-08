@@ -1,7 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -36,13 +35,15 @@ class SelectStartDateScreen extends StatefulWidget {
 }
 
 class _SelectStartDateState extends State<SelectStartDateScreen> {
-  TextEditingController _nameController = TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _timeController = TextEditingController();
+  final TextEditingController _dateController = TextEditingController();
   // final OfflineService _offlineService = OfflineService();
   DateTime? _endDate;
   late ComboDate _initComboDate;
-  TimeOfDay _selectTime = TimeOfDay.now();
-  TextEditingController _timeController = TextEditingController();
-  TextEditingController _dateController = TextEditingController();
+  TimeOfDay _selectTime =
+      TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 1)));
+
   DateTime? _selectedDate = DateTime.now();
   bool isOverDate = false;
   int numberOfDay = 0;
@@ -148,7 +149,6 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.isCreate) {
       setUpDataCreate();
@@ -178,44 +178,52 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
     if (name != null) {
       _nameController.text = name;
     }
-    var _numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
+    var numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
     _initComboDate = listComboDate.firstWhere((element) =>
-        element.numberOfDay + element.numberOfNight == _numOfExpPeriod);
+        element.numberOfDay + element.numberOfNight == numOfExpPeriod);
     numberOfDay = _initComboDate.numberOfDay;
     numberOfNight = _initComboDate.numberOfNight;
-    final _duration = (_numOfExpPeriod! / 2).ceil();
-    final _departDateText = sharedPreferences.getString('plan_departureDate');
-    final _departTimeText = sharedPreferences.getString('plan_start_time');
-    if (_departDateText != null) {
-      final departDate = DateTime.parse(_departDateText);
+    final duration = (numOfExpPeriod! / 2).ceil();
+    final departDateText = sharedPreferences.getString('plan_departureDate');
+    final departTimeText = sharedPreferences.getString('plan_start_time');
+    if (departDateText != null) {
+      final departDate = DateTime.parse(departDateText);
       _selectedDate = departDate;
       _dateController.text = DateFormat('dd/MM/yyyy').format(departDate);
-      _endDate = departDate.add(Duration(days: _duration - 1));
+      _endDate = departDate.add(Duration(days: duration - 1));
     } else {
       final initDate = DateTime.now().add(const Duration(days: 7));
       _selectedDate = initDate;
       _dateController.text = DateFormat('dd/MM/yyyy').format(initDate);
-      _endDate = initDate.add(Duration(days: _duration - 1));
+      _endDate = initDate.add(Duration(days: duration - 1));
       sharedPreferences.setString('plan_departureDate', initDate.toString());
       sharedPreferences.setString(
           'plan_start_date', initDate.toString().split(' ')[0]);
       sharedPreferences.setString('plan_end_date',
-          initDate.add(Duration(days: _duration - 1)).toString());
+          initDate.add(Duration(days: duration - 1)).toString());
     }
 
-    if (_departTimeText != null) {
-      final departTime = DateTime.parse(_departTimeText);
+    if (departTimeText != null) {
+      final departTime = DateTime.parse(departTimeText);
       _selectTime = TimeOfDay.fromDateTime(departTime);
       _timeController.text = DateFormat.Hm().format(departTime);
     } else {
       _timeController.text =
           DateFormat.Hm().format(DateTime.now().add(const Duration(hours: 1)));
 
-      final _startTime =
+      final startTime =
           DateTime(0, 0, 0, DateTime.now().hour + 1, DateTime.now().minute);
-      sharedPreferences.setString('plan_start_time', _startTime.toString());
+      sharedPreferences.setString('plan_start_time', startTime.toString());
     }
     handleChangeComboDate();
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _nameController.dispose();
+    _timeController.dispose();
+    _dateController.dispose();
   }
 
   @override
@@ -601,9 +609,10 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   if (widget.isClone) {
-                    Utils().updateTempOrder(false);
+                    // Utils().updateTempOrder(false);
                     // ignore: use_build_context_synchronously
                     Utils().updateScheduleAndOrder(context, () {
+                      Navigator.of(context).pop();
                       Navigator.push(
                           context,
                           PageTransition(
@@ -614,7 +623,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                 isClone: widget.isClone,
                               ),
                               type: PageTransitionType.rightToLeft));
-                    });
+                    }, true);
                   } else {
                     Navigator.push(
                         context,

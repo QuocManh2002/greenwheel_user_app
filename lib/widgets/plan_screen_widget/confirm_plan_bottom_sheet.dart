@@ -792,22 +792,28 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
         children: [
           Padding(
             padding: const EdgeInsets.only(top: 4, left: 8),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-              decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.8),
-                  borderRadius: const BorderRadius.all(Radius.circular(8))),
-              child: Text(
-                type == 'EAT'
-                    ? 'Quán ăn/Nhà hàng'
-                    : type == 'CHECKIN'
-                        ? 'Nhà nghỉ/Khách sạn'
-                        : 'Thuê xe',
-                style: const TextStyle(
-                    fontSize: 17,
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500),
-              ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                      color: primaryColor.withOpacity(0.8),
+                      borderRadius: const BorderRadius.all(Radius.circular(8))),
+                  child: Text(
+                    type == 'EAT'
+                        ? 'Quán ăn/Nhà hàng'
+                        : type == 'CHECKIN'
+                            ? 'Nhà nghỉ/Khách sạn'
+                            : 'Thuê xe',
+                    style: const TextStyle(
+                        fontSize: 17,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w500),
+                  ),
+                ),
+                const Spacer(),
+
+              ],
             ),
           ),
           for (final order in orders)
@@ -834,10 +840,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                               locale: 'vi_VN', decimalDigits: 0, name: '')
                           .format(((order.runtimeType == OrderViewModel
                                   ? (order.total)
-                                  : order['type'] == 'CHECKIN' ||
-                                          order['type'] == 'VISIT'
-                                      ? order['total']
-                                      : order['total']))
+                                  : order['total']))
                               .toInt()),
                       style: const TextStyle(
                           fontSize: 15, fontWeight: FontWeight.bold),

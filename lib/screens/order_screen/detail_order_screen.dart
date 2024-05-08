@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
@@ -11,12 +13,11 @@ import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/configuration.dart';
+import 'package:greenwheel_user_app/models/holiday.dart';
 import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/order_input_model.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
-import 'package:greenwheel_user_app/service/config_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
@@ -59,11 +60,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   bool isExpanded = false;
   String _servingTime = '';
   List<OrderDetailViewModel> details = [];
-  final ConfigService _configService = ConfigService();
   List<DateTime> _servingDates = [];
   List<DateTime> normalServingDates = [];
   List<DateTime> holidayServingDates = [];
-  ConfigurationModel _config = ConfigurationModel();
   int holidayUpPCT = 0;
   bool isLoading = true;
   num _listedPricePerDay = 0;
@@ -88,30 +87,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       details.add(temp.first);
       _listedPricePerDay += (temp.first.unitPrice * temp.first.quantity);
     }
-
-    final rs = await _configService.getOrderConfig();
-    if (rs != null) {
-      setState(() {
-        _config = rs;
-        isLoading = false;
-      });
-      switch (widget.order.type) {
-        case 'EAT':
-          holidayUpPCT = _config.HOLIDAY_MEAL_UP_PCT!;
-          break;
-        case 'CHECKIN':
-          holidayUpPCT = _config.HOLIDAY_LODGING_UP_PCT!;
-          break;
-        case 'VISIT':
-          holidayUpPCT = _config.HOLIDAY_RIDING_UP_PCT!;
-      }
-
-      final dates =
-          Utils().getHolidayServingDates(_config.HOLIDAYS ?? [], _servingDates);
-
-      normalServingDates = dates['normalServingDates'];
-      holidayServingDates = dates['holidayServingDates'];
-    }
+    setState(() {
+      isLoading = false;
+    });
+    holidayUpPCT = Utils().getHolidayUpPct(widget.order.type!);
+    final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
+    List<Holiday> holidays =
+        holidaysText!.map((e) => Holiday.fromJson(json.decode(e))).toList();
+    final dates = Utils().getHolidayServingDates(holidays, _servingDates);
+    normalServingDates = dates['normalServingDates'];
+    holidayServingDates = dates['holidayServingDates'];
   }
 
   @override
@@ -121,7 +106,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       appBar: AppBar(
         title: const Text('Chi tiết đơn hàng'),
         actions: [
-          if (widget.planStatus == plan_statuses[2].engName)
+          if (widget.planStatus == planStatuses[2].engName)
             PopupMenuButton(
               itemBuilder: (context) => [
                 const PopupMenuItem(

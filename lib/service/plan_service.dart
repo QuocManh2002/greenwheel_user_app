@@ -53,7 +53,7 @@ class PlanService {
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedProviderIds:$emerIds
-    schedule:${model.schedule!}
+    schedule:${convertToFinalSchedule(schedule)}
     surcharges:$surcharges
     travelDuration:"${model.travelDuration}"
     tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
@@ -78,7 +78,7 @@ class PlanService {
     note: "${model.note}"
     periodCount:${model.numOfExpPeriod}
     savedProviderIds:$emerIds
-    schedule:$schedule
+    schedule:${convertToFinalSchedule(schedule)}
     surcharges:$surcharges
     travelDuration:"${model.travelDuration}"
     tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
@@ -544,8 +544,8 @@ mutation{
                 Duration(hours: duration.hour, minutes: duration.minute),
             description: json.decode(event['description']),
             shortDescription: json.decode(event['shortDescription']),
-            type: schedule_item_types_vn[
-                schedule_item_types.indexOf(event['type'])],
+            type: scheduleItemTypesVn[
+                scheduleItemTypes.indexOf(event['type'])],
             date: startDate.add(Duration(days: scheduleList.indexOf(sche)))));
       }
       list.add(PlanSchedule(
@@ -583,8 +583,8 @@ mutation{
                           '"'
                       ? json.decode(planItem['shortDescription'])
                       : planItem['shortDescription'],
-              type: schedule_item_types_vn[
-                  schedule_item_types.indexOf(planItem['type'].toString())],
+              type: scheduleItemTypesVn[
+                  scheduleItemTypes.indexOf(planItem['type'].toString())],
               description:
                   planItem['description'].toString().substring(0, 1) == '"'
                       ? json.decode(planItem['description'])
@@ -602,26 +602,22 @@ mutation{
     for (final schedule in list) {
       var items = [];
       for (final item in schedule.items) {
-        final type = schedule_item_types_vn
+        final type = scheduleItemTypesVn
             .firstWhere((element) => element == item.type);
         items.add({
           'orderUUID': item.orderUUID,
           'isStarred': item.isStarred,
           'duration':
-              // json.encode(
               DateFormat.Hm().format(DateTime(
                   0,
                   0,
                   0,
                   item.activityTime!.inHours,
                   item.activityTime!.inMinutes.remainder(60)
-                  // )
                   )),
           'description': item.description,
-          //  json.encode(item.description),
           'shortDescription': item.shortDescription,
-          // json.encode(item.shortDescription),
-          'type': schedule_item_types[schedule_item_types_vn.indexOf(type)]
+          'type': scheduleItemTypes[scheduleItemTypesVn.indexOf(type)]
         });
       }
       rs.add(items);
@@ -634,7 +630,7 @@ mutation{
     for (final schedule in list) {
       var items = [];
       for (final item in schedule) {
-        final type = schedule_item_types
+        final type = scheduleItemTypes
             .firstWhere((element) => element == item['type']);
         items.add({
           'orderUUID':
@@ -1120,7 +1116,7 @@ mutation{
                 ),
               ),
             ));
-    await Utils().updateProductPrice();
+    await Utils().updateProductPrice(context);
     Navigator.of(context).pop();
     DateTime? travelDuration =
         sharedPreferences.getDouble('plan_duration_value') != null

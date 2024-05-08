@@ -10,7 +10,7 @@ import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/models/login.dart';
 import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
+import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:page_transition/page_transition.dart';
@@ -176,7 +176,7 @@ class _OTPScreenState extends State<OTPScreen> {
           Navigator.pushAndRemoveUntil(
               context,
               PageTransition(
-                  child: const TabScreen(pageIndex: 0),
+                  child: const SplashScreen(),
                   type: PageTransitionType.bottomToTop),
               (ctx) => false);
         }

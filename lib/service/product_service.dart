@@ -1,8 +1,10 @@
-import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
+
+import '../helpers/util.dart';
 
 class ProductService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
@@ -78,27 +80,6 @@ class ProductService extends Iterable {
   Future<List<ProductViewModel>> getListProduct(List<int> productIds) async {
     try {
       GraphQLClient newClient = config.getClient();
-log(
-  '''{
-  products(where: { id: { in: $productIds } }) {
-    nodes {
-      id
-      name
-      price
-      imagePath
-      partySize
-      provider {
-        id
-        name
-        imagePath
-        phone
-        address
-        type
-      }
-    }
-  }
-}'''
-);
       final QueryResult result =
           await newClient.query(QueryOptions(document: gql("""
 {
@@ -134,7 +115,52 @@ log(
     }
   }
 
+  Future<List<int>> getInvalidProductByIds(List<int> ids, BuildContext context)async{
+    try{
+      GraphQLClient newClient = config.getClient();
+      QueryResult result = await newClient.query(QueryOptions(document: gql('''
+{
+  products(
+    where: {
+      id:{
+        in:$ids
+      }
+      isAvailable:{
+        eq:false
+      }
+    }
+  ){
+    edges{
+      node{
+        id
+      }
+    }
+  }
+}
+''')));
+      if(result.hasException){
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            // ignore: use_build_context_synchronously
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      final list = result.data!['products']['edges'];
+      if(list == null || list!.isEmpty){
+        return [];
+      }else{
+        List<int> resultList = [];
+        for(final item in list){
+          resultList.add(int.parse(item['node']['id'].toString()));
+        }
+        return resultList;
+      }
+    }catch (error) {
+      throw Exception(error);
+    }
+  }
+
   @override
-  // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();
 }

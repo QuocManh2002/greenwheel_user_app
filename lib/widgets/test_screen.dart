@@ -1,4 +1,4 @@
-
+import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -14,9 +14,36 @@ class TestScreen extends StatefulWidget {
 class _TestScreenState extends State<TestScreen> {
   bool isLoading = false;
 
-  List<DateTime> selectedList = [];
-  DateTime? selectValue = DateTime(0, 0, 0, 1, 0, 0);
-  Duration? totalDuration = Duration.zero;
+  List<List<int>> updatedOrderIndex = [];
+  List<List<int>> canceledOrderIndex = [];
+
+  List<List<int>> orderIndexList = [
+    [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+    ],
+    [0, 1, 3, 4, 6],
+    [4, 5, 6]
+  ];
+
+  List<DateTime> input = [
+    DateTime(2024, 5, 6),
+    DateTime(2024, 5, 7),
+    DateTime(2024, 5, 9),
+    DateTime(2024, 5, 11),
+    DateTime(2024, 5, 12),
+    DateTime(2024, 5, 13),
+    DateTime(2024, 5, 16),
+  ];
+
+  List<List<DateTime>> output = [];
+
+  int newDuration = 3;
 
   @override
   void initState() {
@@ -25,6 +52,18 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   setUpData() async {
+    List<DateTime> current = [input[0]];
+    for (int i = 1; i < input.length; i++) {
+      DateTime previousDateTime = input[i - 1];
+      DateTime currentDateTime = input[i];
+      if (currentDateTime.difference(previousDateTime).inDays == 1) {
+        current.add(currentDateTime);
+      } else {
+        output.add(current);
+        current = [currentDateTime];
+      }
+    }
+    output.add(current);
   }
 
   @override
@@ -38,52 +77,7 @@ class _TestScreenState extends State<TestScreen> {
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          InkWell(
-                            child: const Text('pick time'),
-                            onTap: () {
-                              showDialog(
-                                  context: context,
-                                  builder: (_) => AlertDialog(
-                                        content: SizedBox(
-                                          width: 100.w,
-                                          height: 15.h,
-                                          child: CupertinoDatePicker(
-                                            use24hFormat: true,
-                                            onDateTimeChanged: (value) {
-                                              selectValue = value;
-                                            },
-                                            initialDateTime:
-                                                DateTime(0, 0, 0, 1, 0, 0),
-                                            mode: CupertinoDatePickerMode.time,
-                                          ),
-                                        ),
-                                        actions: [
-                                          TextButton(
-                                              onPressed: () {
-                                                selectedList.add(selectValue!);
-                                                Navigator.of(context).pop();
-                                              },
-                                              child: const Text("Chọn"))
-                                        ],
-                                      ));
-                            },
-                          ),
-                          InkWell(
-                            child: const Text('print total duration'),
-                            onTap: () {
-                              totalDuration = selectedList.fold(Duration.zero,
-                                  (previousValue, element) {
-                                {
-                                  return previousValue! +
-                                      Duration(
-                                          hours: element.hour,
-                                          minutes: element.minute);
-                                }
-                              });
-                            },
-                          )
-                        ],
+                        children: [],
                       ))));
   }
 }

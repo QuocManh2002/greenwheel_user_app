@@ -44,7 +44,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   @override
   void initState() {
     super.initState();
-    status = plan_statuses
+    status = planStatuses
         .firstWhere((element) => element.engName == widget.plan.status)
         .name;
     var tempDuration = DateFormat.Hm().parse(widget.plan.travelDuration!);
@@ -177,7 +177,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           if ((widget.isLeader && widget.plan.memberCount != 0) ||
               (!widget.isLeader &&
                   widget.planType != 'PUBLISH' &&
-                  plan_statuses
+                  planStatuses
                           .firstWhere((element) =>
                               element.engName == widget.plan.status)
                           .value >

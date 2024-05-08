@@ -20,6 +20,7 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_heade
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -106,7 +107,6 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
           json.decode(scheduleText ?? '[]'), startDate!, duration);
       var finalList = _planService.convertPlanScheduleToJson(scheduleList);
       sharedPreferences.setString('plan_schedule', json.encode(finalList));
-      // sharedPreferences.setString('plan_schedule', finalList.toString());
     }
   }
 
@@ -209,12 +209,12 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
               child: ReorderableListView(
                 children: List.generate(
                   scheduleList[index].items.length,
-                  (index) => PlanScheduleActivity(
+                  (itemIndex) => PlanScheduleActivity(
                     orderList: json.decode(
                         sharedPreferences.getString('plan_temp_order') ?? '[]'),
                     isCreate: widget.isCreate,
                     key: UniqueKey(),
-                    item: scheduleList[index].items[index],
+                    item: scheduleList[index].items[itemIndex],
                     onUpdate: _updateItem,
                     onDetele: _deleteItem,
                     onAdd: _addItem,
@@ -472,7 +472,8 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
               itemBuilder: (context, index) => Padding(
                 padding: EdgeInsets.all(1.w),
                 child: InkWell(
-                    overlayColor: const MaterialStatePropertyAll(Colors.transparent),
+                    overlayColor:
+                        const MaterialStatePropertyAll(Colors.transparent),
                     borderRadius: const BorderRadius.all(Radius.circular(12)),
                     onTap: () {
                       setState(() {
@@ -491,6 +492,9 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                               .length >=
                           3,
                       isSelected: _currentPage == index.toDouble(),
+                      isValidPeriodOfOrder: scheduleList[index].items.every(
+                          (item) => Utils().isValidPeriodOfOrder(
+                              scheduleList[index], item, index == 0)),
                     )),
               ),
             ),
@@ -552,7 +556,13 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                           btnOkText: 'OK',
                           btnOkOnPress: () {})
                       .show();
-                } else if (checkValidNumberOfFoodActivity()) {
+                }else if(checkValidPeriodOfOrder()){
+                  DialogStyle().basicDialog(context: context, title: 'Có hoạt động dịch vụ không phù hợp với lịch trình',
+                  desc: 'Hãy điều chỉnh lại hoạt động này',
+                   type: DialogType.warning);
+                }
+                
+                 else if (checkValidNumberOfFoodActivity()) {
                   bool notAskScheduleAgain =
                       sharedPreferences.getBool('notAskScheduleAgain') ?? false;
                   if (notAskScheduleAgain) {
@@ -769,5 +779,10 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             ),
           ),
         )).show();
+  }
+
+  checkValidPeriodOfOrder() {
+    return scheduleList.any((date) => date.items.any((element) => !Utils()
+        .isValidPeriodOfOrder(date, element, date == scheduleList.first)));
   }
 }

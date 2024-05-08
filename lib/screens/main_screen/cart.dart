@@ -13,7 +13,6 @@ import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
-import 'package:greenwheel_user_app/service/config_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
@@ -101,7 +100,7 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   setUpdata() async {
-    finalTotal = widget.total;
+    finalTotal = widget.total * (widget.servingDates != null ? widget.servingDates!.length : 1) ;
     list = widget.list;
     supplier = widget.supplier;
     noteController.text = widget.note;
@@ -109,27 +108,17 @@ class _CartScreenState extends State<CartScreen> {
         ? widget.servingDates!
         : widget.servingDates ?? [widget.startDate];
     if (widget.isOrder == null || !widget.isOrder!) {
-      callback(_servingDates, widget.total);
+      callback(_servingDates, finalTotal);
     }
 
     if (widget.isOrder == null || !widget.isOrder!) {
-      final ConfigService configService = ConfigService();
-      final config = await configService.getOrderConfig();
-      holidays = config!.HOLIDAYS!;
+      final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
+      holidays =
+          holidaysText!.map((e) => Holiday.fromJson(json.decode(e))).toList();
       final rs = Utils().getHolidayServingDates(holidays, _servingDates);
       holidayServingDates = rs['holidayServingDates'];
       normalServingDates = rs['normalServingDates'];
-      switch (widget.serviceType.id) {
-        case 1:
-          holidayUpPCT = config.HOLIDAY_MEAL_UP_PCT!;
-          break;
-        case 2:
-          holidayUpPCT = config.HOLIDAY_LODGING_UP_PCT!;
-          break;
-        case 3:
-          holidayUpPCT = config.HOLIDAY_RIDING_UP_PCT!;
-          break;
-      }
+      holidayUpPCT = Utils().getHolidayUpPct(widget.serviceType.name);
     } else {
       holidayServingDates = widget.holidayServingDates!;
       holidayUpPCT = widget.holidayUpPCT!;
@@ -773,7 +762,7 @@ class _CartScreenState extends State<CartScreen> {
             .map((e) => DateTime.parse(e).difference(widget.startDate).inDays)
             .toList(),
         widget.orderGuid,
-        widget.serviceType.id == 2 ? total * serveDates.length : total);
+        total * serveDates.length);
     if (!widget.isOrder!) {
       AwesomeDialog(
               context: context,

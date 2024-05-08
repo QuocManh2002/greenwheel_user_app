@@ -212,8 +212,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
 
   getOrderList() async {
     var total = 0.0;
-    if (_planDetail!.status == plan_statuses[0].engName ||
-        _planDetail!.status == plan_statuses[1].engName) {
+    if (_planDetail!.status == planStatuses[0].engName ||
+        _planDetail!.status == planStatuses[1].engName) {
       orderList = tempOrders!;
     } else {
       final rs =

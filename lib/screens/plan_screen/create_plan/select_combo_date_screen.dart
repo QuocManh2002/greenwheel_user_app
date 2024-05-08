@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
@@ -42,17 +43,15 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   late FixedExtentScrollController _scrollController;
   bool isWarning = false;
   bool _isSelecting = false;
-  TextEditingController _memberController = TextEditingController();
-  TextEditingController _maxMemberWeightController = TextEditingController();
+  final TextEditingController _memberController = TextEditingController();
+  final TextEditingController _maxMemberWeightController = TextEditingController();
   int maxMemberWeight = 1;
   final PlanService _planService = PlanService();
-  int _previousSelection = 0;
-  bool isChangeScheduleAndOrder = false;
   bool isShowDialog = false;
+  int initMemberCount = 0;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.isCreate && widget.plan == null) {
       setUpDataCreate();
@@ -76,35 +75,35 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   }
 
   setUpDataCreate() async {
+    initMemberCount = sharedPreferences.getInt('plan_number_of_member') ?? 2;
     int? member = sharedPreferences.getInt('plan_number_of_member');
     int? numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
     int? _maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
-    ComboDate _selectedComboDate;
+    ComboDate selectedComboDate;
     _memberController.text = GlobalConstant().PLAN_MIN_MEMBER_COUNT.toString();
     _maxMemberWeightController.text = '0';
     if (numOfExpPeriod != null) {
-      _selectedComboDate = listComboDate.firstWhere(
+      selectedComboDate = listComboDate.firstWhere(
         (element) =>
             element.numberOfDay + element.numberOfNight == numOfExpPeriod,
       );
-      _previousSelection = _selectedComboDate.id - 1;
       setState(() {
-        _selectedCombo = _selectedComboDate.id - 1;
+        _selectedCombo = selectedComboDate.id - 1;
         _scrollController =
-            FixedExtentScrollController(initialItem: _selectedComboDate.id - 1);
+            FixedExtentScrollController(initialItem: selectedComboDate.id - 1);
       });
     } else {
-      _selectedComboDate = listComboDate.first;
-      sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id - 1);
+      selectedComboDate = listComboDate.first;
+      sharedPreferences.setInt('plan_combo_date', selectedComboDate.id - 1);
       sharedPreferences.setInt('initNumOfExpPeriod',
-          _selectedComboDate.numberOfDay + _selectedComboDate.numberOfNight);
+          selectedComboDate.numberOfDay + selectedComboDate.numberOfNight);
       setState(() {
-        _selectedCombo = _selectedComboDate.id - 1;
+        _selectedCombo = selectedComboDate.id - 1;
         _scrollController =
-            FixedExtentScrollController(initialItem: _selectedComboDate.id - 1);
+            FixedExtentScrollController(initialItem: selectedComboDate.id - 1);
       });
     }
-    sharedPreferences.setInt('plan_combo_date', _selectedComboDate.id - 1);
+    sharedPreferences.setInt('plan_combo_date', selectedComboDate.id - 1);
     if (member != null) {
       setState(() {
         _memberController.text = member.toString();
@@ -220,7 +219,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
         ],
       ),
       body: SingleChildScrollView(
-        physics: AlwaysScrollableScrollPhysics(),
+        physics: const AlwaysScrollableScrollPhysics(),
         child: Padding(
           padding: EdgeInsets.only(left: 2.w, bottom: 3.h, right: 2.w),
           child: Column(
@@ -276,71 +275,6 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                 setState(() {
                                   _isSelecting = false;
                                 });
-                                if (sharedPreferences
-                                            .getString('plan_schedule') !=
-                                        null &&
-                                    (listComboDate[value].duration / 2).ceil() <
-                                        json
-                                            .decode(sharedPreferences
-                                                .getString('plan_schedule')!)
-                                            .length) {
-                                  if (!_isSelecting && !isShowDialog) {
-                                    isShowDialog = true;
-                                    AwesomeDialog(
-                                            context: context,
-                                            animType: AnimType.leftSlide,
-                                            dialogType: DialogType.warning,
-                                            title: 'Thay đổi quan trọng',
-                                            titleTextStyle: const TextStyle(
-                                                fontSize: 18,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'NotoSans'),
-                                            desc:
-                                                'Thay đổi này ảnh hưởng đến lịch trình và các thành phần quan trọng của chuyến đi. Đồng ý với thay đổi, chúng tôi sẽ cập nhật lại lịch trình và các thành phần liên quan',
-                                            descTextStyle: const TextStyle(
-                                              fontSize: 16,
-                                              color: Colors.grey,
-                                              fontFamily: 'NotoSans',
-                                            ),
-                                            padding: const EdgeInsets.symmetric(
-                                                horizontal: 12),
-                                            btnOkText: 'Đồng ý',
-                                            btnOkColor: Colors.amber,
-                                            btnOkOnPress: () {
-                                              isChangeScheduleAndOrder = true;
-                                              setState(() {
-                                                _selectedCombo = value;
-                                              });
-                                              _previousSelection = value;
-                                              sharedPreferences.setInt(
-                                                  'plan_combo_date', value);
-                                              sharedPreferences.setInt(
-                                                  'initNumOfExpPeriod',
-                                                  listComboDate[value]
-                                                          .numberOfDay +
-                                                      listComboDate[value]
-                                                          .numberOfNight);
-                                            },
-                                            btnCancelColor: Colors.blueAccent,
-                                            btnCancelOnPress: () {
-                                              setState(() {
-                                                _selectedCombo =
-                                                    _previousSelection;
-                                                _scrollController =
-                                                    FixedExtentScrollController(
-                                                        initialItem:
-                                                            _previousSelection);
-                                              });
-                                            },
-                                            btnCancelText: 'Huỷ')
-                                        .show();
-                                  }
-                                } else {
-                                  isShowDialog = false;
-                                  if (!_isSelecting) {
-                                    _previousSelection = value;
-                                  }
-                                }
                               },
                             );
                           },
@@ -406,13 +340,14 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                         }
                       },
                       icon: const Icon(Icons.remove)),
-                  SizedBox(
+                  Container(
+                    alignment: Alignment.center,
                       width: 10.h,
                       height: 5.h,
                       child: defaultTextFormField(
                           maxLength: 2,
-                          padding: const EdgeInsets.all(16),
                           isNumber: true,
+                          contentPadding: const EdgeInsets.only(top: 4),
                           onTap: () {
                             setState(() {
                               _isSelecting = false;
@@ -515,6 +450,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                             maxLength: 2,
                             isNumber: true,
                             padding: const EdgeInsets.all(16),
+                            contentPadding: const EdgeInsets.only(top: 4),
                             onTap: () {
                               setState(() {
                                 _isSelecting = false;
@@ -640,14 +576,14 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                     }
 
                     if (widget.isClone) {
-                      if (isChangeScheduleAndOrder ||
-                          (sharedPreferences.getInt('initNumOfExpPeriod')! / 2)
+                      if ((sharedPreferences.getInt('initNumOfExpPeriod')! / 2)
                                   .ceil() <
                               json
                                   .decode(sharedPreferences
                                       .getString('plan_schedule')!)
-                                  .length) {
+                                  .length || sharedPreferences.getInt('plan_number_of_member')! != initMemberCount) {
                         Utils().updateScheduleAndOrder(context, () {
+                          Navigator.of(context).pop();
                           Navigator.push(
                               context,
                               PageTransition(
@@ -658,7 +594,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                     isClone: widget.isClone,
                                   ),
                                   type: PageTransitionType.rightToLeft));
-                        });
+                        }, false);
                       } else {
                         Navigator.push(
                             context,

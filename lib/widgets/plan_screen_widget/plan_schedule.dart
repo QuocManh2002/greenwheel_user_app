@@ -98,10 +98,10 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
               physics: const BouncingScrollPhysics(),
               shrinkWrap: true,
               itemCount: _scheduleList[index].items.length,
-              itemBuilder: (context, index) => PlanScheduleActivityView(
+              itemBuilder: (context, itemIndex) => PlanScheduleActivityView(
                 order: widget.orders!.firstWhereOrNull((e) =>
-                    e.uuid == _scheduleList[index].items[index].orderUUID),
-                item: _scheduleList[index].items[index],
+                    e.uuid == _scheduleList[index].items[itemIndex].orderUUID),
+                item: _scheduleList[index].items[itemIndex],
                 isLeader: widget.isLeader,
               ),
             )),
@@ -182,7 +182,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
             shrinkWrap: false,
             scrollDirection: Axis.horizontal,
             itemBuilder: (context, index) => Padding(
-              padding: EdgeInsets.all(2.w),
+              padding: EdgeInsets.all(1.w),
               child: InkWell(
                   borderRadius: const BorderRadius.all(Radius.circular(12)),
                   onTap: () {

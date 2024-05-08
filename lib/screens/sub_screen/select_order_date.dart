@@ -4,11 +4,10 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/configuration.dart';
 import 'package:greenwheel_user_app/models/service_type.dart';
 import 'package:greenwheel_user_app/models/session.dart';
-import 'package:greenwheel_user_app/service/config_service.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/order_total_infor.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/shimmer_widget.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
@@ -41,47 +40,24 @@ class SelectOrderDateScreen extends StatefulWidget {
 class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
   List<DateTime> servingDates = [];
   List<DateTime> _selectedDays = [];
-  ConfigService _configService = ConfigService();
-  ConfigurationModel? config;
-  bool isLoading = true;
+  bool isLoading = false;
   List<DateTime> _selectedHolidays = [];
   int holidayUpPCT = 0;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
 
   setUpData() async {
-    final rs = await _configService.getOrderConfig();
-    if (rs != null) {
-      setState(() {
-        config = rs;
-        isLoading = false;
-        _selectedDays = [
-          DateTime(widget.startDate.year, widget.startDate.month,
-              widget.startDate.day, 0, 0, 0)
-        ];
-      });
-      switch (widget.serviceType.id) {
-        case 1:
-          holidayUpPCT = config!.HOLIDAY_MEAL_UP_PCT!;
-          break;
-        case 2:
-          holidayUpPCT = config!.HOLIDAY_LODGING_UP_PCT!;
-          break;
-        case 3:
-          holidayUpPCT = config!.HOLIDAY_RIDING_UP_PCT!;
-      }
-      _selectedDays = widget.selectedDate != null
-          ? widget.selectedDate!
-          : [
-              DateTime(widget.startDate.year, widget.startDate.month,
-                  widget.startDate.day, 0, 0, 0)
-            ];
-    }
+    holidayUpPCT = Utils().getHolidayUpPct(widget.serviceType.name);
+    _selectedDays = widget.selectedDate != null
+        ? widget.selectedDate!
+        : [
+            DateTime(widget.startDate.year, widget.startDate.month,
+                widget.startDate.day, 0, 0, 0)
+          ];
   }
 
   @override
@@ -142,7 +118,7 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                   Navigator.of(context).pop();
                 },
                 cellBuilder: (context, cellDetails) {
-                  final bool _isHoliday = isHoliday(cellDetails.date);
+                  final bool _isHoliday = Utils().isHoliday(cellDetails.date);
                   final bool _isSelectedDay = isSelectedDay(cellDetails.date);
                   final bool _isAvaiableDay = isAvaiableDay(cellDetails.date);
                   return Padding(
@@ -181,46 +157,14 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
                 },
                 onSubmit: (dates) {
                   if ((dates as List<DateTime>).isEmpty) {
-                    AwesomeDialog(
-                            context: context,
-                            animType: AnimType.leftSlide,
-                            dialogType: DialogType.warning,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            title: 'Vui lòng chọn ít nhất 1 ngày phục vụ',
-                            titleTextStyle: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'NotoSans'),
-                            btnOkColor: Colors.amber,
-                            btnOkOnPress: () {},
-                            btnOkText: 'Ok')
-                        .show();
-                  } else if (widget.serviceType.id == 2 &&
-                      !Utils().isConsecutiveDates(dates)) {
-                    AwesomeDialog(
-                            context: context,
-                            animType: AnimType.leftSlide,
-                            dialogType: DialogType.warning,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            title: 'Ngày nhận không hợp lệ',
-                            titleTextStyle: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'NotoSans'),
-                            desc:
-                                'Với đơn hàng nhà nghỉ, khách sạn ngày phục vụ phải liên tiếp',
-                            descTextStyle: const TextStyle(
-                              fontSize: 16,
-                              fontFamily: 'NotoSans',
-                            ),
-                            btnOkColor: Colors.amber,
-                            btnOkOnPress: () {},
-                            btnOkText: 'Ok')
-                        .show();
+                    DialogStyle().basicDialog(
+                        context: context,
+                        title: 'Vui lòng chọn ít nhất 1 ngày phục vụ',
+                        type: DialogType.warning);
                   } else {
                     _selectedHolidays = [];
                     for (final date in _selectedDays) {
-                      if (isHoliday(date)) {
+                      if (Utils().isHoliday(date)) {
                         _selectedHolidays.add(date);
                       }
                     }
@@ -263,13 +207,6 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
               ),
       ),
     );
-  }
-
-  isHoliday(DateTime date) {
-    return config!.HOLIDAYS!.any((element) =>
-        element.from.isBefore(date) && element.to.isAfter(date) ||
-        date.isAtSameMomentAs(element.from) ||
-        date.isAtSameMomentAs(element.to));
   }
 
   isSelectedDay(DateTime date) {

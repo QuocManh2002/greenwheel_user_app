@@ -233,8 +233,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                     if (isShowTotal)
                       buildAmountInfo(
                           'Đã chi:',
-                          widget.plan.status == plan_statuses[0].engName ||
-                                  widget.plan.status == plan_statuses[1].engName
+                          widget.plan.status == planStatuses[0].engName ||
+                                  widget.plan.status == planStatuses[1].engName
                               ? 0
                               : widget.total /
                                   GlobalConstant().VND_CONVERT_RATE),

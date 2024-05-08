@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
 import 'package:greenwheel_user_app/service/config_service.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
@@ -24,7 +25,7 @@ class _SplashScreenState extends State<SplashScreen>
   bool isStart = false;
 
   setUpConfig() async {
-    final config = await _configService.getOrderConfig();
+    final config = await _configService.getOrderConfig(context);
     await controller.forward();
     if (controller.value == 1) {
       Navigator.pushAndRemoveUntil(
@@ -36,7 +37,10 @@ class _SplashScreenState extends State<SplashScreen>
           (route) => false);
     }
     if (config != null) {
-      _orderService.saveOrderConfigToPref(config);
+      final lastModified = sharedPreferences.getString('LAST_MODIFIED');
+      if(lastModified == null || lastModified != config.LAST_MODIFIED.toString()){
+        _orderService.saveOrderConfigToPref(config);
+      }
     }
   }
 

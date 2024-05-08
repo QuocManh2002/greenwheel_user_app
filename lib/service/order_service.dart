@@ -373,9 +373,9 @@ mutation {
         'HOLIDAY_LODGING_UP_PCT', model.HOLIDAY_LODGING_UP_PCT ?? 0);
     sharedPreferences.setInt(
         'HOLIDAY_MEAL_UP_PCT', model.HOLIDAY_MEAL_UP_PCT ?? 0);
+    sharedPreferences.setString('LAST_MODIFIED', model.LAST_MODIFIED.toString());
   }
 
   @override
-  // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();
 }

@@ -1,11 +1,14 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/supplier.dart';
+
+import '../helpers/util.dart';
 
 class SupplierService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
@@ -190,7 +193,6 @@ query getSupplierById(\$id: [Int]!) {
   }
 
   @override
-  // TODO: implement iterator
   Iterator get iterator => throw UnimplementedError();
 
   Future<List<EmergencyContactViewModel>?> getEmergencyContacts(
@@ -276,6 +278,55 @@ GraphQLClient newClient = config.getClient();
           .map((e) => EmergencyContactViewModel.fromJsonByLocation(e))
           .toList();
       return rs;
+    }catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<int>> getInvalidSupplierByIds(List<int> ids, BuildContext context)async
+  {
+    try{
+      GraphQLClient newClient = config.getClient();
+      QueryResult result = await newClient.query(
+        QueryOptions(document: gql('''
+{
+  providers(
+    where: {
+      id:{
+        in:$ids
+      }
+      isActive:{
+        eq:false
+      }
+    }
+  ){
+    edges{
+      node{
+        id
+      }
+    }
+  }
+}
+'''))
+      );
+      if(result.hasException){
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            // ignore: use_build_context_synchronously
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      final list = result.data!['providers']['edges'];
+      if(list == null || list!.isEmpty){
+        return [];
+      }else{
+        List<int> resultList = [];
+        for(final item in list){
+          resultList.add(int.parse(item['node']['id'].toString()));
+        }
+        return resultList;
+      }
     }catch (error) {
       throw Exception(error);
     }

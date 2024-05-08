@@ -190,9 +190,6 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
         ),
         onPressed: () {
           Navigator.of(ctx).pop();
-          // if (widget.item != null) {
-          //   Navigator.of(ctx).pop();
-          // }
         },
       ),
       actions: [
@@ -222,15 +219,15 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         }
                         if (_selectedType == 'Check-in') {
                           if (widget.item == null) {
-                            widget.callback(
+                            List<List<DateTime>> splitServeDates = Utils().splitCheckInServeDates(_tempOrder['serveDates']);
+                            for(final dateList in splitServeDates){
+                              widget.callback(
                                 item: PlanScheduleItem(
                                     isStarred: _isStarEvent,
                                     shortDescription:
                                         _shortDescriptionController.text,
                                     description: _descriptionController.text,
-                                    date: DateTime.parse(_tempOrder['serveDates']
-                                        .first
-                                        .toString()),
+                                    date: dateList.first,
                                     orderUUID: _tempOrder['orderUUID'],
                                     activityTime: _selectedTime,
                                     type: _selectedType,
@@ -243,22 +240,18 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                   shortDescription: 'Check-out',
                                   description: 'Check-out nhà nghỉ/khách sạn',
                                   type: 'Check-out',
-                                  date: DateTime.parse(
-                                              _tempOrder['serveDates'].last) ==
+                                  date: dateList.last ==
                                           endDate
-                                      ? DateTime.parse(_tempOrder['serveDates']
-                                          .last
-                                          .toString())
-                                      : DateTime.parse(_tempOrder['serveDates']
-                                              .last
-                                              .toString())
-                                          .add(const Duration(days: 1)),
+                                      ? dateList.last
+                                      : dateList.last.add(const Duration(days: 1)),
                                   orderUUID: _tempOrder['orderUUID'],
                                   activityTime: _selectedTime,
                                   id: widget.item?.id),
                               isCreate: widget.item == null,
                               oldItem: widget.item,
                             );
+                            }
+                            
                           } else {
                             final order = json
                                 .decode(sharedPreferences
@@ -737,7 +730,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     });
                                   }
                                 },
-                                items: schedule_item_types_vn
+                                items: scheduleItemTypesVn
                                     .map(
                                       (e) => DropdownMenuItem(
                                           value: e, child: Text(e)),

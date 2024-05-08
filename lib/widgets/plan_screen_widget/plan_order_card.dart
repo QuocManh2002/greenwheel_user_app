@@ -88,12 +88,30 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                           ? '${Utils().getSupplierType(widget.order.supplier!.type!)}'
                           : '${widget.order.type == services[1].name ? 'Nghỉ tại ' : 'Dùng bữa tại '}${Utils().getSupplierType(widget.order.supplier!.type!)}',
                       style: const TextStyle(
-                          fontSize: 17,
+                          fontSize: 15,
                           color: Colors.white,
                           fontWeight: FontWeight.w500),
                     ),
                   ),
                   const Spacer(),
+                  SizedBox(
+                    width: 25.w,
+                    child: Text(
+                      NumberFormat.simpleCurrency(
+                              locale: 'vi_VN', decimalDigits: 0, name: '')
+                          .format(widget.order.id == null ? widget.order.total! : widget.order.total!/GlobalConstant().VND_CONVERT_RATE),
+                      overflow: TextOverflow.clip,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'NotoSans'),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 2),
+                    child: SvgPicture.asset(gcoinLogo, height: 20,),
+                  ),
                   if (widget.isLeader)
                     InkWell(
                       splashColor: Colors.transparent,
@@ -113,7 +131,7 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                 ],
               ),
               SizedBox(
-                height: 0.5.h,
+                height: 0.2.h,
               ),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -139,24 +157,7 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                     ],
                   ),
                   const Spacer(),
-                  SizedBox(
-                    width: 30.w,
-                    child: Text(
-                      NumberFormat.simpleCurrency(
-                              locale: 'vi_VN', decimalDigits: 0, name: '')
-                          .format(widget.order.id == null ? widget.order.total! : widget.order.total!/GlobalConstant().VND_CONVERT_RATE),
-                      overflow: TextOverflow.clip,
-                      textAlign: TextAlign.end,
-                      style: const TextStyle(
-                          fontSize: 17,
-                          fontWeight: FontWeight.bold,
-                          fontFamily: 'NotoSans'),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: SvgPicture.asset(gcoinLogo, height: 20,),
-                  )
+                  
                 ],
               ),
               if (isShowDetail)
