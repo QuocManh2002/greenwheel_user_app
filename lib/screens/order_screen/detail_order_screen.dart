@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -18,14 +20,18 @@ import 'package:greenwheel_user_app/models/menu_item_cart.dart';
 import 'package:greenwheel_user_app/models/order_input_model.dart';
 import 'package:greenwheel_user_app/models/session.dart';
 import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
+import 'package:greenwheel_user_app/screens/order_screen/rate_order_screen.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/product.dart';
 import 'package:greenwheel_user_app/widgets/order_screen_widget/cancel_order_bottom_sheet.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen(
@@ -37,7 +43,7 @@ class OrderDetailScreen extends StatefulWidget {
       this.planId,
       required this.callback,
       this.isFromTempOrder,
-      this.planStatus,
+      this.planType,
       this.availableGcoinAmount,
       required this.isTempOrder});
   final OrderViewModel order;
@@ -48,7 +54,7 @@ class OrderDetailScreen extends StatefulWidget {
   final DateTime? endDate;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
-  final String? planStatus;
+  final String? planType;
   final void Function() callback;
 
   @override
@@ -106,32 +112,64 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       appBar: AppBar(
         title: const Text('Chi tiết đơn hàng'),
         actions: [
-          if (widget.planStatus == planStatuses[2].engName)
+          if (widget.planType == planStatuses[2].engName ||
+              (widget.endDate != null &&
+                  DateTime.now().isAfter(widget.endDate!
+                      .toLocal()
+                      .add(GlobalConstant().MIN_DURATION_REPORT_ORDER))))
             PopupMenuButton(
               itemBuilder: (context) => [
-                const PopupMenuItem(
-                  value: 0,
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.remove_shopping_cart_outlined,
-                        color: Colors.redAccent,
-                        size: 25,
-                      ),
-                      SizedBox(
-                        width: 8,
-                      ),
-                      Text(
-                        'Huỷ đơn hàng',
-                        style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'NotoSans',
-                            color: Colors.redAccent),
-                      )
-                    ],
+                if (widget.planType == planStatuses[2].engName)
+                  const PopupMenuItem(
+                    value: 0,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.remove_shopping_cart_outlined,
+                          color: Colors.redAccent,
+                          size: 25,
+                        ),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          'Huỷ đơn hàng',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans',
+                              color: Colors.redAccent),
+                        )
+                      ],
+                    ),
                   ),
-                )
+                if (widget.endDate != null &&
+                    DateTime.now().isAfter(widget.endDate!
+                        .toLocal()
+                        .add(GlobalConstant().MIN_DURATION_REPORT_ORDER)))
+                  const PopupMenuItem(
+                    value: 1,
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.flag,
+                          color: Colors.redAccent,
+                          size: 25,
+                        ),
+                        SizedBox(
+                          width: 8,
+                        ),
+                        Text(
+                          'Báo cáo đơn hàng',
+                          style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans',
+                              color: Colors.redAccent),
+                        )
+                      ],
+                    ),
+                  ),
               ],
               onSelected: (value) {
                 if (value == 0) {
@@ -145,6 +183,14 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       orderId: widget.order.id!,
                     ),
                   );
+                } else {
+                  Navigator.push(
+                      context,
+                      PageTransition(
+                          child: RateOrderScreen(
+                            order: widget.order,
+                          ),
+                          type: PageTransitionType.rightToLeft));
                 }
               },
             ),
@@ -247,6 +293,33 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                   fontSize: 20,
                                                   color: Colors.black54),
                                             ),
+                                            const Spacer(),
+                                            InkWell(
+                                                onTap: () async {
+                                                  final Uri url = Uri(
+                                                      scheme: 'tel',
+                                                      path:
+                                                          '0${widget.order.supplier!.phone!.substring(2)}');
+                                                  if (await canLaunchUrl(url)) {
+                                                    await launchUrl(url);
+                                                  }
+                                                },
+                                                child: Container(
+                                                  width: 35,
+                                                  height: 35,
+                                                  decoration: BoxDecoration(
+                                                      color: primaryColor
+                                                          .withOpacity(0.1),
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(
+                                                          color: primaryColor,
+                                                          width: 1.5)),
+                                                  child: const Icon(
+                                                    Icons.phone,
+                                                    size: 20,
+                                                    color: primaryColor,
+                                                  ),
+                                                ))
                                           ],
                                         ),
                                       ),
@@ -256,7 +329,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                             vertical: 0.5.h),
                                         child: Row(
                                           crossAxisAlignment:
-                                              CrossAxisAlignment.start,
+                                              CrossAxisAlignment.center,
                                           children: [
                                             const Icon(
                                               Icons.home,
@@ -266,15 +339,60 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                             SizedBox(
                                               width: 2.w,
                                             ),
-                                            SizedBox(
-                                              width: 70.w,
+                                            Expanded(
                                               child: Text(
                                                 widget.order.supplier!.address!,
+                                                overflow: TextOverflow.clip,
                                                 style: const TextStyle(
                                                     fontSize: 15,
                                                     color: Colors.black54),
                                               ),
                                             ),
+                                            if (widget
+                                                    .order.supplier!.latitude !=
+                                                null)
+                                              InkWell(
+                                                  onTap: () {
+                                                    Navigator.push(
+                                                        context,
+                                                        PageTransition(
+                                                            child:
+                                                                LocalMapScreen(
+                                                              title:
+                                                                  'Địa chỉ dịch vụ',
+                                                              toAddress: widget
+                                                                  .order
+                                                                  .supplier!
+                                                                  .name,
+                                                              toLocation: PointLatLng(
+                                                                  widget
+                                                                      .order
+                                                                      .supplier!
+                                                                      .latitude!,
+                                                                  widget
+                                                                      .order
+                                                                      .supplier!
+                                                                      .longitude!),
+                                                            ),
+                                                            type: PageTransitionType
+                                                                .rightToLeft));
+                                                  },
+                                                  child: Container(
+                                                    width: 35,
+                                                    height: 35,
+                                                    decoration: BoxDecoration(
+                                                        color: primaryColor
+                                                            .withOpacity(0.1),
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(
+                                                            color: primaryColor,
+                                                            width: 1.5)),
+                                                    child: const Icon(
+                                                      Icons.location_on,
+                                                      color: primaryColor,
+                                                      size: 20,
+                                                    ),
+                                                  ))
                                           ],
                                         ),
                                       ),
@@ -572,7 +690,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     ],
                                   ),
                                 const SizedBox(
-                                  height: 12,
+                                  height: 6,
                                 ),
                                 Divider(
                                   color: Colors.grey.withOpacity(0.7),

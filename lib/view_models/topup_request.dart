@@ -9,7 +9,7 @@ class TopupRequestViewModel {
 
   factory TopupRequestViewModel.fromJson(Map<String, dynamic> json) =>
       TopupRequestViewModel(
-        transactionId: json["transactionId"],
+        transactionId: json["transaction"]['id'],
         paymentUrl: json["paymentUrl"],
       );
 

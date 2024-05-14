@@ -100,7 +100,8 @@ class _CartScreenState extends State<CartScreen> {
   }
 
   setUpdata() async {
-    finalTotal = widget.total * (widget.servingDates != null ? widget.servingDates!.length : 1) ;
+    finalTotal = widget.total *
+        (widget.servingDates != null ? widget.servingDates!.length : 1);
     list = widget.list;
     supplier = widget.supplier;
     noteController.text = widget.note;
@@ -866,9 +867,7 @@ class _CartScreenState extends State<CartScreen> {
           ).show();
           Future.delayed(const Duration(seconds: 1), () {
             widget.callbackFunction(null);
-            if (widget.isOrder == null) {
-              Navigator.of(context).pop();
-            }
+            Navigator.of(context).pop();
             Navigator.of(context).pop();
             Navigator.of(context).pop();
             Navigator.of(context).pop();

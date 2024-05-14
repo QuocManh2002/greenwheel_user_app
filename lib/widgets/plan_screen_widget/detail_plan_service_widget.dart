@@ -2,20 +2,17 @@
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
-import 'package:greenwheel_user_app/core/constants/service_types.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/list_order_screen.dart';
-import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_order_card.dart';
-import 'package:intl/intl.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_total_info.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/service_types.dart';
+import '../../screens/plan_screen/list_order_screen.dart';
+import '../../service/location_service.dart';
+import '../../service/plan_service.dart';
+import '../../view_models/order.dart';
+import '../../view_models/plan_viewmodels/plan_detail.dart';
+import 'plan_order_card.dart';
 
 class DetailPlanServiceWidget extends StatefulWidget {
   const DetailPlanServiceWidget(
@@ -23,7 +20,7 @@ class DetailPlanServiceWidget extends StatefulWidget {
       required this.plan,
       required this.isLeader,
       required this.tempOrders,
-      required this.total,
+      required this.totalOrder,
       required this.planType,
       this.orderList,
       required this.onGetOrderList});
@@ -32,7 +29,7 @@ class DetailPlanServiceWidget extends StatefulWidget {
   final void Function() onGetOrderList;
   final List<OrderViewModel>? orderList;
   final List<OrderViewModel> tempOrders;
-  final double total;
+  final double totalOrder;
   final String planType;
 
   @override
@@ -50,6 +47,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
   List<OrderViewModel> foodOrderList = [];
   List<OrderViewModel> movingOrderList = [];
   bool isShowTotal = false;
+  double _totalSurcharge = 0;
 
   @override
   void initState() {
@@ -59,11 +57,20 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
 
   setUpData() {
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
-    _orderList = widget.orderList ?? [];
-    final orderGroups = _orderList.groupListsBy((element) => element.type);
-    roomOrderList = orderGroups[services[1].name] ?? [];
-    foodOrderList = orderGroups[services[0].name] ?? [];
-    movingOrderList = orderGroups[services[2].name] ?? [];
+    _totalSurcharge = (widget.plan.surcharges ?? []).fold(
+      0,
+      (previousValue, element) =>
+          previousValue +
+          (element.imagePath != null ? element.gcoinAmount : 0) *
+              widget.plan.memberCount!,
+    );
+    setState(() {
+      _orderList = widget.orderList ?? [];
+      final orderGroups = _orderList.groupListsBy((element) => element.type);
+      roomOrderList = orderGroups[services[1].name] ?? [];
+      foodOrderList = orderGroups[services[0].name] ?? [];
+      movingOrderList = orderGroups[services[2].name] ?? [];
+    });
     isShowTotal =
         widget.plan.status != 'PENDING' && widget.plan.status != 'REGISTERING';
   }
@@ -84,6 +91,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
 
   @override
   Widget build(BuildContext context) {
+    setUpData();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -101,8 +109,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 TextButton(
                     onPressed: () async {
                       if (widget.plan.status == 'READY') {
-                        final rs = await _locationService.getLocationById(
-                            widget.plan.locationId!);
+                        final rs = await _locationService
+                            .getLocationById(widget.plan.locationId!);
                         if (rs != null) {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (ctx) => ListOrderScreen(
@@ -110,13 +118,13 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                                         widget.plan.actualGcoinBudget,
                                     planId: widget.plan.id!,
                                     orders: widget.tempOrders
-                                        .where((element) => !widget.orderList!
+                                        .where((element) => !_orderList
                                             .any((e) => e.uuid == element.uuid))
                                         .toList(),
                                     startDate:
                                         widget.plan.utcStartAt!.toLocal(),
                                     callback: (p) {
-                                      refreshData();
+                                      widget.onGetOrderList();
                                     },
                                     endDate: widget.plan.utcEndAt!.toLocal(),
                                     memberLimit: widget.plan.memberCount!,
@@ -171,9 +179,12 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 itemCount: roomOrderList.length,
                 itemBuilder: (context, index) {
                   return PlanOrderCard(
-                      callback: widget.onGetOrderList,
+                      callback: () {
+                        widget.onGetOrderList();
+                      },
                       isShowQuantity: true,
-                      planStatus: widget.plan.status,
+                      endDate: widget.plan.utcEndAt,
+                      planType: widget.planType,
                       order: roomOrderList[index],
                       isLeader: widget.isLeader);
                 },
@@ -184,9 +195,11 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 itemCount: foodOrderList.length,
                 itemBuilder: (context, index) {
                   return PlanOrderCard(
-                      callback: widget.onGetOrderList,
+                      callback: () {
+                        widget.onGetOrderList();
+                      },
                       isShowQuantity: true,
-                      planStatus: widget.plan.status,
+                      planType: widget.planType,
                       order: foodOrderList[index],
                       isLeader: widget.isLeader);
                 },
@@ -197,9 +210,11 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                 itemCount: movingOrderList.length,
                 itemBuilder: (context, index) {
                   return PlanOrderCard(
-                      callback: widget.onGetOrderList,
+                      callback: () {
+                        widget.onGetOrderList();
+                      },
                       isShowQuantity: true,
-                      planStatus: widget.plan.status,
+                      planType: widget.planType,
                       order: movingOrderList[index],
                       isLeader: widget.isLeader);
                 },
@@ -210,82 +225,13 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
             height: 8,
           ),
           if (widget.isLeader)
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 8),
-              child: Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                    borderRadius: const BorderRadius.all(Radius.circular(12)),
-                    color: Colors.grey.withOpacity(0.2)),
-                child: Column(
-                  children: [
-                    buildAmountInfo(
-                        'Dự tính:',
-                        widget.plan.gcoinBudgetPerCapita! *
-                            widget.plan.maxMemberCount!),
-                    buildAmountInfo(
-                        'Đã thu:',
-                        widget.plan.gcoinBudgetPerCapita! *
-                            widget.plan.memberCount!),
-                    if (isShowTotal)
-                      buildAmountInfo(
-                          'Hiện tại:', widget.plan.actualGcoinBudget!),
-                    if (isShowTotal)
-                      buildAmountInfo(
-                          'Đã chi:',
-                          widget.plan.status == planStatuses[0].engName ||
-                                  widget.plan.status == planStatuses[1].engName
-                              ? 0
-                              : widget.total /
-                                  GlobalConstant().VND_CONVERT_RATE),
-                    if (isShowTotal)
-                      buildAmountInfo(
-                          'Số tiền đã bù:',
-                          widget.plan.maxMemberCount! *
-                                  widget.plan.gcoinBudgetPerCapita! -
-                              widget.plan.memberCount! *
-                                  widget.plan.gcoinBudgetPerCapita!),
-                  ],
-                ),
-              ),
-            ),
+            PlanTotalInfo(
+                plan: widget.plan,
+                isShowTotal: isShowTotal,
+                totalOrder: widget.totalOrder.toInt(),
+                totalSurcharge: _totalSurcharge.toInt())
         ],
       ),
     );
   }
-
-  buildAmountInfo(String title, num amount) => Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              title,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const Spacer(),
-            SizedBox(
-              width: 30.w,
-              child: Text(
-                NumberFormat.simpleCurrency(
-                        locale: 'vi-VN', decimalDigits: 0, name: "")
-                    .format(amount),
-                textAlign: TextAlign.end,
-                style:
-                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.only(top: 3),
-              child: SvgPicture.asset(
-                gcoinLogo,
-                height: 18,
-              ),
-            ),
-            SizedBox(
-              width: 5.w,
-            )
-          ],
-        ),
-      );
 }

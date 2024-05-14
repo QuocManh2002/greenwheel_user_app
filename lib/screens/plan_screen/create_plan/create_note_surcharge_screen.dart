@@ -474,7 +474,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       DateTime departureDate =
           DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
       final departureTime =
-          DateTime.parse(sharedPreferences.getString('plan_start_time')!);
+          DateTime.parse(sharedPreferences.getString('plan_departureTime')!);
       departureDate =
           DateTime(departureDate.year, departureDate.month, departureDate.day)
               .add(Duration(hours: departureTime.hour))

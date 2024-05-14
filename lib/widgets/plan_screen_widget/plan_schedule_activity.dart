@@ -22,12 +22,14 @@ class PlanScheduleActivity extends StatefulWidget {
     required this.onDetele,
     required this.onUpdate,
     required this.callback,
+    this.isValidPeriodOfOrder,
     this.itemIndex,
   });
   final PlanScheduleItem item;
   final bool isCreate;
   final dynamic orderList;
   final int? itemIndex;
+  final bool? isValidPeriodOfOrder;
   final void Function(PlanScheduleItem item) onUpdate;
   final void Function(PlanScheduleItem item, String? orderUUID) onDetele;
   final void Function(bool isUpper, int itemIndex) onAdd;
@@ -250,8 +252,9 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                             TextAlign.end,
                                                         style: const TextStyle(
                                                             fontSize: 16,
+                                                            color: Colors.black54,
                                                             fontWeight:
-                                                                FontWeight.w500,
+                                                                FontWeight.w300,
                                                             fontFamily:
                                                                 'NotoSans'),
                                                         overflow:
@@ -400,6 +403,8 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                             overflow: TextOverflow.clip,
                           ),
                         ),
+                        if(widget.isValidPeriodOfOrder != null && !widget.isValidPeriodOfOrder!)
+                        const Icon(Icons.warning, color: Colors.red, size: 23,),
                         PopupMenuButton(
                           itemBuilder: (context) => [
                             PopupMenuItem(

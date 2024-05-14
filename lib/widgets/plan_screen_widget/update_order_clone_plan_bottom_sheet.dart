@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class UpdateOrderClonePlanBottomSheet extends StatelessWidget {
@@ -130,12 +127,35 @@ class UpdateOrderClonePlanBottomSheet extends StatelessWidget {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              for (final date in totalOrders[index]
-                                  ['serveDates'])
+                              // for (final date in totalOrders[index]
+                              //     ['serveDates'])
+                              //   RichText(
+                              //     text: TextSpan(
+                              //         text: DateFormat('dd/MM/yyyy')
+                              //             .format(DateTime.parse(date)),
+                              //         style: const TextStyle(
+                              //           color: Colors.black,
+                              //           fontSize: 15,
+                              //           fontWeight: FontWeight.w500,
+                              //           fontFamily: 'NotoSans',
+                              //         ),
+                              //         children: [
+                              //           if (Utils()
+                              //               .isHoliday(DateTime.parse(date)))
+                              //             const TextSpan(
+                              //                 text: ' (ngày lễ)',
+                              //                 style: TextStyle(
+                              //                     fontSize: 13,
+                              //                     color: Colors.black54,
+                              //                     fontWeight:
+                              //                         FontWeight.normal))
+                              //         ]),
+                              //   ),
+                              for (final detail in totalOrders[index]
+                                  ['details'])
                                 RichText(
                                   text: TextSpan(
-                                      text: DateFormat('dd/MM/yyyy')
-                                          .format(DateTime.parse(date)),
+                                      text: detail['productName'],
                                       style: const TextStyle(
                                         color: Colors.black,
                                         fontSize: 15,
@@ -143,44 +163,41 @@ class UpdateOrderClonePlanBottomSheet extends StatelessWidget {
                                         fontFamily: 'NotoSans',
                                       ),
                                       children: [
-                                        if (Utils()
-                                            .isHoliday(DateTime.parse(date)))
-                                          const TextSpan(
-                                              text: ' (ngày lễ)',
-                                              style: TextStyle(
-                                                  fontSize: 13,
-                                                  color: Colors.black54,
-                                                  fontWeight:
-                                                      FontWeight.normal))
+                                        TextSpan(
+                                            text: ' x${detail['quantity']}',
+                                            style: const TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.black54,
+                                                fontWeight: FontWeight.normal))
                                       ]),
                                 ),
                               SizedBox(
                                 height: 0.1.h,
                               ),
-                              Row(
-                                children: [
-                                  Text(
-                                    NumberFormat.simpleCurrency(
-                                            locale: 'vi_VN',
-                                            name: '',
-                                            decimalDigits: 0)
-                                        .format(totalOrders[index]['total']),
-                                    textAlign: TextAlign.end,
-                                    overflow: TextOverflow.clip,
-                                    style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: 'NotoSans'),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 4),
-                                    child: SvgPicture.asset(
-                                      gcoinLogo,
-                                      height: 16,
-                                    ),
-                                  )
-                                ],
-                              ),
+                              // Row(
+                              //   children: [
+                              //     Text(
+                              //       NumberFormat.simpleCurrency(
+                              //               locale: 'vi_VN',
+                              //               name: '',
+                              //               decimalDigits: 0)
+                              //           .format(totalOrders[index]['total']),
+                              //       textAlign: TextAlign.end,
+                              //       overflow: TextOverflow.clip,
+                              //       style: const TextStyle(
+                              //           fontSize: 16,
+                              //           fontWeight: FontWeight.bold,
+                              //           fontFamily: 'NotoSans'),
+                              //     ),
+                              //     Padding(
+                              //       padding: const EdgeInsets.only(top: 4),
+                              //       child: SvgPicture.asset(
+                              //         gcoinLogo,
+                              //         height: 16,
+                              //       ),
+                              //     )
+                              //   ],
+                              // ),
                             ],
                           ),
                         ),
@@ -207,83 +224,82 @@ class UpdateOrderClonePlanBottomSheet extends StatelessWidget {
                                 ? Column(
                                     crossAxisAlignment: CrossAxisAlignment.end,
                                     children: [
-                                      for (final newDate
+                                      // for (final newDate
+                                      // in updatedOrders.firstWhere((order) =>
+                                      //         order['orderUUID'] ==
+                                      //         totalOrders[index]
+                                      //             ['orderUUID'])[
+                                      //     'newServeDates'])
+                                      // Text(
+                                      //   DateFormat('dd/MM/yyyy')
+                                      //       .format(DateTime.parse(newDate)),
+                                      //   style: const TextStyle(
+                                      //       fontSize: 15,
+                                      //       fontWeight: FontWeight.w500,
+                                      //       fontFamily: 'NotoSans'),
+                                      // ),
+                                      for (final newDetail
                                           in updatedOrders.firstWhere((order) =>
-                                                  order['orderUUID'] ==
-                                                  totalOrders[index]
-                                                      ['orderUUID'])[
-                                              'newServeDates'])
-                                        // Text(
-                                        //   DateFormat('dd/MM/yyyy')
-                                        //       .format(DateTime.parse(newDate)),
-                                        //   style: const TextStyle(
-                                        //       fontSize: 15,
-                                        //       fontWeight: FontWeight.w500,
-                                        //       fontFamily: 'NotoSans'),
-                                        // ),
+                                              order['orderUUID'] ==
+                                              totalOrders[index]
+                                                  ['orderUUID'])['newDetails'])
                                         RichText(
                                           text: TextSpan(
-                                              text: Utils().isHoliday(
-                                                      DateTime.parse(newDate))
-                                                  ? '(ngày lễ) '
-                                                  : '',
+                                              text: newDetail['productName'],
                                               style: const TextStyle(
-                                                color: Colors.black54,
-                                                fontSize: 13,
-                                                fontWeight: FontWeight.normal,
+                                                color: Colors.black,
+                                                fontSize: 15,
+                                                fontWeight: FontWeight.w500,
                                                 fontFamily: 'NotoSans',
                                               ),
                                               children: [
                                                 TextSpan(
                                                     text:
-                                                        DateFormat('dd/MM/yyyy')
-                                                            .format(
-                                                                DateTime.parse(
-                                                                    newDate)),
+                                                        ' x${newDetail['quantity']}',
                                                     style: const TextStyle(
-                                                        fontSize: 15,
-                                                        color: Colors.black,
+                                                        fontSize: 13,
+                                                        color: Colors.black54,
                                                         fontWeight:
-                                                            FontWeight.w500))
+                                                            FontWeight.normal))
                                               ]),
                                         ),
                                       SizedBox(
                                         height: 0.1.h,
                                       ),
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.end,
-                                        children: [
-                                          Text(
-                                            NumberFormat.simpleCurrency(
-                                                    locale: 'vi_VN',
-                                                    name: '',
-                                                    decimalDigits: 0)
-                                                .format(updatedOrders
-                                                        .firstWhere((order) =>
-                                                            order[
-                                                                'orderUUID'] ==
-                                                            totalOrders[
-                                                                    index]
-                                                                ['orderUUID'])[
-                                                    'newTotal']),
-                                            textAlign: TextAlign.end,
-                                            overflow: TextOverflow.clip,
-                                            style: const TextStyle(
-                                                fontSize: 16,
-                                                fontWeight: FontWeight.bold,
-                                                fontFamily: 'NotoSans'),
-                                          ),
-                                          Padding(
-                                            padding:
-                                                const EdgeInsets.only(top: 4),
-                                            child: SvgPicture.asset(
-                                              gcoinLogo,
-                                              height: 16,
-                                            ),
-                                          )
-                                        ],
-                                      ),
+                                      // Row(
+                                      //   mainAxisAlignment:
+                                      //       MainAxisAlignment.end,
+                                      //   children: [
+                                      //     Text(
+                                      //       NumberFormat.simpleCurrency(
+                                      //               locale: 'vi_VN',
+                                      //               name: '',
+                                      //               decimalDigits: 0)
+                                      //           .format(updatedOrders
+                                      //                   .firstWhere((order) =>
+                                      //                       order[
+                                      //                           'orderUUID'] ==
+                                      //                       totalOrders[
+                                      //                               index]
+                                      //                           ['orderUUID'])[
+                                      //               'newTotal']),
+                                      //       textAlign: TextAlign.end,
+                                      //       overflow: TextOverflow.clip,
+                                      //       style: const TextStyle(
+                                      //           fontSize: 16,
+                                      //           fontWeight: FontWeight.bold,
+                                      //           fontFamily: 'NotoSans'),
+                                      //     ),
+                                      //     Padding(
+                                      //       padding:
+                                      //           const EdgeInsets.only(top: 4),
+                                      //       child: SvgPicture.asset(
+                                      //         gcoinLogo,
+                                      //         height: 16,
+                                      //       ),
+                                      //     )
+                                      //   ],
+                                      // ),
                                     ],
                                   )
                                 : Text(

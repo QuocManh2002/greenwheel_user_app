@@ -5,27 +5,34 @@ import 'package:collection/collection.dart';
 import 'package:dart_jts/dart_jts.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/sessions.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
-import 'package:greenwheel_user_app/service/product_service.dart';
-import 'package:greenwheel_user_app/service/supplier_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/update_order_clone_plan_bottom_sheet.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_start_location_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:sizer2/sizer2.dart';
 
+import '../core/constants/colors.dart';
+import '../core/constants/combo_date_plan.dart';
+import '../core/constants/global_constant.dart';
+import '../core/constants/service_types.dart';
+import '../core/constants/sessions.dart';
+import '../main.dart';
 import '../models/holiday.dart';
+import '../service/order_service.dart';
+import '../service/product_service.dart';
+import '../service/supplier_service.dart';
+import '../service/traveler_service.dart';
+import '../view_models/customer.dart';
+import '../view_models/location.dart';
+import '../view_models/plan_viewmodels/plan_create.dart';
+import '../view_models/plan_viewmodels/plan_detail.dart';
+import '../view_models/plan_viewmodels/plan_schedule.dart';
 import '../view_models/plan_viewmodels/plan_schedule_item.dart';
+import '../view_models/plan_viewmodels/search_start_location_result.dart';
+import '../view_models/product.dart';
+import '../widgets/plan_screen_widget/update_order_clone_plan_bottom_sheet.dart';
+import '../widgets/style_widget/dialog_style.dart';
+import 'goong_request.dart';
 
 class Utils {
   static List<Widget> modelBuilder<M>(
@@ -48,7 +55,6 @@ class Utils {
     sharedPreferences.remove("plan_combo_date");
     sharedPreferences.remove("plan_start_lat");
     sharedPreferences.remove("plan_start_lng");
-    sharedPreferences.remove("plan_start_time");
     sharedPreferences.remove("plan_distance_text");
     sharedPreferences.remove("plan_duration_text");
     sharedPreferences.remove("plan_distance_value");
@@ -58,6 +64,7 @@ class Utils {
     sharedPreferences.remove('plan_schedule');
     sharedPreferences.remove('plan_saved_emergency');
     sharedPreferences.remove('numOfExpPeriod');
+    sharedPreferences.remove("plan_departureTime");
     sharedPreferences.remove('plan_departureDate');
     sharedPreferences.remove('plan_closeRegDate');
     sharedPreferences.remove('plan_budget');
@@ -330,7 +337,7 @@ class Utils {
 
   getArrivedTimeFromLocal() {
     final initialDateTime =
-        DateTime.parse(sharedPreferences.getString('plan_start_time')!);
+        DateTime.parse(sharedPreferences.getString('plan_departureTime')!);
     final startTime =
         DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
     final arrivedTime = startTime.add(Duration(
@@ -344,6 +351,7 @@ class Utils {
     sharedPreferences.setInt('planId', plan.id!);
     sharedPreferences.setString('plan_location_name', plan.locationName!);
     sharedPreferences.setInt('plan_location_id', plan.locationId!);
+    sharedPreferences.setInt('maxCombodateValue', plan.numOfExpPeriod!);
     if (options[0]) {
       sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
       sharedPreferences.setInt(
@@ -454,18 +462,13 @@ class Utils {
 
   handleAlreadyDraft(BuildContext context, LocationViewModel location,
       String locationName, bool isClone, PlanDetail? plan, List<bool> options) {
-    AwesomeDialog(
+    DialogStyle().basicDialog(
       context: context,
-      animType: AnimType.leftSlide,
-      dialogType: DialogType.question,
+      type: DialogType.question,
       title:
           'Bạn đang có bản nháp chuyến đi tại ${locationName == location.name ? 'địa điểm này' : locationName}',
-      titleTextStyle: const TextStyle(
-          fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
       desc: 'Bạn có muốn ghi đè chuyến đi đó không ?',
-      descTextStyle: const TextStyle(
-          fontSize: 16, color: Colors.grey, fontFamily: 'NotoSans'),
-      btnOkOnPress: () async {
+      onOk: () {
         Utils().clearPlanSharePref();
         sharedPreferences.setString('plan_location_name', location.name);
         sharedPreferences.setInt('plan_location_id', location.id);
@@ -473,7 +476,7 @@ class Utils {
           setUpDataClonePlan(plan!, options);
         }
         Navigator.of(context).push(MaterialPageRoute(
-            builder: (ctx) => SelectComboDateScreen(
+            builder: (ctx) => SelectStartLocationScreen(
                   isCreate: true,
                   location: location,
                   isClone: isClone,
@@ -481,37 +484,27 @@ class Utils {
       },
       btnOkColor: Colors.deepOrangeAccent,
       btnOkText: 'Có',
+      btnCancelColor: Colors.blueAccent,
       btnCancelText: 'Không',
-      btnCancelColor: Colors.blue,
-      btnCancelOnPress: () {
+      onCancel: () {
         if (locationName == location.name) {
           Navigator.of(context).push(MaterialPageRoute(
-              builder: (ctx) => SelectComboDateScreen(
+              builder: (ctx) => SelectStartLocationScreen(
                     isCreate: true,
                     location: location,
                     isClone: isClone,
                   )));
         }
       },
-    ).show();
+    );
   }
 
   showInvalidScheduleAndServiceClone(BuildContext context) {
-    AwesomeDialog(
-            context: context,
-            title:
-                'Không thể sao chép đơn dịch vụ nếu không sao chép lịch trình',
-            animType: AnimType.leftSlide,
-            dialogType: DialogType.warning,
-            titleTextStyle: const TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'NotoSans'),
-            padding: const EdgeInsets.symmetric(horizontal: 8),
-            btnOkColor: Colors.amber,
-            btnOkOnPress: () {},
-            btnOkText: 'OK')
-        .show();
+    DialogStyle().basicDialog(
+      context: context,
+      title: 'Không thể sao chép đơn dịch vụ nếu không sao chép lịch trình',
+      type: DialogType.warning,
+    );
   }
 
   getHolidayServingDates(List<Holiday> holidays, List<DateTime> servingDates) {
@@ -533,15 +526,47 @@ class Utils {
     };
   }
 
-  updateTempOrder(bool isChangeByMember) async {
+  updateTempOrder(bool isChangeByMember, int? newMaxMemberCount) async {
     final newMaxMemberCount = sharedPreferences.getInt('plan_number_of_member');
     var orderList =
         json.decode(sharedPreferences.getString('plan_temp_order')!);
+    final ProductService productService = ProductService();
+    final OrderService orderService = OrderService();
     if (isChangeByMember) {
       for (final order in orderList) {
-        for (final detail in order['details']) {
-          detail['quantity'] =
-              (newMaxMemberCount! / detail['partySize']).ceil();
+        if (order['type'] == services[1].name) {
+          List<ProductViewModel> products = await productService
+              .getProductsBySupplierId(order['providerId'], order['period']);
+          final result = orderService.getCheapestDetailCheckinOrder(
+              products, newMaxMemberCount!);
+          final resultGroupBy = result.groupListsBy((element) => element.id);
+          var newDetails = [];
+          for (final detail in resultGroupBy.values) {
+            newDetails.add({
+              'productId': detail.first.id,
+              'productName': detail.first.name,
+              'quantity': detail.length,
+              'partySize': detail.first.partySize,
+              'unitPrice': detail.first.price.toDouble(),
+              'price': detail.first.price.toDouble()
+            });
+          }
+          order['newDetails'] = newDetails;
+        } else {
+          var newDetails = [];
+          for (final detail in order['details']) {
+            var newDetail = {
+              'productId': detail['productId'],
+              'productName': detail['productName'],
+              'partySize': detail['partySize'],
+              'unitPrice': detail['unitPrice'].toDouble(),
+              'price': detail['price'].toDouble()
+            };
+            newDetail['quantity'] =
+                (newMaxMemberCount! / detail['partySize']).ceil();
+            newDetails.add(newDetail);
+          }
+          order['newDetails'] = newDetails;
         }
         order['newTotal'] = getTempOrderTotal(order, false);
       }
@@ -557,7 +582,7 @@ class Utils {
             .map((e) =>
                 startDate.add(Duration(days: e)).toString().split(' ')[0])
             .toList();
-        order['total'] = getTempOrderTotal(order, false);
+        order['newTotal'] = getTempOrderTotal(order, false);
       }
     }
     sharedPreferences.setString('plan_temp_order', json.encode(orderList));
@@ -588,7 +613,7 @@ class Utils {
           newIndexes.add(index);
         }
       }
-      if (newIndexes.isNotEmpty) {
+      if (newIndexes.isNotEmpty && newIndexes != order['serveDateIndexes']) {
         if (isChangeDate) {
           final startDate =
               DateTime.parse(sharedPreferences.getString('plan_start_date')!);
@@ -656,7 +681,9 @@ class Utils {
               final index = tempOrders.indexOf(temp);
               tempOrders[index]['total'] = order['newTotal'];
               tempOrders[index]['serveDates'] = order['newServeDates'];
-              if (isChangeDate && order['type'] == 'CHECKIN') {
+              tempOrders[index]['details'] = order['newDetails'];
+              tempOrders[index]['serveDateIndexes'] = order['newIndexes'];
+              if (isChangeDate && order['type'] == services[1].name) {
                 final List<List<DateTime>> splitServeDates =
                     splitCheckInServeDates(order['newServeDates']);
                 final endDate = DateTime.parse(
@@ -695,6 +722,10 @@ class Utils {
                   }
                 }
               }
+              order['newTotal'] = null;
+              order['newServeDates'] = null;
+              order['newDetails'] = null;
+              order['newIndexes'] = null;
             }
             sharedPreferences.setString(
                 'plan_schedule', json.encode(newSchedule));
@@ -746,7 +777,7 @@ class Utils {
         }
       }
       if (invalidOrders.isNotEmpty) {
-        final rs = await AwesomeDialog(
+        await AwesomeDialog(
                 // ignore: use_build_context_synchronously
                 context: context,
                 animType: AnimType.leftSlide,
@@ -930,7 +961,8 @@ class Utils {
             .toList()
             .length;
     final upPct = getHolidayUpPct(order['type']);
-    return order['details'].fold(
+    if(order['newDetails'] != null){
+      return order['newDetails'].fold(
         0,
         (previousValue, element) =>
             previousValue +
@@ -940,6 +972,18 @@ class Utils {
                             .length -
                         numberHoliday)) /
                 GlobalConstant().VND_CONVERT_RATE);
+    }else{
+      return order['details'].fold(
+        0,
+        (previousValue, element) =>
+            previousValue +
+            (element['unitPrice'] * element['quantity']) *
+                ((1 + upPct / 100) * numberHoliday +
+                    ((isUpdate ? order['newServeDates'] : order['serveDates'])
+                            .length -
+                        numberHoliday)) /
+                GlobalConstant().VND_CONVERT_RATE);
+    }
   }
 
   splitCheckInServeDates(List<String> serveDates) {
@@ -992,6 +1036,81 @@ class Utils {
       final orderPeriod =
           sessions.firstWhere((session) => session.enumName == order['period']);
       return startActivitySession.index <= orderPeriod.index;
+    }
+  }
+
+  updateSurcharge(int newMaxMemberCount) {
+    // final surcharges =
+    //     json.decode(sharedPreferences.getString('plan_surcharge')!);
+  }
+
+  handleNonDefaultAddress(void Function() onOk, BuildContext context) {
+    DialogStyle().basicDialog(
+        context: context,
+        type: DialogType.warning,
+        title: 'Không tìm thấy địa chỉ mặc định',
+        desc: 'Bạn phải thêm địa chỉ mặc định để thực hiện thao tác này',
+        btnOkText: 'Thêm',
+        onOk: onOk,
+        btnCancelColor: Colors.blue,
+        btnCancelText: 'Huỷ');
+  }
+
+  callbackSelectDefaultLocation(SearchStartLocationResult? selectedAddress,
+      PointLatLng? selectedLatLng, BuildContext context) async {
+    bool isValid = false;
+    final CustomerService customerService = CustomerService();
+    String defaultAddress = '';
+    if (selectedAddress != null) {
+      if (selectedAddress.address.length < 3 ||
+          selectedAddress.address.length > 120) {
+        DialogStyle().basicDialog(
+            context: context,
+            title: 'Độ dài địa chỉ mặc định phải từ 3 - 120 ký tự',
+            type: DialogType.warning);
+      } else {
+        // setState(() {
+        defaultAddress = selectedAddress.address;
+        // });
+        isValid = true;
+      }
+    } else {
+      var result = await getPlaceDetail(selectedLatLng!);
+      if (result != null) {
+        if (result['results'][0]['formatted_address'].length < 3 ||
+            result['results'][0]['formatted_address'].length > 120) {
+          DialogStyle().basicDialog(
+              // ignore: use_build_context_synchronously
+              context: context,
+              title: 'Độ dài địa chỉ mặc định phải từ 3 - 120 ký tự',
+              type: DialogType.warning);
+        } else {
+          // setState(() {
+          defaultAddress = result['results'][0]['formatted_address'];
+          // });
+          isValid = true;
+        }
+      }
+    }
+    if (isValid) {
+      final rs = await customerService.updateTravelerProfile(CustomerViewModel(
+          id: 0,
+          name: sharedPreferences.getString('userName')!,
+          isMale: sharedPreferences.getBool('userIsMale')!,
+          avatarUrl: sharedPreferences.getString('userAvatarUrl'),
+          phone: sharedPreferences.getString('userPhone')!,
+          balance: 0,
+          defaultAddress: defaultAddress,
+          defaultCoordinate: selectedAddress != null
+              ? PointLatLng(selectedAddress.lat, selectedAddress.lng)
+              : selectedLatLng));
+      if (rs != null) {
+        Utils().saveDefaultAddressToSharedPref(
+            defaultAddress,
+            selectedAddress == null
+                ? selectedLatLng!
+                : PointLatLng(selectedAddress.lat, selectedAddress.lng));
+      }
     }
   }
 }

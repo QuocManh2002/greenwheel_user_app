@@ -4,33 +4,36 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/tags.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/goong_request.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/select_default_address.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/location_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/location_screen/add_comment_screen.dart';
-import 'package:greenwheel_user_app/screens/location_screen/all_comment_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/suggest_plan_by_location.dart';
-import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
-import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/service/traveler_service.dart';
-import 'package:greenwheel_user_app/view_models/customer.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/comment_card.dart';
-import 'package:greenwheel_user_app/widgets/search_screen_widget/tag.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:readmore/readmore.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/global_constant.dart';
+import '../../core/constants/tags.dart';
+import '../../core/constants/urls.dart';
+import '../../helpers/goong_request.dart';
+import '../../helpers/util.dart';
+import '../../main.dart';
+import '../../models/tag.dart';
+import '../../service/location_service.dart';
+import '../../service/traveler_service.dart';
+import '../../view_models/customer.dart';
+import '../../view_models/location.dart';
+import '../../view_models/location_viewmodels/comment.dart';
+import '../../view_models/plan_viewmodels/search_start_location_result.dart';
+import '../../widgets/plan_screen_widget/comment_card.dart';
+import '../../widgets/search_screen_widget/tag.dart';
+import '../../widgets/style_widget/button_style.dart';
+import '../../widgets/style_widget/dialog_style.dart';
+import '../authentication_screen/select_default_address.dart';
+import '../loading_screen/location_loading_screen.dart';
+import '../plan_screen/create_plan/select_start_location_screen.dart';
+import '../plan_screen/suggest_plan_by_location.dart';
+import '../sub_screen/local_map_screen.dart';
+import 'add_comment_screen.dart';
+import 'all_comment_screen.dart';
 
 class LocationScreen extends StatefulWidget {
   const LocationScreen({super.key, required this.locationId});
@@ -50,6 +53,7 @@ class _LocationScreenState extends State<LocationScreen> {
   List<CommentViewModel> _comments = [];
   final LocationService _locationService = LocationService();
   final CustomerService _customerService = CustomerService();
+  final Utils util = Utils();
   LocationViewModel? location;
   int? numberOfPublishedPlan = 0;
   int numberOfComment = 0;
@@ -290,11 +294,17 @@ class _LocationScreenState extends State<LocationScreen> {
                                 child: ElevatedButton.icon(
                                   onPressed: () {
                                     if (defaultAddress == null) {
-                                      handleNonDefaultAddress(false);
+                                      util.handleNonDefaultAddress(() {
+                                        Navigator.of(context).push(MaterialPageRoute(
+                                            builder: (ctx) => SelectDefaultAddress(
+                                                callback:
+                                                    callbackSelectDefaultLocation)));
+                                      }, context);
                                     } else {
                                       Navigator.of(context).push(
                                           MaterialPageRoute(
                                               builder: (ctx) => LocalMapScreen(
+                                                  title: 'Bản đồ định hướng',
                                                   location: location!)));
                                     }
                                   },
@@ -460,8 +470,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                       horizontal: 20, vertical: 10),
                                   child: CommentCard(
                                       isViewAll: false,
-                                      comment:
-                                          _comments[index]),
+                                      comment: _comments[index]),
                                 ),
                               ),
                               Container(
@@ -528,24 +537,31 @@ class _LocationScreenState extends State<LocationScreen> {
                                     String? locationName = sharedPreferences
                                         .getString('plan_location_name');
                                     if (locationName != null) {
-                                      Utils().handleAlreadyDraft(context,
-                                          location!, locationName, false, null,[]);
+                                      Utils().handleAlreadyDraft(
+                                          context,
+                                          location!,
+                                          locationName,
+                                          false,
+                                          null, []);
                                     } else {
                                       sharedPreferences.setString(
                                           'plan_location_name', location!.name);
                                       sharedPreferences.setInt(
                                           'plan_location_id', location!.id);
-                                      Navigator.of(context).push(
-                                          MaterialPageRoute(
-                                              builder: (ctx) =>
-                                                  SelectComboDateScreen(
-                                                    isCreate: true,
-                                                    location: location!,
-                                                    isClone: false,
-                                                  )));
+                                      Navigator.push(
+                                          context,
+                                          PageTransition(
+                                              child: SelectStartLocationScreen(
+                                                isClone: false,
+                                                isCreate: true,
+                                                location: location!,
+                                              ),
+                                              type: PageTransitionType
+                                                  .rightToLeft));
                                     }
                                   } else {
-                                    handleNonDefaultAddress(true);
+                                    util.handleNonDefaultAddress(
+                                        () {}, context);
                                   }
                                 },
                                 style: elevatedButtonStyle,
@@ -628,41 +644,12 @@ class _LocationScreenState extends State<LocationScreen> {
     }
   }
 
-  handleNonDefaultAddress(bool isCreate) => AwesomeDialog(
-          context: context,
-          dialogType: DialogType.warning,
-          animType: AnimType.leftSlide,
-          padding: const EdgeInsets.symmetric(horizontal: 16),
-          title: 'Không tìm thấy địa chỉ mặc định',
-          titleTextStyle:
-              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-          desc:
-              'Bạn phải thêm địa chỉ mặc định để ${isCreate ? 'tạo kế hoạch' : 'xem được bản đồ định hướng'}',
-          descTextStyle: const TextStyle(fontSize: 15, color: Colors.black54),
-          btnOkColor: Colors.blue,
-          btnOkText: 'Thêm',
-          btnOkOnPress: () {
-            Navigator.of(context).push(MaterialPageRoute(
-                builder: (ctx) => SelectDefaultAddress(
-                    callback: callbackSelectDefaultLocation)));
-          },
-          btnCancelColor: Colors.orange,
-          btnCancelText: 'Huỷ',
-          btnCancelOnPress: () {})
-      .show();
-
-  handleInvalidAddress() => AwesomeDialog(
+  handleInvalidAddress() {
+    DialogStyle().basicDialog(
         context: context,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        btnOkColor: Colors.amber,
-        btnOkOnPress: () {},
-        btnOkText: 'OK',
         title: 'Độ dài địa chỉ mặc định phải từ 3 - 120 ký tự',
-        titleTextStyle: const TextStyle(
-            fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'NotoSans'),
-        animType: AnimType.leftSlide,
-        dialogType: DialogType.warning,
-      ).show();
+        type: DialogType.warning);
+  }
 
   getNumberOfComment(bool isFromQuery, int numberOfComment) async {
     if (isFromQuery) {

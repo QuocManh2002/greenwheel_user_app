@@ -84,9 +84,10 @@ class PlanScheduleTitle extends StatelessWidget {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 const Padding(
-                                                  padding: EdgeInsets.only(top: 4),
+                                                  padding:
+                                                      EdgeInsets.only(top: 4),
                                                   child: Icon(
-                                                    Icons.info_outline,
+                                                    Icons.info,
                                                     color: Colors.orange,
                                                     size: 20,
                                                   ),
@@ -117,9 +118,10 @@ class PlanScheduleTitle extends StatelessWidget {
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 const Padding(
-                                                  padding: EdgeInsets.only(top: 4),
+                                                  padding:
+                                                      EdgeInsets.only(top: 4),
                                                   child: Icon(
-                                                    Icons.warning_amber_outlined,
+                                                    Icons.warning,
                                                     color: Colors.red,
                                                     size: 20,
                                                   ),
@@ -159,7 +161,9 @@ class PlanScheduleTitle extends StatelessWidget {
                           ? isSelected
                               ? Colors.white
                               : primaryColor
-                          : !isValidPeriodOfOrder! ? Colors.red : Colors.amber,
+                          : !isValidPeriodOfOrder!
+                              ? Colors.red
+                              : Colors.amber,
                     )))
         ],
       ),

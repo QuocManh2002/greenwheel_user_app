@@ -144,7 +144,13 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
               qtys[index]);
         }
       } else {
-        findSumCombinations(list, widget.inputModel.numberOfMember!);
+        final groupRoomList = list.groupListsBy((element) => element.partySize,);
+        List<ProductViewModel> sourceList = [];
+        for(final roomList in groupRoomList.values){
+          roomList.sort((a, b) =>  a.price.compareTo(b.price),);
+          sourceList.add(roomList.first);
+        }
+        findSumCombinations(sourceList, widget.inputModel.numberOfMember!);
         List<ProductViewModel> rs = getResult(_listResult);
         Map gr = rs.groupListsBy((element) => element.id);
         for (final item in gr.keys) {

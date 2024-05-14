@@ -16,12 +16,11 @@ class FilterLocationScreen extends StatefulWidget {
 
 class _FilterLocationScreenState extends State<FilterLocationScreen> {
   List<LocationCardViewModel>? locationModels;
-  LocationService _locationService = LocationService();
+  final LocationService _locationService = LocationService();
   bool isLoading = true;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _setupData();
   }

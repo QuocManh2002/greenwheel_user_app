@@ -4,6 +4,7 @@ class SuggestPlanViewModel {
   String planName;
   int periodCount;
   int gcoinBudgetPerCapita;
+  String locationName;
 
   SuggestPlanViewModel({
     required this.id,
@@ -11,6 +12,7 @@ class SuggestPlanViewModel {
     required this.gcoinBudgetPerCapita,
     required this.periodCount,
     required this.planName,
+    required this.locationName,
   });
 
   factory SuggestPlanViewModel.fromJson(Map<String, dynamic> json) =>
@@ -19,5 +21,6 @@ class SuggestPlanViewModel {
         periodCount: json['periodCount'],
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'],
         planName: json['name'],
+        locationName: json['destination']['name']
       );
 }

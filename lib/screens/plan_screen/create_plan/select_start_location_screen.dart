@@ -1,28 +1,32 @@
-
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/goong_request.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_start_date_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/locate_start_location.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/search_location_result_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
+import '../../../core/constants/colors.dart';
+import '../../../core/constants/urls.dart';
+import '../../../helpers/goong_request.dart';
+import '../../../helpers/util.dart';
+import '../../../main.dart';
+import '../../../service/plan_service.dart';
+import '../../../view_models/location.dart';
+import '../../../view_models/plan_viewmodels/plan_create.dart';
+import '../../../view_models/plan_viewmodels/search_start_location_result.dart';
+import '../../../widgets/plan_screen_widget/craete_plan_header.dart';
+import '../../../widgets/plan_screen_widget/search_location_result_card.dart';
+import '../../../widgets/style_widget/button_style.dart';
+import '../locate_start_location.dart';
+import 'select_start_date_screen.dart';
+
 class SelectStartLocationScreen extends StatefulWidget {
   const SelectStartLocationScreen(
-      {super.key, required this.isCreate, this.plan, required this.location, required this.isClone});
+      {super.key,
+      required this.isCreate,
+      this.plan,
+      required this.location,
+      required this.isClone});
   final bool isCreate;
   final PlanCreate? plan;
   final LocationViewModel location;
@@ -135,8 +139,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   setUpDataCreate() async {
     double? planDistance = sharedPreferences.getDouble('plan_distance_value');
     if (planDistance != null) {
-      double? planDuration =
-          sharedPreferences.getDouble('plan_duration_value');
+      double? planDuration = sharedPreferences.getDouble('plan_duration_value');
       setState(() {
         durationValue = planDuration!;
         distanceValue = planDistance;
@@ -187,7 +190,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       var result = await getSearchResult(_searchController.text);
       if (result == [] || result == null) {
         AwesomeDialog(
-        // ignore: use_build_context_synchronously
+          // ignore: use_build_context_synchronously
           context: context,
           dialogType: DialogType.warning,
           body: const Center(
@@ -281,7 +284,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
           onPressed: () {
             _planService.handleQuitCreatePlanScreen(() {
               Navigator.of(context).pop();
-              Navigator.of(context).pop();
             }, context);
           },
         ),
@@ -308,7 +310,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         child: Column(
           children: [
             const CreatePlanHeader(
-                stepNumber: 2, stepName: 'Địa điểm xuất phát'),
+                stepNumber: 1, stepName: 'Địa điểm xuất phát'),
             Container(
               width: double.infinity,
               decoration: BoxDecoration(
@@ -320,8 +322,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                 cursorColor: primaryColor,
                 maxLines: 1,
                 autofocus: true,
-                onTap: () {
-                },
+                onTap: () {},
                 decoration: InputDecoration(
                     suffixIcon: IconButton(
                         onPressed: onSearchLocation,
@@ -594,64 +595,41 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
       ),
       bottomNavigationBar: Padding(
         padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
-        child: Row(
-          children: [
-            Expanded(
-                child: ElevatedButton(
-              style: elevatedButtonStyle.copyWith(
-                  backgroundColor: const MaterialStatePropertyAll(Colors.white),
-                  foregroundColor: const MaterialStatePropertyAll(primaryColor),
-                  shape: const MaterialStatePropertyAll(RoundedRectangleBorder(
-                      side: BorderSide(color: primaryColor),
-                      borderRadius: BorderRadius.all(Radius.circular(10))))),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('Quay lại'),
-            )),
-            SizedBox(
-              width: 2.w,
-            ),
-            Expanded(
-                child: ElevatedButton(
-              style: elevatedButtonStyle,
-              onPressed: () {
-                if (sharedPreferences.getDouble('plan_duration_value') ==
-                    null) {
-                  AwesomeDialog(
-                      context: context,
-                      dialogType: DialogType.warning,
-                      btnOkColor: Colors.orange,
-                      btnOkText: 'OK',
-                      btnOkOnPress: () {},
-                      body: const Padding(
-                        padding:
-                            EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                        child: Center(
-                          child: Text(
-                            'Hãy chọn địa điểm xuất phát cho chuyến đi',
-                            style: TextStyle(
-                                fontSize: 16, fontWeight: FontWeight.bold),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      )).show();
-                } else {
-                  Navigator.push(
-                      context,
-                      PageTransition(
-                          child: SelectStartDateScreen(
-                            isCreate: widget.isCreate,
-                            location: widget.location,
-                            plan: widget.plan,
-                            isClone: widget.isClone,
-                          ),
-                          type: PageTransitionType.rightToLeft));
-                }
-              },
-              child: const Text('Tiếp tục'),
-            )),
-          ],
+        child: ElevatedButton(
+          style: elevatedButtonStyle,
+          onPressed: () {
+            if (sharedPreferences.getDouble('plan_duration_value') == null) {
+              AwesomeDialog(
+                  context: context,
+                  dialogType: DialogType.warning,
+                  btnOkColor: Colors.orange,
+                  btnOkText: 'OK',
+                  btnOkOnPress: () {},
+                  body: const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    child: Center(
+                      child: Text(
+                        'Hãy chọn địa điểm xuất phát cho chuyến đi',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  )).show();
+            } else {
+              Navigator.push(
+                  context,
+                  PageTransition(
+                      child: SelectStartDateScreen(
+                        isCreate: widget.isCreate,
+                        location: widget.location,
+                        plan: widget.plan,
+                        isClone: widget.isClone,
+                      ),
+                      type: PageTransitionType.rightToLeft));
+            }
+          },
+          child: const Text('Tiếp tục'),
         ),
       ),
     ));

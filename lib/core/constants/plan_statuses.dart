@@ -8,4 +8,5 @@ List<PlanStatus> planStatuses = [
   PlanStatus(engName: 'COMPLETED', name: 'Đã hoàn thành', value: 4),
   PlanStatus(engName: 'FLAWED', name: 'Thiếu sót', value: 5),
   PlanStatus(engName: 'CANCELED', name: 'Đã huỷ', value: 6),
+  PlanStatus(engName: 'PUBLISH', name: 'Đã xuất bản', value: 7),
 ];

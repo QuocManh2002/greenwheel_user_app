@@ -419,6 +419,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 amount: amount,
                 planId: null,
                 isSuccess: true,
+                isPublicPlan: false,
               ),
               type: PageTransitionType.rightToLeft));
     } else {
@@ -429,6 +430,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 amount: amount,
                 planId: null,
                 isSuccess: false,
+                isPublicPlan: false,
               ),
               type: PageTransitionType.rightToLeft));
     }

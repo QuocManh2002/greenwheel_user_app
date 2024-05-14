@@ -3,24 +3,26 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_start_location_screen.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_emergency_service.dart';
+import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../../core/constants/colors.dart';
+import '../../../core/constants/combo_date_plan.dart';
+import '../../../core/constants/global_constant.dart';
+import '../../../core/constants/urls.dart';
+import '../../../helpers/util.dart';
+import '../../../main.dart';
+import '../../../service/plan_service.dart';
+import '../../../view_models/location.dart';
+import '../../../view_models/plan_viewmodels/combo_date.dart';
+import '../../../view_models/plan_viewmodels/plan_create.dart';
+import '../../../widgets/plan_screen_widget/craete_plan_header.dart';
+import '../../../widgets/style_widget/button_style.dart';
+import '../../../widgets/style_widget/dialog_style.dart';
+import '../../../widgets/style_widget/text_form_field_widget.dart';
 
 class SelectComboDateScreen extends StatefulWidget {
   const SelectComboDateScreen(
@@ -44,11 +46,20 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   bool isWarning = false;
   bool _isSelecting = false;
   final TextEditingController _memberController = TextEditingController();
-  final TextEditingController _maxMemberWeightController = TextEditingController();
-  int maxMemberWeight = 1;
+  final TextEditingController _maxMemberWeightController =
+      TextEditingController();
+  int _maxMemberWeight = 1;
   final PlanService _planService = PlanService();
   bool isShowDialog = false;
   int initMemberCount = 0;
+  int _maxCombodateIndex = 0;
+  // ComboDate? initCombodate;
+  int? numberOfNight;
+  DateTime? _departureTime;
+  DateTime? _departureDate;
+  DateTime? _endDate;
+  bool? isOverDate;
+
 
   @override
   void initState() {
@@ -71,17 +82,24 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
     _memberController.text = widget.plan!.maxMemberCount.toString();
     _maxMemberWeightController.text =
         (widget.plan!.maxMemberWeight! - 1).toString();
-    maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
+    _maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
   }
 
   setUpDataCreate() async {
     initMemberCount = sharedPreferences.getInt('plan_number_of_member') ?? 2;
     int? member = sharedPreferences.getInt('plan_number_of_member');
     int? numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
-    int? _maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
+    int? maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
     ComboDate selectedComboDate;
+    _maxCombodateIndex = listComboDate.length + 1;
     _memberController.text = GlobalConstant().PLAN_MIN_MEMBER_COUNT.toString();
     _maxMemberWeightController.text = '0';
+    if (widget.isClone) {
+      _maxCombodateIndex = listComboDate
+          .firstWhere((element) =>
+              element.duration == sharedPreferences.getInt('maxCombodateValue'))
+          .id;
+    }
     if (numOfExpPeriod != null) {
       selectedComboDate = listComboDate.firstWhere(
         (element) =>
@@ -108,18 +126,19 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       setState(() {
         _memberController.text = member.toString();
       });
-      maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
+      _maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
     } else {
       sharedPreferences.setInt('plan_number_of_member', 1);
     }
 
-    if (_maxMemberWeight != null && _maxMemberWeight > 0) {
+    if (maxMemberWeight != null && maxMemberWeight > 0) {
       setState(() {
-        _maxMemberWeightController.text = (_maxMemberWeight - 1).toString();
+        _maxMemberWeightController.text = (maxMemberWeight - 1).toString();
       });
     } else {
       sharedPreferences.setInt('plan_max_member_weight', 1);
     }
+    handleChangeComboDate();
   }
 
   getMaxMemberWeight(int member) {
@@ -143,18 +162,18 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       });
     }
     setState(() {
-      maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
+      _maxMemberWeight = getMaxMemberWeight(int.parse(_memberController.text));
     });
-    if (int.parse(_maxMemberWeightController.text) + 1 > maxMemberWeight) {
-      if (maxMemberWeight - 1 >= 0) {
+    if (int.parse(_maxMemberWeightController.text) + 1 > _maxMemberWeight) {
+      if (_maxMemberWeight - 1 >= 0) {
         setState(() {
-          _maxMemberWeightController.text = (maxMemberWeight - 1).toString();
+          _maxMemberWeightController.text = (_maxMemberWeight - 1).toString();
         });
       }
       if (widget.isCreate) {
-        sharedPreferences.setInt('plan_max_member_weight', maxMemberWeight);
+        sharedPreferences.setInt('plan_max_member_weight', _maxMemberWeight);
       } else {
-        widget.plan!.maxMemberWeight = maxMemberWeight;
+        widget.plan!.maxMemberWeight = _maxMemberWeight;
       }
     }
     if (widget.isCreate) {
@@ -186,6 +205,93 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
     }
   }
 
+  handleChangeComboDate() {
+    dynamic rs;
+    _departureDate = DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+    _departureTime = DateTime.parse(sharedPreferences.getString('plan_departureTime')!);
+    if (widget.isCreate) {
+      final arrivedTime = Utils().getArrivedTimeFromLocal();
+      sharedPreferences.setString('plan_arrivedTime', arrivedTime.toString());
+      rs = Utils().getNumOfExpPeriod(
+          arrivedTime,
+           listComboDate[_selectedCombo].duration.toInt(),
+          _departureTime!,
+          null,
+          true);
+    } else {
+      rs = Utils().getNumOfExpPeriod(
+          null,
+          widget.plan!.numOfExpPeriod!,
+          widget.plan!.departAt!.toLocal(),
+          DateFormat.Hms().parse(widget.plan!.travelDuration!),
+          true);
+    }
+
+    isOverDate = rs['isOverDate'];
+    if (isOverDate!) {
+      if (widget.plan == null) {
+        sharedPreferences.setString(
+            'plan_start_date',
+            _departureDate!
+                .add(const Duration(days: 1))
+                .toString()
+                .split(' ')[0]);
+
+        numberOfNight = listComboDate[_selectedCombo].numberOfNight + 1;
+        _endDate = _departureDate!
+            .add(Duration(days: listComboDate[_selectedCombo].numberOfDay));
+      } else {
+        widget.plan!.startDate = _departureDate!
+            .add(const Duration(days: 1))
+            .add(Duration(hours: _departureTime!.hour))
+            .add(Duration(minutes: _departureTime!.minute));
+      }
+    } else {
+      if (rs['numOfExpPeriod'] != listComboDate[_selectedCombo].duration.toInt()) {
+        setState(() {
+          numberOfNight = listComboDate[_selectedCombo].numberOfNight + 1;
+        });
+        _endDate = _departureDate!
+            .add(Duration(days: listComboDate[_selectedCombo].numberOfDay));
+      } else {
+        setState(() {
+          numberOfNight = listComboDate[_selectedCombo].numberOfNight;
+        });
+        _endDate = _departureDate!
+            .add(Duration(days: listComboDate[_selectedCombo].numberOfDay - 1));
+      }
+      if (widget.plan == null) {
+        sharedPreferences.setString(
+            'plan_start_date',_departureDate!
+                .toString()
+                .split(' ')[0]);
+      } else {
+        widget.plan!.startDate = _departureDate!
+            .add(Duration(hours: _departureTime!.hour))
+            .add(Duration(minutes: _departureTime!.minute));
+      }
+    }
+    if (widget.plan == null) {
+      sharedPreferences.setString(
+          'plan_end_date', _endDate.toString().split(' ')[0]);
+    } else {
+      widget.plan!.endDate = _endDate;
+    }
+
+    if (rs['numOfExpPeriod'] != listComboDate[_selectedCombo].duration.toInt()) {
+      if (widget.isCreate) {
+        sharedPreferences.setInt('numOfExpPeriod', listComboDate[_selectedCombo].numberOfDay + numberOfNight!);
+      } else {
+        setState(() {
+          widget.plan!.numOfExpPeriod = listComboDate[_selectedCombo].numberOfDay + numberOfNight!;
+        });
+      }
+    } else {
+      sharedPreferences.setInt(
+          'numOfExpPeriod', listComboDate[_selectedCombo].duration.toInt());
+    }
+  }
+  
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -196,6 +302,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
         leading: BackButton(
           onPressed: () {
             _planService.handleQuitCreatePlanScreen(() {
+              Navigator.of(context).pop();
+              Navigator.of(context).pop();
               Navigator.of(context).pop();
             }, context);
           },
@@ -225,7 +333,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
           child: Column(
             children: [
               const CreatePlanHeader(
-                  stepNumber: 1, stepName: 'Thời gian và số thành viên'),
+                  stepNumber: 3, stepName: 'Thời gian và số thành viên'),
               const Text(
                 'Thời gian trải nghiệm mong muốn',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -243,7 +351,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
               ),
               _isSelecting
                   ? SizedBox(
-                      height: 320,
+                      height: 250,
                       child: CupertinoPicker(
                           itemExtent: 64,
                           diameterRatio: 0.7,
@@ -265,13 +373,13 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                       listComboDate[value].numberOfNight);
                             } else {
                               widget.plan!.numOfExpPeriod =
-                                  listComboDate[value].numberOfDay +
-                                      listComboDate[value].numberOfNight;
+                                  listComboDate[value].duration.toInt();
                             }
 
                             Future.delayed(
                               const Duration(seconds: 2),
                               () {
+                                handleChangeComboDate();
                                 setState(() {
                                   _isSelecting = false;
                                 });
@@ -279,7 +387,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                             );
                           },
                           children: Utils.modelBuilder(
-                              listComboDate,
+                              listComboDate.sublist(0, _maxCombodateIndex),
                               (index, model) => Center(
                                     child: Text(
                                       '${model.numberOfDay} ngày, ${model.numberOfNight} đêm',
@@ -341,7 +449,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                       },
                       icon: const Icon(Icons.remove)),
                   Container(
-                    alignment: Alignment.center,
+                      alignment: Alignment.center,
                       width: 10.h,
                       height: 5.h,
                       child: defaultTextFormField(
@@ -397,7 +505,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                       'plan_number_of_member',
                                       int.parse(value));
                                   setState(() {
-                                    maxMemberWeight =
+                                    _maxMemberWeight =
                                         getMaxMemberWeight(int.parse(value));
                                   });
                                 }
@@ -422,7 +530,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
               SizedBox(
                 height: 3.h,
               ),
-              if (maxMemberWeight != 1)
+              if (_maxMemberWeight != 1)
                 const Text(
                   'Số người đi cùng tối đa',
                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
@@ -430,7 +538,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
               SizedBox(
                 height: 2.h,
               ),
-              if (maxMemberWeight != 1)
+              if (_maxMemberWeight != 1)
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -486,12 +594,12 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                       fontSize: 18.0);
                                 } else {
                                   if (selectedNumber < 0 ||
-                                      selectedNumber > maxMemberWeight - 1) {
+                                      selectedNumber > _maxMemberWeight - 1) {
                                     sharedPreferences.setInt(
                                         'plan_max_member_weight', 1);
                                     Fluttertoast.showToast(
                                         msg:
-                                            "Số lượng người đi cùng phải từ 0 - ${maxMemberWeight - 1}",
+                                            "Số lượng người đi cùng phải từ 0 - ${_maxMemberWeight - 1}",
                                         toastLength: Toast.LENGTH_SHORT,
                                         gravity: ToastGravity.CENTER,
                                         timeInSecForIosWeb: 1,
@@ -522,84 +630,127 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                         icon: const Icon(Icons.add)),
                   ],
                 ),
+            
+            SizedBox(
+              height: 3.h,
+            ),
+            const Text(
+              'Tổng thời gian chuyến đi',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+            const Text(
+              'Bao gồm thời gian di chuyển từ địa điểm xuất phát',
+              style: TextStyle(fontSize: 16, color: Colors.grey),
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(
+              height: 3.h,
+            ),
+            Text(
+              '${listComboDate[_selectedCombo].numberOfDay} ngày $numberOfNight đêm',
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              '${DateFormat.Hm().format(_departureTime!)} ${DateFormat('dd/MM/yyyy').format(_departureDate!)} - ${DateFormat('dd/MM/yyyy').format(_endDate!)}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: 2.h,
+            ),
+            const Text(
+              'Thời gian trải nghiệm',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            Text(
+              !isOverDate!
+                  ? '${listComboDate[_selectedCombo].numberOfDay} ngày $numberOfNight đêm'
+                  : '${listComboDate[_selectedCombo].numberOfDay} ngày ${listComboDate[_selectedCombo].numberOfNight} đêm',
+              style: const TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+            SizedBox(
+              height: 1.h,
+            ),
             ],
           ),
         ),
       ),
       bottomNavigationBar: Padding(
-        padding: EdgeInsets.symmetric(vertical: 1.h),
+        padding: EdgeInsets.symmetric(vertical: 1.h, horizontal: 2.w),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(
-                style: elevatedButtonStyle,
-                onPressed: () {
-                  if (int.tryParse(_memberController.text) == null ||
-                      int.parse(_memberController.text) < 1 ||
-                      int.parse(_memberController.text) > 20) {
-                    AwesomeDialog(
-                            context: context,
-                            animType: AnimType.leftSlide,
-                            dialogType: DialogType.warning,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            title: 'Số lượng thành viên tối đa không hợp lệ',
-                            titleTextStyle: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'NotoSans'),
-                            btnOkColor: Colors.amber,
-                            btnOkOnPress: () {},
-                            btnOkText: 'OK')
-                        .show();
-                  } else if (int.tryParse(_maxMemberWeightController.text) ==
-                          null ||
-                      int.parse(_maxMemberWeightController.text) < 0 ||
-                      int.parse(_maxMemberWeightController.text) >
-                          maxMemberWeight - 1) {
-                    AwesomeDialog(
-                            context: context,
-                            animType: AnimType.leftSlide,
-                            dialogType: DialogType.warning,
-                            padding: const EdgeInsets.symmetric(horizontal: 12),
-                            title: 'Số người đi cùng tối đa không hợp lệ',
-                            titleTextStyle: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                fontFamily: 'NotoSans'),
-                            btnOkColor: Colors.amber,
-                            btnOkOnPress: () {},
-                            btnOkText: 'OK')
-                        .show();
-                  } else {
-                    if (widget.isClone) {
-                      Utils().updateTempOrder(true);
-                    }
-
-                    if (widget.isClone) {
-                      if ((sharedPreferences.getInt('initNumOfExpPeriod')! / 2)
-                                  .ceil() <
-                              json
-                                  .decode(sharedPreferences
-                                      .getString('plan_schedule')!)
-                                  .length || sharedPreferences.getInt('plan_number_of_member')! != initMemberCount) {
-                        Utils().updateScheduleAndOrder(context, () {
-                          Navigator.of(context).pop();
+            Expanded(
+                child: ElevatedButton(
+                    style: outlinedButtonStyle,
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: const Text('Quay lại'))),
+            SizedBox(
+              width: 2.w,
+            ),
+            Expanded(
+              child: ElevatedButton(
+                  style: elevatedButtonStyle,
+                  onPressed: () async {
+                    if (int.tryParse(_memberController.text) == null ||
+                        int.parse(_memberController.text) < 1 ||
+                        int.parse(_memberController.text) > 20) {
+                          DialogStyle().basicDialog(context: context, title: 'Số lượng thành viên tối đa không hợp lệ', type: DialogType.warning);
+                    } else if (int.tryParse(_maxMemberWeightController.text) ==
+                            null ||
+                        int.parse(_maxMemberWeightController.text) < 0 ||
+                        int.parse(_maxMemberWeightController.text) >
+                            _maxMemberWeight - 1) {
+                          DialogStyle().basicDialog(context: context, title: 'Số người đi cùng tối đa không hợp lệ', type: DialogType.warning);
+                    } else {
+                      if (widget.isClone) {
+                        await Utils().updateTempOrder(true, _maxMemberWeight);
+                        if ((sharedPreferences.getInt('initNumOfExpPeriod')! /
+                                        2)
+                                    .ceil() <
+                                json
+                                    .decode(sharedPreferences
+                                        .getString('plan_schedule')!)
+                                    .length ||
+                            sharedPreferences
+                                    .getInt('plan_number_of_member')! !=
+                                initMemberCount) {
+                          // ignore: use_build_context_synchronously
+                          Utils().updateScheduleAndOrder(context, () {
+                            Navigator.of(context).pop();
+                            Navigator.push(
+                                context,
+                                PageTransition(
+                                    child: SelectEmergencyService(
+                                      isCreate: widget.isCreate,
+                                      plan: widget.plan,
+                                      location: widget.location,
+                                      isClone: widget.isClone,
+                                    ),
+                                    type: PageTransitionType.rightToLeft));
+                          }, true);
+                        } else {
                           Navigator.push(
+                              // ignore: use_build_context_synchronously
                               context,
                               PageTransition(
-                                  child: SelectStartLocationScreen(
+                                  child: SelectEmergencyService(
                                     isCreate: widget.isCreate,
                                     plan: widget.plan,
                                     location: widget.location,
                                     isClone: widget.isClone,
                                   ),
                                   type: PageTransitionType.rightToLeft));
-                        }, false);
+                        }
                       } else {
                         Navigator.push(
                             context,
                             PageTransition(
-                                child: SelectStartLocationScreen(
+                                child: SelectEmergencyService(
                                   isCreate: widget.isCreate,
                                   plan: widget.plan,
                                   location: widget.location,
@@ -608,22 +759,9 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                 type: PageTransitionType.rightToLeft));
                       }
                     }
-
-                    if (!widget.isClone) {
-                      Navigator.push(
-                          context,
-                          PageTransition(
-                              child: SelectStartLocationScreen(
-                                isCreate: widget.isCreate,
-                                plan: widget.plan,
-                                location: widget.location,
-                                isClone: widget.isClone,
-                              ),
-                              type: PageTransitionType.rightToLeft));
-                    }
-                  }
-                },
-                child: const Text('Tiếp tục'))
+                  },
+                  child: const Text('Tiếp tục')),
+            )
           ],
         ),
       ),

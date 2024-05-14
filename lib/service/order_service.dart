@@ -4,21 +4,23 @@ import 'dart:developer';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/sessions.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/configuration.dart';
-import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/order_create.dart';
-import 'package:greenwheel_user_app/view_models/order_detail.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/view_models/supplier.dart';
-import 'package:greenwheel_user_app/view_models/topup_request.dart';
-import 'package:greenwheel_user_app/view_models/topup_viewmodel.dart';
 import 'package:uuid/uuid.dart';
+
+import '../config/graphql_config.dart';
+import '../core/constants/global_constant.dart';
+import '../core/constants/sessions.dart';
+import '../helpers/util.dart';
+import '../main.dart';
+import '../models/configuration.dart';
+import '../models/service_type.dart';
+import '../view_models/order.dart';
+import '../view_models/order_create.dart';
+import '../view_models/order_detail.dart';
+import '../view_models/plan_viewmodels/plan_create.dart';
+import '../view_models/product.dart';
+import '../view_models/supplier.dart';
+import '../view_models/topup_request.dart';
+import '../view_models/topup_viewmodel.dart';
 
 class OrderService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
@@ -56,6 +58,7 @@ mutation{
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
+            // ignore: use_build_context_synchronously
             rs.parsedResponse.errors.first.message.toString(), context);
 
         throw Exception(result.exception!.linkException!);
@@ -68,18 +71,17 @@ mutation{
     }
   }
 
-  Future<TopupRequestViewModel?> topUpRequest(int amount) async {
+  Future<TopupRequestViewModel?> topUpRequest(int amount, BuildContext context) async {
     try {
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
           document: gql('''
-          mutation {
-  createTopUp(dto: {
-    amount:$amount
-    gateway:VNPAY
-  })  {
-    transactionId
+mutation {
+  createTopUp(dto: { amount: $amount, gateway: VNPAY }) {
+    transaction {
+      id
+    }
     paymentUrl
   }
 }
@@ -88,16 +90,19 @@ mutation{
       );
 
       if (result.hasException) {
-        throw Exception(result.exception);
+         dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            // ignore: use_build_context_synchronously
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
       }
-      final int? transactionId = result.data?['createTopUp']['transactionId'];
-      if (transactionId == null) {
+      final rs = result.data!['createTopUp'];
+      if(rs == null){
         return null;
+      }else{
+        return TopupRequestViewModel.fromJson(rs);
       }
-      final String paymentUrl = result.data?['createTopUp']['paymentUrl'];
-      TopupRequestViewModel request = TopupRequestViewModel(
-          transactionId: transactionId, paymentUrl: paymentUrl);
-      return request;
     } catch (error) {
       throw Exception(error);
     }
@@ -128,7 +133,6 @@ mutation{
       }
 
       var res = result.data?['topUpSuccess'];
-      print("RESPONSE: $res");
       if (res == null) {
         return null;
       }
@@ -164,9 +168,7 @@ mutation{
         ],
         'note': json.encode(order['note']),
         'period': order['period'],
-        'serveDateIndexes': order['serveDates']
-            .map((e) => DateTime.parse(e).difference(startDate).inDays)
-            .toList(),
+        'serveDateIndexes': order['serveDateIndexes'],
         'type': order['type']
       });
     }
@@ -198,6 +200,7 @@ mutation{
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
+            // ignore: use_build_context_synchronously
             rs.parsedResponse.errors.first.message.toString(), context);
 
         throw Exception(result.exception!.linkException!);
@@ -249,6 +252,7 @@ mutation {
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
+            // ignore: use_build_context_synchronously
             rs.parsedResponse.errors.first.message.toString(), context);
         throw Exception(result.exception!.linkException!);
       }
@@ -302,6 +306,7 @@ mutation {
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
+            // ignore: use_build_context_synchronously
             rs.parsedResponse.errors.first.message.toString(), context);
         throw Exception(result.exception!.linkException!);
       }
@@ -374,6 +379,80 @@ mutation {
     sharedPreferences.setInt(
         'HOLIDAY_MEAL_UP_PCT', model.HOLIDAY_MEAL_UP_PCT ?? 0);
     sharedPreferences.setString('LAST_MODIFIED', model.LAST_MODIFIED.toString());
+  }
+
+  List<ProductViewModel> getCheapestDetailCheckinOrder(List<ProductViewModel> totalProducts, int numberOfMember){
+    List<List<ProductViewModel>> productList = [];
+    List<int> currentCombination = [];
+    List<ProductViewModel> result = [];
+    double minPrice = 0;
+    List<ProductViewModel> sourceProduct = [];
+    final productsGroupBy = totalProducts.groupListsBy((element) => element.partySize);
+    for(final products in productsGroupBy.values){
+      products.sort((a, b) => a.price.compareTo(b.price),);
+      sourceProduct.add(products.first);
+    }
+    void backTrack(int startIndex, int currentSum){
+      if(currentSum >= numberOfMember){
+        productList.add(List.from(currentCombination).map((e) => sourceProduct.firstWhere((element) => element.partySize! == e)).toList());
+        return;
+      }
+      if(startIndex >= sourceProduct.length){
+        return;
+      }
+      for(int i = startIndex; i < sourceProduct.length; i++){
+        currentCombination.add(sourceProduct[i].partySize!);
+        backTrack(i, currentSum + sourceProduct[i].partySize!);
+        currentCombination.removeLast();
+      }
+    }
+    backTrack(0, 0);
+
+    for (var element in productList[0]) {
+      minPrice += element.price;
+    }
+    for (final rooms in productList) {
+      double price = 0;
+      for (var element in rooms) {
+        price += element.price;
+      }
+      if (price <= minPrice) {
+        minPrice = price;
+        result = rooms;
+      }
+    }
+    return result;
+  }
+
+  Future<int?> rateOrder(int orderId, int rating, String comment, BuildContext context)async{
+    try{
+      QueryResult result = await client.mutate(
+        MutationOptions(document: gql(
+          '''
+mutation{
+  rateOrder(dto: {
+    comment: ${comment == '' ? null : json.encode(comment)}
+    orderId:$orderId
+    rating:$rating
+  }){
+    id
+  }
+}
+'''
+        ))
+      );
+      if(result.hasException){
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            // ignore: use_build_context_synchronously
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      return result.data!['rateOrder']['id'];
+    }catch(error){
+      throw Exception(error);
+    }
   }
 
   @override

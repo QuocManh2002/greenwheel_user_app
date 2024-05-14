@@ -19,7 +19,7 @@ class DetailPaymentInfo extends StatelessWidget {
           overflow: TextOverflow.clip,
           style: const TextStyle(
               fontFamily: 'NotoSans',
-              fontSize: 18,
+              fontSize: 17,
               fontWeight: FontWeight.bold,
               color: Colors.black),
         );
@@ -29,7 +29,7 @@ class DetailPaymentInfo extends StatelessWidget {
           overflow: TextOverflow.clip,
           style: const TextStyle(
               fontFamily: 'NotoSans',
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black),
         );
@@ -125,41 +125,39 @@ class DetailPaymentInfo extends StatelessWidget {
                   SizedBox(
                     width: 4.w,
                   ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        width: 57.w,
-                        child: Text(
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
                           transactionDetail.transaction!.description!,
                           overflow: TextOverflow.clip,
                           style: const TextStyle(
                               fontFamily: 'NotoSans',
-                              fontSize: 20,
+                              fontSize: 18,
                               fontWeight: FontWeight.bold),
                         ),
-                      ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Text(
-                            NumberFormat.simpleCurrency(
-                                    locale: 'vi_VN', decimalDigits: 0, name: '')
-                                .format(
-                                    transactionDetail.transaction!.gcoinAmount),
-                            style: const TextStyle(
-                              fontSize: 19,
-                              fontFamily: 'NotoSans',
-                              fontWeight: FontWeight.bold,
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            Text(
+                              NumberFormat.simpleCurrency(
+                                      locale: 'vi_VN', decimalDigits: 0, name: '')
+                                  .format(transactionDetail.transaction!.amount),
+                              style: const TextStyle(
+                                fontSize: 19,
+                                fontFamily: 'NotoSans',
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          SvgPicture.asset(
-                            gcoinLogo,
-                            height: 25,
-                          )
-                        ],
-                      ),
-                    ],
+                            SvgPicture.asset(
+                              gcoinLogo,
+                              height: 25,
+                            )
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
@@ -220,9 +218,8 @@ class DetailPaymentInfo extends StatelessWidget {
                         fontSize: 15,
                         color: Colors.grey),
                   ),
-                  const Spacer(),
-                  SizedBox(
-                    width: 60.w,
+
+                  Expanded(
                     child: buildTextWidget(
                         '${DateFormat.Hm().format(transactionDetail.transaction!.createdAt!.toLocal())} ${DateFormat('dd/MM/yyyy').format(transactionDetail.transaction!.createdAt!.toLocal())}'),
                   )
@@ -306,8 +303,7 @@ class DetailPaymentInfo extends StatelessWidget {
                           width: 50.w,
                           child: buildTextWidget(NumberFormat.simpleCurrency(
                                   locale: 'vi_VN', decimalDigits: 0, name: '')
-                              .format(
-                                  transactionDetail.transaction!.gcoinAmount)),
+                              .format(transactionDetail.transaction!.amount)),
                         ),
                         SvgPicture.asset(
                           gcoinLogo,
@@ -337,14 +333,17 @@ class DetailPaymentInfo extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           mainAxisAlignment: MainAxisAlignment.start,
                           children: [
-                            SizedBox(
-                                width: 60.w,
+                            Expanded(
                                 child: buildOrderDetailTextWidget(
                                     detail.productName)),
-                            const Spacer(),
-                            SizedBox(
-                                width: 30,
-                                child: buildTextWidget('X${detail.quantity}'))
+                            Text(
+                              'x${detail.quantity}',
+                              style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
+                                  fontFamily: 'NotoSans',
+                                  color: Colors.black54),
+                            )
                           ],
                         ),
                       ),
@@ -366,8 +365,11 @@ class DetailPaymentInfo extends StatelessWidget {
                         const Spacer(),
                         buildTextWidget(NumberFormat.simpleCurrency(
                                 locale: 'vi_VN', decimalDigits: 0, name: '')
-                            .format(transactionDetail.transaction!.gcoinAmount!)),
-                            SvgPicture.asset(gcoinLogo, height: 25,)
+                            .format(transactionDetail.transaction!.amount!)),
+                        SvgPicture.asset(
+                          gcoinLogo,
+                          height: 25,
+                        )
                       ],
                     )
                   ],

@@ -21,7 +21,7 @@ class TransactionService {
         orderId
         type
         status
-        gcoinAmount
+        amount
         description
         gateway
         bankTransCode
@@ -77,6 +77,9 @@ class TransactionService {
           name
           imagePath
           address
+          coordinate{
+            coordinates
+          }
         }
         details {
           id

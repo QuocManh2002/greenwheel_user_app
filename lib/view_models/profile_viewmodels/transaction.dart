@@ -5,7 +5,7 @@ class Transaction {
   int? orderId;
   String? type;
   String? status;
-  int? gcoinAmount;
+  int? amount;
   String? description;
   String? gateway;
   String? bankTransCode;
@@ -17,7 +17,7 @@ class Transaction {
     this.providerId,
     this.type,
     this.status,
-    this.gcoinAmount,
+    this.amount,
     this.description,
     this.gateway,
     this.bankTransCode,
@@ -34,7 +34,7 @@ class Transaction {
         providerId: json["providerId"],
         type: json["type"],
         status: json["status"],
-        gcoinAmount: json["gcoinAmount"].toInt(),
+        amount: json["amount"].toInt(),
         description: json["description"],
         gateway: json["gateway"],
         bankTransCode: json["bankTransCode"],
@@ -47,7 +47,7 @@ class Transaction {
         "providerId": providerId,
         "type": type,
         "status": status,
-        "gcoinAmount": gcoinAmount,
+        "amount": amount,
         "description": description,
         "gateway": gateway,
         "bankTransCode": bankTransCode,

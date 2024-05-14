@@ -10,8 +10,18 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
 class LocalMapScreen extends StatefulWidget {
-  const LocalMapScreen({super.key, required this.location});
-  final LocationViewModel location;
+  const LocalMapScreen(
+      {super.key,
+      this.location,
+      this.fromLocation,
+      this.toLocation,
+      required this.title,
+      this.toAddress});
+  final LocationViewModel? location;
+  final PointLatLng? fromLocation;
+  final PointLatLng? toLocation;
+  final String? toAddress;
+  final String title;
 
   @override
   State<LocalMapScreen> createState() => _LocalMapScreenState();
@@ -24,23 +34,29 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
   String? duration;
   PolylinePoints polylinePoints = PolylinePoints();
   PointLatLng? _defaultCoordinate;
+  PointLatLng? fromLocation;
+  PointLatLng? toLocation;
+  bool isDuplicateFromToLatLng = false;
 
   _onMapCreated(MapboxMap controller) {
     _mapboxMap = controller;
   }
 
   getMapInfo() async {
-    var jsonResponse = await getRouteInfo(_defaultCoordinate!,
-        PointLatLng(widget.location.latitude, widget.location.longitude));
+    var jsonResponse = await getRouteInfo(fromLocation!,
+        PointLatLng(toLocation!.latitude, toLocation!.longitude));
 
     var route = jsonResponse['routes'][0]['overview_polyline']['points'];
-    duration = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
-    distance = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
+    if (jsonResponse['routes'][0]['legs'][0]['duration']['value'] >= 100) {
+      setState(() {
+        duration = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
+        distance = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
+      });
+      List<PointLatLng> result = polylinePoints.decodePolyline(route);
+      List<List<double>> coordinates =
+          result.map((point) => [point.longitude, point.latitude]).toList();
 
-    List<PointLatLng> result = polylinePoints.decodePolyline(route);
-    List<List<double>> coordinates =
-        result.map((point) => [point.longitude, point.latitude]).toList();
-    var geojson = '''{
+      var geojson = '''{
       "type": "FeatureCollection",
       "features": [
         {
@@ -56,65 +72,9 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
       ]
     }''';
 
-    _mapboxMap!.setCamera(CameraOptions(
-        center: Point(
-                coordinates: Position(
-                    widget.location.longitude, widget.location.latitude))
-            .toJson(),
-        zoom: 10));
-
-    _mapboxMap?.flyTo(
-        CameraOptions(
-            anchor: ScreenCoordinate(x: 0, y: 0),
-            zoom: 8,
-            bearing: 0,
-            pitch: 0),
-        MapAnimationOptions(duration: 2000, startDelay: 0));
-
-    _mapboxMap?.annotations.createCircleAnnotationManager().then((value) async {
-      value.create(
-        CircleAnnotationOptions(
-          geometry: Point(
-                  coordinates: Position(_defaultCoordinate!.longitude,
-                      _defaultCoordinate!.latitude))
-              .toJson(),
-          circleColor: primaryColor.value,
-          circleRadius: 12.0,
-        ),
-      );
-    });
-
-    _mapboxMap?.annotations.createCircleAnnotationManager().then((value) async {
-      value.create(
-        CircleAnnotationOptions(
-          geometry: Point(
-                  coordinates: Position(
-                      widget.location.longitude, widget.location.latitude))
-              .toJson(),
-          circleColor: redColor.value,
-          circleRadius: 12.0,
-        ),
-      );
-    });
-
-    _mapboxMap!.setBounds(CameraBoundsOptions(
-        bounds: CoordinateBounds(
-            southwest: Point(
-                    coordinates: Position(
-                        widget.location.longitude, widget.location.latitude))
-                .toJson(),
-            northeast: Point(
-                    coordinates: Position(_defaultCoordinate!.longitude,
-                        _defaultCoordinate!.latitude))
-                .toJson(),
-            infiniteBounds: true),
-        maxZoom: 17,
-        minZoom: 0,
-        maxPitch: 10,
-        minPitch: 0));
-
-    await _mapboxMap?.style.addSource(GeoJsonSource(id: 'line', data: geojson));
-    var lineLayerJson = """{
+      await _mapboxMap?.style
+          .addSource(GeoJsonSource(id: 'line', data: geojson));
+      var lineLayerJson = """{
           "type":"line",
           "id":"line_layer",
           "source":"line",
@@ -126,7 +86,70 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
           }
         }""";
 
-    await _mapboxMap?.style.addPersistentStyleLayer(lineLayerJson, null);
+      await _mapboxMap?.style.addPersistentStyleLayer(lineLayerJson, null);
+
+      _mapboxMap?.annotations
+          .createCircleAnnotationManager()
+          .then((value) async {
+        value.create(
+          CircleAnnotationOptions(
+            geometry: Point(
+                    coordinates: Position(
+                        fromLocation!.longitude, fromLocation!.latitude))
+                .toJson(),
+            circleColor: primaryColor.value,
+            circleRadius: 12.0,
+          ),
+        );
+      });
+    } else {
+      setState(() {
+        isDuplicateFromToLatLng = true;
+      });
+    }
+
+    _mapboxMap?.annotations.createCircleAnnotationManager().then((value) async {
+      value.create(
+        CircleAnnotationOptions(
+          geometry: Point(
+                  coordinates:
+                      Position(toLocation!.longitude, toLocation!.latitude))
+              .toJson(),
+          circleColor: redColor.value,
+          circleRadius: 12.0,
+        ),
+      );
+    });
+
+    _mapboxMap?.flyTo(
+        CameraOptions(
+            anchor: ScreenCoordinate(x: 0, y: 0),
+            zoom: 13,
+            bearing: 0,
+            pitch: 0),
+        MapAnimationOptions(duration: 2000, startDelay: 0));
+
+    _mapboxMap!.setCamera(CameraOptions(
+        center: Point(
+                coordinates:
+                    Position(toLocation!.longitude, toLocation!.latitude))
+            .toJson(),
+        zoom: 14));
+    _mapboxMap!.setBounds(CameraBoundsOptions(
+        bounds: CoordinateBounds(
+            southwest: Point(
+                    coordinates:
+                        Position(toLocation!.longitude, toLocation!.latitude))
+                .toJson(),
+            northeast: Point(
+                    coordinates: Position(
+                        fromLocation!.longitude, fromLocation!.latitude))
+                .toJson(),
+            infiniteBounds: true),
+        maxZoom: 17,
+        minZoom: 0,
+        maxPitch: 10,
+        minPitch: 0));
   }
 
   @override
@@ -141,6 +164,15 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
     if (defaultCoordinate != null) {
       _defaultCoordinate = PointLatLng(double.parse(defaultCoordinate[0]),
           double.parse(defaultCoordinate[1]));
+      if (widget.location != null) {
+        fromLocation = _defaultCoordinate;
+        toLocation =
+            PointLatLng(widget.location!.latitude, widget.location!.longitude);
+      } else {
+        isDuplicateFromToLatLng = _defaultCoordinate == widget.toLocation;
+        toLocation = widget.toLocation;
+        fromLocation = _defaultCoordinate;
+      }
       getMapInfo();
     }
   }
@@ -157,9 +189,9 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
             Navigator.of(context).pop();
           },
         ),
-        title: const Text(
-          "Bản đồ địa phương",
-          style: TextStyle(
+        title: Text(
+          widget.title,
+          style: const TextStyle(
               fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
         ),
       ),
@@ -170,8 +202,8 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
               key: const ValueKey('mapWidget'),
               cameraOptions: CameraOptions(
                   center: Point(
-                          coordinates: Position(widget.location.longitude,
-                              widget.location.latitude))
+                          coordinates: Position(
+                              fromLocation!.longitude, fromLocation!.latitude))
                       .toJson(),
                   zoom: 11),
               styleUri: MapboxStyles.MAPBOX_STREETS,
@@ -196,7 +228,6 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                     ],
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  height: 15.h,
                   width: double.infinity,
                   child: Card(
                     shape: RoundedRectangleBorder(
@@ -204,21 +235,22 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                     clipBehavior: Clip.hardEdge,
                     elevation: 2,
                     child: Row(children: [
-                      Container(
-                        decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(14)),
-                        child: Hero(
-                            tag: widget.location.id,
-                            child: FadeInImage(
-                              height: 15.h,
-                              placeholder: MemoryImage(kTransparentImage),
-                              image: NetworkImage(
-                                  '$baseBucketImage${widget.location.imageUrls[0]}'),
-                              fit: BoxFit.cover,
-                              width: 15.h,
-                              filterQuality: FilterQuality.high,
-                            )),
-                      ),
+                      if (widget.location != null)
+                        Container(
+                          decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(14)),
+                          child: Hero(
+                              tag: widget.location!.id,
+                              child: FadeInImage(
+                                height: 15.h,
+                                placeholder: MemoryImage(kTransparentImage),
+                                image: NetworkImage(
+                                    '$baseBucketImage${widget.location!.imageUrls[0]}'),
+                                fit: BoxFit.cover,
+                                width: 15.h,
+                                filterQuality: FilterQuality.high,
+                              )),
+                        ),
                       const SizedBox(
                         width: 8,
                       ),
@@ -230,7 +262,10 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                             const SizedBox(
                               height: 8,
                             ),
-                            Text(widget.location.name,
+                            Text(
+                                widget.location != null
+                                    ? widget.location!.name
+                                    : widget.toAddress!,
                                 overflow: TextOverflow.clip,
                                 maxLines: 2,
                                 style: const TextStyle(
@@ -238,11 +273,17 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                             const SizedBox(
                               height: 8,
                             ),
-                            Text("Khoảng cách: $distance"),
-                            const SizedBox(
-                              height: 8,
-                            ),
-                            Text("Thời gian di chuyển: $duration")
+                            if (!isDuplicateFromToLatLng)
+                              Text("Khoảng cách: ${distance ?? '...'}"),
+                            if (!isDuplicateFromToLatLng)
+                              const SizedBox(
+                                height: 8,
+                              ),
+                            if (!isDuplicateFromToLatLng)
+                              Text("Thời gian di chuyển: ${duration ?? '...'}"),
+                            SizedBox(
+                              height: 1.h,
+                            )
                           ],
                         ),
                       )

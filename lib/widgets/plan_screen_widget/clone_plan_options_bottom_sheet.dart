@@ -5,7 +5,7 @@ import 'package:greenwheel_user_app/core/constants/clone_plan_options.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_start_location_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
@@ -32,10 +32,7 @@ class _ClonePlanOptionsBottomSheetState
   @override
   void initState() {
     super.initState();
-    setUpData();
   }
-
-  setUpData() {}
 
   @override
   Widget build(BuildContext context) {
@@ -63,7 +60,7 @@ class _ClonePlanOptionsBottomSheetState
                   top: 0,
                   bottom: 0,
                   child: Checkbox(
-                      value: isSelectAll,
+                      value: values.every((element) => element),
                       activeColor: primaryColor,
                       onChanged: (value) {
                         isSelectAll = !isSelectAll;
@@ -179,7 +176,7 @@ class _ClonePlanOptionsBottomSheetState
                               Navigator.push(
                                   context,
                                   PageTransition(
-                                      child: SelectComboDateScreen(
+                                      child: SelectStartLocationScreen(
                                         location: location!,
                                         isCreate: true,
                                         isClone: true,

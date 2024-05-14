@@ -269,6 +269,9 @@ mutation{
         currentStatus
         uuid
         provider {
+          coordinate{
+            coordinates
+          }
           type
           id
           phone
@@ -544,8 +547,7 @@ mutation{
                 Duration(hours: duration.hour, minutes: duration.minute),
             description: json.decode(event['description']),
             shortDescription: json.decode(event['shortDescription']),
-            type: scheduleItemTypesVn[
-                scheduleItemTypes.indexOf(event['type'])],
+            type: scheduleItemTypesVn[scheduleItemTypes.indexOf(event['type'])],
             date: startDate.add(Duration(days: scheduleList.indexOf(sche)))));
       }
       list.add(PlanSchedule(
@@ -571,16 +573,14 @@ mutation{
         for (final planItem in schedules[i]) {
           final duration = DateFormat.Hm().parse(planItem['duration']);
           item.add(PlanScheduleItem(
-              orderUUID:
-                  planItem['orderUUID'].toString().substring(0, 1) == '"'
-                      ? json.decode(planItem['orderUUID'])
-                      : planItem['orderUUID'],
+              orderUUID: planItem['orderUUID'].toString().substring(0, 1) == '"'
+                  ? json.decode(planItem['orderUUID'])
+                  : planItem['orderUUID'],
               isStarred: planItem['isStarred'],
               activityTime:
                   Duration(hours: duration.hour, minutes: duration.minute),
               shortDescription:
-                  planItem['shortDescription'].toString().substring(0, 1) ==
-                          '"'
+                  planItem['shortDescription'].toString().substring(0, 1) == '"'
                       ? json.decode(planItem['shortDescription'])
                       : planItem['shortDescription'],
               type: scheduleItemTypesVn[
@@ -602,19 +602,17 @@ mutation{
     for (final schedule in list) {
       var items = [];
       for (final item in schedule.items) {
-        final type = scheduleItemTypesVn
-            .firstWhere((element) => element == item.type);
+        final type =
+            scheduleItemTypesVn.firstWhere((element) => element == item.type);
         items.add({
           'orderUUID': item.orderUUID,
           'isStarred': item.isStarred,
-          'duration':
-              DateFormat.Hm().format(DateTime(
-                  0,
-                  0,
-                  0,
-                  item.activityTime!.inHours,
-                  item.activityTime!.inMinutes.remainder(60)
-                  )),
+          'duration': DateFormat.Hm().format(DateTime(
+              0,
+              0,
+              0,
+              item.activityTime!.inHours,
+              item.activityTime!.inMinutes.remainder(60))),
           'description': item.description,
           'shortDescription': item.shortDescription,
           'type': scheduleItemTypes[scheduleItemTypesVn.indexOf(type)]
@@ -630,8 +628,8 @@ mutation{
     for (final schedule in list) {
       var items = [];
       for (final item in schedule) {
-        final type = scheduleItemTypes
-            .firstWhere((element) => element == item['type']);
+        final type =
+            scheduleItemTypes.firstWhere((element) => element == item['type']);
         items.add({
           'orderUUID':
               item['orderUUID'] == null ? null : json.encode(item['orderUUID']),
@@ -838,6 +836,9 @@ mutation{
         name
         periodCount
         gcoinBudgetPerCapita
+        destination{
+          name
+        }
       }
     }
   }
@@ -1127,6 +1128,7 @@ mutation{
             : null;
     showModalBottomSheet(
         context: context,
+        backgroundColor: lightPrimaryTextColor,
         builder: (ctx) => ConfirmPlanBottomSheet(
               isFromHost: false,
               isJoin: false,
@@ -1157,6 +1159,8 @@ mutation{
                               sharedPreferences.getString('plan_start_date')!),
                   schedule: sharedPreferences.getString('plan_schedule'),
                   note: sharedPreferences.getString('plan_note'),
+                  departAddress:
+                      sharedPreferences.getString('plan_start_address'),
                   savedContacts:
                       sharedPreferences.getString('plan_saved_emergency'),
                   travelDuration: travelDuration == null

@@ -414,7 +414,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                                           height: 5,
                                         ),
                                         Text(
-                                          "0${_customer!.phone.substring(3)}",
+                                          "0${_customer!.phone.substring(2)}",
                                           style: const TextStyle(fontSize: 16),
                                         )
                                       ],

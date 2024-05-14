@@ -84,11 +84,11 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
               fontSize: 20,
               fontWeight: FontWeight.bold),
         ),
-        if (!widget.isAlreadyJoin && widget.plan.gcoinBudgetPerCapita != 0)
+        if (widget.plan.gcoinBudgetPerCapita != 0)
         SizedBox(
-          height: 1.h,
+          height: 0.2.h,
         ),
-        if (!widget.isAlreadyJoin && widget.plan.gcoinBudgetPerCapita != 0)
+        if (widget.plan.gcoinBudgetPerCapita != 0)
           Row(
             children: [
               Text(
@@ -121,7 +121,7 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
           ),
         if (widget.plan.utcRegCloseAt != null && widget.plan.status == planStatuses[1].engName)
           SizedBox(
-            height: 1.h,
+            height: 0.5.h,
           ),
         if (widget.plan.utcRegCloseAt != null && widget.plan.status == planStatuses[1].engName)
           const Text(

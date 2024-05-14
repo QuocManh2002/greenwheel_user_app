@@ -1,16 +1,20 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
+import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/emergency_contact_view.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/member_list_widget.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -80,8 +84,8 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           SizedBox(
             height: 1.h,
           ),
-          buildInforWidget(
-              'Kết thúc:', DateFormat('dd/MM/yy').format(widget.plan.utcEndAt!)),
+          buildInforWidget('Kết thúc:',
+              DateFormat('dd/MM/yy').format(widget.plan.utcEndAt!)),
           SizedBox(
             height: 1.h,
           ),
@@ -102,8 +106,53 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           SizedBox(
             height: 1.h,
           ),
-          buildInforWidget(
-              'Địa điểm xuất phát:', widget.plan.departureAddress!),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 40.w,
+                child: const Text(
+                  'Địa điểm xuất phát:',
+                  overflow: TextOverflow.clip,
+                  style: TextStyle(fontSize: 17, fontFamily: 'NotoSans'),
+                ),
+              ),
+              SizedBox(
+                width: 45.w,
+                child: InkWell(
+                  onTap: () {
+                    final defaultCoordinate =
+                        sharedPreferences.getStringList('defaultCoordinate');
+                    if (defaultCoordinate == null) {
+                      Utils().handleNonDefaultAddress(() {}, context);
+                    } else {
+                      Navigator.push(
+                          context,
+                          PageTransition(
+                              child: LocalMapScreen(
+                                title: 'Địa điểm xuất phát',
+                                toLocation: PointLatLng(
+                                    widget.plan.startLocationLat!,
+                                    widget.plan.startLocationLng!),
+                                toAddress: widget.plan.departureAddress,
+                              ),
+                              type: PageTransitionType.rightToLeft));
+                    }
+                  },
+                  child: Text(
+                    widget.plan.departureAddress!,
+                    overflow: TextOverflow.clip,
+                    style: const TextStyle(
+                        decoration: TextDecoration.underline,
+                        fontSize: 17,
+                        fontWeight: FontWeight.bold,
+                        fontFamily: 'NotoSans'),
+                  ),
+                ),
+              )
+            ],
+          ),
           SizedBox(
             height: 1.h,
           ),
@@ -130,7 +179,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             height: 1.h,
           ),
           SizedBox(
-            height: 13.h,
+            height: 7.h,
             width: double.infinity,
             child: PageView.builder(
               scrollDirection: Axis.horizontal,
@@ -321,7 +370,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
               content,
               overflow: TextOverflow.clip,
               style: const TextStyle(
-                  fontSize: 18,
+                  fontSize: 17,
                   fontWeight: FontWeight.bold,
                   fontFamily: 'NotoSans'),
             ),

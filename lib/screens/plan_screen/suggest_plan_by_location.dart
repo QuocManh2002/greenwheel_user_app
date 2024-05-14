@@ -1,5 +1,6 @@
 
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
@@ -47,6 +48,7 @@ class _SuggestPlanByLocationScreenState
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
+          backgroundColor: lightPrimaryTextColor,
       appBar: AppBar(
         leading: BackButton(
           onPressed: (){Navigator.of(context).pop();},
@@ -89,8 +91,6 @@ class _SuggestPlanByLocationScreenState
                         for (final plan in _suggestPlans!)
                           SuggestPlanCard(
                               plan: plan,
-                              imageUrl: widget.location.imageUrls[0],
-                              location: widget.location,
                               )
                       ],
                     ),

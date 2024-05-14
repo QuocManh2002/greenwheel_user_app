@@ -89,5 +89,10 @@ class GlobalConstant {
   final Duration MAX_SUM_ACTIVITY_TIME = const Duration(hours: 16);
   final Duration MIN_ACTIVITY_TIME = const Duration(minutes: 15);
   final int ORDER_ITEM_MAX_COUNT = 10;
-  final int PLAN_SURCHARGE_MAX_COUNT = 10; 
+  final int PLAN_SURCHARGE_MAX_COUNT = 10;
+  final Duration MIN_DURATION_REPORT_PLAN = const Duration(days: 3);
+  final Duration MIN_DURATION_REPORT_ORDER = const Duration(days: 3);
+  final int ORDER_COMMENT_MAX_LENGTH = 300;
+  final int ORDER_COMMENT_MIN_LENGTH = 10;
+  final int ORDER_MIN_RATING_NO_COMMENT = 4;
 }

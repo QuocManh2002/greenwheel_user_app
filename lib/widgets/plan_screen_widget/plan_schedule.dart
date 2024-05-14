@@ -103,6 +103,7 @@ class _PLanScheduleWidgetState extends State<PLanScheduleWidget> {
                     e.uuid == _scheduleList[index].items[itemIndex].orderUUID),
                 item: _scheduleList[index].items[itemIndex],
                 isLeader: widget.isLeader,
+                planType: widget.planType,
               ),
             )),
     );

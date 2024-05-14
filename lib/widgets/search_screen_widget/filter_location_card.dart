@@ -1,6 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/location_screen/location_screen.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
@@ -68,27 +67,24 @@ class FilterLocationCard extends StatelessWidget {
                       overflow: TextOverflow.clip,
                       maxLines: 2,
                       style: const TextStyle(
-                          fontSize: 18, fontWeight: FontWeight.bold)),
-                  const SizedBox(
-                    height: 8,
-                  ),
-                  RatingBar.builder(
-                      ignoreGestures: true,
-                      itemSize: 20,
-                      allowHalfRating: true,
-                      itemCount: 5,
-                      initialRating: location.rating.toDouble(),
-                      maxRating: 5,
-                      itemBuilder: (context, index) => const Icon(
-                            Icons.star,
-                            color: Colors.amber,
-                          ),
-                      onRatingUpdate: (_) {}),
-                  const SizedBox(
-                    height: 8,
-                  ),
+                          fontSize: 17, fontWeight: FontWeight.bold)),
+               
+                  // RatingBar.builder(
+                  //     ignoreGestures: true,
+                  //     itemSize: 20,
+                  //     allowHalfRating: true,
+                  //     itemCount: 5,
+                  //     initialRating: location.rating.toDouble(),
+                  //     maxRating: 5,
+                  //     itemBuilder: (context, index) => const Icon(
+                  //           Icons.star,
+                  //           color: Colors.amber,
+                  //         ),
+                  //     onRatingUpdate: (_) {}),
+               
                   Text(
                     location.description,
+                    maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   )
                 ],

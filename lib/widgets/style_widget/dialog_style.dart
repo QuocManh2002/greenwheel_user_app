@@ -20,7 +20,7 @@ class DialogStyle {
     AwesomeDialog(
             context: context,
             animType: AnimType.leftSlide,
-            dialogType: DialogType.warning,
+            dialogType: type ,
             padding: const EdgeInsets.symmetric(horizontal: 8),
             title: title,
             titleTextStyle: const TextStyle(
@@ -39,5 +39,15 @@ class DialogStyle {
             btnCancelText: btnCancelText 
                 )
         .show();
+  }
+
+  void successDialog(BuildContext context, String title){
+    AwesomeDialog(context: context,
+      animType: AnimType.leftSlide,
+      dialogType: DialogType.success,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      title: title,
+      titleTextStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, fontFamily: 'NotoSans')
+    ).show();
   }
 }

@@ -1,15 +1,16 @@
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/transaction_detail_loading_screen.dart';
-import 'package:greenwheel_user_app/service/transaction_service.dart';
-import 'package:greenwheel_user_app/service/traveler_service.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
-import 'package:greenwheel_user_app/view_models/transaction_detail.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_payment_info.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/detail_payment_plan_info.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../main.dart';
+import '../../service/transaction_service.dart';
+import '../../service/traveler_service.dart';
+import '../../view_models/plan_viewmodels/plan_detail.dart';
+import '../../view_models/profile_viewmodels/transaction.dart';
+import '../../view_models/transaction_detail.dart';
+import '../../widgets/plan_screen_widget/detail_payment_info.dart';
+import '../../widgets/plan_screen_widget/detail_payment_plan_info.dart';
+import '../loading_screen/transaction_detail_loading_screen.dart';
 
 class TransactionDetailScreen extends StatefulWidget {
   const TransactionDetailScreen(
@@ -26,8 +27,8 @@ class TransactionDetailScreen extends StatefulWidget {
 class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
   PlanDetail? plan;
   bool _isLoading = true;
-  TransactionService _transactionService = TransactionService();
-  CustomerService _customerService = CustomerService();
+  final TransactionService _transactionService = TransactionService();
+  final CustomerService _customerService = CustomerService();
   bool isHandled = false;
   String queryText = '';
   String subQueryText = '';
@@ -36,7 +37,6 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }
@@ -84,19 +84,4 @@ class _TransactionDetailScreenState extends State<TransactionDetailScreen> {
                           )
                         ])))));
   }
-
-  buildDivider() => Column(
-        children: [
-          SizedBox(
-            height: 0.7.h,
-          ),
-          Container(
-            color: Colors.grey.withOpacity(0.5),
-            height: 1.2,
-          ),
-          SizedBox(
-            height: 0.7.h,
-          ),
-        ],
-      );
 }

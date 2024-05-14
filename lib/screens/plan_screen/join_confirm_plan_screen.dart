@@ -2,20 +2,22 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/transaction_detail_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/payment_screen/payment_result_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/input_companion_name_screen.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/service/traveler_service.dart';
-import 'package:greenwheel_user_app/view_models/plan_member.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/urls.dart';
+import '../../main.dart';
+import '../../service/plan_service.dart';
+import '../../service/traveler_service.dart';
+import '../../view_models/plan_member.dart';
+import '../../view_models/plan_viewmodels/plan_detail.dart';
+import '../../widgets/style_widget/button_style.dart';
+import '../../widgets/style_widget/dialog_style.dart';
+import '../loading_screen/transaction_detail_loading_screen.dart';
+import '../payment_screen/payment_result_screen.dart';
+import 'create_plan/input_companion_name_screen.dart';
 
 class JoinConfirmPlanScreen extends StatefulWidget {
   const JoinConfirmPlanScreen(
@@ -32,7 +34,7 @@ class JoinConfirmPlanScreen extends StatefulWidget {
   final bool isConfirm;
   final bool isView;
   final PlanMemberViewModel? member;
-  final void Function(bool isFromJoinScreen, int? amount)? onPublicizePlan;
+  final void Function(bool isFromJoinScreen, int? amount, BuildContext context)? onPublicizePlan;
   final void Function()? callback;
 
   @override
@@ -51,11 +53,6 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   bool isLoading = true;
 
   onChangeWeight(bool isAdd) {
-    // isEnableToAdd = widget.member == null
-    //     ? (weight < widget.plan.maxMemberWeight! &&
-    //         weight < widget.plan.maxMemberCount! - widget.plan.memberCount!)
-    //     : (weight < widget.plan.maxMemberWeight! - widget.member!.weight &&
-    //         weight < widget.plan.maxMemberCount! - widget.plan.memberCount!);
     if (isAdd && isEnableToAdd) {
       setState(() {
         weight += 1;
@@ -161,7 +158,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                             const Spacer(),
                             Text(
                               NumberFormat.simpleCurrency(
-                                      locale: 'vi-VN', decimalDigits: 0, name: "")
+                                      locale: 'vi_VN',
+                                      decimalDigits: 0,
+                                      name: "")
                                   .format(travelerBalance),
                               style: const TextStyle(
                                   fontSize: 20,
@@ -386,8 +385,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                               children: [
                                 const Text(
                                   'Chi phí tham gia',
-                                  style:
-                                      TextStyle(fontSize: 16, color: Colors.grey),
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.grey),
                                 ),
                                 const Spacer(),
                                 SizedBox(
@@ -397,7 +396,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                             locale: 'vi-VN',
                                             decimalDigits: 0,
                                             name: "")
-                                        .format(widget.plan.gcoinBudgetPerCapita),
+                                        .format(
+                                            widget.plan.gcoinBudgetPerCapita),
                                     textAlign: TextAlign.end,
                                     overflow: TextOverflow.clip,
                                     style: const TextStyle(
@@ -417,8 +417,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                               children: [
                                 const Text(
                                   'Người đại diện',
-                                  style:
-                                      TextStyle(fontSize: 16, color: Colors.grey),
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.grey),
                                 ),
                                 const Spacer(),
                                 SizedBox(
@@ -450,8 +450,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                     widget.plan.maxMemberWeight != 1 &&
                                     isEnableToSubtract)
                                   InkWell(
-                                    overlayColor: const MaterialStatePropertyAll(
-                                        Colors.transparent),
+                                    overlayColor:
+                                        const MaterialStatePropertyAll(
+                                            Colors.transparent),
                                     onTap: () {
                                       onChangeWeight(false);
                                     },
@@ -495,8 +496,9 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                                     widget.plan.maxMemberWeight != 1 &&
                                     isEnableToAdd)
                                   InkWell(
-                                    overlayColor: const MaterialStatePropertyAll(
-                                        Colors.transparent),
+                                    overlayColor:
+                                        const MaterialStatePropertyAll(
+                                            Colors.transparent),
                                     onTap: () {
                                       onChangeWeight(true);
                                     },
@@ -514,8 +516,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                               children: [
                                 const Text(
                                   'Tạm tính',
-                                  style:
-                                      TextStyle(fontSize: 16, color: Colors.grey),
+                                  style: TextStyle(
+                                      fontSize: 16, color: Colors.grey),
                                 ),
                                 const Spacer(),
                                 Text(
@@ -667,12 +669,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
               final rs = await _planService.joinPlan(
                   widget.plan.id!, companionNames, context);
               if (rs != null) {
-                if (widget.isPublic) {
-                  widget.onPublicizePlan!(
-                      true, widget.plan.gcoinBudgetPerCapita! * weight);
-                } else {
-                  handleJoinSuccess();
-                }
+                handleJoinSuccess();
               }
             },
             btnCancelColor: Colors.blueAccent,
@@ -696,20 +693,14 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
               final rs =
                   await _planService.confirmMember(widget.plan.id!, context);
               if (rs != 0) {
-                AwesomeDialog(
-                  // ignore: use_build_context_synchronously
-                  context: context,
-                  dialogType: DialogType.success,
-                  animType: AnimType.topSlide,
-                  showCloseIcon: true,
-                  title: "Đã chốt số lượng thành viên",
-                  desc: "Ấn tiếp tục để trở về",
-                  btnOkText: "Tiếp tục",
-                  btnOkOnPress: () {
-                    widget.callback!();
-                    Navigator.of(context).pop();
-                  },
-                ).show();
+                DialogStyle().successDialog(
+                    // ignore: use_build_context_synchronously
+                    context,
+                    "Đã chốt số lượng thành viên");
+                Future.delayed(const Duration(milliseconds: 1500), () {
+                  widget.callback!();
+                  Navigator.of(context).pop();
+                });
               }
             },
             btnCancelColor: Colors.deepOrangeAccent,
@@ -729,6 +720,8 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             builder: (ctx) => PaymentResultScreen(
                   planId: widget.plan.id!,
                   isSuccess: true,
+                  isPublicPlan: widget.isPublic,
+                  onPublic: widget.isPublic ? widget.onPublicizePlan : null,
                   amount: widget.plan.gcoinBudgetPerCapita! * weight,
                 )),
         (route) => false);

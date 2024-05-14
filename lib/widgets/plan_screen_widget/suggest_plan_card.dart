@@ -1,26 +1,20 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/suggest_plan.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:transparent_image/transparent_image.dart';
 
 class SuggestPlanCard extends StatelessWidget {
-  const SuggestPlanCard(
-      {super.key,
-      required this.plan,
-      required this.imageUrl,
-      required this.location});
+  const SuggestPlanCard({
+    super.key,
+    required this.plan,
+  });
   final SuggestPlanViewModel plan;
-  final String imageUrl;
-  final LocationViewModel location;
 
   @override
   Widget build(BuildContext context) {
@@ -45,6 +39,7 @@ class SuggestPlanCard extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 8),
         child: Container(
           decoration: BoxDecoration(
+            color: Colors.white,
             boxShadow: const [
               BoxShadow(
                 blurRadius: 3,
@@ -54,115 +49,103 @@ class SuggestPlanCard extends StatelessWidget {
             ],
             borderRadius: BorderRadius.circular(12),
           ),
-          height: 17.h,
           width: double.infinity,
-          child: Card(
-            shape:
-                RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            clipBehavior: Clip.hardEdge,
-            elevation: 2,
-            child: Padding(
-              padding: const EdgeInsets.only(right: 16),
-              child: Row(children: [
-                Container(
-                    decoration:
-                        BoxDecoration(borderRadius: BorderRadius.circular(14)),
-                    child: CachedNetworkImage(
-                        height: 17.h,
-                        width: 17.h,
-                        fit: BoxFit.cover,
-                        imageUrl: '$baseBucketImage/${17.h.ceil()}x${17.h.ceil()}$imageUrl',
-                        placeholder: (context, url) =>
-                            Image.memory(kTransparentImage),
-                        errorWidget: (context, url, error) =>
-                            Image.asset(emptyPlan))),
-                const SizedBox(
-                  width: 8,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 0.1.h,
                 ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      SizedBox(
-                        height: 0.1.h,
-                      ),
-                      SizedBox(
-                        width: 45.w,
-                        child: Text(plan.planName,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                fontSize: 20, fontWeight: FontWeight.bold)),
-                      ),
-                      SizedBox(
-                        height: 0.2.h,
-                      ),
-                      Row(
-                        children: [
-                          const Icon(Icons.location_on_outlined, size: 20, color: primaryColor,),
-                          SizedBox(width: 2.w,),
-                          Text(
-                            location.province.name,
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              fontFamily: 'NotoSans'
-                            ),
-                          )
-                        ],
-                      ),
-                      SizedBox(
-                        height: 0.2.h,
-                      ),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.calendar_month,
-                            color: primaryColor,
-                            size: 20,
-                          ),
-                          SizedBox(
-                            width: 2.w,
-                          ),
-                          Text(
-                            '${combodate.numberOfDay} ngày, ${combodate.numberOfNight} đêm',
-                            style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'NotoSans'),
-                          ),
-                        ],
-                      ),
-                      SizedBox(
-                        height: 0.2.h,
-                      ),
-                      Row(
-                        children: [
-                          const Icon(
-                            Icons.attach_money_outlined,
-                            color: primaryColor,
-                            size: 20,
-                          ),
-                          SizedBox(
-                            width: 2.w,
-                          ),
-                          Text(
-                            NumberFormat.simpleCurrency(
-                                    locale: 'vi_VN', name: '', decimalDigits: 0)
-                                .format(plan.gcoinBudgetPerCapita),
-                            style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                fontFamily: 'NotoSans'),
-                          ),
-                          SvgPicture.asset(gcoinLogo, height: 18,)
-                        ],
-                      ),
-                      const Spacer(),
-                    ],
-                  ),
-                )
-              ]),
+                Text(plan.planName,
+                    overflow: TextOverflow.clip,
+                    style: const TextStyle(
+                        fontSize: 20, fontWeight: FontWeight.bold)),
+                SizedBox(
+                  height: 0.2.h,
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.location_on_outlined,
+                      size: 20,
+                      color: primaryColor,
+                    ),
+                    SizedBox(
+                      width: 2.w,
+                    ),
+                    Text(
+                      plan.locationName,
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'NotoSans'),
+                    )
+                  ],
+                ),
+                SizedBox(
+                  height: 0.2.h,
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.calendar_month,
+                      color: primaryColor,
+                      size: 20,
+                    ),
+                    SizedBox(
+                      width: 2.w,
+                    ),
+                    Text(
+                      '${combodate.numberOfDay} ngày, ${combodate.numberOfNight} đêm',
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'NotoSans'),
+                    ),
+                  ],
+                ),
+                SizedBox(
+                  height: 0.2.h,
+                ),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.attach_money_outlined,
+                      color: primaryColor,
+                      size: 20,
+                    ),
+                    SizedBox(
+                      width: 2.w,
+                    ),
+                    Text(
+                      NumberFormat.simpleCurrency(
+                              locale: 'vi_VN', name: '', decimalDigits: 0)
+                          .format(plan.gcoinBudgetPerCapita),
+                      style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'NotoSans'),
+                    ),
+                    SvgPicture.asset(
+                      gcoinLogo,
+                      height: 18,
+                    ),
+                    const Text(
+                      ' /',
+                      style:
+                          TextStyle(fontSize: 17, fontWeight: FontWeight.w900),
+                    ),
+                    const Icon(
+                      Icons.person,
+                      color: primaryColor,
+                      size: 22,
+                    )
+                  ],
+                ),
+              ],
             ),
           ),
         ),

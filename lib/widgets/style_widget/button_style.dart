@@ -28,10 +28,14 @@ final elevatedButtonStyleNoSize = ElevatedButton.styleFrom(
 );
 
 final outlinedButtonStyle = OutlinedButton.styleFrom(
-  side: const BorderSide(width: 2, color: Colors.black),
+  backgroundColor: Colors.white,
+  shape: const RoundedRectangleBorder(
+      side: BorderSide(color: primaryColor),
+      borderRadius: BorderRadius.all(Radius.circular(10))),
   foregroundColor: primaryColor,
   textStyle: const TextStyle(fontSize: 18),
   minimumSize: const Size(340, 45),
+  
 );
 
 final elevatedButtonStyleWithIcon = ElevatedButton.styleFrom(

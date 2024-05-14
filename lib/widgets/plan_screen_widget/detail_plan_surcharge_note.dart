@@ -1,11 +1,11 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
+import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_total_info.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
-import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class DetailPlanSurchargeNote extends StatefulWidget {
@@ -13,9 +13,11 @@ class DetailPlanSurchargeNote extends StatefulWidget {
     super.key,
     required this.plan,
     required this.isLeader,
+    required this.totalOrder,
   });
   final PlanDetail plan;
   final bool isLeader;
+  final double totalOrder;
 
   @override
   State<DetailPlanSurchargeNote> createState() =>
@@ -26,6 +28,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
     with TickerProviderStateMixin {
   late TabController tabController;
   double _totalSurcharge = 0;
+  bool isShowTotal = false;
 
   @override
   void initState() {
@@ -36,13 +39,15 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
   setUpData() {
     tabController = TabController(length: 2, vsync: this, initialIndex: 0);
 
-    if (widget.plan.surcharges != null) {
-      for (final sur in widget.plan.surcharges!) {
-        sur.alreadyDivided ?? true
-            ? _totalSurcharge += sur.gcoinAmount * widget.plan.maxMemberCount!
-            : _totalSurcharge += sur.gcoinAmount;
-      }
-    }
+    _totalSurcharge = (widget.plan.surcharges ?? []).fold(
+      0,
+      (previousValue, element) =>
+          previousValue +
+          (element.imagePath != null ? element.gcoinAmount : 0) *
+              widget.plan.memberCount!,
+    );
+    isShowTotal = widget.plan.status != planStatuses[0].engName &&
+        widget.plan.status != planStatuses[1].engName;
   }
 
   @override
@@ -77,103 +82,41 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                 ),
               ]),
           SizedBox(
-            height: 40.h,
+            height: 60.h,
             child: TabBarView(controller: tabController, children: [
               Column(
                 children: [
-                  SizedBox(
-                    height: 30.h,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      child: Column(
-                        children: [
-                          for (final sur in widget.plan.surcharges!)
-                            Padding(
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 8),
-                              child: SurchargeCard(
-                                maxMemberCount: widget.plan.maxMemberCount!,
-                                isEnableToUpdate:
-                                    widget.plan.status != "REGISTERING" &&
-                                        widget.plan.status != 'PENDING',
-                                isCreate: false,
-                                surcharge: sur,
-                                isLeader: widget.isLeader,
-                                callbackSurcharge: (dynamic) {},
-                              ),
-                            )
-                        ],
+                  Expanded(
+                    child: ListView.builder(
+                      physics: const BouncingScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: widget.plan.surcharges != null
+                          ? widget.plan.surcharges!.length
+                          : 0,
+                      itemBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 4),
+                        child: SurchargeCard(
+                          maxMemberCount: widget.plan.maxMemberCount!,
+                          isEnableToUpdate:
+                              widget.plan.status != planStatuses[1].engName &&
+                                  widget.plan.status != planStatuses[0].engName,
+                          isCreate: false,
+                          surcharge: widget.plan.surcharges![0],
+                          isLeader: widget.isLeader,
+                          callbackSurcharge: (dynamic) {},
+                        ),
                       ),
                     ),
                   ),
-                  if (_totalSurcharge != 0)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal:  8.0),
-                      child: Container(
-                        padding: const EdgeInsets.all(12),
-                        decoration: BoxDecoration(
-                          color: lightPrimaryTextColor.withOpacity(0.5),
-                          borderRadius:const BorderRadius.all(Radius.circular(12))
-                        ),
-                      child: Column(
-                        children: [
-                          Row(
-                            children: [
-                              const Text(
-                                'Tổng cộng: ',
-                                style: TextStyle(
-                                    fontSize: 17,
-                                    fontWeight: FontWeight.bold,
-                                    fontFamily: 'NotoSans'),
-                              ),
-                              const Spacer(),
-                              Text(
-                                NumberFormat.simpleCurrency(
-                                        locale: 'vi_VN', decimalDigits: 0, name: '')
-                                    .format(_totalSurcharge),
-                                style: const TextStyle(
-                                  fontFamily: 'NotoSans',
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              SvgPicture.asset(gcoinLogo, height: 18,),
-                              SizedBox(
-                                width: 5.w,
-                              )
-                            ],
-                          ),
-                          SizedBox(height: 0.5.h,),
-                          Row(
-                          children: [
-                            const Text(
-                              'Bình quân: ',
-                              style: TextStyle(
-                                  fontSize: 17,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: 'NotoSans'),
-                            ),
-                            const Spacer(),
-                            Text(
-                              NumberFormat.simpleCurrency(
-                                      locale: 'vi_VN', decimalDigits: 0, name: '')
-                                  .format(_totalSurcharge /
-                                      widget.plan.maxMemberCount!),
-                              style: const TextStyle(
-                                fontFamily: 'NotoSans',
-                                fontSize: 17,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            SvgPicture.asset(gcoinLogo, height: 18,),
-                            SizedBox(
-                              width: 5.w,
-                            )
-                          ],
-                        ),
-                        ],
-                      ),)
-                    ),
+                  SizedBox(
+                    height: 1.h,
+                  ),
+                  PlanTotalInfo(
+                      plan: widget.plan,
+                      isShowTotal: isShowTotal,
+                      totalOrder: widget.totalOrder.toInt(),
+                      totalSurcharge: _totalSurcharge.toInt())
                 ],
               ),
               Container(

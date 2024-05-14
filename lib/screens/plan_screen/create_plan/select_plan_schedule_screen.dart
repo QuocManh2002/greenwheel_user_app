@@ -3,26 +3,28 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_note_surcharge_screen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/new_schedule_item_screen.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_activity.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_schedule_title.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
+import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../../core/constants/colors.dart';
+import '../../../core/constants/global_constant.dart';
+import '../../../core/constants/urls.dart';
+import '../../../helpers/util.dart';
+import '../../../main.dart';
+import '../../../service/plan_service.dart';
+import '../../../view_models/location.dart';
+import '../../../view_models/order.dart';
+import '../../../view_models/plan_viewmodels/plan_create.dart';
+import '../../../view_models/plan_viewmodels/plan_schedule.dart';
+import '../../../view_models/plan_viewmodels/plan_schedule_item.dart';
+import '../../../widgets/plan_screen_widget/craete_plan_header.dart';
+import '../../../widgets/plan_screen_widget/plan_schedule_activity.dart';
+import '../../../widgets/plan_screen_widget/plan_schedule_title.dart';
+import '../../../widgets/style_widget/button_style.dart';
+import '../../../widgets/style_widget/dialog_style.dart';
+import 'create_note_surcharge_screen.dart';
+import 'new_schedule_item_screen.dart';
 
 class SelectPlanScheduleScreen extends StatefulWidget {
   const SelectPlanScheduleScreen(
@@ -219,7 +221,11 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                     onDetele: _deleteItem,
                     onAdd: _addItem,
                     callback: callback,
-                    itemIndex: index,
+                    itemIndex: itemIndex,
+                    isValidPeriodOfOrder: Utils().isValidPeriodOfOrder(
+                        scheduleList[index],
+                        scheduleList[index].items[itemIndex],
+                        index == 0),
                   ),
                 ),
                 onReorder: (oldIndex, newIndex) {
@@ -261,41 +267,249 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
             startDate: scheduleList.first.date!)));
   }
 
-  _deleteItem(PlanScheduleItem item, String? orderUUID) {
-    setState(() {
-      if (item.orderUUID == null) {
-        var itemList = scheduleList
-            .firstWhere((element) => element.date == item.date)
-            .items;
-        if (orderUUID == null) {
-          itemList.remove(item);
-        } else {
-          itemList.removeWhere(
-            (element) => element.orderUUID == orderUUID,
-          );
-        }
+  _deleteItem(PlanScheduleItem item, String? orderUUID) async {
+    if (item.orderUUID == null) {
+      var itemList =
+          scheduleList.firstWhere((element) => element.date == item.date).items;
+      if (orderUUID == null) {
+        itemList.remove(item);
       } else {
-        final uuid = item.orderUUID;
-        scheduleList
-            .firstWhere((element) => element.date == item.date)
-            .items
-            .remove(item);
-        for (final day in scheduleList) {
-          for (final item in day.items) {
-            if (item.orderUUID != null && item.orderUUID == uuid) {
-              item.orderUUID = null;
-            }
-          }
-        }
-
-        var orderList =
-            json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
-        final order = orderList.firstWhere((e) => e['orderUUID'] == uuid);
-        orderList.remove(order);
-
-        sharedPreferences.setString('plan_temp_order', json.encode(orderList));
+        itemList.removeWhere(
+          (element) => element.orderUUID == orderUUID,
+        );
       }
-    });
+    } else {
+      var orderList =
+          json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+      final order =
+          orderList.firstWhere((e) => e['orderUUID'] == item.orderUUID);
+      final uuid = item.orderUUID;
+      final newDates = order['serveDates']
+          .where(
+              (date) => DateTime.parse(date).difference(item.date!).inDays != 0)
+          .toList();
+      bool isDeleteOrder = false;
+      await AwesomeDialog(
+              context: context,
+              animType: AnimType.leftSlide,
+              dialogType: DialogType.warning,
+              body: StatefulBuilder(
+                builder: (context, setState) => Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Hoạt động có gắn với dự trù kinh phí',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 0.1.h,
+                      ),
+                      const Divider(
+                        thickness: 1,
+                        color: Colors.black38,
+                      ),
+                      SizedBox(
+                        height: 0.1.h,
+                      ),
+                      Text(
+                        order['providerName'],
+                        style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'NotoSans'),
+                      ),
+                      for (final detail in order['details'])
+                        RichText(
+                            text: TextSpan(
+                                text: detail['productName'],
+                                style: const TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                    color: Colors.black54,
+                                    fontFamily: 'NotoSans'),
+                                children: [
+                              TextSpan(
+                                  text: ' x${detail['quantity']}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w300,
+                                      color: Colors.black45))
+                            ])),
+                      SizedBox(
+                        height: 0.1.h,
+                      ),
+                      const Divider(
+                        thickness: 1,
+                        color: Colors.black38,
+                      ),
+                      SizedBox(
+                        height: 0.1.h,
+                      ),
+                      const Text(
+                        'Cập nhật ngày phục vụ: ',
+                        style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                            fontFamily: 'NotoSans'),
+                      ),
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Column(
+                            children: [
+                              for (final date in order['serveDates'])
+                                Text(
+                                  DateFormat('dd/MM/yyyy')
+                                      .format(DateTime.parse(date)),
+                                  style: const TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.black54,
+                                      fontFamily: 'NotoSans',
+                                      fontWeight: FontWeight.w500),
+                                ),
+                            ],
+                          ),
+                          const Spacer(),
+                          const Icon(
+                            Icons.keyboard_double_arrow_right,
+                            color: Colors.blueAccent,
+                            size: 30,
+                          ),
+                          const Spacer(),
+                          newDates.isEmpty
+                              ? Text(
+                                  'Xoá đơn dịch vụ',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.red.withOpacity(0.7),
+                                      fontFamily: 'NotoSans',
+                                      fontWeight: FontWeight.w500),
+                                )
+                              : Column(
+                                  children: [
+                                    for (final date in newDates)
+                                      Text(
+                                        DateFormat('dd/MM/yyyy')
+                                            .format(DateTime.parse(date)),
+                                        style: const TextStyle(
+                                            fontSize: 15,
+                                            color: Colors.black54,
+                                            fontFamily: 'NotoSans',
+                                            fontWeight: FontWeight.w500),
+                                      ),
+                                  ],
+                                ),
+                        ],
+                      ),
+                      SizedBox(
+                        height: 0.1.h,
+                      ),
+                      const Divider(
+                        color: Colors.black38,
+                      ),
+                      SizedBox(
+                        height: 0.1.h,
+                      ),
+                      Row(
+                        children: [
+                          Checkbox(
+                            value: isDeleteOrder,
+                            activeColor: primaryColor,
+                            onChanged: (value) {
+                              setState(() {
+                                isDeleteOrder = !isDeleteOrder;
+                              });
+                            },
+                          ),
+                          const Text(
+                            'Xoá cả đơn hàng',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w500,
+                              fontFamily: 'NotoSans',
+                            ),
+                          )
+                        ],
+                      ),
+                      SizedBox(
+                        height: 0.1.h,
+                      ),
+                      const Divider(
+                        color: Colors.black38,
+                      ),
+                      SizedBox(
+                        height: 0.1.h,
+                      ),
+                      // Row(
+                      //   children: [
+                      //     Text(
+                      //       DateFormat('dd/MM/yyyy').format(item.date!),
+                      //       style: const TextStyle(
+                      //           fontSize: 15,
+                      //           color: Colors.black54,
+                      //           fontFamily: 'NotoSans',
+                      //           fontWeight: FontWeight.w500),
+                      //     ),
+                      //     SizedBox(
+                      //       width: 3.w,
+                      //     ),
+                      //     const Icon(
+                      //       Icons.keyboard_double_arrow_right,
+                      //       color: Colors.blueAccent,
+                      //       size: 30,
+                      //     ),
+                      //     SizedBox(
+                      //       width: 3.w,
+                      //     ),
+                      //     const Icon(
+                      //       Icons.close,
+                      //       color: Colors.redAccent,
+                      //       size: 30,
+                      //     )
+                      //   ],
+                      // )
+                    ],
+                  ),
+                ),
+              ),
+              btnOkColor: Colors.amber,
+              btnOkOnPress: () {
+                setState(() {
+                  scheduleList
+                      .firstWhere((element) => element.date == item.date)
+                      .items
+                      .remove(item);
+                });
+                if (isDeleteOrder || newDates.isEmpty) {
+                  for (final day in scheduleList) {
+                    for (final item in day.items) {
+                      if (item.orderUUID != null && item.orderUUID == uuid) {
+                        item.orderUUID = null;
+                      }
+                    }
+                  }
+                  orderList.remove(order);
+                } else {
+                  order['serveDates'] = newDates;
+                  order['total'] = Utils().getTempOrderTotal(order, false);
+                }
+              },
+              btnOkText: 'Xoá',
+              btnCancelColor: Colors.blue,
+              btnCancelOnPress: () {},
+              btnCancelText: 'Huỷ')
+          .show();
+
+      sharedPreferences.setString('plan_temp_order', json.encode(orderList));
+    }
     var finalList = _planService.convertPlanScheduleToJson(scheduleList);
     sharedPreferences.setString('plan_schedule', json.encode(finalList));
   }
@@ -308,16 +522,21 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
         currentSchedule.items.fold(const Duration(), (previousValue, element) {
       return previousValue + element.activityTime!;
     });
+
     if (consumedTime.compareTo(GlobalConstant().MAX_SUM_ACTIVITY_TIME) == 0) {
       Utils().showFullyActivityTimeDialog(context);
     } else {
       var startActivityTime = isUpper == null
           ? const Duration()
-          : currentSchedule.items
-              .sublist(0, isUpper ? itemIndex : itemIndex! + 1)
-              .fold(const Duration(), (previousValue, element) {
-              return previousValue + element.activityTime!;
-            });
+          : currentSchedule.items.length == 1
+              ? isUpper
+                  ? const Duration()
+                  : currentSchedule.items.first.activityTime
+              : currentSchedule.items
+                  .sublist(0, isUpper ? itemIndex : itemIndex! + 1)
+                  .fold(const Duration(), (previousValue, element) {
+                  return previousValue + element.activityTime!;
+                });
       Navigator.push(
           context,
           PageTransition(
@@ -329,7 +548,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                   location: widget.location,
                   isUpper: isUpper,
                   itemIndex: itemIndex,
-                  startActivityTime: startActivityTime,
+                  startActivityTime: startActivityTime!,
                   onDelete: _deleteItem),
               type: PageTransitionType.rightToLeft));
     }
@@ -556,13 +775,14 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                           btnOkText: 'OK',
                           btnOkOnPress: () {})
                       .show();
-                }else if(checkValidPeriodOfOrder()){
-                  DialogStyle().basicDialog(context: context, title: 'Có hoạt động dịch vụ không phù hợp với lịch trình',
-                  desc: 'Hãy điều chỉnh lại hoạt động này',
-                   type: DialogType.warning);
-                }
-                
-                 else if (checkValidNumberOfFoodActivity()) {
+                } else if (checkValidPeriodOfOrder()) {
+                  DialogStyle().basicDialog(
+                      context: context,
+                      title:
+                          'Có hoạt động dịch vụ không phù hợp với lịch trình',
+                      desc: 'Hãy điều chỉnh lại hoạt động này',
+                      type: DialogType.warning);
+                } else if (checkValidNumberOfFoodActivity()) {
                   bool notAskScheduleAgain =
                       sharedPreferences.getBool('notAskScheduleAgain') ?? false;
                   if (notAskScheduleAgain) {

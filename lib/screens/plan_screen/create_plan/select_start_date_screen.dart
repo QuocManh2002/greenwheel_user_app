@@ -1,22 +1,22 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_emergency_service.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
+import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_combo_date_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../../core/constants/colors.dart';
+import '../../../core/constants/urls.dart';
+import '../../../helpers/util.dart';
+import '../../../main.dart';
+import '../../../service/plan_service.dart';
+import '../../../view_models/location.dart';
+import '../../../view_models/plan_viewmodels/plan_create.dart';
+import '../../../widgets/plan_screen_widget/craete_plan_header.dart';
+import '../../../widgets/style_widget/button_style.dart';
+import '../../../widgets/style_widget/text_form_field_widget.dart';
+import 'select_emergency_service.dart';
 
 class SelectStartDateScreen extends StatefulWidget {
   const SelectStartDateScreen(
@@ -38,114 +38,13 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  // final OfflineService _offlineService = OfflineService();
-  DateTime? _endDate;
-  late ComboDate _initComboDate;
   TimeOfDay _selectTime =
       TimeOfDay.fromDateTime(DateTime.now().add(const Duration(hours: 1)));
 
   DateTime? _selectedDate = DateTime.now();
-  bool isOverDate = false;
-  int numberOfDay = 0;
-  int numberOfNight = 0;
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final PlanService _planService = PlanService();
 
-  handleChangeComboDate() {
-    dynamic rs;
-    // final departureDate = widget.isCreate
-    //     ? DateTime.parse(sharedPreferences.getString('plan_departureDate')!)
-    //     : widget.plan!.departAt!.toLocal();
-    if (widget.isCreate) {
-      final arrivedTime = Utils().getArrivedTimeFromLocal();
-      sharedPreferences.setString('plan_arrivedTime', arrivedTime.toString());
-      rs = Utils().getNumOfExpPeriod(
-          arrivedTime,
-          _initComboDate.duration.toInt(),
-          DateFormat.Hm().parse(_timeController.text),
-          null,
-          true);
-    } else {
-      rs = Utils().getNumOfExpPeriod(
-          null,
-          widget.plan!.numOfExpPeriod!,
-          widget.plan!.departAt!.toLocal(),
-          DateFormat.Hms().parse(widget.plan!.travelDuration!),
-          true);
-    }
-
-    isOverDate = rs['isOverDate'];
-    if (rs['isOverDate']) {
-      if (widget.plan == null) {
-        sharedPreferences.setString(
-            'plan_start_date',
-            DateFormat('dd/MM/yyyy')
-                .parse(_dateController.text)
-                .add(const Duration(days: 1))
-                .toString()
-                .split(' ')[0]);
-
-        numberOfNight = _initComboDate.numberOfNight + 1;
-        _endDate = DateFormat('dd/MM/yyyy')
-            .parse(_dateController.text)
-            .add(Duration(days: (_initComboDate.duration / 2).ceil()));
-      } else {
-        widget.plan!.startDate = DateFormat('dd/MM/yyyy')
-            .parse(_dateController.text)
-            .add(const Duration(days: 1))
-            .add(Duration(hours: _selectTime.hour))
-            .add(Duration(minutes: _selectTime.minute));
-      }
-    } else {
-      if (rs['numOfExpPeriod'] != _initComboDate.duration.toInt()) {
-        setState(() {
-          numberOfNight = _initComboDate.numberOfNight + 1;
-        });
-        _endDate = DateFormat('dd/MM/yyyy')
-            .parse(_dateController.text)
-            .add(Duration(days: (_initComboDate.duration / 2).ceil()));
-      } else {
-        setState(() {
-          numberOfNight = _initComboDate.numberOfNight;
-        });
-        _endDate = DateFormat('dd/MM/yyyy')
-            .parse(_dateController.text)
-            .add(Duration(days: (_initComboDate.duration / 2 - 1).ceil()));
-      }
-      if (widget.plan == null) {
-        sharedPreferences.setString(
-            'plan_start_date',
-            DateFormat('dd/MM/yyyy')
-                .parse(_dateController.text)
-                .toString()
-                .split(' ')[0]);
-      } else {
-        widget.plan!.startDate = DateFormat('dd/MM/yyyy')
-            .parse(_dateController.text)
-            .add(Duration(hours: _selectTime.hour))
-            .add(Duration(minutes: _selectTime.minute));
-      }
-    }
-    if (widget.plan == null) {
-      sharedPreferences.setString(
-          'plan_end_date', _endDate.toString().split(' ')[0]);
-    } else {
-      widget.plan!.endDate = _endDate;
-    }
-
-    if (rs['numOfExpPeriod'] != _initComboDate.duration.toInt()) {
-      if (widget.isCreate) {
-        sharedPreferences.setInt('numOfExpPeriod', numberOfDay + numberOfNight);
-      } else {
-        setState(() {
-          widget.plan!.numOfExpPeriod = numberOfDay + numberOfNight;
-        });
-      }
-    } else {
-      sharedPreferences.setInt(
-          'numOfExpPeriod', _initComboDate.duration.toInt());
-    }
-  }
 
   @override
   void initState() {
@@ -158,49 +57,31 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
   }
 
   setUpDataUpdate() {
-    _initComboDate = listComboDate.firstWhere(
-        (element) => element.duration == widget.plan!.numOfExpPeriod);
     _nameController.text = widget.plan!.name!;
     _timeController.text =
         DateFormat.Hm().format(widget.plan!.departAt!.toLocal());
     _dateController.text =
         DateFormat('dd/MM/yyyy').format(widget.plan!.departAt!.toLocal());
-    numberOfDay = _initComboDate.numberOfDay;
-    numberOfNight = _initComboDate.numberOfNight;
-
-    handleChangeComboDate();
   }
-
-  handleChangeDateUpdate() {}
 
   setUpDataCreate() {
     final name = sharedPreferences.getString('plan_name');
     if (name != null) {
       _nameController.text = name;
     }
-    var numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
-    _initComboDate = listComboDate.firstWhere((element) =>
-        element.numberOfDay + element.numberOfNight == numOfExpPeriod);
-    numberOfDay = _initComboDate.numberOfDay;
-    numberOfNight = _initComboDate.numberOfNight;
-    final duration = (numOfExpPeriod! / 2).ceil();
     final departDateText = sharedPreferences.getString('plan_departureDate');
-    final departTimeText = sharedPreferences.getString('plan_start_time');
+    final departTimeText = sharedPreferences.getString('plan_departureTime');
     if (departDateText != null) {
       final departDate = DateTime.parse(departDateText);
       _selectedDate = departDate;
       _dateController.text = DateFormat('dd/MM/yyyy').format(departDate);
-      _endDate = departDate.add(Duration(days: duration - 1));
     } else {
       final initDate = DateTime.now().add(const Duration(days: 7));
       _selectedDate = initDate;
       _dateController.text = DateFormat('dd/MM/yyyy').format(initDate);
-      _endDate = initDate.add(Duration(days: duration - 1));
       sharedPreferences.setString('plan_departureDate', initDate.toString());
       sharedPreferences.setString(
           'plan_start_date', initDate.toString().split(' ')[0]);
-      sharedPreferences.setString('plan_end_date',
-          initDate.add(Duration(days: duration - 1)).toString());
     }
 
     if (departTimeText != null) {
@@ -213,9 +94,8 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
 
       final startTime =
           DateTime(0, 0, 0, DateTime.now().hour + 1, DateTime.now().minute);
-      sharedPreferences.setString('plan_start_time', startTime.toString());
+      sharedPreferences.setString('plan_departureTime', startTime.toString());
     }
-    handleChangeComboDate();
   }
 
   @override
@@ -236,7 +116,6 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
         leading: BackButton(
           onPressed: () {
             _planService.handleQuitCreatePlanScreen(() {
-              Navigator.of(context).pop();
               Navigator.of(context).pop();
               Navigator.of(context).pop();
             }, context);
@@ -265,7 +144,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
         child: Column(
           children: [
             const CreatePlanHeader(
-                stepNumber: 3, stepName: 'Tên & thời gian xuất phát'),
+                stepNumber: 2, stepName: 'Tên & thời gian xuất phát'),
             const Text(
               'Hãy đặt tên cho chuyến đi của bạn',
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -348,14 +227,6 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                 'plan_start_date', newDay.toString());
                             sharedPreferences.setString(
                                 'plan_departureDate', newDay.toString());
-                            final duration =
-                                (sharedPreferences.getInt('numOfExpPeriod')! /
-                                        2)
-                                    .ceil();
-                            setState(() {
-                              _endDate = _selectedDate!
-                                  .add(Duration(days: duration - 1));
-                            });
                           } else {
                             final startTime =
                                 DateFormat.Hm().parse(_timeController.text);
@@ -363,7 +234,6 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                 .add(Duration(hours: startTime.hour))
                                 .add(Duration(minutes: startTime.minute));
                           }
-                          handleChangeComboDate();
                         }
                       },
                       prefixIcon: const Icon(Icons.calendar_month),
@@ -463,7 +333,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                                               _selectTime
                                                                   .minute));
                                                   sharedPreferences.setString(
-                                                      'plan_start_time',
+                                                      'plan_departureTime',
                                                       DateTime(
                                                               0,
                                                               0,
@@ -484,7 +354,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                                         .remainder(60)));
                                             if (widget.isCreate) {
                                               sharedPreferences.setString(
-                                                  'plan_start_time',
+                                                  'plan_departureTime',
                                                   DateTime(
                                                           0,
                                                           0,
@@ -518,7 +388,6 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                                                       .remainder(60));
                                             });
                                             Navigator.of(context).pop();
-                                            handleChangeComboDate();
                                           }
                                         },
                                         child: const Text('CHỌN')),
@@ -535,48 +404,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                 ),
               ],
             ),
-            SizedBox(
-              height: 3.h,
-            ),
-            const Text(
-              'Tổng thời gian chuyến đi',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 2.h,
-            ),
-            const Text(
-              'Bao gồm thời gian di chuyển từ địa điểm xuất phát',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(
-              height: 3.h,
-            ),
-            Text(
-              '$numberOfDay ngày $numberOfNight đêm',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${_timeController.text} ${_dateController.text} - ${DateFormat('dd/MM/yyyy').format(_endDate!)}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 2.h,
-            ),
-            const Text(
-              'Thời gian trải nghiệm',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              !isOverDate
-                  ? '$numberOfDay ngày $numberOfNight đêm'
-                  : '${_initComboDate.numberOfDay} ngày ${_initComboDate.numberOfNight} đêm',
-              style: const TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-            SizedBox(
-              height: 1.h,
-            ),
+            
           ],
         ),
       ),
@@ -589,12 +417,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
           children: [
             Expanded(
                 child: ElevatedButton(
-              style: elevatedButtonStyle.copyWith(
-                  backgroundColor: const MaterialStatePropertyAll(Colors.white),
-                  foregroundColor: const MaterialStatePropertyAll(primaryColor),
-                  shape: const MaterialStatePropertyAll(RoundedRectangleBorder(
-                      side: BorderSide(color: primaryColor),
-                      borderRadius: BorderRadius.all(Radius.circular(10))))),
+              style: outlinedButtonStyle,
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -609,21 +432,31 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
               onPressed: () async {
                 if (formKey.currentState!.validate()) {
                   if (widget.isClone) {
-                    // Utils().updateTempOrder(false);
+                    Utils().updateTempOrder(false, null);
                     // ignore: use_build_context_synchronously
-                    Utils().updateScheduleAndOrder(context, () {
-                      Navigator.of(context).pop();
-                      Navigator.push(
-                          context,
-                          PageTransition(
-                              child: SelectEmergencyService(
-                                location: widget.location,
-                                isCreate: widget.isCreate,
-                                plan: widget.plan,
-                                isClone: widget.isClone,
-                              ),
-                              type: PageTransitionType.rightToLeft));
-                    }, true);
+                    // Utils().updateScheduleAndOrder(context, () {
+                    //   Navigator.of(context).pop();
+                    //   Navigator.push(
+                    //       context,
+                    //       PageTransition(
+                    //           child: SelectEmergencyService(
+                    //             location: widget.location,
+                    //             isCreate: widget.isCreate,
+                    //             plan: widget.plan,
+                    //             isClone: widget.isClone,
+                    //           ),
+                    //           type: PageTransitionType.rightToLeft));
+                    // }, true);
+                    Navigator.push(
+                        context,
+                        PageTransition(
+                            child: SelectComboDateScreen(
+                              isClone: widget.isClone,
+                              isCreate: widget.isCreate,
+                              location: widget.location,
+                              plan: widget.plan,
+                            ),
+                            type: PageTransitionType.rightToLeft));
                   } else {
                     Navigator.push(
                         context,

@@ -40,6 +40,8 @@ class OrderViewModel {
       currentStatus: json['currentStatus'],
       details: List<OrderDetailViewModel>.from(json['details'].map((e) => OrderDetailViewModel.fromJson(e))).toList(),
       supplier: SupplierViewModel(
+          latitude: json['provider']['coordinate']['coordinates'][1],
+          longitude: json['provider']['coordinate']['coordinates'][0],
           type: json["provider"]['type'],
           id: json["provider"]["id"],
           name: json["provider"]["name"],

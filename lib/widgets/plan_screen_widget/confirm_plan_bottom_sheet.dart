@@ -114,7 +114,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     if (widget.plan!.schedule != null) {
       buildListScheduleText();
     }
-    getTotal();
+    if (widget.plan!.maxMemberCount != null) {
+      getTotal();
+    }
     buildServiceInfor();
   }
 
@@ -186,11 +188,11 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
               ),
               BottomSheetContainerWidget(
                   title: 'Địa điểm', content: widget.locationName),
-              if (widget.plan!.travelDuration != null)
+              if (widget.plan!.endDate != null)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.departAt != null)
+              if (widget.plan!.endDate != null)
                 BottomSheetContainerWidget(
                     title: 'Thời gian chuyến đi',
                     content:
@@ -795,7 +797,8 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                   decoration: BoxDecoration(
                       color: primaryColor.withOpacity(0.8),
                       borderRadius: const BorderRadius.all(Radius.circular(8))),
@@ -812,48 +815,94 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                   ),
                 ),
                 const Spacer(),
-
               ],
             ),
           ),
           for (final order in orders)
             Padding(
               padding: const EdgeInsets.only(left: 16),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Column(
                 children: [
-                  SizedBox(
-                      width: 5.w,
-                      child: Text(
-                        '${orders.indexOf(order) + 1}. ',
-                        style: const TextStyle(
-                            fontSize: 17, fontWeight: FontWeight.bold),
-                        overflow: TextOverflow.clip,
-                      )),
-                  buildServiceText(order),
-                  const Spacer(),
-                  Container(
-                    alignment: Alignment.centerRight,
-                    width: 20.w,
-                    child: Text(
-                      NumberFormat.simpleCurrency(
-                              locale: 'vi_VN', decimalDigits: 0, name: '')
-                          .format(((order.runtimeType == OrderViewModel
-                                  ? (order.total)
-                                  : order['total']))
-                              .toInt()),
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.bold),
-                      overflow: TextOverflow.clip,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      SizedBox(
+                          width: 5.w,
+                          child: Text(
+                            '${orders.indexOf(order) + 1}. ',
+                            style: const TextStyle(
+                                fontSize: 17, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.clip,
+                          )),
+                      buildServiceText(order),
+                      const Spacer(),
+                      Container(
+                        alignment: Alignment.centerRight,
+                        width: 20.w,
+                        child: Text(
+                          NumberFormat.simpleCurrency(
+                                  locale: 'vi_VN', decimalDigits: 0, name: '')
+                              .format(((order.runtimeType == OrderViewModel
+                                      ? (order.total)
+                                      : order['total']))
+                                  .toInt()),
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.clip,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(top: 2),
+                        child: SvgPicture.asset(
+                          gcoinLogo,
+                          height: 18,
+                        ),
+                      )
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 2),
-                    child: SvgPicture.asset(
-                      gcoinLogo,
-                      height: 18,
+                  for (final detail in order.runtimeType == OrderViewModel
+                      ? order.details
+                      : order['details'])
+                    Row(
+                      children: [
+                        SizedBox(
+                          width: 5.w,
+                        ),
+                        SizedBox(
+                          width: 50.w,
+                          child: Text(
+                            order.runtimeType == OrderViewModel
+                                ? detail.productName
+                                : detail['productName'],
+                            overflow: TextOverflow.clip,
+                            style: const TextStyle(
+                                fontSize: 14,
+                                fontFamily: 'NotoSans',
+                                color: Colors.black45),
+                          ),
+                        ),
+                        const Spacer(),
+                        SizedBox(
+                          width: 10.w,
+                          child: Text(
+                            'x${order.runtimeType == OrderViewModel ? detail.quantity : detail['quantity']}',
+                            textAlign: TextAlign.end,
+                            style: const TextStyle(
+                                fontSize: 14,
+                                fontFamily: 'NotoSans',
+                                color: Colors.black45),
+                          ),
+                        )
+                      ],
                     ),
-                  )
+                  if (order != orders.last)
+                    Padding(
+                      padding: EdgeInsets.only(left: 5.w, top: 2, bottom: 2),
+                      child: const Divider(
+                        color: Colors.black38,
+                        height: 1,
+                      ),
+                    ),
                 ],
               ),
             ),

@@ -130,7 +130,7 @@ class TransactionCard extends StatelessWidget {
                       ),
                       const Spacer(),
                       Text(
-                        '${isNegative ? '-' : '+'}${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(transaction.gcoinAmount)}',
+                        '${isNegative ? '-' : '+'}${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(transaction.amount)}',
                         style: const TextStyle(
                             fontFamily: 'NotoSans',
                             fontSize: 16,

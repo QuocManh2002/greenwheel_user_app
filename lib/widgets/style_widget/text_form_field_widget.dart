@@ -22,6 +22,7 @@ Widget defaultTextFormField(
         EdgeInsets? contentPadding,
         bool? autofocus,
         int? maxLength,
+        int? minLine,
         bool? isNumber,
         bool readonly = false}) =>
     TextFormField(
@@ -38,7 +39,7 @@ Widget defaultTextFormField(
         onFieldSubmitted: onFieldSubmit,
         onTap: onTap,
         maxLines: maxline ?? 1,
-        minLines: 1,
+        minLines: minLine ?? 1,
         readOnly: readonly,
         obscureText: obscure,
         cursorColor: primaryColor,
@@ -48,6 +49,9 @@ Widget defaultTextFormField(
             labelText: text,
             hintText: hinttext,
             prefixIcon: prefixIcon,
+            hintStyle: const TextStyle(
+              color: Colors.grey
+            ),
             counterText: '',
             contentPadding: contentPadding,
             suffixIcon: suffixIcon,

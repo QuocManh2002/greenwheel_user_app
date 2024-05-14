@@ -1,4 +1,4 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -321,7 +321,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                   onPressed: () async {
                     if (isSelected && amount != 0) {
                       TopupRequestViewModel? request =
-                          await orderService.topUpRequest(amount);
+                          await orderService.topUpRequest(amount, context);
 
                       if (request != null) {
                         Navigator.push(
@@ -340,17 +340,6 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
 // Tên chủ thẻ	NGUYEN VAN A
 // Ngày phát hành	07/15
 // Mật khẩu OTP	123456
-                      } else {
-                        AwesomeDialog(
-                          // ignore: use_build_context_synchronously
-                          context: context,
-                          dialogType: DialogType.error,
-                          animType: AnimType.topSlide,
-                          title: "Tạo đơn thất bại!",
-                          desc: "Xuất hiện lỗi khi tạo đơn nạp GCOIN.",
-                          btnOkText: "OK",
-                          btnOkOnPress: () {},
-                        ).show();
                       }
                     }
                   },

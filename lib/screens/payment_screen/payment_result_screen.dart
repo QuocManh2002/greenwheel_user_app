@@ -8,15 +8,29 @@ import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
-class PaymentResultScreen extends StatelessWidget {
+class PaymentResultScreen extends StatefulWidget {
   const PaymentResultScreen(
       {super.key,
       required this.amount,
       required this.planId,
+      required this.isPublicPlan,
+      this.onPublic,
       required this.isSuccess});
   final int amount;
   final int? planId;
   final bool isSuccess;
+  final bool isPublicPlan;
+  final void Function(bool isFromJoinScreen, int? amount, BuildContext context)? onPublic;
+
+  @override
+  State<PaymentResultScreen> createState() => _PaymentResultScreenState();
+}
+
+class _PaymentResultScreenState extends State<PaymentResultScreen> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -58,7 +72,7 @@ class PaymentResultScreen extends StatelessWidget {
                     height: 1.h,
                   ),
                   Text(
-                    'Thanh toán${isSuccess ? '' : ' không'} thành công',
+                    'Thanh toán${widget.isSuccess ? '' : ' không'} thành công',
                     style: const TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
@@ -140,7 +154,7 @@ class PaymentResultScreen extends StatelessWidget {
                     textAlign: TextAlign.center,
                     text: TextSpan(
                         text:
-                            'Bạn đã ${planId != null ? 'thanh toán' : 'nạp'} ${isSuccess ? '' : 'không '}thành công ',
+                            'Bạn đã ${widget.planId != null ? 'thanh toán' : 'nạp'} ${widget.isSuccess ? '' : 'không '}thành công ',
                         style: const TextStyle(
                             fontFamily: 'NotoSans',
                             fontSize: 18,
@@ -151,10 +165,10 @@ class PaymentResultScreen extends StatelessWidget {
                                       locale: 'vi_VN',
                                       decimalDigits: 0,
                                       name: 'GCOIN')
-                                  .format(amount),
+                                  .format(widget.amount),
                               style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: isSuccess
+                                  color: widget.isSuccess
                                       ? primaryColor
                                       : Colors.redAccent)),
                           // TextSpan(
@@ -226,29 +240,36 @@ class PaymentResultScreen extends StatelessWidget {
                       Expanded(
                           child: InkWell(
                         onTap: () {
-                          if (planId != null) {
-                            Navigator.of(context).pushAndRemoveUntil(
-                                MaterialPageRoute(
-                                    builder: (ctx) => const TabScreen(
-                                          pageIndex: 1,
-                                        )),
-                                (route) => false);
-                            Navigator.push(
-                              context,
-                              PageTransition(
-                                  child: DetailPlanNewScreen(
-                                    planId: planId!,
-                                    planType: 'JOIN',
-                                    isEnableToJoin: false,
-                                  ),
-                                  type: PageTransitionType.topToBottom),
-                            );
-                          } else {
-                            Navigator.pushAndRemoveUntil(
+                          if (widget.planId != null) {
+                            if (widget.isPublicPlan) {
+                                widget.onPublic!(true, null, context);
+                              
+                            } else {
+                              Navigator.of(context).pushAndRemoveUntil(
+                                  MaterialPageRoute(
+                                      builder: (ctx) => const TabScreen(
+                                            pageIndex: 1,
+                                          )),
+                                  (route) => false);
+                              Navigator.push(
                                 context,
                                 PageTransition(
-                                    child: const TabScreen(pageIndex: 4),
-                                    type: PageTransitionType.rightToLeft), (route) => false,);
+                                    child: DetailPlanNewScreen(
+                                      planId: widget.planId!,
+                                      planType: 'JOIN',
+                                      isEnableToJoin: false,
+                                    ),
+                                    type: PageTransitionType.topToBottom),
+                              );
+                            }
+                          } else {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              PageTransition(
+                                  child: const TabScreen(pageIndex: 4),
+                                  type: PageTransitionType.rightToLeft),
+                              (route) => false,
+                            );
                           }
                         },
                         child: buildButton('Quay lại', Icons.keyboard_return),
