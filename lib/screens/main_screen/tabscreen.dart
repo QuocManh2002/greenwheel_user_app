@@ -27,7 +27,6 @@ class _TabScreenState extends State<TabScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _selectedPageIndex = widget.pageIndex;
     sendDeviceToken();

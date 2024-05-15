@@ -11,12 +11,16 @@ class PlanScheduleTitle extends StatelessWidget {
       required this.isSelected,
       this.isValidEatActivities,
       this.isValidPeriodOfOrder,
+      this.isValidSumOfActivity,
+      this.maxSumActivityTime,
       required this.index});
   final DateTime date;
   final bool isSelected;
   final int index;
   final bool? isValidEatActivities;
   final bool? isValidPeriodOfOrder;
+  final bool? isValidSumOfActivity;
+  final Duration? maxSumActivityTime;
 
   @override
   Widget build(BuildContext context) {
@@ -66,7 +70,7 @@ class PlanScheduleTitle extends StatelessWidget {
                     splashColor: Colors.transparent,
                     overlayColor:
                         const MaterialStatePropertyAll(Colors.transparent),
-                    onTap: isValidEatActivities! && isValidPeriodOfOrder!
+                    onTap: isValidEatActivities! && isValidPeriodOfOrder! && isValidSumOfActivity!
                         ? null
                         : () {
                             AwesomeDialog(
@@ -79,67 +83,131 @@ class PlanScheduleTitle extends StatelessWidget {
                                       child: Column(
                                         children: [
                                           if (!isValidEatActivities!)
-                                            Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                            Column(
                                               children: [
-                                                const Padding(
-                                                  padding:
-                                                      EdgeInsets.only(top: 4),
-                                                  child: Icon(
-                                                    Icons.info,
-                                                    color: Colors.orange,
-                                                    size: 20,
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: 1.w,
-                                                ),
-                                                SizedBox(
-                                                  width: 60.w,
-                                                  child: const Text(
-                                                    'Ngày chưa đủ hoạt động ăn uống',
-                                                    overflow: TextOverflow.clip,
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.black54,
-                                                      fontFamily: 'NotoSans',
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                          top: 4),
+                                                      child: Icon(
+                                                        Icons.info,
+                                                        color: Colors.orange,
+                                                        size: 20,
+                                                      ),
                                                     ),
-                                                  ),
-                                                )
+                                                    SizedBox(
+                                                      width: 2.w,
+                                                    ),
+                                                    const Expanded(
+                                                      child: Text(
+                                                        'Ngày chưa đủ hoạt động ăn uống',
+                                                        overflow:
+                                                            TextOverflow.clip,
+                                                        style: TextStyle(
+                                                          fontSize: 15,
+                                                          color: Colors.black54,
+                                                          fontFamily:
+                                                              'NotoSans',
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                                SizedBox(
+                                                  height: 0.1.h,
+                                                ),
+                                                const Divider(
+                                                  thickness: 1.5,
+                                                  color: Colors.black38,
+                                                ),
                                               ],
                                             ),
                                           SizedBox(
                                             height: 1.h,
                                           ),
                                           if (!isValidPeriodOfOrder!)
-                                            Row(
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.start,
+                                            Column(
                                               children: [
-                                                const Padding(
-                                                  padding:
-                                                      EdgeInsets.only(top: 4),
-                                                  child: Icon(
-                                                    Icons.warning,
-                                                    color: Colors.red,
-                                                    size: 20,
-                                                  ),
-                                                ),
-                                                SizedBox(
-                                                  width: 1.w,
-                                                ),
-                                                SizedBox(
-                                                  width: 60.w,
-                                                  child: const Text(
-                                                    'Thời gian phục vụ đơn hàng không phù hợp với lịch trình',
-                                                    style: TextStyle(
-                                                      fontSize: 15,
-                                                      color: Colors.black54,
-                                                      fontFamily: 'NotoSans',
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                          top: 4),
+                                                      child: Icon(
+                                                        Icons.warning,
+                                                        color: Colors.red,
+                                                        size: 20,
+                                                      ),
                                                     ),
-                                                  ),
-                                                )
+                                                    SizedBox(
+                                                      width: 1.w,
+                                                    ),
+                                                    const Expanded(
+                                                      child: Text(
+                                                        'Thời gian phục vụ đơn hàng không phù hợp với lịch trình',
+                                                        style: TextStyle(
+                                                          fontSize: 15,
+                                                          color: Colors.black54,
+                                                          fontFamily:
+                                                              'NotoSans',
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                                SizedBox(
+                                                  height: 0.1.h,
+                                                ),
+                                                const Divider(
+                                                  thickness: 1.5,
+                                                  color: Colors.black38,
+                                                ),
+                                              ],
+                                            ),
+                                          if (!isValidSumOfActivity!)
+                                            Column(
+                                              children: [
+                                                Row(
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.start,
+                                                  children: [
+                                                    const Padding(
+                                                      padding: EdgeInsets.only(
+                                                          top: 4),
+                                                      child: Icon(
+                                                        Icons.warning,
+                                                        color: Colors.red,
+                                                        size: 20,
+                                                      ),
+                                                    ),
+                                                    SizedBox(
+                                                      width: 1.w,
+                                                    ),
+                                                    Expanded(
+                                                      child: Text(
+                                                        'Thời lượng lịch trình trong ngày đã vượt quá ${maxSumActivityTime!.inHours} giờ${maxSumActivityTime!.inMinutes.remainder(60) > 0 ? ' ${maxSumActivityTime!.inMinutes.remainder(60)} phút' : ''}',
+                                                        style: const TextStyle(
+                                                          fontSize: 15,
+                                                          color: Colors.black54,
+                                                          fontFamily:
+                                                              'NotoSans',
+                                                        ),
+                                                      ),
+                                                    )
+                                                  ],
+                                                ),
+                                                SizedBox(
+                                                  height: 0.1.h,
+                                                ),
+                                                const Divider(
+                                                  thickness: 1.5,
+                                                  color: Colors.black38,
+                                                ),
                                               ],
                                             ),
                                         ],
@@ -151,17 +219,19 @@ class PlanScheduleTitle extends StatelessWidget {
                                 .show();
                           },
                     child: Icon(
-                      !isValidPeriodOfOrder!
+                      (!isValidPeriodOfOrder! || !isValidSumOfActivity!)
                           ? Icons.warning
-                          : isValidEatActivities!
-                              ? Icons.check_circle
-                              : Icons.error,
+                          : !isValidEatActivities!
+                              ? Icons.error
+                              : Icons.check_circle,
                       size: 18,
-                      color: isValidEatActivities! && isValidPeriodOfOrder!
+                      color: isValidEatActivities! &&
+                              isValidPeriodOfOrder! &&
+                              isValidSumOfActivity!
                           ? isSelected
                               ? Colors.white
                               : primaryColor
-                          : !isValidPeriodOfOrder!
+                          : (!isValidPeriodOfOrder! || !isValidSumOfActivity!)
                               ? Colors.red
                               : Colors.amber,
                     )))

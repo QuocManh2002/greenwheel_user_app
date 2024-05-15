@@ -10,9 +10,9 @@ import 'package:image_picker/image_picker.dart';
 class ImageHandler {
   Future<String?> handlePickImage(BuildContext context) async {
     XFile? myImage;
-    final ImagePicker _picker = ImagePicker();
+    final ImagePicker picker = ImagePicker();
     String? imagePath ;
-    myImage = await _picker.pickImage(source: ImageSource.gallery);
+    myImage = await picker.pickImage(source: ImageSource.gallery);
     if (myImage != null) {
       var headers = {
         'Content-Type': 'application/json',
@@ -31,6 +31,7 @@ class ImageHandler {
               .last;
       } else {
         imagePath = null;
+        // ignore: use_build_context_synchronously
         Utils().handleServerException('Tải hình ảnh lên thất bại', context);
       }
     }

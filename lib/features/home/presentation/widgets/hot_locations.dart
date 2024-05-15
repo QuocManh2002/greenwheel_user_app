@@ -16,7 +16,6 @@ class _HotLocationsState extends State<HotLocations> {
   bool isCalled = false;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
 
     setUpData();

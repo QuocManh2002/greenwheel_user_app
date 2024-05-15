@@ -47,7 +47,6 @@ class _SearchScreenState extends State<SearchScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _setUpData();
   }
@@ -205,7 +204,6 @@ class _SearchScreenState extends State<SearchScreen> {
                               locations = result;
                               isSearch = true;
                             });
-                            print(result.length);
                           },
                         ),
                         hintText: "Bạn có dự định đi đâu?",
@@ -432,9 +430,9 @@ class _SearchScreenState extends State<SearchScreen> {
                               itemCount: locations.length,
                               shrinkWrap: true,
                               scrollDirection: Axis.horizontal,
-                              itemBuilder: (context, index) => Padding(
+                              itemBuilder: (context, index) => const Padding(
                                 padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
+                                     EdgeInsets.symmetric(horizontal: 8),
                                 // child: LocationCard(location: locations[index]),
                               ),
                             ),
@@ -496,7 +494,7 @@ class _SearchScreenState extends State<SearchScreen> {
                                 ),
                               )
                             : Container(),
-                        Container(
+                        SizedBox(
                           height: 70.h,
                           child: ListView.builder(
                             physics: const BouncingScrollPhysics(),

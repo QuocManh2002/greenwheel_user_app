@@ -19,19 +19,18 @@ class AllCommentScreen extends StatefulWidget {
   final String destinationDescription;
   final String destinationImageUrl;
   final String destinationName;
-  final void Function(bool isFromQuery, int _numberOfComment) callback;
+  final void Function(bool isFromQuery, int numberOfComment) callback;
 
   @override
   State<AllCommentScreen> createState() => _AllCommentScreenState();
 }
 
 class _AllCommentScreenState extends State<AllCommentScreen> {
-  LocationService _locationService = LocationService();
+  final LocationService _locationService = LocationService();
   List<CommentViewModel> commentList = [];
   bool isLoading = true;
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }

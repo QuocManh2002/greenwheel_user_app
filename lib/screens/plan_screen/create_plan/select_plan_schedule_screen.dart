@@ -272,11 +272,15 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
       var itemList =
           scheduleList.firstWhere((element) => element.date == item.date).items;
       if (orderUUID == null) {
-        itemList.remove(item);
+        setState(() {
+          itemList.remove(item);
+        });
       } else {
-        itemList.removeWhere(
-          (element) => element.orderUUID == orderUUID,
-        );
+        setState(() {
+          itemList.removeWhere(
+            (element) => element.orderUUID == orderUUID,
+          );
+        });
       }
     } else {
       var orderList =
@@ -448,34 +452,6 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                       SizedBox(
                         height: 0.1.h,
                       ),
-                      // Row(
-                      //   children: [
-                      //     Text(
-                      //       DateFormat('dd/MM/yyyy').format(item.date!),
-                      //       style: const TextStyle(
-                      //           fontSize: 15,
-                      //           color: Colors.black54,
-                      //           fontFamily: 'NotoSans',
-                      //           fontWeight: FontWeight.w500),
-                      //     ),
-                      //     SizedBox(
-                      //       width: 3.w,
-                      //     ),
-                      //     const Icon(
-                      //       Icons.keyboard_double_arrow_right,
-                      //       color: Colors.blueAccent,
-                      //       size: 30,
-                      //     ),
-                      //     SizedBox(
-                      //       width: 3.w,
-                      //     ),
-                      //     const Icon(
-                      //       Icons.close,
-                      //       color: Colors.redAccent,
-                      //       size: 30,
-                      //     )
-                      //   ],
-                      // )
                     ],
                   ),
                 ),
@@ -499,6 +475,8 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                   orderList.remove(order);
                 } else {
                   order['serveDates'] = newDates;
+                  order['serveDateIndexes']
+                      .remove(item.date!.difference(startDate!).inDays);
                   order['total'] = Utils().getTempOrderTotal(order, false);
                 }
               },
@@ -575,7 +553,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
           InkWell(
             onTap: () {
               _planService.handleShowPlanInformation(
-                  context, widget.location, widget.plan);
+                  context, widget.location, widget.isClone, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -684,39 +662,54 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
           SizedBox(
             height: 15.h,
             child: ListView.builder(
-              itemCount: scheduleList.length,
-              physics: const BouncingScrollPhysics(),
-              shrinkWrap: false,
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) => Padding(
-                padding: EdgeInsets.all(1.w),
-                child: InkWell(
-                    overlayColor:
-                        const MaterialStatePropertyAll(Colors.transparent),
-                    borderRadius: const BorderRadius.all(Radius.circular(12)),
-                    onTap: () {
-                      setState(() {
-                        _currentPage = index;
-                        _pageController.animateToPage(index,
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.bounceIn);
-                      });
-                    },
-                    child: PlanScheduleTitle(
-                      index: index,
-                      date: scheduleList[index].date!,
-                      isValidEatActivities: scheduleList[index]
-                              .items
-                              .where((element) => element.type == 'Ăn uống')
-                              .length >=
-                          3,
-                      isSelected: _currentPage == index.toDouble(),
-                      isValidPeriodOfOrder: scheduleList[index].items.every(
-                          (item) => Utils().isValidPeriodOfOrder(
-                              scheduleList[index], item, index == 0)),
-                    )),
-              ),
-            ),
+                itemCount: scheduleList.length,
+                physics: const BouncingScrollPhysics(),
+                shrinkWrap: false,
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) {
+                  final maxSumActivityTime = Utils().getMaxSumActivity(
+                      scheduleList[index],
+                      index == 0,
+                      index == scheduleList.length - 1);
+                  return Padding(
+                    padding: EdgeInsets.all(1.w),
+                    child: InkWell(
+                        overlayColor:
+                            const MaterialStatePropertyAll(Colors.transparent),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        onTap: () {
+                          setState(() {
+                            _currentPage = index;
+                            _pageController.animateToPage(index,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.bounceIn);
+                          });
+                        },
+                        child: PlanScheduleTitle(
+                          index: index,
+                          date: scheduleList[index].date!,
+                          isValidEatActivities: scheduleList[index]
+                                  .items
+                                  .where((element) => element.type == 'Ăn uống')
+                                  .length >=
+                              3,
+                          isSelected: _currentPage == index.toDouble(),
+                          isValidSumOfActivity: scheduleList[index]
+                                  .items
+                                  .fold(
+                                      const Duration(),
+                                      (previousValue, element) =>
+                                          previousValue + element.activityTime!)
+                                  .compareTo(maxSumActivityTime) <
+                              0,
+                          maxSumActivityTime: maxSumActivityTime,
+                          isValidPeriodOfOrder: scheduleList[index].items.every(
+                              (item) => Utils().isValidPeriodOfOrder(
+                                  scheduleList[index], item, index == 0)),
+                        )),
+                  );
+                }),
           ),
           Expanded(
             child: PageView(
@@ -781,6 +774,11 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                       title:
                           'Có hoạt động dịch vụ không phù hợp với lịch trình',
                       desc: 'Hãy điều chỉnh lại hoạt động này',
+                      type: DialogType.warning);
+                } else if (checkValidMaxSumActivity()) {
+                  DialogStyle().basicDialog(
+                      context: context,
+                      title: 'Có ngày vượt quá thời lượng lịch trình quy định',
                       type: DialogType.warning);
                 } else if (checkValidNumberOfFoodActivity()) {
                   bool notAskScheduleAgain =
@@ -1004,5 +1002,17 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
   checkValidPeriodOfOrder() {
     return scheduleList.any((date) => date.items.any((element) => !Utils()
         .isValidPeriodOfOrder(date, element, date == scheduleList.first)));
+  }
+
+  checkValidMaxSumActivity() {
+    return scheduleList.any((date) =>
+        date.items
+            .fold(
+                const Duration(),
+                (previousValue, element) =>
+                    previousValue + element.activityTime!)
+            .compareTo(Utils().getMaxSumActivity(
+                date, date == scheduleList.first, date == scheduleList.last)) >
+        0);
   }
 }

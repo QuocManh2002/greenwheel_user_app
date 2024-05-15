@@ -352,6 +352,8 @@ class Utils {
     sharedPreferences.setString('plan_location_name', plan.locationName!);
     sharedPreferences.setInt('plan_location_id', plan.locationId!);
     sharedPreferences.setInt('maxCombodateValue', plan.numOfExpPeriod!);
+    sharedPreferences.setInt(
+        'init_plan_number_of_member', plan.maxMemberCount!);
     if (options[0]) {
       sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
       sharedPreferences.setInt(
@@ -603,7 +605,7 @@ class Utils {
         newSchedule.add([]);
       }
     }
-    var invalidOrder = [];
+
     var updatedOrders = [];
     var canceledOrders = [];
     for (final order in tempOrders) {
@@ -639,6 +641,8 @@ class Utils {
       final startSession = sessions.firstWhereOrNull((aTime) =>
               aTime.from <= arrivedTime.hour && aTime.to > arrivedTime.hour) ??
           sessions[0];
+      bool endAtNoon = isEndAtNoon(null);
+      final endSession = endAtNoon ? sessions[1] : sessions.last;
 
       for (final item in newSchedule[0]) {
         if (item['orderUUID'] != null) {
@@ -646,10 +650,41 @@ class Utils {
               tempOrders.firstWhere((e) => e['orderUUID'] == item['orderUUID']);
           final session = sessions
               .firstWhere((element) => element.enumName == order['period']);
-          if (session.index < startSession.index &&
-              !invalidOrder.any(
-                  (element) => element['orderUUID'] == item['orderUUID'])) {
-            invalidOrder.add(order);
+          if (session.index < startSession.index) {
+            if (updatedOrders
+                .any((element) => element['orderUUID'] == item['orderUUID'])) {
+              order['newIndexes'].remove(order['newIndexes'].first);
+              order['newServeDates'].remove(order['newServeDates'].first);
+            } else {
+              order['newIndexes'] = order['serveDateIndexes']
+                  .remove(order['serveDateIndexes'].first);
+              order['newServeDates'] =
+                  order['serveDates'].remove(order['serveDates'].first);
+              updatedOrders.add(order);
+            }
+            order['newTotal'] = getTempOrderTotal(order, true);
+          }
+        }
+      }
+      for (final item in newSchedule.last) {
+        if (item['orderUUID'] != null) {
+          final order =
+              tempOrders.firstWhere((e) => e['orderUUID'] == item['orderUUID']);
+          final session = sessions
+              .firstWhere((element) => element.enumName == order['period']);
+          if (session.index > endSession.index) {
+            if (updatedOrders
+                .any((element) => element['orderUUID'] == item['orderUUID'])) {
+              order['newIndexes'].remove(order['newIndexes'].last);
+              order['newServeDates'].remove(order['newServeDates'].last);
+            } else {
+              order['newIndexes'] = order['serveDateIndexes']
+                  .remove(order['serveDateIndexes'].last);
+              order['newServeDates'] =
+                  order['serveDates'].remove(order['serveDates'].last);
+              updatedOrders.add(order);
+            }
+            order['newTotal'] = getTempOrderTotal(order, true);
           }
         }
       }
@@ -691,6 +726,20 @@ class Utils {
                 final startDate = DateTime.parse(
                     sharedPreferences.getString('plan_start_date')!);
                 for (final dateList in splitServeDates) {
+                  if (!newSchedule[dateList.first.difference(startDate).inDays]
+                      .any((element) =>
+                          element['orderUUID'] == order['orderUUID'])) {
+                    await newSchedule[
+                            dateList.first.difference(startDate).inDays]
+                        .add({
+                      'isStarred': false,
+                      'shortDescription': 'Check-in',
+                      'description': 'Check-in nhà nghỉ/khách sạn',
+                      'type': 'CHECKIN',
+                      'orderUUID': order['orderUUID'],
+                      'duration': '00:30:00'
+                    });
+                  }
                   if (dateList.last == endDate) {
                     if (!newSchedule.last.any((element) =>
                         element['orderUUID'] == order['orderUUID'] &&
@@ -718,6 +767,17 @@ class Utils {
                         'orderUUID': order['orderUUID'],
                         'duration': '00:15:00'
                       });
+                    }
+                  }
+                }
+              }
+              for (int index = 0; index < newSchedule.length; index++) {
+                for (final item in newSchedule[index]) {
+                  if (item['orderUUID'] != null) {
+                    final order = tempOrders.firstWhere(
+                        (order) => order['orderUUID'] == item['orderUUID']);
+                    if (!order['serveDateIndexes'].contains(index)) {
+                      item['orderUUID'] = null;
                     }
                   }
                 }
@@ -961,28 +1021,28 @@ class Utils {
             .toList()
             .length;
     final upPct = getHolidayUpPct(order['type']);
-    if(order['newDetails'] != null){
+    if (order['newDetails'] != null) {
       return order['newDetails'].fold(
-        0,
-        (previousValue, element) =>
-            previousValue +
-            (element['unitPrice'] * element['quantity']) *
-                ((1 + upPct / 100) * numberHoliday +
-                    ((isUpdate ? order['newServeDates'] : order['serveDates'])
-                            .length -
-                        numberHoliday)) /
-                GlobalConstant().VND_CONVERT_RATE);
-    }else{
+          0,
+          (previousValue, element) =>
+              previousValue +
+              (element['unitPrice'] * element['quantity']) *
+                  ((1 + upPct / 100) * numberHoliday +
+                      ((isUpdate ? order['newServeDates'] : order['serveDates'])
+                              .length -
+                          numberHoliday)) /
+                  GlobalConstant().VND_CONVERT_RATE);
+    } else {
       return order['details'].fold(
-        0,
-        (previousValue, element) =>
-            previousValue +
-            (element['unitPrice'] * element['quantity']) *
-                ((1 + upPct / 100) * numberHoliday +
-                    ((isUpdate ? order['newServeDates'] : order['serveDates'])
-                            .length -
-                        numberHoliday)) /
-                GlobalConstant().VND_CONVERT_RATE);
+          0,
+          (previousValue, element) =>
+              previousValue +
+              (element['unitPrice'] * element['quantity']) *
+                  ((1 + upPct / 100) * numberHoliday +
+                      ((isUpdate ? order['newServeDates'] : order['serveDates'])
+                              .length -
+                          numberHoliday)) /
+                  GlobalConstant().VND_CONVERT_RATE);
     }
   }
 
@@ -1037,11 +1097,6 @@ class Utils {
           sessions.firstWhere((session) => session.enumName == order['period']);
       return startActivitySession.index <= orderPeriod.index;
     }
-  }
-
-  updateSurcharge(int newMaxMemberCount) {
-    // final surcharges =
-    //     json.decode(sharedPreferences.getString('plan_surcharge')!);
   }
 
   handleNonDefaultAddress(void Function() onOk, BuildContext context) {
@@ -1111,6 +1166,27 @@ class Utils {
                 ? selectedLatLng!
                 : PointLatLng(selectedAddress.lat, selectedAddress.lng));
       }
+    }
+  }
+
+  getMaxSumActivity(PlanSchedule schedule, bool isFirstDay, bool isLastDay) {
+    if (isFirstDay) {
+      final startTime =
+          DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!);
+      if (startTime.hour >= 20 || startTime.hour < 6) {
+        return GlobalConstant().MAX_SUM_ACTIVITY_TIME;
+      } else {
+        return DateTime(0, 0, 0, 22, 0)
+            .difference(DateTime(0, 0, 0, startTime.hour, startTime.minute));
+      }
+    } else if (isLastDay) {
+      if (isEndAtNoon(null)) {
+        return const Duration(hours: 8);
+      } else {
+        return const Duration(hours: 14);
+      }
+    } else {
+      return GlobalConstant().MAX_SUM_ACTIVITY_TIME;
     }
   }
 }

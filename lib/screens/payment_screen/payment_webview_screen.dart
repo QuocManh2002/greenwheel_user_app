@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
@@ -35,7 +37,8 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
                 .startsWith('https://greenwheels.azurewebsites.net/graphql/')) {
               Navigator.of(context).pop();
               Navigator.of(context).pop();
-              widget.callback(request.url.contains('vnp_BankTranNo'), widget.amount);
+              log(request.url);
+              widget.callback(request.url.contains('vnp_BankTranNo'), widget.amount); 
               return NavigationDecision.navigate;
             } else {
               return NavigationDecision.navigate;

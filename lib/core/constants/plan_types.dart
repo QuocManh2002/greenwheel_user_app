@@ -1,4 +1,4 @@
-List<String> plan_types = [
+List<String> planTypes = [
   'ownedPlans',
   'joinedPlans',
   'scannablePlans',

@@ -125,7 +125,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
           InkWell(
             onTap: () {
               _planService.handleShowPlanInformation(
-                  context, widget.location, widget.plan);
+                  context, widget.location,widget.isClone, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(

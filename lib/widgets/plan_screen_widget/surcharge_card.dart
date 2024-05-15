@@ -30,196 +30,199 @@ class SurchargeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 100.w,
-      decoration: BoxDecoration(
-          color: Colors.grey.withOpacity(0.2),
-          borderRadius: const BorderRadius.all(Radius.circular(14))),
-      child: Padding(
-        padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 1.w,
-            ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                SizedBox(
-                  width: 65.w,
-                  child: Text(
-                    surcharge.note.substring(0, 1) == "\""
-                        ? '${json.decode(surcharge.note)}'
-                        : surcharge.note,
-                    overflow: TextOverflow.clip,
-                    style: const TextStyle(
-                        fontSize: 21, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(
-                  width: 65.w,
-                  child: Row(
-                    children: [
-                      Text(
-                        NumberFormat.currency(
-                                locale: 'vi_VN', decimalDigits: 0, symbol: '')
-                            .format(surcharge.alreadyDivided ?? true
-                                ? surcharge.gcoinAmount
-                                : (surcharge.gcoinAmount / maxMemberCount)
-                                    .ceil()),
-                        style: const TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.bold),
-                        overflow: TextOverflow.clip,
-                      ),
-                      SvgPicture.asset(
-                        gcoinLogo,
-                        height: 18,
-                      ),
-                      const Text(
-                        ' /',
-                        style: TextStyle(
-                            fontSize: 20, fontWeight: FontWeight.bold),
-                      ),
-                      const Icon(
-                        Icons.person,
-                        color: primaryColor,
-                        size: 20,
-                      ),
-                    ],
-                  ),
-                ),
-                if (surcharge.imagePath != null)
-                  const SizedBox(
-                    height: 3,
-                  ),
-                if (surcharge.imagePath != null)
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                        border: Border.all(color: primaryColor, width: 1.5),
-                        borderRadius:
-                            const BorderRadius.all(Radius.circular(12))),
-                    child: const Text(
-                      'Đã xác nhận',
-                      style: TextStyle(
-                          fontSize: 14,
-                          color: primaryColor,
-                          fontWeight: FontWeight.bold),
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 0.5.h),
+      child: Container(
+        width: 100.w,
+        decoration: BoxDecoration(
+            color: Colors.grey.withOpacity(0.2),
+            borderRadius: const BorderRadius.all(Radius.circular(14))),
+        child: Padding(
+          padding: const EdgeInsets.only(left: 8, top: 8, bottom: 8),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              SizedBox(
+                width: 1.w,
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: 65.w,
+                    child: Text(
+                      surcharge.note.substring(0, 1) == "\""
+                          ? '${json.decode(surcharge.note)}'
+                          : surcharge.note,
+                      overflow: TextOverflow.clip,
+                      style: const TextStyle(
+                          fontSize: 21, fontWeight: FontWeight.bold),
                     ),
-                  )
-              ],
-            ),
-            const Spacer(),
-            if (isEnableToUpdate)
-              PopupMenuButton(
-                itemBuilder: (context) => [
-                  if (isCreate)
-                    const PopupMenuItem(
-                        value: 0,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.edit_square,
-                              color: Colors.blueAccent,
-                              size: 25,
-                            ),
-                            SizedBox(
-                              width: 4,
-                            ),
-                            Text(
-                              'Chỉnh sửa',
-                              style: TextStyle(
-                                  fontSize: 17,
-                                  fontFamily: 'NotoSans',
-                                  color: Colors.blueAccent),
-                            ),
-                          ],
-                        )),
-                  if (isCreate)
-                    const PopupMenuItem(
-                        value: 1,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.delete,
-                              color: Colors.redAccent,
-                              size: 25,
-                            ),
-                            SizedBox(
-                              width: 4,
-                            ),
-                            Text('Xoá',
+                  ),
+                  SizedBox(
+                    width: 65.w,
+                    child: Row(
+                      children: [
+                        Text(
+                          NumberFormat.currency(
+                                  locale: 'vi_VN', decimalDigits: 0, symbol: '')
+                              .format(surcharge.alreadyDivided ?? true
+                                  ? surcharge.gcoinAmount
+                                  : (surcharge.gcoinAmount / maxMemberCount)
+                                      .ceil()),
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.clip,
+                        ),
+                        SvgPicture.asset(
+                          gcoinLogo,
+                          height: 18,
+                        ),
+                        const Text(
+                          ' /',
+                          style: TextStyle(
+                              fontSize: 20, fontWeight: FontWeight.bold),
+                        ),
+                        const Icon(
+                          Icons.person,
+                          color: primaryColor,
+                          size: 20,
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (surcharge.imagePath != null)
+                    const SizedBox(
+                      height: 3,
+                    ),
+                  if (surcharge.imagePath != null)
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 6, vertical: 2),
+                      decoration: BoxDecoration(
+                          border: Border.all(color: primaryColor, width: 1.5),
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(12))),
+                      child: const Text(
+                        'Đã xác nhận',
+                        style: TextStyle(
+                            fontSize: 14,
+                            color: primaryColor,
+                            fontWeight: FontWeight.bold),
+                      ),
+                    )
+                ],
+              ),
+              const Spacer(),
+              if (isEnableToUpdate)
+                PopupMenuButton(
+                  itemBuilder: (context) => [
+                    if (isCreate)
+                      const PopupMenuItem(
+                          value: 0,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.edit_square,
+                                color: Colors.blueAccent,
+                                size: 25,
+                              ),
+                              SizedBox(
+                                width: 4,
+                              ),
+                              Text(
+                                'Chỉnh sửa',
                                 style: TextStyle(
                                     fontSize: 17,
                                     fontFamily: 'NotoSans',
-                                    color: Colors.redAccent)),
-                          ],
-                        )),
-                  if (!isCreate)
-                    PopupMenuItem(
-                        value: 2,
-                        child: Row(
-                          children: [
-                            const Icon(
-                              Icons.add_a_photo,
-                              color: Colors.blueAccent,
-                              size: 25,
-                            ),
-                            const SizedBox(
-                              width: 4,
-                            ),
-                            Text(
-                                surcharge.imagePath == null &&
-                                        isLeader != null &&
-                                        isLeader!
-                                    ? 'Cập nhật hoá đơn'
-                                    : 'Xem hoá đơn',
-                                style: const TextStyle(
-                                    fontSize: 17,
-                                    fontFamily: 'NotoSans',
-                                    color: Colors.blueAccent)),
-                          ],
-                        )),
-                ],
-                onSelected: (value) {
-                  switch (value) {
-                    case 0:
-                      Navigator.push(
-                          context,
-                          PageTransition(
-                              child: CreatePlanSurcharge(
-                                callback: callbackSurcharge,
-                                isCreate: false,
-                                surcharge: surcharge,
+                                    color: Colors.blueAccent),
                               ),
-                              type: PageTransitionType.rightToLeft));
-                      break;
-                    case 1:
-                      var list = json.decode(
-                          sharedPreferences.getString('plan_surcharge')!);
-                      final index =
-                          list.firstWhere((e) => e['id'] == surcharge.id);
-                      list.remove(index);
-                      sharedPreferences.setString(
-                          'plan_surcharge', json.encode(list));
-                      callbackSurcharge(null);
-                      break;
-                    case 2:
-                      Navigator.push(
-                          context,
-                          PageTransition(
-                              child: UpdateBillingSurchargeScreen(
-                                surcharge: surcharge,
-                                isLeader: isLeader ?? false,
+                            ],
+                          )),
+                    if (isCreate)
+                      const PopupMenuItem(
+                          value: 1,
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete,
+                                color: Colors.redAccent,
+                                size: 25,
                               ),
-                              type: PageTransitionType.rightToLeft));
-                      break;
-                  }
-                },
-              )
-          ],
+                              SizedBox(
+                                width: 4,
+                              ),
+                              Text('Xoá',
+                                  style: TextStyle(
+                                      fontSize: 17,
+                                      fontFamily: 'NotoSans',
+                                      color: Colors.redAccent)),
+                            ],
+                          )),
+                    if (!isCreate)
+                      PopupMenuItem(
+                          value: 2,
+                          child: Row(
+                            children: [
+                              const Icon(
+                                Icons.add_a_photo,
+                                color: Colors.blueAccent,
+                                size: 25,
+                              ),
+                              const SizedBox(
+                                width: 4,
+                              ),
+                              Text(
+                                  surcharge.imagePath == null &&
+                                          isLeader != null &&
+                                          isLeader!
+                                      ? 'Cập nhật hoá đơn'
+                                      : 'Xem hoá đơn',
+                                  style: const TextStyle(
+                                      fontSize: 17,
+                                      fontFamily: 'NotoSans',
+                                      color: Colors.blueAccent)),
+                            ],
+                          )),
+                  ],
+                  onSelected: (value) {
+                    switch (value) {
+                      case 0:
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                                child: CreatePlanSurcharge(
+                                  callback: callbackSurcharge,
+                                  isCreate: false,
+                                  surcharge: surcharge,
+                                ),
+                                type: PageTransitionType.rightToLeft));
+                        break;
+                      case 1:
+                        var list = json.decode(
+                            sharedPreferences.getString('plan_surcharge')!);
+                        final index =
+                            list.firstWhere((e) => e['id'] == surcharge.id);
+                        list.remove(index);
+                        sharedPreferences.setString(
+                            'plan_surcharge', json.encode(list));
+                        callbackSurcharge(null);
+                        break;
+                      case 2:
+                        Navigator.push(
+                            context,
+                            PageTransition(
+                                child: UpdateBillingSurchargeScreen(
+                                  surcharge: surcharge,
+                                  isLeader: isLeader ?? false,
+                                ),
+                                type: PageTransitionType.rightToLeft));
+                        break;
+                    }
+                  },
+                )
+            ],
+          ),
         ),
       ),
     );

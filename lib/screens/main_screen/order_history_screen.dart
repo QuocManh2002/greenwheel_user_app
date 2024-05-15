@@ -21,7 +21,6 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     currentService = widget.serviceType;
     // if (currentService!.id == 1) {
@@ -113,7 +112,7 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                   color: Colors.grey.withOpacity(0.2),
                 ),
               ),
-              Container(
+              SizedBox(
                 height: 80.h,
                 child: ListView.builder(
                   physics: const BouncingScrollPhysics(),

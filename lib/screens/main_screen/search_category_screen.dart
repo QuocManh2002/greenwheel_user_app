@@ -63,11 +63,9 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setState(() {
       select = List.from(widget.list);
-      print(isExpand);
       provinces = List.from(widget.provinceList);
       if (provinces.length == 1 && provinces[0].title == "Tỉnh") {
         provinces = [];
@@ -78,7 +76,6 @@ class _SearchCategoryScreenState extends State<SearchCategoryScreen> {
       if (provinces.length > 9) {
         isExpand = false;
       }
-      print(isExpand);
     });
   }
 

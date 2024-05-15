@@ -12,7 +12,6 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   Future<Pagination<HomeLocationModel>?> getHotLocations(String? cursor) async {
-    // TODO: implement getLocations
 
     final remoteHomeLocations = await remoteDataSource.getHotLocations(cursor);
     return remoteHomeLocations;
@@ -27,7 +26,6 @@ class HomeRepositoryImpl implements HomeRepository {
 
   @override
   Future<List<HomeLocationEntity>?> getTrendingLocations() async {
-    // TODO: implement getTrendingLocations
     final remoteHomeTrendingLocations =
         await remoteDataSource.getTrendingLocations();
     return remoteHomeTrendingLocations;

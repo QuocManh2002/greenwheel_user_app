@@ -87,7 +87,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
 
   @override
   Future<List<HomeProvinceModel>?> getProvinces() async {
-    // TODO: implement getProvinces
     try {
       QueryResult result = await client.query(QueryOptions(document: gql("""
 {

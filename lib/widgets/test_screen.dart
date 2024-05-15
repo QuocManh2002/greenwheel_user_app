@@ -1,10 +1,5 @@
 
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
-import 'package:greenwheel_user_app/service/product_service.dart';
-import 'package:intl/intl.dart';
 
 class TestScreen extends StatefulWidget {
   const TestScreen({super.key});
@@ -24,10 +19,6 @@ class _TestScreenState extends State<TestScreen> {
   }
 
   setUpData() async {
-
-    final date = DateTime(2024,10,10, 8,6,22);
-
-    print(DateFormat('HH:mm dd/MM/yyyy').format(date));
   }
 
   @override
@@ -44,7 +35,7 @@ class _TestScreenState extends State<TestScreen> {
                         children: [
                           ElevatedButton(onPressed: (){
                             setUpData();
-                          }, child: Text('lay ket qua'))
+                          }, child: const Text('lay ket qua'))
                         ],
                       ))));
   }

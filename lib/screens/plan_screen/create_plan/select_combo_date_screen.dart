@@ -86,7 +86,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   }
 
   setUpDataCreate() async {
-    initMemberCount = sharedPreferences.getInt('plan_number_of_member') ?? 2;
+    initMemberCount = sharedPreferences.getInt('init_plan_number_of_member') ?? 1;
     int? member = sharedPreferences.getInt('plan_number_of_member');
     int? numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
     int? maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
@@ -312,7 +312,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
           InkWell(
             onTap: () {
               _planService.handleShowPlanInformation(
-                  context, widget.location, widget.plan);
+                  context, widget.location,widget.isClone, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(

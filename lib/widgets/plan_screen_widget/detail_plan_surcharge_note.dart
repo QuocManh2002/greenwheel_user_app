@@ -95,14 +95,14 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                           : 0,
                       itemBuilder: (context, index) => Padding(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                            horizontal: 8),
                         child: SurchargeCard(
                           maxMemberCount: widget.plan.maxMemberCount!,
                           isEnableToUpdate:
                               widget.plan.status != planStatuses[1].engName &&
                                   widget.plan.status != planStatuses[0].engName,
                           isCreate: false,
-                          surcharge: widget.plan.surcharges![0],
+                          surcharge: widget.plan.surcharges![index],
                           isLeader: widget.isLeader,
                           callbackSurcharge: (dynamic) {},
                         ),

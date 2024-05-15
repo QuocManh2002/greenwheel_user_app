@@ -866,6 +866,95 @@ mutation{
     }
   }
 
+  Future<List<SuggestPlanViewModel>> filterPublishedPLans(
+      int minAmount,
+      int maxAmount,
+      int periodCount,
+      int locationId,
+      BuildContext context) async {
+    try {
+      log("""
+{
+  publishedPlans(where: {
+    destinationId:{
+      eq:$locationId
+    }
+    or:{
+periodCount:{
+        in:${[periodCount - 1, periodCount, periodCount + 1]}
+      }
+    gcoinBudgetPerCapita:{
+        gte:$minAmount
+        lte:$maxAmount
+      }
+    }
+    
+  }){
+    edges{
+      node {
+        id
+        name
+        periodCount
+        gcoinBudgetPerCapita
+        destination{
+          name
+        }
+      }
+    }
+  }
+}
+""");
+      QueryResult result = await client.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+{
+  publishedPlans(where: {
+    destinationId:{
+      eq:$locationId
+    }
+periodCount:{
+        in:${[periodCount - 1, periodCount, periodCount + 1]}
+      }
+    gcoinBudgetPerCapita:{
+        gte:$minAmount
+        lte:$maxAmount
+      }
+  }){
+    edges{
+      node {
+        id
+        name
+        periodCount
+        gcoinBudgetPerCapita
+        destination{
+          name
+        }
+      }
+    }
+  }
+}
+""")));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+
+      List? res = result.data!['publishedPlans']['edges'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+
+      List<SuggestPlanViewModel> plans = res
+          .map((plan) => SuggestPlanViewModel.fromJson(plan['node']))
+          .toList();
+      return plans;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
   Future<String> publicizePlan(int planId, BuildContext context) async {
     try {
       QueryResult result = await client.mutate(
@@ -1103,7 +1192,7 @@ mutation{
   }
 
   handleShowPlanInformation(BuildContext context, LocationViewModel location,
-      PlanCreate? plan) async {
+      bool isClone, PlanCreate? plan) async {
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -1144,7 +1233,11 @@ mutation{
                       : DateTime.parse(
                           sharedPreferences.getString('plan_end_date')!),
                   maxMemberCount: plan == null
-                      ? sharedPreferences.getInt('plan_number_of_member')
+                      ? isClone
+                          ? sharedPreferences.getInt('plan_number_of_member') ??
+                              sharedPreferences
+                                  .getInt('init_plan_number_of_member')
+                          : sharedPreferences.getInt('plan_number_of_member')
                       : plan.maxMemberCount,
                   departAt: sharedPreferences.getString('plan_departureDate') ==
                           null
