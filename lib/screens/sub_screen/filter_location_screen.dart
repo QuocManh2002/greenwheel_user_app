@@ -77,7 +77,7 @@ class _FilterLocationScreenState extends State<FilterLocationScreen> {
                 itemBuilder: (context, index) {
                   return Padding(
                     padding:
-                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 2),
                     child: FilterLocationCard(location: locationModels![index]),
                   );
                 },

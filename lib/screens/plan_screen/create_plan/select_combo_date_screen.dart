@@ -60,7 +60,6 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   DateTime? _endDate;
   bool? isOverDate;
 
-
   @override
   void initState() {
     super.initState();
@@ -86,12 +85,13 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   }
 
   setUpDataCreate() async {
-    initMemberCount = sharedPreferences.getInt('init_plan_number_of_member') ?? 1;
+    initMemberCount =
+        sharedPreferences.getInt('init_plan_number_of_member') ?? 1;
     int? member = sharedPreferences.getInt('plan_number_of_member');
     int? numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
     int? maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
     ComboDate selectedComboDate;
-    _maxCombodateIndex = listComboDate.length + 1;
+    _maxCombodateIndex = listComboDate.length;
     _memberController.text = GlobalConstant().PLAN_MIN_MEMBER_COUNT.toString();
     _maxMemberWeightController.text = '0';
     if (widget.isClone) {
@@ -207,14 +207,16 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
 
   handleChangeComboDate() {
     dynamic rs;
-    _departureDate = DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
-    _departureTime = DateTime.parse(sharedPreferences.getString('plan_departureTime')!);
+    _departureDate =
+        DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+    _departureTime =
+        DateTime.parse(sharedPreferences.getString('plan_departureTime')!);
     if (widget.isCreate) {
       final arrivedTime = Utils().getArrivedTimeFromLocal();
       sharedPreferences.setString('plan_arrivedTime', arrivedTime.toString());
       rs = Utils().getNumOfExpPeriod(
           arrivedTime,
-           listComboDate[_selectedCombo].duration.toInt(),
+          listComboDate[_selectedCombo].duration.toInt(),
           _departureTime!,
           null,
           true);
@@ -247,7 +249,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
             .add(Duration(minutes: _departureTime!.minute));
       }
     } else {
-      if (rs['numOfExpPeriod'] != listComboDate[_selectedCombo].duration.toInt()) {
+      if (rs['numOfExpPeriod'] !=
+          listComboDate[_selectedCombo].duration.toInt()) {
         setState(() {
           numberOfNight = listComboDate[_selectedCombo].numberOfNight + 1;
         });
@@ -262,9 +265,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       }
       if (widget.plan == null) {
         sharedPreferences.setString(
-            'plan_start_date',_departureDate!
-                .toString()
-                .split(' ')[0]);
+            'plan_start_date', _departureDate!.toString().split(' ')[0]);
       } else {
         widget.plan!.startDate = _departureDate!
             .add(Duration(hours: _departureTime!.hour))
@@ -278,12 +279,15 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       widget.plan!.endDate = _endDate;
     }
 
-    if (rs['numOfExpPeriod'] != listComboDate[_selectedCombo].duration.toInt()) {
+    if (rs['numOfExpPeriod'] !=
+        listComboDate[_selectedCombo].duration.toInt()) {
       if (widget.isCreate) {
-        sharedPreferences.setInt('numOfExpPeriod', listComboDate[_selectedCombo].numberOfDay + numberOfNight!);
+        sharedPreferences.setInt('numOfExpPeriod',
+            listComboDate[_selectedCombo].numberOfDay + numberOfNight!);
       } else {
         setState(() {
-          widget.plan!.numOfExpPeriod = listComboDate[_selectedCombo].numberOfDay + numberOfNight!;
+          widget.plan!.numOfExpPeriod =
+              listComboDate[_selectedCombo].numberOfDay + numberOfNight!;
         });
       }
     } else {
@@ -291,7 +295,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
           'numOfExpPeriod', listComboDate[_selectedCombo].duration.toInt());
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return SafeArea(
@@ -312,7 +316,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
           InkWell(
             onTap: () {
               _planService.handleShowPlanInformation(
-                  context, widget.location,widget.isClone, widget.plan);
+                  context, widget.location, widget.isClone, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -630,49 +634,50 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                         icon: const Icon(Icons.add)),
                   ],
                 ),
-            
-            SizedBox(
-              height: 3.h,
-            ),
-            const Text(
-              'Tổng thời gian chuyến đi',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 2.h,
-            ),
-            const Text(
-              'Bao gồm thời gian di chuyển từ địa điểm xuất phát',
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-              textAlign: TextAlign.center,
-            ),
-            SizedBox(
-              height: 3.h,
-            ),
-            Text(
-              '${listComboDate[_selectedCombo].numberOfDay} ngày $numberOfNight đêm',
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              '${DateFormat.Hm().format(_departureTime!)} ${DateFormat('dd/MM/yyyy').format(_departureDate!)} - ${DateFormat('dd/MM/yyyy').format(_endDate!)}',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            SizedBox(
-              height: 2.h,
-            ),
-            const Text(
-              'Thời gian trải nghiệm',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
-            Text(
-              !isOverDate!
-                  ? '${listComboDate[_selectedCombo].numberOfDay} ngày $numberOfNight đêm'
-                  : '${listComboDate[_selectedCombo].numberOfDay} ngày ${listComboDate[_selectedCombo].numberOfNight} đêm',
-              style: const TextStyle(color: Colors.grey, fontSize: 16),
-            ),
-            SizedBox(
-              height: 1.h,
-            ),
+              SizedBox(
+                height: 3.h,
+              ),
+              const Text(
+                'Tổng thời gian chuyến đi',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: 2.h,
+              ),
+              const Text(
+                'Bao gồm thời gian di chuyển từ địa điểm xuất phát',
+                style: TextStyle(fontSize: 16, color: Colors.grey),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(
+                height: 3.h,
+              ),
+              Text(
+                '${listComboDate[_selectedCombo].numberOfDay} ngày $numberOfNight đêm',
+                style:
+                    const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                '${DateFormat.Hm().format(_departureTime!)} ${DateFormat('dd/MM/yyyy').format(_departureDate!)} - ${DateFormat('dd/MM/yyyy').format(_endDate!)}',
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: 2.h,
+              ),
+              const Text(
+                'Thời gian trải nghiệm',
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+              Text(
+                !isOverDate!
+                    ? '${listComboDate[_selectedCombo].numberOfDay} ngày $numberOfNight đêm'
+                    : '${listComboDate[_selectedCombo].numberOfDay} ngày ${listComboDate[_selectedCombo].numberOfNight} đêm',
+                style: const TextStyle(color: Colors.grey, fontSize: 16),
+              ),
+              SizedBox(
+                height: 1.h,
+              ),
             ],
           ),
         ),
@@ -699,43 +704,52 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                     if (int.tryParse(_memberController.text) == null ||
                         int.parse(_memberController.text) < 1 ||
                         int.parse(_memberController.text) > 20) {
-                          DialogStyle().basicDialog(context: context, title: 'Số lượng thành viên tối đa không hợp lệ', type: DialogType.warning);
+                      DialogStyle().basicDialog(
+                          context: context,
+                          title: 'Số lượng thành viên tối đa không hợp lệ',
+                          type: DialogType.warning);
                     } else if (int.tryParse(_maxMemberWeightController.text) ==
                             null ||
                         int.parse(_maxMemberWeightController.text) < 0 ||
                         int.parse(_maxMemberWeightController.text) >
                             _maxMemberWeight - 1) {
-                          DialogStyle().basicDialog(context: context, title: 'Số người đi cùng tối đa không hợp lệ', type: DialogType.warning);
+                      DialogStyle().basicDialog(
+                          context: context,
+                          title: 'Số người đi cùng tối đa không hợp lệ',
+                          type: DialogType.warning);
                     } else {
-                      if (widget.isClone) {
+                      // if (widget.isClone) {
+                      if (sharedPreferences.getString('plan_schedule') !=
+                          null) {
                         await Utils().updateTempOrder(true, _maxMemberWeight);
-                        if ((sharedPreferences.getInt('initNumOfExpPeriod')! /
-                                        2)
-                                    .ceil() <
-                                json
-                                    .decode(sharedPreferences
-                                        .getString('plan_schedule')!)
-                                    .length ||
-                            sharedPreferences
-                                    .getInt('plan_number_of_member')! !=
-                                initMemberCount) {
-                          // ignore: use_build_context_synchronously
-                          Utils().updateScheduleAndOrder(context, () {
-                            Navigator.of(context).pop();
-                            Navigator.push(
-                                context,
-                                PageTransition(
-                                    child: SelectEmergencyService(
-                                      isCreate: widget.isCreate,
-                                      plan: widget.plan,
-                                      location: widget.location,
-                                      isClone: widget.isClone,
-                                    ),
-                                    type: PageTransitionType.rightToLeft));
-                          }, true);
-                        } else {
+                      }
+
+                      if (sharedPreferences.getString('plan_schedule') !=
+                              null &&
+                          json
+                              .decode(
+                                  sharedPreferences.getString('plan_schedule')!)
+                              .isNotEmpty &&((sharedPreferences.getInt(
+                                                  'initNumOfExpPeriod')! /
+                                              2)
+                                          .ceil() <
+                                      json
+                                          .decode(sharedPreferences
+                                              .getString('plan_schedule')!)
+                                          .length ||
+                                  sharedPreferences
+                                          .getInt('plan_number_of_member')! !=
+                                      sharedPreferences.getInt(
+                                          'init_plan_number_of_member'))) {
+                        // ignore: use_build_context_synchronously
+                        Utils().updateScheduleAndOrder(context, () {
+                          sharedPreferences.setInt(
+                              'init_plan_number_of_member',
+                              sharedPreferences
+                                      .getInt('plan_number_of_member') ??
+                                  1);
+                          Navigator.of(context).pop();
                           Navigator.push(
-                              // ignore: use_build_context_synchronously
                               context,
                               PageTransition(
                                   child: SelectEmergencyService(
@@ -745,7 +759,20 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                     isClone: widget.isClone,
                                   ),
                                   type: PageTransitionType.rightToLeft));
-                        }
+                        }, true);
+                        // } else {
+                        //   Navigator.push(
+                        //       // ignore: use_build_context_synchronously
+                        //       context,
+                        //       PageTransition(
+                        //           child: SelectEmergencyService(
+                        //             isCreate: widget.isCreate,
+                        //             plan: widget.plan,
+                        //             location: widget.location,
+                        //             isClone: widget.isClone,
+                        //           ),
+                        //           type: PageTransitionType.rightToLeft));
+                        // }
                       } else {
                         Navigator.push(
                             context,

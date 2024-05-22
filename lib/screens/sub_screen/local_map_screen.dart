@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -16,12 +18,14 @@ class LocalMapScreen extends StatefulWidget {
       this.fromLocation,
       this.toLocation,
       required this.title,
+      this.routeData,
       this.toAddress});
   final LocationViewModel? location;
   final PointLatLng? fromLocation;
   final PointLatLng? toLocation;
   final String? toAddress;
   final String title;
+  final String? routeData;
 
   @override
   State<LocalMapScreen> createState() => _LocalMapScreenState();
@@ -43,8 +47,10 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
   }
 
   getMapInfo() async {
-    var jsonResponse = await getRouteInfo(fromLocation!,
-        PointLatLng(toLocation!.latitude, toLocation!.longitude));
+    var jsonResponse = widget.routeData == null
+        ? await getRouteInfo(fromLocation!,
+            PointLatLng(toLocation!.latitude, toLocation!.longitude))
+        : json.decode(widget.routeData!);
 
     var route = jsonResponse['routes'][0]['overview_polyline']['points'];
     if (jsonResponse['routes'][0]['legs'][0]['duration']['value'] >= 100) {
@@ -88,7 +94,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
 
       await _mapboxMap?.style.addPersistentStyleLayer(lineLayerJson, null);
 
-      _mapboxMap?.annotations
+      await _mapboxMap!.annotations
           .createCircleAnnotationManager()
           .then((value) async {
         value.create(
@@ -96,7 +102,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
             geometry: Point(
                     coordinates: Position(
                         fromLocation!.longitude, fromLocation!.latitude))
-                .toJson(),
+                ,
             circleColor: primaryColor.value,
             circleRadius: 12.0,
           ),
@@ -114,7 +120,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
           geometry: Point(
                   coordinates:
                       Position(toLocation!.longitude, toLocation!.latitude))
-              .toJson(),
+              ,
           circleColor: redColor.value,
           circleRadius: 12.0,
         ),
@@ -129,22 +135,22 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
             pitch: 0),
         MapAnimationOptions(duration: 2000, startDelay: 0));
 
-    _mapboxMap!.setCamera(CameraOptions(
+    _mapboxMap?.setCamera(CameraOptions(
         center: Point(
                 coordinates:
                     Position(toLocation!.longitude, toLocation!.latitude))
-            .toJson(),
+            ,
         zoom: 14));
-    _mapboxMap!.setBounds(CameraBoundsOptions(
+    _mapboxMap?.setBounds(CameraBoundsOptions(
         bounds: CoordinateBounds(
             southwest: Point(
                     coordinates:
                         Position(toLocation!.longitude, toLocation!.latitude))
-                .toJson(),
+                ,
             northeast: Point(
                     coordinates: Position(
                         fromLocation!.longitude, fromLocation!.latitude))
-                .toJson(),
+                ,
             infiniteBounds: true),
         maxZoom: 17,
         minZoom: 0,
@@ -171,9 +177,11 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
       } else {
         isDuplicateFromToLatLng = _defaultCoordinate == widget.toLocation;
         toLocation = widget.toLocation;
-        fromLocation = _defaultCoordinate;
+        fromLocation = widget.fromLocation;
       }
-      getMapInfo();
+      if (_mapboxMap != null) {
+        getMapInfo();
+      }
     }
   }
 
@@ -197,19 +205,17 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
       ),
       body: Stack(
         children: [
-          SizedBox(
-            child: MapWidget(
-              key: const ValueKey('mapWidget'),
-              cameraOptions: CameraOptions(
-                  center: Point(
-                          coordinates: Position(
-                              fromLocation!.longitude, fromLocation!.latitude))
-                      .toJson(),
-                  zoom: 11),
-              styleUri: MapboxStyles.MAPBOX_STREETS,
-              textureView: false,
-              onMapCreated: _onMapCreated,
-            ),
+          MapWidget(
+            key: UniqueKey(),
+            cameraOptions: CameraOptions(
+                center: Point(
+                        coordinates: Position(
+                            fromLocation!.longitude, fromLocation!.latitude))
+                    ,
+                zoom: 11),
+            styleUri: MapboxStyles.MAPBOX_STREETS,
+            textureView: false,
+            onMapCreated: _onMapCreated,
           ),
           Positioned(
               top: 0,
@@ -290,7 +296,12 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                     ]),
                   ),
                 ),
-              ))
+              )),
+          // Container(
+          //   child: OfflineRegionGeometryDefinition(
+          //     geometry: {},
+          //   ),
+          // )
         ],
       ),
     ));

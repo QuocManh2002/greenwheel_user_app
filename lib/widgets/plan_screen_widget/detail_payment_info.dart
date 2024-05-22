@@ -1,11 +1,13 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/view_models/transaction_detail.dart';
+import 'package:greenwheel_user_app/core/constants/transaction_types.dart';
+import 'package:greenwheel_user_app/models/transaction_type.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/urls.dart';
+import '../../view_models/transaction_detail.dart';
 
 class DetailPaymentInfo extends StatelessWidget {
   const DetailPaymentInfo({super.key, required this.transactionDetail});
@@ -33,55 +35,11 @@ class DetailPaymentInfo extends StatelessWidget {
               fontWeight: FontWeight.bold,
               color: Colors.black),
         );
-    Icon? icon;
-    Color? color;
-    switch (transactionDetail.transaction!.type) {
-      case 'GIFT':
-        color = Colors.pinkAccent;
-        icon = const Icon(
-          Icons.monetization_on_outlined,
-          color: Colors.pinkAccent,
-          size: 40,
-        );
-        break;
-      case 'ORDER':
-        color = primaryColor;
-        icon = const Icon(Icons.shopping_cart_checkout_outlined,
-            color: primaryColor, size: 40);
-        break;
-      case 'ORDER_REFUND':
-        color = Colors.orange;
-        icon = const Icon(
-          Icons.remove_shopping_cart_outlined,
-          color: Colors.orange,
-          size: 40,
-        );
-        break;
-      case 'PLAN_FUND':
-        color = Colors.blueAccent;
-        icon = const Icon(
-          Icons.backpack,
-          color: Colors.blueAccent,
-          size: 40,
-        );
-        break;
-      case 'PLAN_REFUND':
-        color = Colors.amber;
-        icon = const Icon(
-          Icons.no_backpack_outlined,
-          color: Colors.amber,
-          size: 40,
-        );
-        break;
-      case 'TOPUP':
-        color = Colors.redAccent.withOpacity(0.8);
-        icon = Icon(
-          Icons.account_balance,
-          color: Colors.redAccent.withOpacity(0.8),
-          size: 40,
-        );
-        break;
-    }
+    TransactionType transactionType = transactionTypes.firstWhere(
+      (element) => element.engName == transactionDetail.transaction!.type,
+    );
+    String? description = transactionType.index == 4 ? 'Hoàn tiền từ kế hoạch "${transactionDetail.plan!.name}".' : transactionDetail.transaction!.description;
+
     return Column(
       children: [
         Container(
@@ -116,11 +74,11 @@ class DetailPaymentInfo extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     alignment: Alignment.topLeft,
                     decoration: BoxDecoration(
-                        color: color!.withOpacity(0.2),
+                        color: transactionType.color.withOpacity(0.2),
                         shape: BoxShape.circle,
                         border: Border.all(
                             color: Colors.grey.withOpacity(0.5), width: 0.5)),
-                    child: icon,
+                    child: Icon(transactionType.icon),
                   ),
                   SizedBox(
                     width: 4.w,
@@ -130,7 +88,7 @@ class DetailPaymentInfo extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          transactionDetail.transaction!.description!,
+                          description ?? 'Không có thông tin',
                           overflow: TextOverflow.clip,
                           style: const TextStyle(
                               fontFamily: 'NotoSans',
@@ -142,8 +100,11 @@ class DetailPaymentInfo extends StatelessWidget {
                           children: [
                             Text(
                               NumberFormat.simpleCurrency(
-                                      locale: 'vi_VN', decimalDigits: 0, name: '')
-                                  .format(transactionDetail.transaction!.amount),
+                                      locale: 'vi_VN',
+                                      decimalDigits: 0,
+                                      name: '')
+                                  .format(
+                                      transactionDetail.transaction!.amount),
                               style: const TextStyle(
                                 fontSize: 19,
                                 fontFamily: 'NotoSans',
@@ -218,7 +179,6 @@ class DetailPaymentInfo extends StatelessWidget {
                         fontSize: 15,
                         color: Colors.grey),
                   ),
-
                   Expanded(
                     child: buildTextWidget(
                         '${DateFormat.Hm().format(transactionDetail.transaction!.createdAt!.toLocal())} ${DateFormat('dd/MM/yyyy').format(transactionDetail.transaction!.createdAt!.toLocal())}'),

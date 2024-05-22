@@ -20,7 +20,8 @@ class PaymentResultScreen extends StatefulWidget {
   final int? planId;
   final bool isSuccess;
   final bool isPublicPlan;
-  final void Function(bool isFromJoinScreen, int? amount, BuildContext context)? onPublic;
+  final void Function(bool isFromJoinScreen, int? amount, BuildContext context)?
+      onPublic;
 
   @override
   State<PaymentResultScreen> createState() => _PaymentResultScreenState();
@@ -30,221 +31,226 @@ class _PaymentResultScreenState extends State<PaymentResultScreen> {
   @override
   void initState() {
     super.initState();
+    handlePublicPlan();
   }
+
+  handlePublicPlan() {
+    if (widget.isPublicPlan) {
+      Future.delayed(const Duration(milliseconds: 1), () {
+        widget.onPublic!(true, null, context);
+      },);
+    }
+  }
+
+  
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-        child: Scaffold(
-      body: Container(
-        height: 100.h,
-        width: 100.w,
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-          colors: [
-            primaryColor.withOpacity(0.4),
-            primaryColor.withOpacity(0.9)
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        )),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 80.w,
-              decoration: const BoxDecoration(
-                  color: lightPrimaryTextColor,
-                  borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(12),
-                      topRight: Radius.circular(12))),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 2.h,
-                  ),
-                  SvgPicture.asset(
-                    appLogo,
-                    height: 5.h,
-                    fit: BoxFit.cover,
-                  ),
-                  SizedBox(
-                    height: 1.h,
-                  ),
-                  Text(
-                    'Thanh toán${widget.isSuccess ? '' : ' không'} thành công',
-                    style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'NotoSans',
-                        color: Colors.black87),
-                  ),
-                  SizedBox(
-                    height: 2.h,
-                  )
-                ],
-              ),
-            ),
-            Container(
-              height: 20,
-              width: 80.w,
-              color: lightPrimaryTextColor,
-              child: Row(
-                children: [
-                  SizedBox(
-                      width: 10,
-                      height: 20,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                            color: primaryColor.withOpacity(0.5),
-                            borderRadius: const BorderRadius.only(
-                                topRight: Radius.circular(10),
-                                bottomRight: Radius.circular(10))),
-                      )),
-                  Expanded(
-                      child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        return Flex(
-                          direction: Axis.horizontal,
-                          mainAxisSize: MainAxisSize.max,
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: List.generate(
-                              (constraints.constrainWidth() / 10).floor(),
-                              (index) => SizedBox(
-                                    height: 0.8,
-                                    width: 5,
-                                    child: DecoratedBox(
-                                      decoration: BoxDecoration(
-                                          color: Colors.grey.shade400),
-                                    ),
-                                  )),
-                        );
-                      },
+    
+    return PopScope(
+      canPop: false,
+      child: SafeArea(
+          child: Scaffold(
+        body: Container(
+          height: 100.h,
+          width: 100.w,
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+            colors: [
+              primaryColor.withOpacity(0.4),
+              primaryColor.withOpacity(0.9)
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          )),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 80.w,
+                decoration: const BoxDecoration(
+                    color: lightPrimaryTextColor,
+                    borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(12),
+                        topRight: Radius.circular(12))),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 2.h,
                     ),
-                  )),
-                  SizedBox(
-                      width: 10,
-                      height: 20,
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                            color: primaryColor.withOpacity(0.5),
-                            borderRadius: const BorderRadius.only(
-                                topLeft: Radius.circular(10),
-                                bottomLeft: Radius.circular(10))),
-                      ))
-                ],
+                    SvgPicture.asset(
+                      appLogo,
+                      height: 5.h,
+                      fit: BoxFit.cover,
+                    ),
+                    SizedBox(
+                      height: 1.h,
+                    ),
+                    Text(
+                      'Thanh toán${widget.isSuccess ? '' : ' không'} thành công',
+                      style: const TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'NotoSans',
+                          color: Colors.black87),
+                    ),
+                    SizedBox(
+                      height: 2.h,
+                    )
+                  ],
+                ),
               ),
-            ),
-            Container(
-              width: 80.w,
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              decoration: const BoxDecoration(
-                  color: lightPrimaryTextColor,
-                  borderRadius: BorderRadius.only(
-                      bottomLeft: Radius.circular(12),
-                      bottomRight: Radius.circular(12))),
-              child: Column(
-                children: [
-                  SizedBox(
-                    height: 2.h,
-                  ),
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                        text:
-                            'Bạn đã ${widget.planId != null ? 'thanh toán' : 'nạp'} ${widget.isSuccess ? '' : 'không '}thành công ',
-                        style: const TextStyle(
-                            fontFamily: 'NotoSans',
-                            fontSize: 18,
-                            color: Colors.black87),
-                        children: [
-                          TextSpan(
-                              text: NumberFormat.simpleCurrency(
-                                      locale: 'vi_VN',
-                                      decimalDigits: 0,
-                                      name: 'GCOIN')
-                                  .format(widget.amount),
-                              style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: widget.isSuccess
-                                      ? primaryColor
-                                      : Colors.redAccent)),
-                          // TextSpan(
-                          //     text:
-                          //         ' ${DateFormat('dd/MM/yyyy').format(DateTime.now())} ${DateFormat.Hm().format(DateTime.now())}')
-                        ]),
-                  ),
-                  SizedBox(
-                    height: 1.h,
-                  ),
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Thời gian',
-                        style: TextStyle(
-                            fontSize: 15,
-                            fontFamily: 'NotoSans',
-                            color: Colors.grey),
-                      ),
-                      const Spacer(),
-                      SizedBox(
-                        width: 40.w,
-                        child: Text(
-                          '${DateFormat('dd/MM/yyyy').format(DateTime.now())} ${DateFormat.Hm().format(DateTime.now())}',
-                          overflow: TextOverflow.clip,
-                          textAlign: TextAlign.end,
-                          style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'NotoSans'),
-                        ),
-                      )
-                    ],
-                  ),
-                  SizedBox(
-                    height: 2.h,
-                  ),
-                  Row(
-                    children: [
-                      Expanded(
-                          child: InkWell(
-                        onTap: () {
-                          // Navigator.of(context).pushAndRemoveUntil(
-                          //     MaterialPageRoute(
-                          //         builder: (ctx) =>
-                          //             const TabScreen(pageIndex: 0)),
-                          //     (route) => false);
-                          // Navigator.push(
-                          //   context,
-                          //   PageTransition(
-                          //       child: const TransactionHistoryScreen(),
-                          //       type: PageTransitionType.topToBottom),
-                          // );
-                          Navigator.push(
-                            context,
-                            PageTransition(
-                                child: const TabScreen(
-                                  pageIndex: 2,
-                                ),
-                                type: PageTransitionType.topToBottom),
+              Container(
+                height: 20,
+                width: 80.w,
+                color: lightPrimaryTextColor,
+                child: Row(
+                  children: [
+                    SizedBox(
+                        width: 10,
+                        height: 20,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                              color: primaryColor.withOpacity(0.5),
+                              borderRadius: const BorderRadius.only(
+                                  topRight: Radius.circular(10),
+                                  bottomRight: Radius.circular(10))),
+                        )),
+                    Expanded(
+                        child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          return Flex(
+                            direction: Axis.horizontal,
+                            mainAxisSize: MainAxisSize.max,
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: List.generate(
+                                (constraints.constrainWidth() / 10).floor(),
+                                (index) => SizedBox(
+                                      height: 0.8,
+                                      width: 5,
+                                      child: DecoratedBox(
+                                        decoration: BoxDecoration(
+                                            color: Colors.grey.shade400),
+                                      ),
+                                    )),
                           );
                         },
-                        child: buildButton('Lịch sử giao dịch', Icons.history),
-                      )),
-                      SizedBox(
-                        width: 3.w,
                       ),
-                      Expanded(
-                          child: InkWell(
-                        onTap: () {
-                          if (widget.planId != null) {
-                            if (widget.isPublicPlan) {
-                                widget.onPublic!(true, null, context);
-                              
-                            } else {
+                    )),
+                    SizedBox(
+                        width: 10,
+                        height: 20,
+                        child: DecoratedBox(
+                          decoration: BoxDecoration(
+                              color: primaryColor.withOpacity(0.5),
+                              borderRadius: const BorderRadius.only(
+                                  topLeft: Radius.circular(10),
+                                  bottomLeft: Radius.circular(10))),
+                        ))
+                  ],
+                ),
+              ),
+              Container(
+                width: 80.w,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: const BoxDecoration(
+                    color: lightPrimaryTextColor,
+                    borderRadius: BorderRadius.only(
+                        bottomLeft: Radius.circular(12),
+                        bottomRight: Radius.circular(12))),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 2.h,
+                    ),
+                    RichText(
+                      textAlign: TextAlign.center,
+                      text: TextSpan(
+                          text:
+                              'Bạn đã ${widget.planId != null ? 'thanh toán' : 'nạp'} ${widget.isSuccess ? '' : 'không '}thành công ',
+                          style: const TextStyle(
+                              fontFamily: 'NotoSans',
+                              fontSize: 18,
+                              color: Colors.black87),
+                          children: [
+                            TextSpan(
+                                text: NumberFormat.simpleCurrency(
+                                        locale: 'vi_VN',
+                                        decimalDigits: 0,
+                                        name: 'GCOIN')
+                                    .format(widget.amount),
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: widget.isSuccess
+                                        ? primaryColor
+                                        : Colors.redAccent)),
+                          ]),
+                    ),
+                    SizedBox(
+                      height: 1.h,
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Thời gian',
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'NotoSans',
+                              color: Colors.grey),
+                        ),
+                        const Spacer(),
+                        SizedBox(
+                          width: 40.w,
+                          child: Text(
+                            '${DateFormat('dd/MM/yyyy').format(DateTime.now())} ${DateFormat.Hm().format(DateTime.now())}',
+                            overflow: TextOverflow.clip,
+                            textAlign: TextAlign.end,
+                            style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NotoSans'),
+                          ),
+                        )
+                      ],
+                    ),
+                    SizedBox(
+                      height: 2.h,
+                    ),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: InkWell(
+                          onTap: () {
+                            // if (widget.isPublicPlan) {
+                            //   widget.onPublic!(true, null, context);
+                            // } else {
+                            Navigator.pushAndRemoveUntil(
+                              context,
+                              PageTransition(
+                                  child: const TabScreen(
+                                    pageIndex: 2,
+                                  ),
+                                  type: PageTransitionType.topToBottom),
+                              (route) => false,
+                            );
+                            // }
+                          },
+                          child:
+                              buildButton('Lịch sử giao dịch', Icons.history),
+                        )),
+                        SizedBox(
+                          width: 3.w,
+                        ),
+                        Expanded(
+                            child: InkWell(
+                          onTap: () {
+                            if (widget.planId != null) {
+                              // if (widget.isPublicPlan) {
+                              //   widget.onPublic!(true, null, context);
+                              // } else {
                               Navigator.of(context).pushAndRemoveUntil(
                                   MaterialPageRoute(
                                       builder: (ctx) => const TabScreen(
@@ -261,31 +267,32 @@ class _PaymentResultScreenState extends State<PaymentResultScreen> {
                                     ),
                                     type: PageTransitionType.topToBottom),
                               );
+                              // }
+                            } else {
+                              Navigator.pushAndRemoveUntil(
+                                context,
+                                PageTransition(
+                                    child: const TabScreen(pageIndex: 4),
+                                    type: PageTransitionType.rightToLeft),
+                                (route) => false,
+                              );
                             }
-                          } else {
-                            Navigator.pushAndRemoveUntil(
-                              context,
-                              PageTransition(
-                                  child: const TabScreen(pageIndex: 4),
-                                  type: PageTransitionType.rightToLeft),
-                              (route) => false,
-                            );
-                          }
-                        },
-                        child: buildButton('Quay lại', Icons.keyboard_return),
-                      )),
-                    ],
-                  ),
-                  SizedBox(
-                    height: 2.h,
-                  )
-                ],
+                          },
+                          child: buildButton('Quay lại', Icons.keyboard_return),
+                        )),
+                      ],
+                    ),
+                    SizedBox(
+                      height: 2.h,
+                    )
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
-      ),
-    ));
+      )),
+    );
   }
 
   buildButton(String title, IconData icon) => Container(

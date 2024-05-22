@@ -89,7 +89,8 @@ class FilterLocationCard extends StatelessWidget {
                   )
                 ],
               ),
-            )
+            ),
+            SizedBox(width: 1.w,)
           ]),
         ),
       ),

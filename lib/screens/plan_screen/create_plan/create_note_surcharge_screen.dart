@@ -55,6 +55,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   final PlanService _planService = PlanService();
   int? memberLimit;
   PlanCreate? _plan;
+  bool _isAvailableToOrder = false;
 
   @override
   void initState() {
@@ -95,7 +96,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
           InkWell(
             onTap: () {
               _planService.handleShowPlanInformation(
-                  context, widget.location,widget.isClone, widget.plan);
+                  context, widget.location, widget.isClone, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -110,18 +111,19 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
           if (_selectedIndex == 0)
             IconButton(
                 onPressed: () {
-                  if(_listSurcharges.length == 10){
+                  if (_listSurcharges.length == 10) {
                     DialogStyle().basicDialog(
                       context: context,
-                      title: 'Chỉ được tạo tối đa ${GlobalConstant().PLAN_SURCHARGE_MAX_COUNT}',
+                      title:
+                          'Chỉ được tạo tối đa ${GlobalConstant().PLAN_SURCHARGE_MAX_COUNT}',
                       type: DialogType.warning,
                     );
-                  }else{
+                  } else {
                     Navigator.of(context).push(MaterialPageRoute(
-                      builder: (ctx) => CreatePlanSurcharge(
-                            callback: callbackSurcharge,
-                            isCreate: true,
-                          )));
+                        builder: (ctx) => CreatePlanSurcharge(
+                              callback: callbackSurcharge,
+                              isCreate: true,
+                            )));
                   }
                 },
                 icon: const Icon(
@@ -526,51 +528,25 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   }
 
   onCompletePlan() async {
-    // if (widget.isClone) {
-    //   AwesomeDialog(
-    //     context: context,
-    //     dialogType: DialogType.question,
-    //     animType: AnimType.leftSlide,
-    //     title: 'Bạn có muốn đánh giá cho kế hoạch bạn đã tham khảo không',
-    //     titleTextStyle:
-    //         const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-    //     btnOkText: 'Có',
-    //     btnOkOnPress: () {},
-    //     btnOkColor: Colors.orange,
-    //     btnCancelColor: Colors.blue,
-    //     btnCancelText: 'Không',
-    //     btnCancelOnPress: () {
-    //       Utils().clearPlanSharePref();
-    //       Navigator.of(context).pop();
-    //       Navigator.of(context).pushAndRemoveUntil(
-    //         MaterialPageRoute(
-    //             builder: (ctx) => const TabScreen(
-    //                   pageIndex: 1,
-    //                 )),
-    //         (route) => false,
-    //       );
-    //     },
-    //   ).show();
-    // } else {
-    // if (memberLimit == 1) {
-    //   Utils().clearPlanSharePref();
-    //   Navigator.of(context).pop();
-    //   Navigator.of(context).pushAndRemoveUntil(
-    //     MaterialPageRoute(
-    //         builder: (ctx) => const TabScreen(
-    //               pageIndex: 1,
-    //             )),
-    //     (route) => false,
-    //   );
-    // } else {
     int? rs;
     if (widget.plan == null) {
-      if (widget.isClone) {
-        rs = await _planService.clonePlan(
-            _plan!, context, _listSurchargeObjects.toString());
+      final departDate =
+          DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+      final departTime =
+          DateTime.parse(sharedPreferences.getString('plan_departureTime')!);
+      _isAvailableToOrder = DateTime(departDate.year, departDate.month,
+              departDate.day, departTime.hour, departTime.minute)
+          .isAfter(DateTime.now().add(const Duration(days: 7)));
+      if (_isAvailableToOrder) {
+        if (widget.isClone) {
+          rs = await _planService.clonePlan(
+              _plan!, context, _listSurchargeObjects.toString());
+        } else {
+          rs = await _planService.createNewPlan(
+              _plan!, context, _listSurchargeObjects.toString());
+        }
       } else {
-        rs = await _planService.createNewPlan(
-            _plan!, context, _listSurchargeObjects.toString());
+        rs = 1;
       }
     } else {
       rs = await _planService.updatePlan(
@@ -596,16 +572,19 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
           const Duration(
             seconds: 2,
           ), () {
-        Utils().clearPlanSharePref();
         Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 1)),
             (route) => false);
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (ctx) => DetailPlanNewScreen(
-                  planId: rs!,
-                  isEnableToJoin: false,
-                  planType: "OWNED",
-                )));
+
+        if (_isAvailableToOrder) {
+          Utils().clearPlanSharePref();
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (ctx) => DetailPlanNewScreen(
+                    planId: rs!,
+                    isEnableToJoin: false,
+                    planType: "OWNED",
+                  )));
+        }
       });
     }
   }

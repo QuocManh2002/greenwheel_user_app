@@ -1,3 +1,4 @@
+import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -36,6 +37,7 @@ class PlanDetail {
   DateTime? utcDepartAt;
   DateTime? utcStartAt;
   DateTime? utcEndAt;
+  PointLatLng? locationLatLng;
 
   PlanDetail(
       {this.id,
@@ -69,6 +71,7 @@ class PlanDetail {
       this.utcEndAt,
       this.utcRegCloseAt,
       this.utcStartAt,
+      this.locationLatLng,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -99,6 +102,7 @@ class PlanDetail {
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'].toInt(),
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
         startLocationLng: json["departure"]["coordinates"][0].toDouble(),
+        locationLatLng: PointLatLng(json['destination']['coordinate']['coordinates'][1], json['destination']['coordinate']['coordinates'][0]),
         surcharges: List<SurchargeViewModel>.from(json['surcharges']
             .map((e) => SurchargeViewModel.fromJsonQuery(e))).toList(),
         members: List<PlanMemberViewModel>.from(

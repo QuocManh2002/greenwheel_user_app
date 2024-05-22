@@ -84,8 +84,9 @@ class _FilterPublishedPlanDialogState extends State<FilterPublishedPlanDialog> {
                       selectionOverlay: CupertinoPickerDefaultSelectionOverlay(
                           background: primaryColor.withOpacity(0.12)),
                       onSelectedItemChanged: (value) {
-                        _selectedCombo = value;
-
+                        setState(() {
+                          _selectedCombo = value;
+                        });
                         Future.delayed(
                           const Duration(seconds: 2),
                           () {

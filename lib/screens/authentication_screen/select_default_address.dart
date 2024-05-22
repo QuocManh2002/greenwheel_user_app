@@ -65,7 +65,7 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
         center: Point(
                 coordinates: Position(
                     _currentLocation!.longitude, _currentLocation!.latitude))
-            .toJson(),
+            ,
         zoom: 14));
 
     _mapboxMap?.flyTo(
@@ -85,7 +85,7 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
           geometry: Point(
                   coordinates: Position(
                       _currentLocation!.longitude, _currentLocation!.latitude))
-              .toJson(),
+              ,
           circleColor: primaryColor.value,
           circleRadius: 12.0,
         ),
@@ -124,7 +124,7 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
           center: Point(
                   coordinates: Position(
                       selectedLocation.longitude, selectedLocation.latitude))
-              .toJson(),
+              ,
           zoom: 12));
       _mapboxMap?.flyTo(
           CameraOptions(
@@ -147,7 +147,7 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
             geometry: Point(
                     coordinates: Position(
                         selectedLocation.longitude, selectedLocation.latitude))
-                .toJson(),
+                ,
             circleColor: Colors.blue.value,
             circleRadius: 12.0,
           ),
@@ -252,7 +252,7 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
                 center: Point(
                         coordinates: Position(_defaultLocation.longitude,
                             _defaultLocation.latitude))
-                    .toJson(),
+                    ,
                 zoom: 11),
             styleUri: MapboxStyles.MAPBOX_STREETS,
             textureView: false,
@@ -261,8 +261,8 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
                 await _circleAnnotationSelected!.deleteAll();
               }
               _selectedSearchResult = null;
-              _selectedLatLng = PointLatLng(coordinate.x, coordinate.y);
-              await _onSelectLocation(PointLatLng(coordinate.x, coordinate.y));
+              _selectedLatLng = PointLatLng(coordinate.touchPosition.x, coordinate.touchPosition.y);
+              await _onSelectLocation(PointLatLng(coordinate.touchPosition.x, coordinate.touchPosition.y));
             },
             onMapCreated: _onMapCreated,
           ),

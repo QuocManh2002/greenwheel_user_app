@@ -46,7 +46,7 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
           center: Point(
                   coordinates: Position(
                       widget.location.longitude, widget.location.latitude))
-              .toJson(),
+              ,
           zoom: 10));
       _mapboxMap!.flyTo(
           CameraOptions(
@@ -63,7 +63,7 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
             geometry: Point(
                     coordinates: Position(
                         widget.location.longitude, widget.location.latitude))
-                .toJson(),
+                ,
             circleColor: redColor.value,
             circleRadius: 12.0,
           ),
@@ -112,11 +112,11 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
               southwest: Point(
                       coordinates: Position(
                           widget.location.longitude, widget.location.latitude))
-                  .toJson(),
+                  ,
               northeast: Point(
                       coordinates: Position(_selectedLocation!.longitude,
                           _selectedLocation!.latitude))
-                  .toJson(),
+                  ,
               infiniteBounds: true),
           maxZoom: 17,
           minZoom: 0,
@@ -190,7 +190,7 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
             center: Point(
                     coordinates: Position(
                         selectedLocation.longitude, selectedLocation.latitude))
-                .toJson(),
+                ,
             zoom: 10));
         _mapboxMap?.flyTo(
             CameraOptions(
@@ -209,7 +209,7 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
             geometry: Point(
                     coordinates: Position(
                         selectedLocation.longitude, selectedLocation.latitude))
-                .toJson(),
+                ,
             circleColor: primaryColor.value,
             circleRadius: 12.0,
           ),
@@ -269,14 +269,14 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
             center: Point(
                     coordinates: Position(
                         widget.location.longitude, widget.location.latitude))
-                .toJson(),
+                ,
             zoom: 10),
         styleUri: MapboxStyles.MAPBOX_STREETS,
         onTapListener: (coordinate) async {
           if (_circleAnnotationManagerStart != null) {
             await _circleAnnotationManagerStart!.deleteAll();
           }
-          await _onSelectLocation(PointLatLng(coordinate.x, coordinate.y));
+          await _onSelectLocation(PointLatLng(coordinate.touchPosition.x, coordinate.touchPosition.y));
         },
         textureView: false,
         onMapCreated: _onMapCreated,

@@ -88,6 +88,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   bool? _isEndAtNoon;
   bool _isFirstDay = false;
   bool _isEndDay = false;
+  bool _isAvailableToOrder = false;
   DateTime? arrivedTime;
   Duration? _maxActivityTime;
   DateTime? _startActivityTime;
@@ -139,6 +140,13 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   }
 
   setUpData() {
+    final departDate =
+        DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+    final departTime =
+        DateTime.parse(sharedPreferences.getString('plan_departureTime')!);
+    _isAvailableToOrder = DateTime(departDate.year, departDate.month,
+            departDate.day, departTime.hour, departTime.minute)
+        .isAfter(DateTime.now().add(const Duration(days: 7)));
     _isFirstDay = widget.dayIndex == 0;
     _isEndDay = widget.dayIndex >=
         (sharedPreferences.getInt('numOfExpPeriod')! / 2).ceil() - 1;
@@ -1103,20 +1111,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                         children: [
                           Expanded(
                               child: ElevatedButton.icon(
-                                  style: elevatedButtonStyle.copyWith(
-                                      backgroundColor:
-                                          const MaterialStatePropertyAll(
-                                              Colors.white),
-                                      foregroundColor:
-                                          const MaterialStatePropertyAll(
-                                              primaryColor),
-                                      shape: const MaterialStatePropertyAll(
-                                          RoundedRectangleBorder(
-                                              borderRadius: BorderRadius.all(
-                                                  Radius.circular(10)),
-                                              side: BorderSide(
-                                                  color: primaryColor,
-                                                  width: 1.5)))),
+                                  style: outlinedButtonStyle,
                                   onPressed: () {
                                     Navigator.push(
                                         context,
@@ -1138,9 +1133,11 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     'Phụ thu',
                                     style: TextStyle(fontSize: 12),
                                   ))),
+                          if(_isAvailableToOrder)
                           SizedBox(
                             width: 2.w,
                           ),
+                          if(_isAvailableToOrder)
                           Expanded(
                             child: ElevatedButton.icon(
                                 onPressed: () {
@@ -1189,18 +1186,23 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                             sessions[mealTextIndex]);
                                       }
                                     }
-                                  } else if (_isRoomActivity) {
-                                    final startEndSessionIndex =
-                                        sessions.indexOf(getStartEndSession());
-                                    navigateToServiceMainScreen(sessions[
-                                        startEndSessionIndex == 0
-                                            ? 1
-                                            : startEndSessionIndex]);
                                   } else {
-                                    final startEndSessionIndex =
-                                        sessions.indexOf(getStartEndSession());
-                                    navigateToServiceMainScreen(
-                                        sessions[startEndSessionIndex]);
+                                    if (_isEndDay && _isEndAtNoon!) {
+                                      DialogStyle().basicDialog(
+                                          context: context,
+                                          title:
+                                              'Kế hoạch đã kết thúc vào buổi trưa',
+                                          desc:
+                                              'Không thể đặt dịch vụ lưu trú/phương tiện',
+                                          type: DialogType.warning);
+                                    } else {
+                                      final startEndSessionIndex = sessions
+                                          .indexOf(getStartEndSession());
+                                      navigateToServiceMainScreen(sessions[
+                                          startEndSessionIndex == 0
+                                              ? 1
+                                              : startEndSessionIndex]);
+                                    }
                                   }
                                 },
                                 icon: Icon(_isFoodActivity
@@ -1371,7 +1373,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
   getStartActivityTime() {
     if (_isFirstDay) {
       final initialDateTime =
-          DateTime.parse(sharedPreferences.getString('plan_start_time')!);
+          DateTime.parse(sharedPreferences.getString('plan_departureTime')!);
       final startTime =
           DateTime(0, 0, 0, initialDateTime.hour, initialDateTime.minute);
       arrivedTime = startTime.add(Duration(

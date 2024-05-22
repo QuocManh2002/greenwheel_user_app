@@ -25,7 +25,7 @@ class SurchargeViewModel {
           gcoinAmount: json['gcoinAmount'],
           note: "${json['note']}");
 
-  factory SurchargeViewModel.fromJsonLocal(Map<String, dynamic> json) =>
+  factory SurchargeViewModel.fromJsonLocal(dynamic json) =>
       SurchargeViewModel(
           id: json['id'].toString(),
           imagePath: json['imagePath'],

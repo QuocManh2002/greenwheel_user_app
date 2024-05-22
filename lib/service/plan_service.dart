@@ -391,6 +391,9 @@ mutation{
         id
         name
         imagePaths
+        coordinate{
+          coordinates
+        }
       }
       members {
         status
@@ -545,8 +548,10 @@ mutation{
             isStarred: event['isStarred'],
             activityTime:
                 Duration(hours: duration.hour, minutes: duration.minute),
-            description: json.decode(event['description']),
-            shortDescription: json.decode(event['shortDescription']),
+            // description: json.decode(event['description']),
+            // shortDescription: json.decode(event['shortDescription']),
+            description: event['description'],
+            shortDescription: event['shortDescription'],
             type: scheduleItemTypesVn[scheduleItemTypes.indexOf(event['type'])],
             date: startDate.add(Duration(days: scheduleList.indexOf(sche)))));
       }
@@ -819,24 +824,23 @@ mutation{
     return result;
   }
 
-  Future<List<SuggestPlanViewModel>> getSuggestPlanByLocation(
+  Future<List<SuggestPlanViewModel>?> getSuggestPlanByLocation(
       int locationId, BuildContext context) async {
     try {
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  publishedPlans(where: {
-    destinationId:{
-      eq:$locationId
-    }
-  }){
-    edges{
+  publishedPlans(
+    where: { destinationId: { eq: $locationId } }
+    order: { periodCount: ASC }
+  ) {
+    edges {
       node {
         id
         name
         periodCount
         gcoinBudgetPerCapita
-        destination{
+        destination {
           name
         }
       }
@@ -873,59 +877,26 @@ mutation{
       int locationId,
       BuildContext context) async {
     try {
-      log("""
-{
-  publishedPlans(where: {
-    destinationId:{
-      eq:$locationId
-    }
-    or:{
-periodCount:{
-        in:${[periodCount - 1, periodCount, periodCount + 1]}
-      }
-    gcoinBudgetPerCapita:{
-        gte:$minAmount
-        lte:$maxAmount
-      }
-    }
-    
-  }){
-    edges{
-      node {
-        id
-        name
-        periodCount
-        gcoinBudgetPerCapita
-        destination{
-          name
-        }
-      }
-    }
-  }
-}
-""");
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  publishedPlans(where: {
-    destinationId:{
-      eq:$locationId
+  publishedPlans(
+    where: {
+      destinationId: { eq: $locationId }
+      or: [
+        { periodCount: { in: [$periodCount, ${periodCount + 1}] } }
+        { gcoinBudgetPerCapita: { gte: $minAmount, lte: $maxAmount } }
+      ]
     }
-periodCount:{
-        in:${[periodCount - 1, periodCount, periodCount + 1]}
-      }
-    gcoinBudgetPerCapita:{
-        gte:$minAmount
-        lte:$maxAmount
-      }
-  }){
-    edges{
+    order: { periodCount: ASC }
+  ) {
+    edges {
       node {
         id
         name
         periodCount
         gcoinBudgetPerCapita
-        destination{
+        destination {
           name
         }
       }
@@ -1301,6 +1272,40 @@ mutation{
       }
 
       return result.data!['changePlanPublishStatus']['id'];
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<int>?> getReadyPlanIds(BuildContext context) async {
+    try {
+      QueryResult result = await client.query(QueryOptions(document: gql('''
+{
+  ownedPlans(where: {
+    status:{
+      eq:READY
+    }
+  }) {
+    edges {
+      node {
+        id
+      }
+    }
+  }
+}
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      List<int> rs = [];
+      for(final plan in result.data!['ownedPlans']['edges']){
+        rs.add(plan['node']['id']);
+      }
+      return rs;
     } catch (error) {
       throw Exception(error);
     }

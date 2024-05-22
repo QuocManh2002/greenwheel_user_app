@@ -1,16 +1,17 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/session.dart';
-import 'package:greenwheel_user_app/widgets/order_screen_widget/order_total_infor.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/shimmer_widget.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/global_constant.dart';
+import '../../helpers/util.dart';
+import '../../main.dart';
+import '../../models/service_type.dart';
+import '../../models/session.dart';
+import '../../widgets/order_screen_widget/order_total_infor.dart';
+import '../../widgets/style_widget/dialog_style.dart';
+import '../../widgets/style_widget/shimmer_widget.dart';
 
 class SelectOrderDateScreen extends StatefulWidget {
   const SelectOrderDateScreen(
@@ -218,35 +219,29 @@ class _SelectOrderDateScreenState extends State<SelectOrderDateScreen> {
         widget.startDate.day, 0, 0, 0);
     final endDate = DateTime(
         widget.endDate.year, widget.endDate.month, widget.endDate.day, 0, 0, 0);
-    if (widget.isOrder) {
+    bool isValidEndDateService = false;
+    final arrivedAt =
+        DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!);
+    var arrivedAtNight = arrivedAt.hour >= GlobalConstant().HALF_EVENING ||
+        arrivedAt.hour < GlobalConstant().MORNING_START;
+    var arrivedAtEvening =
+        !arrivedAtNight && arrivedAt.hour >= GlobalConstant().HALF_AFTERNOON;
+    var dayEqualNight =
+        (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil().isEven;
+    var isEndAtNoon = (arrivedAtEvening && dayEqualNight) ||
+        (!arrivedAtEvening && !dayEqualNight);
+    if (widget.serviceType.id == 2) {
+      isValidEndDateService = !isEndAtNoon;
     } else {
-      bool isValidEndDateService = false;
-      final arrivedAt =
-          DateTime.parse(sharedPreferences.getString('plan_arrivedTime')!);
-      var arrivedAtNight = arrivedAt.hour >= GlobalConstant().HALF_EVENING ||
-          arrivedAt.hour < GlobalConstant().MORNING_START;
-      var arrivedAtEvening =
-          !arrivedAtNight && arrivedAt.hour >= GlobalConstant().HALF_AFTERNOON;
-      var dayEqualNight =
-          (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil().isEven;
-      var isEndAtNoon = (arrivedAtEvening && dayEqualNight) ||
-          (!arrivedAtEvening && !dayEqualNight);
-      if (widget.serviceType.id == 2) {
-        isValidEndDateService = !isEndAtNoon;
-      } else {
-        isValidEndDateService = !isEndAtNoon || widget.session.index <= 1;
-      }
-      if (isValidEndDateService) {
-        return (date.isAfter(startDate) && date.isBefore(endDate)) ||
-            date.isAtSameMomentAs(startDate) ||
-            date.isAtSameMomentAs(endDate);
-      } else {
-        return (date.isAfter(startDate) && date.isBefore(endDate)) ||
-            date.isAtSameMomentAs(startDate);
-      }
+      isValidEndDateService = !isEndAtNoon || widget.session.index <= 1;
     }
-    return (date.isAfter(startDate) && date.isBefore(endDate)) ||
-        date.isAtSameMomentAs(startDate) ||
-        date.isAtSameMomentAs(endDate);
+    if (isValidEndDateService) {
+      return (date.isAfter(startDate) && date.isBefore(endDate)) ||
+          date.isAtSameMomentAs(startDate) ||
+          date.isAtSameMomentAs(endDate);
+    } else {
+      return (date.isAfter(startDate) && date.isBefore(endDate)) ||
+          date.isAtSameMomentAs(startDate);
+    }
   }
 }

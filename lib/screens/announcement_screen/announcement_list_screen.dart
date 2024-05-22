@@ -129,8 +129,14 @@ class _AnnouncementListScreenState extends State<AnnouncementListScreen> {
                             });
                           }
                           if (noti.type == 'PLAN' &&
-                              noti.title != 'Bị loại khỏi kế hoạch.' &&
-                              noti.title != 'Bị chặn khỏi kế hoạch.') {
+                              noti.title == 'Kế hoạch sắp bị huỷ.') {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (ctx) => DetailPlanNewScreen(
+                                      isEnableToJoin: true,
+                                      planId: noti.planId!,
+                                      planType: "JOIN",
+                                    )));
+                          } else if (noti.title.contains('lời mời')) {
                             // ignore: use_build_context_synchronously
                             Navigator.of(context).push(MaterialPageRoute(
                                 builder: (ctx) => DetailPlanNewScreen(
@@ -138,7 +144,7 @@ class _AnnouncementListScreenState extends State<AnnouncementListScreen> {
                                       planId: noti.planId!,
                                       planType: "INVITATION",
                                     )));
-                          } else {}
+                          }
                         },
                         child: Container(
                           color: _notiList!.indexOf(noti).isOdd

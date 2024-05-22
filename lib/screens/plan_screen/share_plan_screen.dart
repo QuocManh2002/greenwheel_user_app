@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -13,7 +12,6 @@ import 'package:greenwheel_user_app/config/token_generator.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/temp_plan.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
@@ -147,8 +145,6 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1, // Duration in seconds
         );
-        String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
-        sharedPreferences.setString('deviceToken', deviceToken);
       } else {
         // ignore: use_build_context_synchronously
         Utils().handleServerException('Lưu hình ảnh thất bại', context);

@@ -688,7 +688,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             titleTextStyle:
                 const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             btnOkColor: Colors.blue,
-            btnOkText: 'Chơi',
+            btnOkText: 'Đồng ý',
             btnOkOnPress: () async {
               final rs =
                   await _planService.confirmMember(widget.plan.id!, context);
@@ -699,6 +699,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                     "Đã chốt số lượng thành viên");
                 Future.delayed(const Duration(milliseconds: 1500), () {
                   widget.callback!();
+                  Navigator.of(context).pop();
                   Navigator.of(context).pop();
                 });
               }

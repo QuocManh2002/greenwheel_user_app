@@ -348,45 +348,48 @@ class Utils {
 
   setUpDataClonePlan(PlanDetail plan, List<bool> options) {
     final OrderService orderService = OrderService();
+    sharedPreferences.setString('plan_clone_options', json.encode(options));
     sharedPreferences.setInt('planId', plan.id!);
     sharedPreferences.setString('plan_location_name', plan.locationName!);
     sharedPreferences.setInt('plan_location_id', plan.locationId!);
     sharedPreferences.setInt('maxCombodateValue', plan.numOfExpPeriod!);
     sharedPreferences.setInt(
         'init_plan_number_of_member', plan.maxMemberCount!);
-    if (options[0]) {
-      sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
-      sharedPreferences.setInt(
-          'plan_combo_date',
-          listComboDate
-                  .firstWhere(
-                      (element) => element.duration == plan.numOfExpPeriod)
-                  .id -
-              1);
-    }
-    if (options[1]) {
-      sharedPreferences.setInt('plan_number_of_member', plan.maxMemberCount!);
-      sharedPreferences.setInt('plan_max_member_weight', plan.maxMemberWeight!);
-    }
+    // if (options[0]) {
+    sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
+    sharedPreferences.setInt(
+        'plan_combo_date',
+        listComboDate
+                .firstWhere(
+                    (element) => element.duration == plan.numOfExpPeriod)
+                .id -
+            1);
+    // }
+    // if (options[1]) {
+    sharedPreferences.setInt('plan_number_of_member', plan.maxMemberCount!);
+    sharedPreferences.setInt('plan_max_member_weight', plan.maxMemberWeight!);
+    // }
 
-    if (options[2]) {
-      sharedPreferences.setDouble('plan_start_lat', plan.startLocationLat!);
-      sharedPreferences.setDouble('plan_start_lng', plan.startLocationLng!);
-      sharedPreferences.setString('plan_start_address', plan.departureAddress!);
-    }
+    // if (options[2]) {
+    sharedPreferences.setDouble('plan_start_lat', plan.startLocationLat!);
+    sharedPreferences.setDouble('plan_start_lng', plan.startLocationLng!);
+    sharedPreferences.setString('plan_start_address', plan.departureAddress!);
+    sharedPreferences.setString(
+        'plan_departureTime', plan.utcDepartAt!.toLocal().toString());
+    // }
 
-    if (options[3]) {
-      sharedPreferences.setString('plan_name', plan.name!);
-    }
+    // if (options[3]) {
+    sharedPreferences.setString('plan_name', plan.name!);
+    // }
 
-    if (options[4]) {
+    if (options[5]) {
       sharedPreferences.setStringList('selectedIndex',
           plan.savedContacts!.map((e) => e.providerId.toString()).toList());
     }
 
-    if (options[5]) {
+    if (options[6]) {
       sharedPreferences.setBool('notAskScheduleAgain', false);
-      if (options[6]) {
+      if (options[7]) {
         final availableOrder = plan.orders!
             .where((e) =>
                 e.supplier!.isActive! &&
@@ -451,15 +454,15 @@ class Utils {
       sharedPreferences.setString('plan_schedule', json.encode(plan.schedule));
     }
 
-    if (options[7]) {
+    if (options[8]) {
       sharedPreferences.setString(
           'plan_surcharge',
           json.encode(
               plan.surcharges!.map((e) => e.toJsonWithoutImage()).toList()));
     }
-    if (options[8]) {
-      sharedPreferences.setString('plan_note', plan.note ?? 'null');
-    }
+    // if (options[8]) {
+    sharedPreferences.setString('plan_note', plan.note ?? 'null');
+    // }
   }
 
   handleAlreadyDraft(BuildContext context, LocationViewModel location,
@@ -531,7 +534,7 @@ class Utils {
   updateTempOrder(bool isChangeByMember, int? newMaxMemberCount) async {
     final newMaxMemberCount = sharedPreferences.getInt('plan_number_of_member');
     var orderList =
-        json.decode(sharedPreferences.getString('plan_temp_order')!);
+        json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
     final ProductService productService = ProductService();
     final OrderService orderService = OrderService();
     if (isChangeByMember) {
@@ -593,41 +596,55 @@ class Utils {
   updateScheduleAndOrder(BuildContext context, void Function() onConfirm,
       bool isChangeDate) async {
     int duration = (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil();
-    var schedule = json.decode(sharedPreferences.getString('plan_schedule')!);
+    var schedule =
+        json.decode(sharedPreferences.getString('plan_schedule') ?? '[]');
     var tempOrders =
         json.decode(sharedPreferences.getString('plan_temp_order')!);
+    final isPlanEndAtNoon = isEndAtNoon(null);
     var newSchedule = [];
 
     for (int i = 0; i < duration; i++) {
-      if (i < schedule.length) {
+      if (i < duration - 1) {
         newSchedule.add(schedule[i]);
-      } else {
-        newSchedule.add([]);
       }
     }
+    newSchedule.add(schedule.last);
 
     var updatedOrders = [];
     var canceledOrders = [];
     for (final order in tempOrders) {
       final newIndexes = [];
+      final invalidIndexes = [];
       for (final index in order['serveDateIndexes']) {
-        if (index < duration) {
+        if (order['type'] == services[0].name) {
+          if (index < duration - 1) {
+            newIndexes.add(index);
+          } else if (index == duration - 1 &&
+              isPlanEndAtNoon &&
+              (order['period'] == sessions[0].enumName ||
+                  order['period'] == sessions[1].enumName)) {
+            newIndexes.add(index);
+          } else {
+            invalidIndexes.add(index);
+          }
+        } else if ((order['type'] == services[1].name ||
+                order['type'] == services[2].name) &&
+            index < duration - 1) {
           newIndexes.add(index);
+        } else {
+          invalidIndexes.add(index);
         }
       }
       if (newIndexes.isNotEmpty && newIndexes != order['serveDateIndexes']) {
-        if (isChangeDate) {
-          final startDate =
-              DateTime.parse(sharedPreferences.getString('plan_start_date')!);
-          order['newIndexes'] = newIndexes;
-          order['newServeDates'] = newIndexes
-              .map((e) => startDate.add(Duration(days: e)).toString())
-              .toList();
-        } else {
-          order['newIndexes'] = newIndexes;
-          order['newServeDates'] =
-              order['serveDates'].sublist(0, newIndexes.length);
-        }
+        final startDate =
+            DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+        order['newIndexes'] = newIndexes;
+        order['newServeDates'] = newIndexes
+            .map((e) => startDate.add(Duration(days: e)).toString())
+            .toList();
+        order['invalidServeDates'] = invalidIndexes
+            .map((e) => startDate.add(Duration(days: e)).toString())
+            .toList();
         order['newTotal'] = getTempOrderTotal(order, true);
         updatedOrders.add(order);
       } else {
@@ -672,7 +689,7 @@ class Utils {
               tempOrders.firstWhere((e) => e['orderUUID'] == item['orderUUID']);
           final session = sessions
               .firstWhere((element) => element.enumName == order['period']);
-          if (session.index > endSession.index) {
+          if (session.index > endSession.index && (order['type'] == services[0].name || order['type'] == services[2].name)) {
             if (updatedOrders
                 .any((element) => element['orderUUID'] == item['orderUUID'])) {
               order['newIndexes'].remove(order['newIndexes'].last);
@@ -718,6 +735,7 @@ class Utils {
               tempOrders[index]['serveDates'] = order['newServeDates'];
               tempOrders[index]['details'] = order['newDetails'];
               tempOrders[index]['serveDateIndexes'] = order['newIndexes'];
+
               if (isChangeDate && order['type'] == services[1].name) {
                 final List<List<DateTime>> splitServeDates =
                     splitCheckInServeDates(order['newServeDates']);
@@ -776,8 +794,15 @@ class Utils {
                   if (item['orderUUID'] != null) {
                     final order = tempOrders.firstWhere(
                         (order) => order['orderUUID'] == item['orderUUID']);
-                    if (!order['serveDateIndexes'].contains(index)) {
-                      item['orderUUID'] = null;
+                    if (order['type'] == services[1].name) {
+                      if (!(index == newSchedule.length - 1) &&
+                          !order['serveDateIndexes'].contains(index)) {
+                        item['orderUUID'] = null;
+                      }
+                    } else {
+                      if (!order['serveDateIndexes'].contains(index)) {
+                        item['orderUUID'] = null;
+                      }
                     }
                   }
                 }
@@ -786,6 +811,7 @@ class Utils {
               order['newServeDates'] = null;
               order['newDetails'] = null;
               order['newIndexes'] = null;
+              order['invalidServeDates'] = null;
             }
             sharedPreferences.setString(
                 'plan_schedule', json.encode(newSchedule));
@@ -796,6 +822,7 @@ class Utils {
         ),
       );
     } else {
+      sharedPreferences.setString('plan_schedule', json.encode(newSchedule));
       onConfirm();
     }
   }

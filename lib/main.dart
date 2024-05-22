@@ -1,23 +1,26 @@
-
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localization/flutter_localization.dart';
-import 'package:greenwheel_user_app/config/token_refresher.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/features/home/presentation/providers/home_provider.dart';
-import 'package:greenwheel_user_app/firebase_options.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/login_screen.dart';
-import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
-import 'package:greenwheel_user_app/screens/offline_screen/offline_home_screen.dart';
+import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:greenwheel_user_app/service/background_service.dart';
 import 'package:greenwheel_user_app/widgets/test_screen.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:intl/date_symbol_data_local.dart';
+
+import 'config/token_refresher.dart';
+import 'core/constants/colors.dart';
+import 'features/home/presentation/providers/home_provider.dart';
+import 'firebase_options.dart';
+import 'screens/authentication_screen/login_screen.dart';
+import 'screens/introduce_screen/splash_screen.dart';
+import 'screens/offline_screen/offline_home_screen.dart';
 
 late SharedPreferences sharedPreferences;
 late bool hasConnection;
@@ -42,14 +45,20 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   sharedPreferences = await SharedPreferences.getInstance();
   await dotenv.load(fileName: 'keys.env');
+  await Permission.notification.isDenied.then((value) {
+    if (value) {
+      Permission.notification.request();
+    }
+  });
+  // await initializeService();
   // await initHiveForFlutter();
-  // await Hive.initFlutter();
+  await Hive.initFlutter();
   // await Hive.openBox('myPlans');
 
   MapboxOptions.setAccessToken(dotenv.env['goong_api_key'].toString());
   localization = FlutterLocalization.instance;
-  // final _myPlans = Hive.box('myPlans');
-  // _myPlans.clear();
+  final myPlans = await Hive.openBox('myPlans');
+  // myPlans.clear();
   hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
@@ -58,9 +67,9 @@ void main() async {
   //   print('Cron Job');
   // });
 
-  initializeDateFormatting('vi_VN', null).then((_) {
-    runApp(const MainApp());
-  });
+  // initializeDateFormatting('vi_VN', null).then((_) {
+  runApp(const MainApp());
+  // });
 }
 
 class MainApp extends StatelessWidget {
@@ -69,7 +78,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     String? refreshToken = sharedPreferences.getString("userRefreshToken");
-    if (refreshToken != null) {
+    if (refreshToken != null && hasConnection) {
       TokenRefresher.refreshToken();
     }
 

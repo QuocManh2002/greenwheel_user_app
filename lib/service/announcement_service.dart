@@ -156,6 +156,7 @@ class AnnouncementService {
         accountId
         planId
         isRead
+        level
       }
     }
   }

@@ -1,23 +1,11 @@
-import 'dart:io';
-import 'dart:ui';
 
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:fluttertoast/fluttertoast.dart';
-import 'package:greenwheel_user_app/config/token_generator.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:qr_flutter/qr_flutter.dart';
-import 'package:share_plus/share_plus.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:scan/scan.dart';
 import 'package:sizer2/sizer2.dart';
+import '../plan_screen/detail_plan_screen.dart';
 
 class QRScreen extends StatefulWidget {
   const QRScreen({super.key});
@@ -27,183 +15,144 @@ class QRScreen extends StatefulWidget {
 }
 
 class _QRScreenState extends State<QRScreen> {
-  final GlobalKey _qrkey = GlobalKey();
-
-  Future<Uint8List> convertQRToBytes() async {
-    RenderRepaintBoundary boundary =
-        _qrkey.currentContext!.findRenderObject() as RenderRepaintBoundary;
-    var image = await boundary.toImage(pixelRatio: 3);
-    final whietPaint = Paint()..color = Colors.white;
-    final recorder = PictureRecorder();
-    final canvas = Canvas(recorder,
-        Rect.fromLTWH(0, 0, image.width.toDouble(), image.height.toDouble()));
-    canvas.drawRect(
-        Rect.fromLTRB(0, 0, image.width.toDouble(), image.height.toDouble()),
-        whietPaint);
-    canvas.drawImage(image, Offset.zero, Paint());
-    final picture = recorder.endRecording();
-    final img = await picture.toImage(image.width, image.height);
-    ByteData? byteData = await img.toByteData(format: ImageByteFormat.png);
-    Uint8List pngBytes = byteData!.buffer.asUint8List();
-    return pngBytes;
-  }
-
-  Future<void> onScan() async {
-    try {
-      final qrCorde = await FlutterBarcodeScanner.scanBarcode(
-          "#ff6666", "Cancel", true, ScanMode.QR);
-      if (qrCorde.isNotEmpty) {
-        final jwt = JWT.decode(qrCorde);
-        if (jwt.payload['planId'] != null) {
-          // ignore: use_build_context_synchronously
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (ctx) => DetailPlanNewScreen(
-                    isEnableToJoin: true,
-                    isFromHost: jwt.payload['isFromHost'],
-                    planId: jwt.payload["planId"],
-                    planType: 'SCAN',
-                  )));
-        } else {
-        }
-      }
-    } on PlatformException {
-      throw Exception(this);
-    }
-  }
-
-  onSend() async {
-    Uint8List? pngBytes = await convertQRToBytes();
-    final temp = await getTemporaryDirectory();
-    final path = '${temp.path}/image.jpg';
-    File(path).writeAsBytesSync(pngBytes);
-    await Share.shareXFiles([XFile(path)],
-        text:
-            "Chào bạn, hi vọng là chúng ta sẽ có khoảng thời gian khám phá thật vui vẻ cùng nhau.");
-  }
-
-  onSave() async {
-    try {
-      Uint8List? uint8list = await convertQRToBytes();
-      final result = await ImageGallerySaver.saveImage(uint8list);
-      if (result['isSuccess']) {
-        Fluttertoast.showToast(
-          msg: 'Lưu hình ảnh thành công!',
-          toastLength: Toast.LENGTH_LONG,
-          gravity: ToastGravity.BOTTOM,
-          timeInSecForIosWeb: 1, // Duration in seconds
-        );
-        String deviceToken = await FirebaseMessaging.instance.getToken() ?? '';
-        sharedPreferences.setString('deviceToken', deviceToken);
-      } else {
-        // ignore: use_build_context_synchronously
-        Utils().handleServerException('Đã xảy ra lỗi khi lưu hình ảnh', context);
-      }
-    } catch (e) {
-      throw Exception(e);
-    }
-  }
+  ScanController controller = ScanController();
+  String qrcode = 'Unknown';
+  bool isFlashOn = false;
 
   @override
   Widget build(BuildContext context) {
     return SafeArea(
         child: Scaffold(
-      backgroundColor: Colors.white.withOpacity(0.94),
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        title: const Text('QR của tôi'),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton(
-                onPressed: onScan,
-                icon: const Icon(
-                  Icons.qr_code_scanner_outlined,
-                  size: 35,
-                )),
-          )
-        ],
-      ),
-      body: Stack(
-        children: [
-          Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-            // Padding(
-            //   padding: const EdgeInsets.all(32),
-            //   child: TextField(
-            //     cursorColor: primaryColor,
-            //     controller: phoneSearch,
-            //     onChanged: (value) {
-            //       setState(() {
-            //         _isSearch = true;
-            //       });
-            //       if (value.isEmpty) {
-            //         setState(() {
-            //           _isSearch = false;
-            //         });
-            //       }
-            //     },
-            //     style: const TextStyle(fontSize: 18),
-            //     keyboardType: TextInputType.phone,
-            //     decoration: const InputDecoration(
-            //       suffixIcon: Icon(Icons.search),
-            //       suffixIconColor: primaryColor,
-            //       hintText: "Tìm số điện thoại",
-            //       focusedBorder: OutlineInputBorder(
-            //           borderRadius: BorderRadius.all(Radius.circular(14)),
-            //           borderSide: BorderSide(color: primaryColor, width: 1.8)),
-            //       enabledBorder: OutlineInputBorder(
-            //           borderRadius: BorderRadius.all(Radius.circular(14)),
-            //           borderSide: BorderSide(color: primaryColor)),
-            //     ),
-            //   ),
-            // ),
-            SizedBox(height: 10.h,),
-            RepaintBoundary(
-              key: _qrkey,
-              child: QrImageView(
-                data: TokenGenerator.generateToken("quoc manh1", "plan"),
-                version: QrVersions.auto,
-                size: 80.w,
-                gapless: true,
-                errorStateBuilder: (context, error) {
-                  return const Text(
-                    "Something went wrong! please try again!",
-                    textAlign: TextAlign.center,
-                  );
-                },
-              ),
+            backgroundColor: Colors.white.withOpacity(0.94),
+            resizeToAvoidBottomInset: false,
+            appBar: AppBar(
+              title: const Text('Quét mã QR'),
             ),
-            SizedBox(
-              height: 5.h,
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  Expanded(
-                      child: ElevatedButton.icon(
-                          style: elevatedButtonStyle.copyWith(
-                              minimumSize:
-                                  const MaterialStatePropertyAll(Size(0, 50))),
-                          onPressed: onSave,
-                          icon: const Icon(Icons.file_download_outlined),
-                          label: const Text("Tải xuống"))),
-                  const SizedBox(
-                    width: 16,
+            body: Stack(
+              children: [
+                ScanView(
+                  controller: controller,
+                  scanAreaScale: .7,
+                  scanLineColor: primaryColor,
+                  onCapture: (data) {
+                    final jwt = JWT.decode(data);
+                    if (jwt.payload['planId'] != null) {
+                      // ignore: use_build_context_synchronously
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (ctx) => DetailPlanNewScreen(
+                                isEnableToJoin: true,
+                                isFromHost: jwt.payload['isFromHost'],
+                                planId: jwt.payload["planId"],
+                                planType: 'SCAN',
+                              )));
+                    }
+                  },
+                ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 4.h, left: 6.w),
+                    child: Column(
+                      children: [
+                        ElevatedButton(
+                          style: const ButtonStyle(
+                              padding:
+                                  MaterialStatePropertyAll(EdgeInsets.all(15)),
+                              shape: MaterialStatePropertyAll(CircleBorder()),
+                              backgroundColor:
+                                  MaterialStatePropertyAll(Colors.transparent),
+                              foregroundColor:
+                                  MaterialStatePropertyAll(Colors.white)),
+                          child: const Icon(
+                            Icons.add_photo_alternate_outlined,
+                            size: 28,
+                          ),
+                          onPressed: () async {
+                            XFile? res = await ImagePicker()
+                                .pickImage(source: ImageSource.gallery);
+                            if (res != null) {
+                              String? str = await Scan.parse(res.path);
+                              if (str != null) {
+                                final jwt = JWT.decode(str);
+                                if (jwt.payload['planId'] != null) {
+                                  // ignore: use_build_context_synchronously
+                                  Navigator.of(context).push(MaterialPageRoute(
+                                      builder: (ctx) => DetailPlanNewScreen(
+                                            isEnableToJoin: true,
+                                            isFromHost:
+                                                jwt.payload['isFromHost'],
+                                            planId: jwt.payload["planId"],
+                                            planType: 'SCAN',
+                                          )));
+                                }
+                              }
+                            }
+                          },
+                        ),
+                        SizedBox(
+                          height: 0.5.h,
+                        ),
+                        const Text(
+                          'Chọn ảnh QR',
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontFamily: 'NotoSans'),
+                        )
+                      ],
+                    ),
                   ),
-                  Expanded(
-                      child: ElevatedButton.icon(
-                          style: elevatedButtonStyleNoSize.copyWith(
-                              minimumSize:
-                                  const MaterialStatePropertyAll(Size(0, 50))),
-                          onPressed: onSend,
-                          icon: const Icon(Icons.share),
-                          label: const Text("Gửi mã")))
-                ],
-              ),
-            )
-          ]),
-        ],
-      ),
-    ));
+                ),
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 4.h, right: 6.w),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          style: ButtonStyle(
+                              padding: const MaterialStatePropertyAll(
+                                  EdgeInsets.all(15)),
+                              shape: const MaterialStatePropertyAll(
+                                  CircleBorder()),
+                              backgroundColor: MaterialStatePropertyAll(
+                                  isFlashOn
+                                      ? Colors.white.withOpacity(0.8)
+                                      : Colors.transparent),
+                              foregroundColor: MaterialStatePropertyAll(
+                                  isFlashOn ? Colors.black : Colors.white)),
+                          child: const Icon(
+                            Icons.flashlight_on_outlined,
+                            size: 30,
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              isFlashOn = !isFlashOn;
+                            });
+                            controller.toggleTorchMode();
+                          },
+                        ),
+                        SizedBox(
+                          height: 0.5.h,
+                        ),
+                        const Text(
+                          'Đèn pin',
+                          style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              fontFamily: 'NotoSans'),
+                        )
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            )));
   }
 }

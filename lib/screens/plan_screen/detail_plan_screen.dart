@@ -874,6 +874,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             refreshData: setupData,
             isLeader: isLeader,
             planType: widget.planType,
+            locationLatLng: _planDetail!.locationLatLng!,
           ),
         ],
       );
@@ -1314,9 +1315,11 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   handlePublicizePlan(
-      bool isFromJoinScreen, int? amount, BuildContext buildContext) async {
-    await showModalBottomSheet(
+      bool isFromJoinScreen, int? amount, BuildContext buildContext) {
+    showModalBottomSheet(
         context: buildContext,
+        isDismissible: false,
+        enableDrag: false,
         backgroundColor: Colors.white.withOpacity(0.94),
         builder: (ctx) => Padding(
               padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 15),
@@ -1345,26 +1348,26 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                               _planDetail!.joinMethod = 'INVITE';
                             });
 
-                            if (isFromJoinScreen) {
-                              Navigator.of(buildContext).pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                      builder: (ctx) => const TabScreen(
-                                            pageIndex: 1,
-                                          )),
-                                  (route) => false);
-                              Navigator.push(
-                                buildContext,
-                                PageTransition(
-                                    child: DetailPlanNewScreen(
-                                      planId: widget.planId,
-                                      planType: 'JOIN',
-                                      isEnableToJoin: false,
-                                    ),
-                                    type: PageTransitionType.topToBottom),
-                              );
-                            } else {
-                              Navigator.of(context).pop();
-                            }
+                            // if (isFromJoinScreen) {
+                            //   Navigator.of(buildContext).pushAndRemoveUntil(
+                            //       MaterialPageRoute(
+                            //           builder: (ctx) => const TabScreen(
+                            //                 pageIndex: 1,
+                            //               )),
+                            //       (route) => false);
+                            //   Navigator.push(
+                            //     buildContext,
+                            //     PageTransition(
+                            //         child: DetailPlanNewScreen(
+                            //           planId: widget.planId,
+                            //           planType: 'JOIN',
+                            //           isEnableToJoin: false,
+                            //         ),
+                            //         type: PageTransitionType.topToBottom),
+                            //   );
+                            // } else {
+                            Navigator.of(buildContext).pop();
+                            // }
                           }
                         },
                         child: Container(
@@ -1405,31 +1408,31 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                           child: InkWell(
                         onTap: () async {
                           final rs = await _planService.updateJoinMethod(
-                              _planDetail!.id!, 'SCAN', context);
+                              _planDetail!.id!, 'SCAN', buildContext);
                           if (rs) {
                             setState(() {
                               _planDetail!.joinMethod = 'SCAN';
                             });
-                            if (isFromJoinScreen) {
-                              Navigator.of(buildContext).pushAndRemoveUntil(
-                                  MaterialPageRoute(
-                                      builder: (ctx) => const TabScreen(
-                                            pageIndex: 1,
-                                          )),
-                                  (route) => false);
-                              Navigator.push(
-                                buildContext,
-                                PageTransition(
-                                    child: DetailPlanNewScreen(
-                                      planId: widget.planId,
-                                      planType: 'JOIN',
-                                      isEnableToJoin: false,
-                                    ),
-                                    type: PageTransitionType.topToBottom),
-                              );
-                            }else {
-                              Navigator.of(context).pop();
-                            }
+                            // if (isFromJoinScreen) {
+                            //   Navigator.of(buildContext).pushAndRemoveUntil(
+                            //       MaterialPageRoute(
+                            //           builder: (ctx) => const TabScreen(
+                            //                 pageIndex: 1,
+                            //               )),
+                            //       (route) => false);
+                            //   Navigator.push(
+                            //     buildContext,
+                            //     PageTransition(
+                            //         child: DetailPlanNewScreen(
+                            //           planId: widget.planId,
+                            //           planType: 'JOIN',
+                            //           isEnableToJoin: false,
+                            //         ),
+                            //         type: PageTransitionType.topToBottom),
+                            //   );
+                            // } else {
+                              Navigator.of(buildContext).pop();
+                            // }
                           }
                         },
                         child: Container(

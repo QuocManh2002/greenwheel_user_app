@@ -119,7 +119,7 @@ class _ClonePlanOptionsBottomSheetState
                     child: ElevatedButton(
                         style: elevatedButtonStyle.copyWith(
                             backgroundColor:
-                                const MaterialStatePropertyAll(Colors.white),
+                                const MaterialStatePropertyAll(Colors.transparent),
                             foregroundColor:
                                 const MaterialStatePropertyAll(primaryColor),
                             shape: const MaterialStatePropertyAll(

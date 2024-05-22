@@ -99,53 +99,31 @@ class DetailPaymentPlanInfo extends StatelessWidget {
                         '${DateFormat('dd/MM/yyyy').format(plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(plan.utcEndAt!)}'))
               ],
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 1),
-              child: Divider(
-                color: Colors.grey.withOpacity(0.5),
-              ),
-            ),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Số người tối đa',
-                  style: TextStyle(fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
-                ),
-                const Spacer(),
-                SizedBox(
-                  width: 30.w,
-                  child: buildTextWidget(plan.maxMemberCount! < 10
-                      ? '0${plan.maxMemberCount}'
-                      : plan.maxMemberCount.toString()),
-                )
-              ],
-            ),
-            if (!isView)
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 1),
-                child: Divider(
-                  color: Colors.grey.withOpacity(0.5),
-                ),
-              ),
-            if (!isView)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Số người đi cùng tối đa',
-                    style: TextStyle(fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
-                  ),
-                  const Spacer(),
-                  SizedBox(
-                    width: 30.w,
-                    child: buildTextWidget(
-                        plan.maxMemberWeight! < 11 && plan.maxMemberWeight! > 1
-                            ? '0${plan.maxMemberWeight! - 1}'
-                            : '${plan.maxMemberWeight! - 1}'),
-                  )
-                ],
-              ),
+            // if (!isView)
+            //   Padding(
+            //     padding: const EdgeInsets.symmetric(vertical: 1),
+            //     child: Divider(
+            //       color: Colors.grey.withOpacity(0.5),
+            //     ),
+            //   ),
+            // if (!isView)
+            //   Row(
+            //     crossAxisAlignment: CrossAxisAlignment.start,
+            //     children: [
+            //       const Text(
+            //         'Số người đi cùng tối đa',
+            //         style: TextStyle(fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
+            //       ),
+            //       const Spacer(),
+            //       SizedBox(
+            //         width: 30.w,
+            //         child: buildTextWidget(
+            //             plan.maxMemberWeight! < 11 && plan.maxMemberWeight! > 1
+            //                 ? '0${plan.maxMemberWeight! - 1}'
+            //                 : '${plan.maxMemberWeight! - 1}'),
+            //       )
+            //     ],
+            //   ),
             SizedBox(
               height: 0.5.h,
             )

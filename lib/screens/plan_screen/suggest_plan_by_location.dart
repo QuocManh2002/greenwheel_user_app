@@ -39,7 +39,7 @@ class _SuggestPlanByLocationScreenState
   setUpData() async {
     List<SuggestPlanViewModel>? suggestPlans = await _planService
         .getSuggestPlanByLocation(widget.location.id, context);
-    if (suggestPlans.isNotEmpty) {
+    if (suggestPlans != null) {
       setState(() {
         _suggestPlans = suggestPlans;
         isLoading = false;

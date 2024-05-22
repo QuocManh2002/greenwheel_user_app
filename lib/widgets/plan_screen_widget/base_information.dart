@@ -1,5 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -7,6 +8,7 @@ import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/plan_status.dart';
 import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
@@ -26,12 +28,16 @@ class BaseInformationWidget extends StatefulWidget {
       required this.members,
       required this.planType,
       required this.isLeader,
+      this.routeData,
+      required this.locationLatLng,
       required this.refreshData});
   final PlanDetail plan;
   List<PlanMemberViewModel> members;
   final String planType;
   final void Function() refreshData;
   final bool isLeader;
+  final String? routeData;
+  final PointLatLng locationLatLng;
 
   @override
   State<BaseInformationWidget> createState() => _BaseInformationWidgetState();
@@ -40,17 +46,15 @@ class BaseInformationWidget extends StatefulWidget {
 class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   int _currentIndexEmergencyCard = 0;
   final PlanService _planService = PlanService();
-  String status = '';
+  PlanStatus? status;
   String travelDurationText = '';
   String maxMemberText = '';
-  late String memberCountText;
+  String? memberCountText;
   String comboDateText = '';
   @override
   void initState() {
     super.initState();
-    status = planStatuses
-        .firstWhere((element) => element.engName == widget.plan.status)
-        .name;
+    status = planStatuses.firstWhereOrNull((element) => element.engName == widget.plan.status);
     var tempDuration = DateFormat.Hm().parse(widget.plan.travelDuration!);
     if (tempDuration.hour != 0) {
       travelDurationText += '${tempDuration.hour} giờ ';
@@ -60,7 +64,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
     }
     maxMemberText =
         '${widget.plan.maxMemberCount! < 10 ? '0${widget.plan.maxMemberCount}' : widget.plan.maxMemberCount}';
-    if (widget.plan.memberCount != 0) {
+    if (widget.plan.memberCount != null && widget.plan.memberCount  != 0) {
       memberCountText =
           '${widget.plan.memberCount! < 10 ? '0${widget.plan.memberCount}' : widget.plan.memberCount}';
     }
@@ -85,10 +89,11 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             height: 1.h,
           ),
           buildInforWidget('Kết thúc:',
-              DateFormat('dd/MM/yy').format(widget.plan.utcEndAt!)),
+              '${DateFormat.Hm().format(widget.plan.utcEndAt!.toLocal())} ${DateFormat('dd/MM/yy').format(widget.plan.utcEndAt!)}'),
           SizedBox(
             height: 1.h,
           ),
+          if(memberCountText != null)
           widget.plan.memberCount == 0 || !widget.isLeader
               ? buildInforWidget('Thành viên tối đa:', '$maxMemberText người')
               : buildInforWidget(
@@ -97,8 +102,8 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
             SizedBox(
               height: 1.h,
             ),
-          if (widget.plan.status != 'PENDING')
-            buildInforWidget('Trạng thái:', status),
+          if (widget.plan.status != null && widget.plan.status != planStatuses[0].engName)
+            buildInforWidget('Trạng thái:', status!.name),
           SizedBox(
             height: 1.h,
           ),
@@ -132,10 +137,12 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                           PageTransition(
                               child: LocalMapScreen(
                                 title: 'Địa điểm xuất phát',
-                                toLocation: PointLatLng(
+                                fromLocation: PointLatLng(
                                     widget.plan.startLocationLat!,
                                     widget.plan.startLocationLng!),
-                                toAddress: widget.plan.departureAddress,
+                                toAddress: widget.plan.locationName,
+                                toLocation: widget.locationLatLng,
+                                routeData: widget.routeData,
                               ),
                               type: PageTransitionType.rightToLeft));
                     }
@@ -247,6 +254,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                               color: Colors.black),
                         ),
                         const Spacer(),
+                        if(widget.plan.memberCount != null)
                         TextButton(
                             style: ButtonStyle(
                                 foregroundColor: MaterialStatePropertyAll(

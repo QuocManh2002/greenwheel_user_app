@@ -161,7 +161,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                   text: '(${foodOrderList.length})',
                 ),
                 Tab(
-                  icon: const Icon(Icons.directions_car),
+                  icon: const Icon(Icons.motorcycle_sharp),
                   text: '(${movingOrderList.length})',
                 )
               ]),
