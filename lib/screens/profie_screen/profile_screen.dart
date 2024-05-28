@@ -13,7 +13,7 @@ import 'package:greenwheel_user_app/screens/profie_screen/update_profile_screen.
 import 'package:greenwheel_user_app/screens/payment_screen/add_balance.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
-import 'package:greenwheel_user_app/widgets/test_screen.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:restart_app/restart_app.dart';
@@ -40,7 +40,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   setUpData() async {
     String phone = sharedPreferences.getString("userPhone")!;
-    _customer = await _customerService.GetCustomerByPhone(phone);
+    _customer = await _customerService.getCustomerByPhone(phone);
     if (_customer != null) {
       setState(() {
         _isLoading = false;
@@ -138,7 +138,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             Navigator.of(context).push(
                                                 MaterialPageRoute(
                                                     builder: (ctx) =>
-                                                        QRScreen()));
+                                                       const QRScreen()));
                                           },
                                           icon: const Icon(
                                             Icons.qr_code_2,
@@ -296,11 +296,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           height: 1.h,
                         ),
                         buildProfileButton(() {
-                          Navigator.push(
-                              context,
-                              PageTransition(
-                                  child: const TestScreen(),
-                                  type: PageTransitionType.rightToLeft));
+                          DialogStyle().basicDialog(
+                              context: context,
+                              title: 'check',
+                              type: DialogType.warning,
+                              desc: '${sharedPreferences.getBool('isSaved')}');
                         }, Icons.vpn_key, 'Thay đổi mật khẩu'),
                         SizedBox(
                           height: 1.h,

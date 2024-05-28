@@ -13,7 +13,7 @@ import 'package:greenwheel_user_app/view_models/province.dart';
 
 class LocationService extends Iterable {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
-  static GraphQLClient client = graphQlConfig.getClient();
+  // static GraphQLClient client = graphQlConfig.getClient();
 
   Future<List<LocationViewModel>> searchLocations(
       String search, List<Tag> tags) async {
@@ -136,7 +136,7 @@ class LocationService extends Iterable {
     }
 }
 ''');
-
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(QueryOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
@@ -195,6 +195,7 @@ class LocationService extends Iterable {
 
   Future<List<ProvinceViewModel>> getProvinces() async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(QueryOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
@@ -235,6 +236,7 @@ class LocationService extends Iterable {
   Future<List<LocationCardViewModel>> getLocationsByProvinceId(
       int provinceId) async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
@@ -272,6 +274,7 @@ class LocationService extends Iterable {
 
   Future<LocationViewModel?> getLocationById(int locationId) async {
     try {
+      GraphQLClient client = await graphQlConfig.getOfflineClient();
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
@@ -319,6 +322,7 @@ class LocationService extends Iterable {
   Future<bool> commentOnDestination(
       String commentText, int destinationId) async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation {
@@ -386,6 +390,7 @@ mutation {
 
   Future<List<LocationCardViewModel>> getLocationCard() async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(QueryOptions(document: gql("""
 {
   destinations(where: {
@@ -423,6 +428,7 @@ mutation {
   Future<List<LocationCardViewModel>> getLocationsByActivity(
       Activity activity) async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(QueryOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
@@ -470,6 +476,7 @@ mutation {
 
   Future<int>? getNumberOfPublishedPlan(int destinationId) async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(QueryOptions(document: gql('''
 {
   publishedPlans(where: {

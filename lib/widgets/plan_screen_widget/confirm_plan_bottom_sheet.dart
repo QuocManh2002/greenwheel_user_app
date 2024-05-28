@@ -29,7 +29,7 @@ class ConfirmPlanBottomSheet extends StatefulWidget {
       required this.isFromHost,
       this.onJoinPlan});
   final String locationName;
-  final List<dynamic>? orderList;
+  final List<OrderViewModel>? orderList;
   final void Function()? onCompletePlan;
   final List<dynamic>? listSurcharges;
   final PlanCreate? plan;
@@ -64,13 +64,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   getTotal() {
     total = 0;
     for (final order in widget.orderList!) {
-      if (order != null) {
-        if (order.runtimeType == OrderViewModel) {
-          total += order.total;
-        } else {
-          total += order['total'];
-        }
-      }
+      total += order.total!;
     }
     if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty) {
       for (final sur in widget.listSurcharges!) {
@@ -128,24 +122,14 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
 
   buildServiceInfor() async {
     if (widget.isInfo) {}
-    final rs = widget.orderList!.groupListsBy(
-        (e) => e.runtimeType == OrderViewModel ? e.type : e['type']);
-    newRoomOrderList = rs.values.firstWhereOrNull((e) =>
-            e.firstOrNull.runtimeType == OrderViewModel
-                ? e.first.type == 'CHECKIN'
-                : e.first['type'] == 'CHECKIN') ??
-        [];
-    newFoodOrderList = rs.values.firstWhereOrNull((e) =>
-            e.firstOrNull.runtimeType == OrderViewModel
-                ? e.first.type == 'EAT'
-                : e.first['type'] == 'EAT') ??
-        [];
+    final rs = widget.orderList!.groupListsBy((e) => e.type);
+    newRoomOrderList =
+        rs.values.firstWhereOrNull((e) => e.first.type == 'CHECKIN') ?? [];
+    newFoodOrderList =
+        rs.values.firstWhereOrNull((e) => e.first.type == 'EAT') ?? [];
 
-    newRidingOrderList = rs.values.firstWhereOrNull((e) =>
-            e.firstOrNull.runtimeType == OrderViewModel
-                ? e.first.type == 'VISIT'
-                : e.first['type'] == 'VISIT') ??
-        [];
+    newRidingOrderList =
+        rs.values.firstWhereOrNull((e) => e.first.type == 'VISIT') ?? [];
   }
 
   @override

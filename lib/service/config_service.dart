@@ -6,9 +6,10 @@ import 'package:greenwheel_user_app/models/configuration.dart';
 
 class ConfigService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
-  static GraphQLClient client = graphQlConfig.getClient();
+  
   Future<ConfigurationModel?> getOrderConfig(BuildContext context) async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(QueryOptions(document: gql('''
 {
   configurations{
@@ -27,6 +28,7 @@ class ConfigService {
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
+            // ignore: use_build_context_synchronously
             rs.parsedResponse.errors.first.message.toString(), context);
 
         throw Exception(result.exception!.linkException!);

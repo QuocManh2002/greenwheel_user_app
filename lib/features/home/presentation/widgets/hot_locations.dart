@@ -28,13 +28,11 @@ class _HotLocationsState extends State<HotLocations> {
       if(controller.position.pixels == controller.position.maxScrollExtent){
         if(!isCalled){
           provider.getHotLocations();
-          print('call');
           isCalled = true;
         }
       }else{
         if(isCalled){
           isCalled = false;
-          print('dont call');
         }
       }
     });

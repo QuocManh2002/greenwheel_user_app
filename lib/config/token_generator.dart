@@ -1,12 +1,13 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/temp_plan.dart';
 
-const secretKey = "mcghmxzqflniwfazobgkcztpfcpwfskt";
+
 
 class TokenGenerator {
   static String generateToken(Object encoded, String type) {
     JWT jwt;
-
+    final secretKey = dotenv.env['qr_secret_key'].toString();
     if (type == "plan") {
       if (encoded is TempPlan) {
         jwt = JWT(

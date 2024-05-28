@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/main.dart';
-import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
@@ -65,7 +64,9 @@ class UpdateOrderClonePlanBottomSheet extends StatelessWidget {
                 'Hệ thống tự động tối ưu chi phí dựa trên các thay đổi về số thành viên & thời gian trải nghiệm',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                    fontSize: 15, fontFamily: 'NotoSans', color: Colors.grey),
+                    fontSize: 15,
+                    fontFamily: 'NotoSans',
+                    color: Colors.black87),
               ),
             ),
             SizedBox(
@@ -241,9 +242,8 @@ class UpdateOrderClonePlanBottomSheet extends StatelessWidget {
                                         ))
                             ],
                           ),
-                          if (totalOrders[index]['invalidServeDates'] != null &&
-                              totalOrders[index]['invalidServeDates']
-                                  .isNotEmpty)
+                          if (totalOrders[index]['invalidIndexes'] != null &&
+                              totalOrders[index]['invalidIndexes'].isNotEmpty)
                             Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
@@ -253,24 +253,24 @@ class UpdateOrderClonePlanBottomSheet extends StatelessWidget {
                                 ),
                                 RichText(
                                   text: TextSpan(
-                                      text: 'Ngày bị cắt bỏ: ',
+                                      text: 'Đã cắt bỏ ngày thứ ',
                                       style: const TextStyle(
                                           fontSize: 14,
-                                          fontWeight: FontWeight.w600,
+                                          fontWeight: FontWeight.w400,
                                           fontFamily: 'NotoSans',
-                                          color: Colors.black),
+                                          color: Colors.black87),
                                       children: [
-                                        for (final date in totalOrders[index]
-                                            ['invalidServeDates'])
+                                        for (final invalidIndex
+                                            in totalOrders[index]
+                                                ['invalidIndexes'])
                                           TextSpan(
-                                              text:
-                                                  '${DateFormat('dd/MM/yyyy').format(DateTime.parse(date))}${date != totalOrders[index]['invalidServeDates'].last ? ', ' : ''}',
-                                              style: const TextStyle(
-                                                  fontSize: 13,
-                                                  color: Colors.black54,
-                                                  fontWeight:
-                                                      FontWeight.normal))
+                                            text:
+                                                '${invalidIndex + 1}${invalidIndex != totalOrders[index]['invalidIndexes'].last ? ', ' : ' '}',
+                                          ),
+                                        const TextSpan(
+                                            text: 'theo lịch trình đã sao chép')
                                       ]),
+                                  overflow: TextOverflow.clip,
                                 ),
                               ],
                             ),

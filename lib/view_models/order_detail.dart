@@ -16,7 +16,6 @@ class OrderDetailViewModel {
   int productId;
   int quantity;
   double? price;
-  double? unitPrice;
   bool? isAvailable;
   int? partySize;
 
@@ -27,7 +26,6 @@ class OrderDetailViewModel {
       this.partySize,
       this.price,
       required this.productId,
-      this.unitPrice,
       this.isAvailable});
 
   factory OrderDetailViewModel.fromJson(Map<String, dynamic> json) =>
@@ -38,8 +36,8 @@ class OrderDetailViewModel {
           quantity: json["quantity"],
           partySize: json["product"]['partySize'],
           isAvailable: json['product']['isAvailable'],
-          price: double.parse(json["price"].toString()),
-          unitPrice: double.parse(json['product']['price'].toString()));
+          price: double.parse(json['product']['price'].toString()),
+          );
 
   Map<String, dynamic> toJson() => {
         "id": id,

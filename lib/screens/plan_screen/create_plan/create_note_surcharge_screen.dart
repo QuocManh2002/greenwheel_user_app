@@ -4,26 +4,30 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/create_plan_surcharge.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/craete_plan_header.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../../core/constants/colors.dart';
+import '../../../core/constants/global_constant.dart';
+import '../../../core/constants/urls.dart';
+import '../../../helpers/util.dart';
+import '../../../main.dart';
+import '../../../service/background_service.dart';
+import '../../../service/plan_service.dart';
+import '../../../view_models/location.dart';
+import '../../../view_models/order.dart';
+import '../../../view_models/plan_viewmodels/plan_create.dart';
+import '../../../view_models/plan_viewmodels/surcharge.dart';
+import '../../../widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
+import '../../../widgets/plan_screen_widget/craete_plan_header.dart';
+import '../../../widgets/plan_screen_widget/surcharge_card.dart';
+import '../../../widgets/style_widget/button_style.dart';
+import '../../../widgets/style_widget/dialog_style.dart';
+import '../../main_screen/tabscreen.dart';
+import '../detail_plan_screen.dart';
+import 'create_plan_surcharge.dart';
 
 class CreateNoteSurchargeScreen extends StatefulWidget {
   const CreateNoteSurchargeScreen(
@@ -53,6 +57,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   double _totalSurcharge = 0;
   List<Widget> _listSurcharges = [];
   final PlanService _planService = PlanService();
+  final OrderService _orderService = OrderService();
   int? memberLimit;
   PlanCreate? _plan;
   bool _isAvailableToOrder = false;
@@ -440,6 +445,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
     for (final sur in surcharges) {
       listSurcharges.add(SurchargeCard(
         isLeader: null,
+        isOffline: false,
         maxMemberCount: widget.plan == null
             ? sharedPreferences.getInt('plan_number_of_member')!
             : widget.plan!.maxMemberCount!,
@@ -471,7 +477,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   }
 
   completeService() async {
-    dynamic rs;
+    List<OrderViewModel> orders = [];
     if (widget.plan == null) {
       DateTime departureDate =
           DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
@@ -484,10 +490,10 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       DateTime travelDuration = DateTime(0, 0, 0).add(Duration(
           seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
               .toInt()));
-      rs = json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
-
+     final orderList = json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+     orders = _orderService.getOrderFromJson(orderList);
       _plan = PlanCreate(
-        tempOrders: rs,
+        tempOrders: orders,
         departAddress: sharedPreferences.getString('plan_start_address'),
         numOfExpPeriod: sharedPreferences.getInt('initNumOfExpPeriod'),
         locationId: widget.location.id,
@@ -517,7 +523,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                 isFromHost: false,
                 isInfo: false,
                 locationName: widget.location.name,
-                orderList: rs,
+                orderList: orders,
                 onCompletePlan: onCompletePlan,
                 plan: widget.plan ?? _plan,
                 onJoinPlan: () {},
@@ -546,15 +552,19 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
               _plan!, context, _listSurchargeObjects.toString());
         }
       } else {
-        rs = 1;
+        rs = 0;
       }
     } else {
       rs = await _planService.updatePlan(
           widget.plan!, json.encode(_listSurchargeObjects), context);
     }
 
-    if (rs != 0) {
+    if (rs != null) {
       Navigator.of(context).pop();
+      if (
+        widget.plan == null && rs != 0) {
+        await initializeService();
+      }
       AwesomeDialog(
         context: context,
         animType: AnimType.leftSlide,
@@ -582,7 +592,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
               builder: (ctx) => DetailPlanNewScreen(
                     planId: rs!,
                     isEnableToJoin: false,
-                    planType: "OWNED",
+                    planType: "OWN",
                   )));
         }
       });

@@ -8,7 +8,7 @@ import '../helpers/util.dart';
 
 class ProductService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
-  static GraphQLClient client = config.getClient();
+  // static GraphQLClient client = config.getClient();
 
   Future<List<ProductViewModel>> getProductsBySupplierId(
       int supplierId, String session) async {
@@ -27,7 +27,7 @@ class ProductService extends Iterable {
           session = "EVENING";
           break;
       }
-
+GraphQLClient client = config.getClient();
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
@@ -68,7 +68,6 @@ class ProductService extends Iterable {
       if (res == null || res.isEmpty) {
         return [];
       }
-      print(res);
       final List<ProductViewModel> products =
           res.map((product) => ProductViewModel.fromJson(product)).toList();
       return products;

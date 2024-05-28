@@ -1,15 +1,12 @@
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localization/flutter_localization.dart';
-import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/service/background_service.dart';
-import 'package:greenwheel_user_app/widgets/test_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sizer2/sizer2.dart';
@@ -45,17 +42,12 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   sharedPreferences = await SharedPreferences.getInstance();
   await dotenv.load(fileName: 'keys.env');
-  await Permission.notification.isDenied.then((value) {
-    if (value) {
-      Permission.notification.request();
-    }
-  });
-  // await initializeService();
+
   // await initHiveForFlutter();
   await Hive.initFlutter();
   // await Hive.openBox('myPlans');
 
-  MapboxOptions.setAccessToken(dotenv.env['goong_api_key'].toString());
+  MapboxOptions.setAccessToken(dotenv.env['mapbox_access_token'].toString());
   localization = FlutterLocalization.instance;
   final myPlans = await Hive.openBox('myPlans');
   // myPlans.clear();
@@ -67,9 +59,7 @@ void main() async {
   //   print('Cron Job');
   // });
 
-  // initializeDateFormatting('vi_VN', null).then((_) {
   runApp(const MainApp());
-  // });
 }
 
 class MainApp extends StatelessWidget {

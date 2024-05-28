@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -82,7 +81,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   setUpData() async {
     noteController.text = widget.order.note ?? '';
     _servingDates = (widget.order.serveDates ?? [])
-        .map((e) => DateTime(e.year, e.month, e.day, 0, 0, 0))
+        .map((e) =>DateTime.parse(e))
         .toList();
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
@@ -91,7 +90,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         widget.order.details!.groupListsBy((element) => element.productId);
     for (final temp in tmp.values) {
       details.add(temp.first);
-      _listedPricePerDay += (temp.first.unitPrice * temp.first.quantity);
+      _listedPricePerDay += (temp.first.price! * temp.first.quantity);
     }
     setState(() {
       isLoading = false;
@@ -606,7 +605,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                       locale: 'vi_VN',
                                                       decimalDigits: 0,
                                                       name: "đ")
-                                                  .format(detail.unitPrice),
+                                                  .format(detail.price),
                                               style:
                                                   const TextStyle(fontSize: 14),
                                             )

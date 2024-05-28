@@ -6,10 +6,10 @@ class OrderViewModel {
   String? uuid;
   double? total;
   String? note;
-  List<dynamic>? serveDates;
+  List<String>? serveDates;
   int? rating;
   DateTime? createdAt;
-  List<dynamic>? details;
+  List<OrderDetailViewModel>? details;
   String? period;
   String? type;
   SupplierViewModel? supplier;
@@ -33,7 +33,7 @@ class OrderViewModel {
       id: json["id"],
       uuid: json['uuid'],
       note: json["note"],
-      serveDates: json["serveDates"].map((e) => DateTime.parse(e)).toList(),
+      serveDates:List<String>.from(json["serveDates"].map((e) => e)).toList(),
       total: double.parse(json["total"].toString()),
       createdAt: DateTime.parse(json["createdAt"]),
       type: json['type'],

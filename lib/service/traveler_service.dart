@@ -13,7 +13,7 @@ import 'package:greenwheel_user_app/view_models/register.dart';
 class CustomerService {
   GraphQlConfig graphQlConfig = GraphQlConfig();
 
-  Future<CustomerViewModel?> GetCustomerByPhone(String phone) async {
+  Future<CustomerViewModel?> getCustomerByPhone(String phone) async {
     GraphQLClient client = graphQlConfig.getClient();
     try {
       QueryResult result = await client.query(

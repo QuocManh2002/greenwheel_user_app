@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -83,68 +82,79 @@ class TransactionCard extends StatelessWidget {
       child: Container(
         width: 100.w,
         decoration: BoxDecoration(
-          color: index.isOdd
+          color: index.isEven
               ? Colors.white
               : lightPrimaryTextColor.withOpacity(0.7),
         ),
-        padding: EdgeInsets.only(left: 2.h, top: 1.5.h, bottom: 1.5.h),
-        child: Row(
+        child: Column(
           children: [
-            Container(
-                padding: const EdgeInsets.all(12),
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                        color: Colors.grey.withOpacity(0.5), width: 0.5)),
-                child: icon),
-            SizedBox(
-              width: 1.h,
-            ),
-            SizedBox(
-              width: 78.w,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
+            Padding(
+              padding: EdgeInsets.only(left: 2.h, top: 1.5.h),
+              child: Row(
                 children: [
+                  Container(
+                      padding: const EdgeInsets.all(12),
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                              color: Colors.grey.withOpacity(0.5), width: 0.5)),
+                      child: icon),
                   SizedBox(
-                      width: 70.w,
-                      child: Text(
-                        transaction.description ?? 'Không có mô tả',
-                        style: const TextStyle(
-                            fontSize: 17,
-                            fontFamily: 'NotoSans',
-                            fontWeight: FontWeight.bold,
-                            color: Colors.black54),
-                        overflow: TextOverflow.clip,
-                      )),
-                  Row(
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      Text(
-                        '${DateFormat.Hm().format(transaction.createdAt!.add(const Duration(hours: 7)))} - ${DateFormat('dd/MM/yyyy').format(transaction.createdAt!.add(const Duration(hours: 7)))}',
-                        style: const TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey,
-                            fontFamily: 'NotoSans'),
-                      ),
-                      const Spacer(),
-                      Text(
-                        '${isNegative ? '-' : '+'}${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(transaction.amount)}',
-                        style: const TextStyle(
-                            fontFamily: 'NotoSans',
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold),
-                      ),
-                      SvgPicture.asset(
-                        gcoinLogo,
-                        height: 25,
-                      )
-                    ],
-                  )
+                    width: 1.h,
+                  ),
+                  SizedBox(
+                    width: 78.w,
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                            width: 70.w,
+                            child: Text(
+                              transaction.description ?? 'Không có mô tả',
+                              style: const TextStyle(
+                                  fontSize: 17,
+                                  fontFamily: 'NotoSans',
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.black54),
+                              overflow: TextOverflow.clip,
+                            )),
+                        Row(
+                          mainAxisSize: MainAxisSize.max,
+                          children: [
+                            Text(
+                              '${DateFormat.Hm().format(transaction.createdAt!.add(const Duration(hours: 7)))} - ${DateFormat('dd/MM/yyyy').format(transaction.createdAt!.add(const Duration(hours: 7)))}',
+                              style: const TextStyle(
+                                  fontSize: 15,
+                                  color: Colors.grey,
+                                  fontFamily: 'NotoSans'),
+                            ),
+                            const Spacer(),
+                            Text(
+                              '${isNegative ? '-' : '+'}${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(transaction.amount)}',
+                              style: const TextStyle(
+                                  fontFamily: 'NotoSans',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            SvgPicture.asset(
+                              gcoinLogo,
+                              height: 25,
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
+            SizedBox(height: 1.h,),
+            Container(
+              color: Colors.grey.withOpacity(0.5),
+              height: 1,
+            )
           ],
         ),
       ),

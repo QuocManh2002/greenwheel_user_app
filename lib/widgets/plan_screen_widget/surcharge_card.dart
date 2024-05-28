@@ -20,6 +20,7 @@ class SurchargeCard extends StatelessWidget {
       required this.isEnableToUpdate,
       required this.maxMemberCount,
       required this.isLeader,
+      required this.isOffline,
       required this.isCreate});
   final SurchargeViewModel surcharge;
   final void Function(dynamic) callbackSurcharge;
@@ -27,6 +28,7 @@ class SurchargeCard extends StatelessWidget {
   final bool isEnableToUpdate;
   final int maxMemberCount;
   final bool? isLeader;
+  final bool isOffline;
 
   @override
   Widget build(BuildContext context) {
@@ -159,7 +161,7 @@ class SurchargeCard extends StatelessWidget {
                                       color: Colors.redAccent)),
                             ],
                           )),
-                    if (!isCreate)
+                    if (!isCreate && !isOffline)
                       PopupMenuItem(
                           value: 2,
                           child: Row(

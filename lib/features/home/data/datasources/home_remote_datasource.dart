@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
@@ -16,6 +15,7 @@ abstract class HomeRemoteDataSource {
 class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   static GraphQLClient client = graphQlConfig.getClient();
+
   HomeRemoteDataSourceImpl();
 
   @override
@@ -133,38 +133,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       } else {
         season = 'WINTER';
       }
-
-      log('''
-{
-  destinations(
-    where: { 
-      isVisible: { eq: true } 
-      seasons:{
-        some:{
-          in:[$season]
-        }
-      }
-    }
-    order: { id: ASC }
-    after: ${cursor == null ? null : json.encode(cursor)}
-    first: 5
-  ){
-    pageInfo{
-      endCursor
-    }
-    edges{
-      node{
-        id
-        description
-        name
-        imagePaths
-        rating
-      }
-    }
-  }
-}
-''');
-
       QueryResult result = await client.query(QueryOptions(document: gql('''
 {
   destinations(

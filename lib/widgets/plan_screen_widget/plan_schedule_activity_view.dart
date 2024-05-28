@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
@@ -38,7 +37,7 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
   }
 
   setUpData() async {
-    if ((widget.isLeader || widget.planType == planStatuses[7].engName) &&
+    if ((widget.isLeader || widget.planType == 'PUBLISH') &&
         widget.item.orderUUID != null) {
       _order = widget.order;
     }
@@ -95,7 +94,7 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                           ),
                           if (widget.item.orderUUID != null &&
                               (widget.isLeader ||
-                                  widget.planType == planStatuses[7].engName))
+                                  widget.planType == 'PUBLISH'))
                             Container(
                               width: 100.w,
                               padding: const EdgeInsets.symmetric(

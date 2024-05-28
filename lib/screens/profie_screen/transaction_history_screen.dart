@@ -4,6 +4,7 @@ import 'package:greenwheel_user_app/screens/loading_screen/notification_list_loa
 import 'package:greenwheel_user_app/service/transaction_service.dart';
 import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:greenwheel_user_app/widgets/profile_screen_widget/transaction_card.dart';
+
 class TransactionHistoryScreen extends StatefulWidget {
   const TransactionHistoryScreen({super.key});
 
@@ -20,7 +21,6 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
   void initState() {
     super.initState();
     setUpData();
-    
   }
 
   setUpData() async {
@@ -37,28 +37,42 @@ class _TransactionHistoryScreenState extends State<TransactionHistoryScreen> {
     return SafeArea(
         child: Scaffold(
             appBar: AppBar(
-              title: const Text('Lịch sử giao dịch'),
+              backgroundColor: const Color(0xFFf2f2f2),
+              title: const Text(
+                "Lịch sử giao dịch",
+                style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold),
+              ),
             ),
             body: _isLoading
                 ? const NotificationListLoadingScreen()
                 : _transactions!.isEmpty
                     ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Image.asset(emptyPlan),
-                       const Text('Bạn không có giao dịch nào', style: TextStyle(fontFamily: 'NotoSans', fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54),)
-                      ],
-                    )
-                    : 
-                    SingleChildScrollView(
-                      physics:const AlwaysScrollableScrollPhysics(),
-                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          for(final tran in _transactions!)
-                          TransactionCard(index: _transactions!.indexOf(tran), transaction: tran)
+                          Image.asset(emptyPlan),
+                          const Text(
+                            'Bạn không có giao dịch nào',
+                            style: TextStyle(
+                                fontFamily: 'NotoSans',
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black54),
+                          )
                         ],
-                      ),
-                    )
-                    ));
+                      )
+                    : SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: Column(
+                          children: [
+                            for (final tran in _transactions!)
+                              TransactionCard(
+                                  index: _transactions!.indexOf(tran),
+                                  transaction: tran)
+                          ],
+                        ),
+                      )));
   }
 }

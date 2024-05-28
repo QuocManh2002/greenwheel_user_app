@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
@@ -7,7 +6,6 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:uuid/uuid.dart';
 
 import '../config/graphql_config.dart';
-import '../core/constants/global_constant.dart';
 import '../core/constants/sessions.dart';
 import '../helpers/util.dart';
 import '../main.dart';
@@ -58,8 +56,9 @@ mutation{
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
-            // ignore: use_build_context_synchronously
-            rs.parsedResponse.errors.first.message.toString(), context);
+            rs.parsedResponse.errors.first.message.toString(),
+             // ignore: use_build_context_synchronously
+            context);
 
         throw Exception(result.exception!.linkException!);
       }
@@ -71,7 +70,8 @@ mutation{
     }
   }
 
-  Future<TopupRequestViewModel?> topUpRequest(int amount, BuildContext context) async {
+  Future<TopupRequestViewModel?> topUpRequest(
+      int amount, BuildContext context) async {
     try {
       final QueryResult result = await client.query(
         QueryOptions(
@@ -90,17 +90,18 @@ mutation {
       );
 
       if (result.hasException) {
-         dynamic rs = result.exception!.linkException!;
+        dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
             // ignore: use_build_context_synchronously
-            rs.parsedResponse.errors.first.message.toString(), context);
+            rs.parsedResponse.errors.first.message.toString(),
+            context);
 
         throw Exception(result.exception!.linkException!);
       }
       final rs = result.data!['createTopUp'];
-      if(rs == null){
+      if (rs == null) {
         return null;
-      }else{
+      } else {
         return TopupRequestViewModel.fromJson(rs);
       }
     } catch (error) {
@@ -157,19 +158,21 @@ mutation {
   }
 
   List<dynamic> convertTempOrders(
-      List<dynamic> sourceOrders, DateTime startDate) {
+      List<OrderViewModel> sourceOrders, DateTime startDate) {
     var orders = [];
     for (final order in sourceOrders) {
       orders.add({
-        'uuid': json.encode(order['orderUUID']),
+        'uuid': json.encode(order.uuid),
         'cart': [
-          for (final detail in order['details'])
-            {'key': detail['productId'], 'value': detail['quantity']}
+          for (final detail in order.details!)
+            {'key': detail.productId, 'value': detail.quantity}
         ],
-        'note': json.encode(order['note']),
-        'period': order['period'],
-        'serveDateIndexes': order['serveDateIndexes'],
-        'type': order['type']
+        'note': json.encode(order.note),
+        'period': order.period,
+        'serveDateIndexes': order.serveDates!
+            .map((e) => DateTime.parse(e).difference(startDate).inDays)
+            .toList(),
+        'type': order.type
       });
     }
     return orders;
@@ -194,14 +197,14 @@ mutation{
   }
 }
 """;
-      log(mutationText);
       final QueryResult result = await client.mutate(MutationOptions(
           fetchPolicy: FetchPolicy.noCache, document: gql(mutationText)));
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
             // ignore: use_build_context_synchronously
-            rs.parsedResponse.errors.first.message.toString(), context);
+            rs.parsedResponse.errors.first.message.toString(),
+            context);
 
         throw Exception(result.exception!.linkException!);
       } else {
@@ -216,20 +219,19 @@ mutation{
 
   List<OrderViewModel> getOrderFromJson(List<dynamic> jsonList) => jsonList
       .map((e) => OrderViewModel(
+            uuid: e['orderUUID'],
             createdAt: DateTime.parse(e['createdAt']),
             note: e['note'],
-            details: e['details']
-                .map((detail) => OrderDetailViewModel(
+            details: List<OrderDetailViewModel>.from(e['details'].map(
+                (detail) => OrderDetailViewModel(
                     productId: detail['productId'],
                     price: detail['unitPrice'],
                     productName: detail['productName'],
-                    unitPrice: detail['unitPrice'],
-                    quantity: detail['quantity']))
-                .toList(),
+                    quantity: detail['quantity']))).toList(),
             type: e['type'],
             period: e['period'],
             total: double.parse(e['total'].toString()),
-            serveDates: e['serveDates'],
+            serveDates: List<String>.from(e['serveDates']),
             supplier: SupplierViewModel(
                 id: e['providerId'],
                 name: e['providerName'],
@@ -253,7 +255,8 @@ mutation {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
             // ignore: use_build_context_synchronously
-            rs.parsedResponse.errors.first.message.toString(), context);
+            rs.parsedResponse.errors.first.message.toString(),
+            context);
         throw Exception(result.exception!.linkException!);
       }
       return result.data!['cancelOrder']['id'];
@@ -307,7 +310,8 @@ mutation {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
             // ignore: use_build_context_synchronously
-            rs.parsedResponse.errors.first.message.toString(), context);
+            rs.parsedResponse.errors.first.message.toString(),
+            context);
         throw Exception(result.exception!.linkException!);
       }
       List? res = result.data!['orders']['edges'];
@@ -322,7 +326,7 @@ mutation {
 
   dynamic convertToTempOrder(
           SupplierViewModel supplier,
-          String note,
+          String? note,
           String type,
           List<Map> details,
           String period,
@@ -332,16 +336,17 @@ mutation {
           double total) =>
       {
         'orderUUID': uuid ?? const Uuid().v4(),
-        'total': total / GlobalConstant().VND_CONVERT_RATE,
+        'total': total,
         'serveDates': serveDates,
         'period': period,
         'details': details,
         'type': type,
-        'note': note.isEmpty ? null : note,
+        'note': note,
         'providerId': supplier.id,
         'providerStandard': supplier.standard,
         'createdAt': DateTime.now().toString(),
         'providerName': supplier.name,
+        'providerType': supplier.type,
         'providerPhone': supplier.phone,
         'providerImageUrl': supplier.thumbnailUrl,
         'providerAddress': supplier.address,
@@ -378,34 +383,43 @@ mutation {
         'HOLIDAY_LODGING_UP_PCT', model.HOLIDAY_LODGING_UP_PCT ?? 0);
     sharedPreferences.setInt(
         'HOLIDAY_MEAL_UP_PCT', model.HOLIDAY_MEAL_UP_PCT ?? 0);
-    sharedPreferences.setString('LAST_MODIFIED', model.LAST_MODIFIED.toString());
+    sharedPreferences.setString(
+        'LAST_MODIFIED', model.LAST_MODIFIED.toString());
   }
 
-  List<ProductViewModel> getCheapestDetailCheckinOrder(List<ProductViewModel> totalProducts, int numberOfMember){
+  List<ProductViewModel> getCheapestDetailCheckinOrder(
+      List<ProductViewModel> totalProducts, int numberOfMember) {
     List<List<ProductViewModel>> productList = [];
     List<int> currentCombination = [];
     List<ProductViewModel> result = [];
     double minPrice = 0;
     List<ProductViewModel> sourceProduct = [];
-    final productsGroupBy = totalProducts.groupListsBy((element) => element.partySize);
-    for(final products in productsGroupBy.values){
-      products.sort((a, b) => a.price.compareTo(b.price),);
+    final productsGroupBy =
+        totalProducts.groupListsBy((element) => element.partySize);
+    for (final products in productsGroupBy.values) {
+      products.sort(
+        (a, b) => a.price.compareTo(b.price),
+      );
       sourceProduct.add(products.first);
     }
-    void backTrack(int startIndex, int currentSum){
-      if(currentSum >= numberOfMember){
-        productList.add(List.from(currentCombination).map((e) => sourceProduct.firstWhere((element) => element.partySize! == e)).toList());
+    void backTrack(int startIndex, int currentSum) {
+      if (currentSum >= numberOfMember) {
+        productList.add(List.from(currentCombination)
+            .map((e) =>
+                sourceProduct.firstWhere((element) => element.partySize! == e))
+            .toList());
         return;
       }
-      if(startIndex >= sourceProduct.length){
+      if (startIndex >= sourceProduct.length) {
         return;
       }
-      for(int i = startIndex; i < sourceProduct.length; i++){
+      for (int i = startIndex; i < sourceProduct.length; i++) {
         currentCombination.add(sourceProduct[i].partySize!);
         backTrack(i, currentSum + sourceProduct[i].partySize!);
         currentCombination.removeLast();
       }
     }
+
     backTrack(0, 0);
 
     for (var element in productList[0]) {
@@ -424,11 +438,10 @@ mutation {
     return result;
   }
 
-  Future<int?> rateOrder(int orderId, int rating, String comment, BuildContext context)async{
-    try{
-      QueryResult result = await client.mutate(
-        MutationOptions(document: gql(
-          '''
+  Future<int?> rateOrder(
+      int orderId, int rating, String comment, BuildContext context) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql('''
 mutation{
   rateOrder(dto: {
     comment: ${comment == '' ? null : json.encode(comment)}
@@ -438,19 +451,18 @@ mutation{
     id
   }
 }
-'''
-        ))
-      );
-      if(result.hasException){
+''')));
+      if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
             // ignore: use_build_context_synchronously
-            rs.parsedResponse.errors.first.message.toString(), context);
+            rs.parsedResponse.errors.first.message.toString(),
+            context);
 
         throw Exception(result.exception!.linkException!);
       }
       return result.data!['rateOrder']['id'];
-    }catch(error){
+    } catch (error) {
       throw Exception(error);
     }
   }

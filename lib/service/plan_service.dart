@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -23,7 +24,6 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/suggest_plan.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
@@ -194,7 +194,7 @@ mutation{
   }
 }
 """);
-
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(MutationOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
@@ -241,7 +241,7 @@ mutation{
     try {
       String type = '';
       switch (planType) {
-        case 'OWNED':
+        case 'OWN':
           type = 'ownedPlans';
           break;
         case 'JOIN':
@@ -250,7 +250,7 @@ mutation{
         case 'PUBLISH':
           type = 'publishedPlans';
       }
-      GraphQLClient newClient = graphQlConfig.getClient();
+      GraphQLClient newClient = await graphQlConfig.getOfflineClient();
       QueryResult result = await newClient.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
@@ -335,7 +335,7 @@ mutation{
         case "JOIN":
           planType = 'joinedPlans';
           break;
-        case "OWNED":
+        case "OWN":
           planType = 'ownedPlans';
           break;
         case "INVITATION":
@@ -348,9 +348,8 @@ mutation{
           planType = 'publishedPlans';
           break;
       }
-      GraphQLClient newClient = graphQlConfig.getClient();
+      GraphQLClient newClient = await graphQlConfig.getOfflineClient();
       QueryResult result = await newClient.query(QueryOptions(
-        fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 {
   $planType(where: { id: { eq: $planId } }) {
@@ -452,9 +451,9 @@ mutation{
     }
   }
 
-  Future<List<PlanCardViewModel>?> getPlanCards(
-      bool isOwned, BuildContext context) async {
+  Future<List<PlanCardViewModel>?> getPlanCards(bool isOwned) async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
@@ -467,33 +466,18 @@ mutation{
       id
       name
       status
-      utcStartAt
+      utcDepartAt
       utcEndAt
+      periodCount
+      gcoinBudgetPerCapita
       destination{
-        id
-          description
-          imagePaths
           name
-          activities
-          seasons
-          topographic
-          coordinate{coordinates}
-          address
-          province{
-            id
-            name
-            imagePath
-          }
       }
     }
   }
 }
 """)));
       if (result.hasException) {
-        dynamic rs = result.exception!.linkException!;
-        Utils().handleServerException(
-            rs.parsedResponse.errors.first.message.toString(), context);
-
         throw Exception(result.exception!.linkException!);
       }
 
@@ -654,6 +638,7 @@ mutation{
       int planId, List<String> names, BuildContext context) async {
     final listName = names.map((e) => json.encode(e)).toList();
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
@@ -691,7 +676,7 @@ mutation{
         case "JOIN":
           planType = 'joinedPlans';
           break;
-        case "OWNED":
+        case "OWN":
           planType = 'ownedPlans';
           break;
         case "INVITATION":
@@ -704,7 +689,7 @@ mutation{
           planType = 'publishedPlans';
           break;
       }
-
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
@@ -751,6 +736,7 @@ mutation{
   Future<bool> updateJoinMethod(
       int planId, String method, BuildContext context) async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 mutation{
@@ -824,9 +810,10 @@ mutation{
     return result;
   }
 
-  Future<List<SuggestPlanViewModel>?> getSuggestPlanByLocation(
+  Future<List<PlanCardViewModel>?> getSuggestPlanByLocation(
       int locationId, BuildContext context) async {
     try {
+      GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
@@ -861,16 +848,15 @@ mutation{
         return [];
       }
 
-      List<SuggestPlanViewModel> plans = res
-          .map((plan) => SuggestPlanViewModel.fromJson(plan['node']))
-          .toList();
+      List<PlanCardViewModel> plans =
+          res.map((plan) => PlanCardViewModel.fromJson(plan['node'])).toList();
       return plans;
     } catch (error) {
       throw Exception(error);
     }
   }
 
-  Future<List<SuggestPlanViewModel>> filterPublishedPLans(
+  Future<List<PlanCardViewModel>> filterPublishedPLans(
       int minAmount,
       int maxAmount,
       int periodCount,
@@ -917,9 +903,8 @@ mutation{
         return [];
       }
 
-      List<SuggestPlanViewModel> plans = res
-          .map((plan) => SuggestPlanViewModel.fromJson(plan['node']))
-          .toList();
+      List<PlanCardViewModel> plans =
+          res.map((plan) => PlanCardViewModel.fromJson(plan['node'])).toList();
       return plans;
     } catch (error) {
       throw Exception(error);
@@ -1071,7 +1056,7 @@ mutation{
         case "JOIN":
           planType = 'joinedPlans';
           break;
-        case "OWNED":
+        case "OWN":
           planType = 'ownedPlans';
           break;
         case "INVITATION":
@@ -1164,6 +1149,43 @@ mutation{
 
   handleShowPlanInformation(BuildContext context, LocationViewModel location,
       bool isClone, PlanCreate? plan) async {
+    final OrderService orderService = OrderService();
+    List<OrderViewModel> orders = [];
+    var surcharge = [];
+    if (plan == null) {
+      final orderList = json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+      orders = orderService.getOrderFromJson(orderList);
+    } else {
+      for (final order in plan.tempOrders!) {
+        final orderDetailGroupList =
+            order.details!.groupListsBy((e) => e.productId);
+        final orderDetailList =
+            orderDetailGroupList.entries.map((e) => e.value.first).toList();
+        orders.add(orderService.convertToTempOrder(
+            order.supplier!,
+            order.note,
+            order.type!,
+            orderDetailList
+                .map((item) => {
+                      'productId': item.productId,
+                      'productName': item.productName,
+                      'quantity': item.quantity,
+                      'partySize': item.partySize,
+                      'price': item.price
+                    })
+                .toList(),
+            order.period!,
+            order.serveDates!,
+            order.serveDates!
+                .map((date) => DateTime.parse(date.toString())
+                    .difference(DateTime(plan.startDate!.year,
+                        plan.startDate!.month, plan.startDate!.day, 0, 0, 0))
+                    .inDays)
+                .toList(),
+            order.uuid,
+            order.total!));
+      }
+    }
     showDialog(
         context: context,
         builder: (_) => AlertDialog(
@@ -1177,7 +1199,9 @@ mutation{
                 ),
               ),
             ));
-    await Utils().updateProductPrice(context);
+    if (plan == null) {
+      await Utils().updateProductPrice(context, plan != null);
+    }
     Navigator.of(context).pop();
     DateTime? travelDuration =
         sharedPreferences.getDouble('plan_duration_value') != null
@@ -1194,42 +1218,47 @@ mutation{
               isJoin: false,
               locationName: location.name,
               isInfo: true,
-              orderList: json.decode(
-                  sharedPreferences.getString('plan_temp_order') ?? '[]'),
+              orderList: orders,
               listSurcharges: json.decode(
                   sharedPreferences.getString('plan_surcharge') ?? '[]'),
-              plan: PlanCreate(
-                  endDate: sharedPreferences.getString('plan_end_date') == null
-                      ? null
-                      : DateTime.parse(
-                          sharedPreferences.getString('plan_end_date')!),
-                  maxMemberCount: plan == null
-                      ? isClone
-                          ? sharedPreferences.getInt('plan_number_of_member') ??
-                              sharedPreferences
-                                  .getInt('init_plan_number_of_member')
-                          : sharedPreferences.getInt('plan_number_of_member')
-                      : plan.maxMemberCount,
-                  departAt: sharedPreferences.getString('plan_departureDate') ==
-                          null
-                      ? null
-                      : DateTime.parse(
-                          sharedPreferences.getString('plan_departureDate')!),
-                  name: sharedPreferences.getString('plan_name'),
-                  startDate:
-                      sharedPreferences.getString('plan_start_date') == null
+              plan: plan ??
+                  PlanCreate(
+                      endDate: sharedPreferences.getString('plan_end_date') ==
+                              null
+                          ? null
+                          : DateTime.parse(
+                              sharedPreferences.getString('plan_end_date')!),
+                      maxMemberCount: plan == null
+                          ? isClone
+                              ? sharedPreferences
+                                      .getInt('plan_number_of_member') ??
+                                  sharedPreferences
+                                      .getInt('init_plan_number_of_member')
+                              : sharedPreferences
+                                  .getInt('plan_number_of_member')
+                          : plan.maxMemberCount,
+                      departAt: sharedPreferences
+                                  .getString('plan_departureDate') ==
+                              null
+                          ? null
+                          : DateTime.parse(sharedPreferences
+                              .getString('plan_departureDate')!),
+                      name: sharedPreferences.getString('plan_name'),
+                      startDate: sharedPreferences
+                                  .getString('plan_start_date') ==
+                              null
                           ? null
                           : DateTime.parse(
                               sharedPreferences.getString('plan_start_date')!),
-                  schedule: sharedPreferences.getString('plan_schedule'),
-                  note: sharedPreferences.getString('plan_note'),
-                  departAddress:
-                      sharedPreferences.getString('plan_start_address'),
-                  savedContacts:
-                      sharedPreferences.getString('plan_saved_emergency'),
-                  travelDuration: travelDuration == null
-                      ? null
-                      : DateFormat.Hm().format(travelDuration)),
+                      schedule: sharedPreferences.getString('plan_schedule'),
+                      note: sharedPreferences.getString('plan_note'),
+                      departAddress:
+                          sharedPreferences.getString('plan_start_address'),
+                      savedContacts:
+                          sharedPreferences.getString('plan_saved_emergency'),
+                      travelDuration: travelDuration == null
+                          ? null
+                          : DateFormat.Hm().format(travelDuration)),
             ));
   }
 
@@ -1302,10 +1331,55 @@ mutation{
         throw Exception(result.exception!.linkException!);
       }
       List<int> rs = [];
-      for(final plan in result.data!['ownedPlans']['edges']){
+      for (final plan in result.data!['ownedPlans']['edges']) {
         rs.add(plan['node']['id']);
       }
       return rs;
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<List<PlanCardViewModel>?> searchPLans(
+      String searchText, BuildContext context) async {
+    try {
+      QueryResult result = await client.query(QueryOptions(document: gql('''
+{
+  joinedPlans(
+    first: 50
+    order: { id: DESC }
+    where: { name: { contains: "$searchText" } }
+  ) {
+    nodes {
+      id
+      name
+      status
+      utcDepartAt
+      utcEndAt
+      periodCount
+      gcoinBudgetPerCapita
+      destination {
+        name
+      }
+    }
+  }
+}
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      List? res = result.data!['joinedPlans']['nodes'];
+      if (res == null || res.isEmpty) {
+        return [];
+      }
+
+      List<PlanCardViewModel> plans =
+          res.map((plan) => PlanCardViewModel.fromJson(plan)).toList();
+      return plans;
     } catch (error) {
       throw Exception(error);
     }

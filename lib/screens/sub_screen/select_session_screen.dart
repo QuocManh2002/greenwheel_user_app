@@ -40,7 +40,6 @@ class SelectSessionScreen extends StatefulWidget {
 class _SelectSessionScreenState extends State<SelectSessionScreen> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     setUpData();
   }

@@ -13,13 +13,13 @@ class EmptyPlan extends StatelessWidget {
         children: [
           Image.asset(
             emptyPlan,
-            height: 40.h,
+            height: 20.h,
           ),
-          const SizedBox(height: 16,),
+          const SizedBox(height: 8,),
           const Text(
             "Bạn chưa có kế hoạch nào ở dạng này",
             textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 17),
+            style: TextStyle(fontSize: 17, color: Colors.black54, fontFamily: 'NotoSans'),
           )
         ],
       ),

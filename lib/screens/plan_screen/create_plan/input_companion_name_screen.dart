@@ -29,7 +29,6 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     if (widget.initNames!.isNotEmpty) {
       names = widget.initNames!;

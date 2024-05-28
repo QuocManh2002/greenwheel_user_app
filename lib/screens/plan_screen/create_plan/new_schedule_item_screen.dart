@@ -271,74 +271,95 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                 .where((e) =>
                                     e['orderUUID'] == _tempOrder['orderUUID']);
                             if (order.isNotEmpty) {
-                              if (order.first['serveDates'].first !=
-                                  _tempOrder['serveDates'].first) {
-                                widget.onDelete(
-                                    PlanScheduleItem(
+                              if (order.first['serveDates'].toString() !=
+                                  _tempOrder['serveDates'].toString()) {
+                                if (order.first['serveDates'].first !=
+                                    _tempOrder['serveDates'].first) {
+                                  widget.onDelete(
+                                      PlanScheduleItem(
+                                          orderUUID: null,
+                                          date:
+                                              order.first['serveDates'].first),
+                                      _tempOrder['orderUUID']);
+                                  widget.callback(
+                                    item: PlanScheduleItem(
+                                        isStarred: _isStarEvent,
+                                        shortDescription:
+                                            _shortDescriptionController.text,
+                                        description:
+                                            _descriptionController.text,
+                                        date: DateTime.parse(
+                                            _tempOrder['serveDates']
+                                                .first
+                                                .toString()),
+                                        orderUUID: _tempOrder['orderUUID'],
+                                        activityTime: _selectedTime,
+                                        type: _selectedType,
+                                        id: widget.item?.id),
+                                    isCreate: true,
+                                    oldItem: widget.item,
+                                  );
+                                }
+                                if (order.first['serveDates'].last !=
+                                    _tempOrder['serveDates'].last) {
+                                  widget.onDelete(
+                                      PlanScheduleItem(
                                         orderUUID: null,
-                                        date: order.first['serveDates'].first),
-                                    _tempOrder['orderUUID']);
+                                        date: DateTime.parse(order
+                                                    .first['serveDates']
+                                                    .last) ==
+                                                endDate
+                                            ? DateTime.parse(order
+                                                .first['serveDates'].last
+                                                .toString())
+                                            : DateTime.parse(order
+                                                    .first['serveDates'].last
+                                                    .toString())
+                                                .add(const Duration(days: 1)),
+                                      ),
+                                      _tempOrder['orderUUID']);
+                                  widget.callback(
+                                    item: PlanScheduleItem(
+                                        isStarred: _isStarEvent,
+                                        shortDescription: 'Check-out',
+                                        description:
+                                            'Check-out nhà nghỉ/khách sạn',
+                                        type: 'Check-out',
+                                        date: DateTime.parse(
+                                                    _tempOrder['serveDates']
+                                                        .last) ==
+                                                endDate
+                                            ? DateTime.parse(
+                                                _tempOrder['serveDates']
+                                                    .last
+                                                    .toString())
+                                            : DateTime.parse(
+                                                    _tempOrder['serveDates']
+                                                        .last
+                                                        .toString())
+                                                .add(const Duration(days: 1)),
+                                        orderUUID: _tempOrder['orderUUID'],
+                                        activityTime: _selectedTime,
+                                        id: widget.item?.id),
+                                    isCreate: true,
+                                    oldItem: widget.item,
+                                  );
+                                }
+                              } else {
                                 widget.callback(
-                                  item: PlanScheduleItem(
-                                      isStarred: _isStarEvent,
-                                      shortDescription:
-                                          _shortDescriptionController.text,
-                                      description: _descriptionController.text,
-                                      date: DateTime.parse(
-                                          _tempOrder['serveDates']
-                                              .first
-                                              .toString()),
-                                      orderUUID: _tempOrder['orderUUID'],
-                                      activityTime: _selectedTime,
-                                      type: _selectedType,
-                                      id: widget.item?.id),
-                                  isCreate: true,
-                                  oldItem: widget.item,
-                                );
-                              }
-                              if (order.first['serveDates'].last !=
-                                  _tempOrder['serveDates'].last) {
-                                widget.onDelete(
-                                    PlanScheduleItem(
-                                      orderUUID: null,
-                                      date: DateTime.parse(order
-                                                  .first['serveDates'].last) ==
-                                              endDate
-                                          ? DateTime.parse(order
-                                              .first['serveDates'].last
-                                              .toString())
-                                          : DateTime.parse(order
-                                                  .first['serveDates'].last
-                                                  .toString())
-                                              .add(const Duration(days: 1)),
-                                    ),
-                                    _tempOrder['orderUUID']);
-                                widget.callback(
-                                  item: PlanScheduleItem(
-                                      isStarred: _isStarEvent,
-                                      shortDescription: 'Check-out',
-                                      description:
-                                          'Check-out nhà nghỉ/khách sạn',
-                                      type: 'Check-out',
-                                      date: DateTime.parse(
-                                                  _tempOrder['serveDates']
-                                                      .last) ==
-                                              endDate
-                                          ? DateTime.parse(
-                                              _tempOrder['serveDates']
-                                                  .last
-                                                  .toString())
-                                          : DateTime.parse(
-                                                  _tempOrder['serveDates']
-                                                      .last
-                                                      .toString())
-                                              .add(const Duration(days: 1)),
-                                      orderUUID: _tempOrder['orderUUID'],
-                                      activityTime: _selectedTime,
-                                      id: widget.item?.id),
-                                  isCreate: true,
-                                  oldItem: widget.item,
-                                );
+                                item: PlanScheduleItem(
+                                    isStarred: _isStarEvent,
+                                    shortDescription:
+                                        _shortDescriptionController.text,
+                                    description: _descriptionController.text,
+                                    date: _selectedDate,
+                                    orderUUID: _tempOrder['orderUUID'],
+                                    activityTime: _selectedTime,
+                                    type: _selectedType,
+                                    id: widget.item?.id),
+                                isCreate: widget.item == null,
+                                oldItem: widget.item,
+                              );
                               }
                             }
                           }
@@ -1133,89 +1154,91 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     'Phụ thu',
                                     style: TextStyle(fontSize: 12),
                                   ))),
-                          if(_isAvailableToOrder)
-                          SizedBox(
-                            width: 2.w,
-                          ),
-                          if(_isAvailableToOrder)
-                          Expanded(
-                            child: ElevatedButton.icon(
-                                onPressed: () {
-                                  if (_isFoodActivity) {
-                                    var temp = mealText.firstWhereOrNull(
-                                        (element) => element.any((e) =>
-                                            _shortDescriptionController.text
-                                                .toLowerCase()
-                                                .contains(e)));
-                                    if (temp == null) {
-                                      final startSession = getStartEndSession();
-                                      navigateToServiceSessionScreen(
-                                          startSession);
-                                    } else {
-                                      final startEndSessionIndex = sessions
-                                          .indexOf(getStartEndSession());
-                                      final mealTextIndex =
-                                          mealText.indexOf(temp);
-                                      if (_isFirstDay) {
-                                        if (mealTextIndex <
-                                            startEndSessionIndex) {
-                                          handleInvalidActivityBasedOnStartTime(
-                                              () {
-                                            navigateToServiceSessionScreen(
-                                                sessions[startEndSessionIndex]);
-                                          }, () {});
-                                        } else if (mealTextIndex >=
-                                            startEndSessionIndex) {
-                                          navigateToServiceMainScreen(
-                                              sessions[mealTextIndex]);
-                                        }
-                                      } else if (_isEndDay) {
-                                        if (mealTextIndex >
-                                            startEndSessionIndex) {
-                                          handleInvalidActivityBasedOnEndTime(
-                                              () {
-                                            navigateToServiceSessionScreen(
-                                                null);
-                                          }, () {});
+                          if (_isAvailableToOrder)
+                            SizedBox(
+                              width: 2.w,
+                            ),
+                          if (_isAvailableToOrder)
+                            Expanded(
+                              child: ElevatedButton.icon(
+                                  onPressed: () {
+                                    if (_isFoodActivity) {
+                                      var temp = mealText.firstWhereOrNull(
+                                          (element) => element.any((e) =>
+                                              _shortDescriptionController.text
+                                                  .toLowerCase()
+                                                  .contains(e)));
+                                      if (temp == null) {
+                                        final startSession =
+                                            getStartEndSession();
+                                        navigateToServiceSessionScreen(
+                                            startSession);
+                                      } else {
+                                        final startEndSessionIndex = sessions
+                                            .indexOf(getStartEndSession());
+                                        final mealTextIndex =
+                                            mealText.indexOf(temp);
+                                        if (_isFirstDay) {
+                                          if (mealTextIndex <
+                                              startEndSessionIndex) {
+                                            handleInvalidActivityBasedOnStartTime(
+                                                () {
+                                              navigateToServiceSessionScreen(
+                                                  sessions[
+                                                      startEndSessionIndex]);
+                                            }, () {});
+                                          } else if (mealTextIndex >=
+                                              startEndSessionIndex) {
+                                            navigateToServiceMainScreen(
+                                                sessions[mealTextIndex]);
+                                          }
+                                        } else if (_isEndDay) {
+                                          if (mealTextIndex >
+                                              startEndSessionIndex) {
+                                            handleInvalidActivityBasedOnEndTime(
+                                                () {
+                                              navigateToServiceSessionScreen(
+                                                  null);
+                                            }, () {});
+                                          } else {
+                                            navigateToServiceMainScreen(
+                                                sessions[mealTextIndex]);
+                                          }
                                         } else {
                                           navigateToServiceMainScreen(
                                               sessions[mealTextIndex]);
                                         }
+                                      }
+                                    } else {
+                                      if (_isEndDay && _isEndAtNoon!) {
+                                        DialogStyle().basicDialog(
+                                            context: context,
+                                            title:
+                                                'Kế hoạch đã kết thúc vào buổi trưa',
+                                            desc:
+                                                'Không thể đặt dịch vụ lưu trú/phương tiện',
+                                            type: DialogType.warning);
                                       } else {
-                                        navigateToServiceMainScreen(
-                                            sessions[mealTextIndex]);
+                                        final startEndSessionIndex = sessions
+                                            .indexOf(getStartEndSession());
+                                        navigateToServiceMainScreen(sessions[
+                                            startEndSessionIndex == 0
+                                                ? 1
+                                                : startEndSessionIndex]);
                                       }
                                     }
-                                  } else {
-                                    if (_isEndDay && _isEndAtNoon!) {
-                                      DialogStyle().basicDialog(
-                                          context: context,
-                                          title:
-                                              'Kế hoạch đã kết thúc vào buổi trưa',
-                                          desc:
-                                              'Không thể đặt dịch vụ lưu trú/phương tiện',
-                                          type: DialogType.warning);
-                                    } else {
-                                      final startEndSessionIndex = sessions
-                                          .indexOf(getStartEndSession());
-                                      navigateToServiceMainScreen(sessions[
-                                          startEndSessionIndex == 0
-                                              ? 1
-                                              : startEndSessionIndex]);
-                                    }
-                                  }
-                                },
-                                icon: Icon(_isFoodActivity
-                                    ? Icons.restaurant
-                                    : _isRoomActivity
-                                        ? Icons.hotel
-                                        : Icons.directions_car),
-                                style: elevatedButtonStyle,
-                                label: const Text(
-                                  'Dự trù kinh phí',
-                                  style: TextStyle(fontSize: 12),
-                                )),
-                          ),
+                                  },
+                                  icon: Icon(_isFoodActivity
+                                      ? Icons.restaurant
+                                      : _isRoomActivity
+                                          ? Icons.hotel
+                                          : Icons.directions_car),
+                                  style: elevatedButtonStyle,
+                                  label: const Text(
+                                    'Dự trù kinh phí',
+                                    style: TextStyle(fontSize: 12),
+                                  )),
+                            ),
                         ],
                       ),
               SizedBox(

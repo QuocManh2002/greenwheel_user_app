@@ -59,6 +59,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   DateTime? _departureDate;
   DateTime? _endDate;
   bool? isOverDate;
+  bool? _isCloneComboDate;
 
   @override
   void initState() {
@@ -99,6 +100,9 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
           .firstWhere((element) =>
               element.duration == sharedPreferences.getInt('maxCombodateValue'))
           .id;
+      final cloneOptions =
+          json.decode(sharedPreferences.getString('plan_clone_options')!);
+      _isCloneComboDate = cloneOptions[3];
     }
     if (numOfExpPeriod != null) {
       selectedComboDate = listComboDate.firstWhere(
@@ -149,7 +153,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
     }
   }
 
-  onChangeQuantity(String type) {
+  onChangeMaxMemberCount(String type) {
     if (type == "add") {
       setState(() {
         _memberController.text =
@@ -239,15 +243,17 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                 .toString()
                 .split(' ')[0]);
 
-        numberOfNight = listComboDate[_selectedCombo].numberOfNight + 1;
-        _endDate = _departureDate!
-            .add(Duration(days: listComboDate[_selectedCombo].numberOfDay));
+        
       } else {
         widget.plan!.startDate = _departureDate!
-            .add(const Duration(days: 1))
-            .add(Duration(hours: _departureTime!.hour))
-            .add(Duration(minutes: _departureTime!.minute));
+            .add(const Duration(days: 1));
+
+            // .add(Duration(hours: _departureTime!.hour))
+            // .add(Duration(minutes: _departureTime!.minute));
       }
+      numberOfNight = listComboDate[_selectedCombo].numberOfNight + 1;
+        _endDate = _departureDate!
+            .add(Duration(days: listComboDate[_selectedCombo].numberOfDay));
     } else {
       if (rs['numOfExpPeriod'] !=
           listComboDate[_selectedCombo].duration.toInt()) {
@@ -267,9 +273,9 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
         sharedPreferences.setString(
             'plan_start_date', _departureDate!.toString().split(' ')[0]);
       } else {
-        widget.plan!.startDate = _departureDate!
-            .add(Duration(hours: _departureTime!.hour))
-            .add(Duration(minutes: _departureTime!.minute));
+        widget.plan!.startDate = _departureDate!;
+            // .add(Duration(hours: _departureTime!.hour))
+            // .add(Duration(minutes: _departureTime!.minute));
       }
     }
     if (widget.plan == null) {
@@ -284,12 +290,13 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       if (widget.isCreate) {
         sharedPreferences.setInt('numOfExpPeriod',
             listComboDate[_selectedCombo].numberOfDay + numberOfNight!);
-      } else {
-        setState(() {
-          widget.plan!.numOfExpPeriod =
-              listComboDate[_selectedCombo].numberOfDay + numberOfNight!;
-        });
-      }
+      } 
+      // else {
+      //   setState(() {
+      //     widget.plan!.numOfExpPeriod =
+      //         listComboDate[_selectedCombo].numberOfDay + numberOfNight!;
+      //   });
+      // }
     } else {
       sharedPreferences.setInt(
           'numOfExpPeriod', listComboDate[_selectedCombo].duration.toInt());
@@ -353,7 +360,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
               SizedBox(
                 height: 3.h,
               ),
-              _isSelecting
+              _isSelecting && (widget.isClone && !_isCloneComboDate!)
                   ? SizedBox(
                       height: 250,
                       child: CupertinoPicker(
@@ -384,9 +391,11 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                               const Duration(seconds: 2),
                               () {
                                 handleChangeComboDate();
-                                setState(() {
-                                  _isSelecting = false;
-                                });
+                                if (_isSelecting) {
+                                  setState(() {
+                                    _isSelecting = false;
+                                  });
+                                }
                               },
                             );
                           },
@@ -448,7 +457,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                       iconSize: 30,
                       onPressed: () {
                         if (int.parse(_memberController.text) > 2) {
-                          onChangeQuantity("subtract");
+                          onChangeMaxMemberCount("subtract");
                         }
                       },
                       icon: const Icon(Icons.remove)),
@@ -525,7 +534,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                       iconSize: 30,
                       onPressed: () {
                         if (int.parse(_memberController.text) < 20) {
-                          onChangeQuantity('add');
+                          onChangeMaxMemberCount('add');
                         }
                       },
                       icon: const Icon(Icons.add)),
@@ -718,7 +727,6 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                           title: 'Số người đi cùng tối đa không hợp lệ',
                           type: DialogType.warning);
                     } else {
-                      // if (widget.isClone) {
                       if (sharedPreferences.getString('plan_schedule') !=
                           null) {
                         await Utils().updateTempOrder(true, _maxMemberWeight);
@@ -729,18 +737,17 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                           json
                               .decode(
                                   sharedPreferences.getString('plan_schedule')!)
-                              .isNotEmpty &&((sharedPreferences.getInt(
-                                                  'initNumOfExpPeriod')! /
-                                              2)
-                                          .ceil() <
-                                      json
-                                          .decode(sharedPreferences
-                                              .getString('plan_schedule')!)
-                                          .length ||
+                              .isNotEmpty &&
+                          ((sharedPreferences.getInt('initNumOfExpPeriod')! / 2)
+                                      .ceil() <
+                                  json
+                                      .decode(sharedPreferences
+                                          .getString('plan_schedule')!)
+                                      .length ||
+                              sharedPreferences
+                                      .getInt('plan_number_of_member')! !=
                                   sharedPreferences
-                                          .getInt('plan_number_of_member')! !=
-                                      sharedPreferences.getInt(
-                                          'init_plan_number_of_member'))) {
+                                      .getInt('init_plan_number_of_member'))) {
                         // ignore: use_build_context_synchronously
                         Utils().updateScheduleAndOrder(context, () {
                           sharedPreferences.setInt(
@@ -760,21 +767,9 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                   ),
                                   type: PageTransitionType.rightToLeft));
                         }, true);
-                        // } else {
-                        //   Navigator.push(
-                        //       // ignore: use_build_context_synchronously
-                        //       context,
-                        //       PageTransition(
-                        //           child: SelectEmergencyService(
-                        //             isCreate: widget.isCreate,
-                        //             plan: widget.plan,
-                        //             location: widget.location,
-                        //             isClone: widget.isClone,
-                        //           ),
-                        //           type: PageTransitionType.rightToLeft));
-                        // }
                       } else {
                         Navigator.push(
+                            // ignore: use_build_context_synchronously
                             context,
                             PageTransition(
                                 child: SelectEmergencyService(

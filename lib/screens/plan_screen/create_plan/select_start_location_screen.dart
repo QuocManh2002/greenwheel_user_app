@@ -3,6 +3,8 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
+import 'package:intl/intl.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -54,13 +56,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   PointLatLng? defaultLatLng;
   bool _isSelectedLocation = false;
   final PlanService _planService = PlanService();
-  bool? _isCloneAddress ;
-
-  Future<void> getMapInfo() async {
-    if (_selectedLocation != null) {
-      _onSelectLocation(_selectedLocation!);
-    }
-  }
+  bool? _isCloneAddress;
 
   _getRouteInfo() async {
     var jsonResponse = await getRouteInfo(_selectedLocation!,
@@ -74,49 +70,48 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         distanceValue =
             jsonResponse['routes'][0]['legs'][0]['distance']['value'] / 1000;
       });
-
-      sharedPreferences.setString('plan_duration_text', durationText);
-      sharedPreferences.setString('plan_distance_text', distanceText);
-      sharedPreferences.setDouble('plan_duration_value', durationValue!);
-      sharedPreferences.setDouble('plan_distance_value', distanceValue!);
+      if (widget.plan == null) {
+        sharedPreferences.setString('plan_duration_text', durationText);
+        sharedPreferences.setString('plan_distance_text', distanceText);
+        sharedPreferences.setDouble('plan_duration_value', durationValue!);
+        sharedPreferences.setDouble('plan_distance_value', distanceValue!);
+      } else {
+        widget.plan?.travelDuration = DateFormat.Hm().format(DateTime(
+          0,
+          0,
+          0,
+        ).add(Duration(seconds: (durationValue! * 3600).toInt())));
+        widget.plan?.travelDistanceText = distanceText;
+        widget.plan?.travelDurationText = durationText;
+        widget.plan?.travelDistanceValue = distanceValue;
+        widget.plan?.travelDurationValue = durationValue;
+      }
     }
   }
 
   _onSelectLocation(PointLatLng selectedLocation) async {
     if (!await Utils().checkLoationInSouthSide(
         lon: selectedLocation.longitude, lat: selectedLocation.latitude)) {
-      AwesomeDialog(
-        // ignore: use_build_context_synchronously
-        context: context,
-        dialogType: DialogType.warning,
-        body: const Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'Xin hãy chọn địa điểm trong lãnh thổ Việt Nam',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(
-                height: 16,
-              ),
-            ],
-          ),
-        ),
-        btnOkOnPress: () {},
-        btnOkColor: Colors.orange,
-        btnOkText: 'Ok',
-      ).show();
+      DialogStyle().basicDialog(
+          // ignore: use_build_context_synchronously
+          context: context,
+          title: 'Xin hãy chọn địa điểm trong lãnh thổ Việt Nam',
+          type: DialogType.warning);
     } else {
       setState(() {
         _isSelectedLocation = true;
       });
       _selectedLocation = selectedLocation;
       _getRouteInfo();
+      if (widget.plan == null) {
+        sharedPreferences.setDouble(
+            'plan_start_lat', _selectedLocation!.latitude);
+        sharedPreferences.setDouble(
+            'plan_start_lng', _selectedLocation!.longitude);
+      } else {
+        widget.plan?.departCoordinate = _selectedLocation;
+      }
     }
-    sharedPreferences.setDouble('plan_start_lat', _selectedLocation!.latitude);
-    sharedPreferences.setDouble('plan_start_lng', _selectedLocation!.longitude);
   }
 
   @override
@@ -141,9 +136,11 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
 
   setUpDataCreate() async {
     double? planDistance = sharedPreferences.getDouble('plan_distance_value');
-    if(widget.isClone){
-      _isCloneAddress = json.decode(sharedPreferences.getString('plan_clone_options')!)[0];
-      _searchController.selection = TextSelection.fromPosition(const TextPosition(offset: 0));
+    if (widget.isClone) {
+      _isCloneAddress =
+          json.decode(sharedPreferences.getString('plan_clone_options')!)[0];
+      _searchController.selection =
+          TextSelection.fromPosition(const TextPosition(offset: 0));
     }
     if (planDistance != null) {
       double? planDuration = sharedPreferences.getDouble('plan_duration_value');
@@ -176,56 +173,19 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
 
   onSearchLocation() async {
     if (_searchController.text.trim().isEmpty) {
-      AwesomeDialog(
-        context: context,
-        dialogType: DialogType.warning,
-        body: const Center(
-          child: Padding(
-            padding: EdgeInsets.all(12),
-            child: Text(
-              'Hãy nhập nội dung tìm kiếm',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-          ),
-        ),
-        btnOkColor: Colors.orange,
-        btnOkText: 'Ok',
-        btnOkOnPress: () {},
-      ).show();
+      DialogStyle().basicDialog(
+          context: context,
+          title: 'Hãy nhập nội dung tìm kiếm',
+          type: DialogType.warning);
     } else {
       var result = await getSearchResult(_searchController.text);
       if (result == [] || result == null) {
-        AwesomeDialog(
-          // ignore: use_build_context_synchronously
-          context: context,
-          dialogType: DialogType.warning,
-          body: const Center(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  'Không tìm thấy địa điểm',
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-                  textAlign: TextAlign.center,
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-                Text(
-                  'Hãy tìm kiếm địa điểm khác',
-                  style: TextStyle(fontSize: 18),
-                ),
-                SizedBox(
-                  height: 16,
-                ),
-              ],
-            ),
-          ),
-          btnOkOnPress: () {},
-          btnOkColor: Colors.orange,
-          btnOkText: 'Ok',
-        ).show();
+        DialogStyle().basicDialog(
+            // ignore: use_build_context_synchronously
+            context: context,
+            title: 'Không tìm thấy địa điểm',
+            desc: 'Hãy tìm kiếm địa điểm khác',
+            type: DialogType.warning);
       } else {
         List<SearchStartLocationResult> resultList =
             List<SearchStartLocationResult>.from(result["results"]
@@ -269,14 +229,15 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
     );
   }
 
-  callback(PointLatLng? point) async {
-    var result = await getPlaceDetail(point!);
-    if (result != null) {
-      setState(() {
-        _searchController.text = result['results'][0]['formatted_address'];
-      });
-      _onSelectLocation(point);
+  callback(PointLatLng? point, String? address) async {
+    setState(() {
+      _searchController.text = address!;
+    });
+    _onSelectLocation(point!);
+    if (widget.plan == null) {
       sharedPreferences.setString('plan_start_address', _searchController.text);
+    } else {
+      widget.plan?.departAddress = _searchController.text;
     }
   }
 
@@ -298,7 +259,7 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
           InkWell(
             onTap: () {
               _planService.handleShowPlanInformation(
-                  context, widget.location,widget.isClone, widget.plan);
+                  context, widget.location, widget.isClone, widget.plan);
             },
             overlayColor: const MaterialStatePropertyAll(Colors.transparent),
             child: Container(
@@ -358,13 +319,20 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                       defaultAddress == null || defaultAddress!.isEmpty
                           ? 'Không có dữ liệu'
                           : defaultAddress!;
+                });
+                if (widget.plan == null) {
                   sharedPreferences.setString(
                       'plan_start_address',
                       defaultAddress == null || defaultAddress!.isEmpty
                           ? 'Không có dữ liệu'
                           : defaultAddress!);
-                  _onSelectLocation(defaultLatLng!);
-                });
+                } else {
+                  widget.plan?.departAddress =
+                      defaultAddress == null || defaultAddress!.isEmpty
+                          ? 'Không có dữ liệu'
+                          : defaultAddress;
+                }
+                _onSelectLocation(defaultLatLng!);
               },
               child: Container(
                 decoration: BoxDecoration(
@@ -606,24 +574,11 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
         child: ElevatedButton(
           style: elevatedButtonStyle,
           onPressed: () {
-            if (sharedPreferences.getDouble('plan_duration_value') == null) {
-              AwesomeDialog(
+            if (durationText.isEmpty) {
+              DialogStyle().basicDialog(
                   context: context,
-                  dialogType: DialogType.warning,
-                  btnOkColor: Colors.orange,
-                  btnOkText: 'OK',
-                  btnOkOnPress: () {},
-                  body: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                    child: Center(
-                      child: Text(
-                        'Hãy chọn địa điểm xuất phát cho chuyến đi',
-                        style: TextStyle(
-                            fontSize: 16, fontWeight: FontWeight.bold),
-                        textAlign: TextAlign.center,
-                      ),
-                    ),
-                  )).show();
+                  title: 'Hãy chọn địa điểm xuất phát cho chuyến đi',
+                  type: DialogType.warning);
             } else {
               Navigator.push(
                   context,

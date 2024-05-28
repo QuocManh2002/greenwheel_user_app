@@ -22,7 +22,7 @@ class DetailPlanHeader extends StatefulWidget {
 }
 
 class _DetailPlanHeaderState extends State<DetailPlanHeader> {
-  late Timer timer;
+  Timer? timer;
   Duration duration = const Duration();
   String comboDateText = '';
 
@@ -57,100 +57,123 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
   @override
   void dispose() {
     super.dispose();
-    timer.cancel();
+    if (timer != null) {
+      timer!.cancel();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(
-          width: 70.w,
-          child: Text(
-            widget.plan.locationName!,
-            overflow: TextOverflow.clip,
-            style: const TextStyle(
-                fontSize: 20,
-                fontFamily: 'NotoSans',
-                fontWeight: FontWeight.bold),
-          ),
-        ),
-        Text(
-          comboDateText,
-          overflow: TextOverflow.clip,
-          style: const TextStyle(
-              fontFamily: 'NotoSans',
-              fontSize: 20,
-              fontWeight: FontWeight.bold),
-        ),
-        if (widget.plan.gcoinBudgetPerCapita != 0)
-        SizedBox(
-          height: 0.2.h,
-        ),
-        if (widget.plan.gcoinBudgetPerCapita != 0)
-          Row(
-            children: [
-              Text(
-                NumberFormat.simpleCurrency(
-                        locale: 'vi_VN', decimalDigits: 0, name: '')
-                    .format(widget.plan.gcoinBudgetPerCapita),
-                overflow: TextOverflow.clip,
-                style: const TextStyle(
-                    fontSize: 20,
-                    fontFamily: 'NotoSans',
-                    fontWeight: FontWeight.bold),
-              ),
-              SvgPicture.asset(
-                gcoinLogo,
-                height: 25,
-              ),
-              const Text(
-                ' /',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontFamily: 'NotoSans',
-                    fontWeight: FontWeight.bold),
-              ),
-              const Icon(
-                Icons.person,
-                color: primaryColor,
-                size: 25,
-              ),
-            ],
-          ),
-        if (widget.plan.utcRegCloseAt != null && widget.plan.status == planStatuses[1].engName)
+    return Padding(
+      padding: const EdgeInsets.only(left: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           SizedBox(
-            height: 0.5.h,
-          ),
-        if (widget.plan.utcRegCloseAt != null && widget.plan.status == planStatuses[1].engName)
-          const Text(
-            'Thời gian đăng ký còn: ',
-            style: TextStyle(
-              fontSize: 15,
-              fontFamily: 'NotoSans',
+            width: 70.w,
+            child: Text(
+              widget.plan.locationName!,
+              overflow: TextOverflow.clip,
+              style: const TextStyle(
+                  fontSize: 20,
+                  fontFamily: 'NotoSans',
+                  fontWeight: FontWeight.bold),
             ),
           ),
-        if (widget.plan.utcRegCloseAt != null && widget.plan.status == planStatuses[1].engName)
-          Row(
-            children: [
-              buildCountDownWidget(
-                  duration.inDays.toString().padLeft(2, '0'), 'Ngày'),
-              SizedBox(
-                width: 4.w,
-              ),
-              buildCountDownWidget(
-                  duration.inHours.remainder(24).toString().padLeft(2, '0'),
-                  'Giờ'),
-              SizedBox(
-                width: 4.w,
-              ),
-              buildCountDownWidget(
-                  duration.inMinutes.remainder(60).toString().padLeft(2, '0'),
-                  'Phút')
-            ],
-          )
-      ],
+          Text(
+            comboDateText,
+            overflow: TextOverflow.clip,
+            style: const TextStyle(
+                fontFamily: 'NotoSans',
+                fontSize: 20,
+                fontWeight: FontWeight.bold),
+          ),
+          if (widget.plan.gcoinBudgetPerCapita != 0)
+            SizedBox(
+              height: 0.2.h,
+            ),
+          if (widget.plan.gcoinBudgetPerCapita != 0)
+            Row(
+              children: [
+                Text(
+                  NumberFormat.simpleCurrency(
+                          locale: 'vi_VN', decimalDigits: 0, name: '')
+                      .format(widget.plan.gcoinBudgetPerCapita),
+                  overflow: TextOverflow.clip,
+                  style: const TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'NotoSans',
+                      fontWeight: FontWeight.bold),
+                ),
+                SvgPicture.asset(
+                  gcoinLogo,
+                  height: 25,
+                ),
+                const Text(
+                  ' /',
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontFamily: 'NotoSans',
+                      fontWeight: FontWeight.bold),
+                ),
+                const Icon(
+                  Icons.person,
+                  color: primaryColor,
+                  size: 25,
+                ),
+              ],
+            ),
+          if (widget.plan.utcRegCloseAt != null &&
+              widget.plan.status == planStatuses[1].engName)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(
+                  height: 0.2.h,
+                ),
+                Container(
+                  width: 70.w,
+                  color: Colors.black26,
+                  height: 1,
+                ),
+                SizedBox(
+                  height: 0.2.h,
+                ),
+                const Text(
+                  'Thời gian đăng ký còn: ',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontFamily: 'NotoSans',
+                  ),
+                ),
+                Row(
+                  children: [
+                    buildCountDownWidget(
+                        duration.inDays.toString().padLeft(2, '0'), 'Ngày'),
+                    SizedBox(
+                      width: 4.w,
+                    ),
+                    buildCountDownWidget(
+                        duration.inHours
+                            .remainder(24)
+                            .toString()
+                            .padLeft(2, '0'),
+                        'Giờ'),
+                    SizedBox(
+                      width: 4.w,
+                    ),
+                    buildCountDownWidget(
+                        duration.inMinutes
+                            .remainder(60)
+                            .toString()
+                            .padLeft(2, '0'),
+                        'Phút')
+                  ],
+                )
+              ],
+            ),
+        ],
+      ),
     );
   }
 

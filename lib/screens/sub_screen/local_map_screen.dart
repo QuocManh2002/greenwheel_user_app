@@ -100,9 +100,8 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
         value.create(
           CircleAnnotationOptions(
             geometry: Point(
-                    coordinates: Position(
-                        fromLocation!.longitude, fromLocation!.latitude))
-                ,
+                coordinates:
+                    Position(fromLocation!.longitude, fromLocation!.latitude)),
             circleColor: primaryColor.value,
             circleRadius: 12.0,
           ),
@@ -118,9 +117,8 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
       value.create(
         CircleAnnotationOptions(
           geometry: Point(
-                  coordinates:
-                      Position(toLocation!.longitude, toLocation!.latitude))
-              ,
+              coordinates:
+                  Position(toLocation!.longitude, toLocation!.latitude)),
           circleColor: redColor.value,
           circleRadius: 12.0,
         ),
@@ -137,20 +135,16 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
 
     _mapboxMap?.setCamera(CameraOptions(
         center: Point(
-                coordinates:
-                    Position(toLocation!.longitude, toLocation!.latitude))
-            ,
+            coordinates: Position(toLocation!.longitude, toLocation!.latitude)),
         zoom: 14));
     _mapboxMap?.setBounds(CameraBoundsOptions(
         bounds: CoordinateBounds(
             southwest: Point(
-                    coordinates:
-                        Position(toLocation!.longitude, toLocation!.latitude))
-                ,
+                coordinates:
+                    Position(toLocation!.longitude, toLocation!.latitude)),
             northeast: Point(
-                    coordinates: Position(
-                        fromLocation!.longitude, fromLocation!.latitude))
-                ,
+                coordinates:
+                    Position(fromLocation!.longitude, fromLocation!.latitude)),
             infiniteBounds: true),
         maxZoom: 17,
         minZoom: 0,
@@ -179,9 +173,7 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
         toLocation = widget.toLocation;
         fromLocation = widget.fromLocation;
       }
-      if (_mapboxMap != null) {
-        getMapInfo();
-      }
+      getMapInfo();
     }
   }
 
@@ -209,12 +201,10 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
             key: UniqueKey(),
             cameraOptions: CameraOptions(
                 center: Point(
-                        coordinates: Position(
-                            fromLocation!.longitude, fromLocation!.latitude))
-                    ,
+                    coordinates: Position(
+                        fromLocation!.longitude, fromLocation!.latitude)),
                 zoom: 11),
             styleUri: MapboxStyles.MAPBOX_STREETS,
-            textureView: false,
             onMapCreated: _onMapCreated,
           ),
           Positioned(
@@ -297,11 +287,6 @@ class _LocalMapScreenState extends State<LocalMapScreen> {
                   ),
                 ),
               )),
-          // Container(
-          //   child: OfflineRegionGeometryDefinition(
-          //     geometry: {},
-          //   ),
-          // )
         ],
       ),
     ));

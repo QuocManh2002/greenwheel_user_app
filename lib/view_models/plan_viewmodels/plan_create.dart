@@ -1,4 +1,5 @@
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
+import 'package:greenwheel_user_app/view_models/order.dart';
 
 class PlanCreate {
   int? locationId;
@@ -20,7 +21,11 @@ class PlanCreate {
   int? maxMemberWeight;
   List<String>? savedContactIds;
   DateTime? arrivedAt;
-  List<dynamic>? tempOrders;
+  List<OrderViewModel>? tempOrders;
+  String? travelDurationText;
+  String? travelDistanceText;
+  double? travelDurationValue;
+  double? travelDistanceValue;
 
   PlanCreate(
       {this.locationId,
@@ -42,5 +47,9 @@ class PlanCreate {
       this.savedContactIds,
       this.arrivedAt,
       this.tempOrders,
+      this.travelDurationText,
+      this.travelDistanceText,
+      this.travelDistanceValue,
+      this.travelDurationValue,
       this.savedContacts});
 }

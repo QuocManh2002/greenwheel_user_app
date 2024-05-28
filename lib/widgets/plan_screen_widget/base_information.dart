@@ -54,7 +54,8 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   @override
   void initState() {
     super.initState();
-    status = planStatuses.firstWhereOrNull((element) => element.engName == widget.plan.status);
+    status = planStatuses
+        .firstWhereOrNull((element) => element.engName == widget.plan.status);
     var tempDuration = DateFormat.Hm().parse(widget.plan.travelDuration!);
     if (tempDuration.hour != 0) {
       travelDurationText += '${tempDuration.hour} giờ ';
@@ -64,7 +65,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
     }
     maxMemberText =
         '${widget.plan.maxMemberCount! < 10 ? '0${widget.plan.maxMemberCount}' : widget.plan.maxMemberCount}';
-    if (widget.plan.memberCount != null && widget.plan.memberCount  != 0) {
+    if (widget.plan.memberCount != null && widget.plan.memberCount != 0) {
       memberCountText =
           '${widget.plan.memberCount! < 10 ? '0${widget.plan.memberCount}' : widget.plan.memberCount}';
     }
@@ -93,16 +94,16 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           SizedBox(
             height: 1.h,
           ),
-          if(memberCountText != null)
-          widget.plan.memberCount == 0 || !widget.isLeader
-              ? buildInforWidget('Thành viên tối đa:', '$maxMemberText người')
-              : buildInforWidget(
-                  'Đã tham gia:', '$memberCountText/$maxMemberText người'),
+          if (memberCountText != null)
+            widget.plan.memberCount == 0 || !widget.isLeader
+                ? buildInforWidget('Thành viên tối đa:', '$maxMemberText người')
+                : buildInforWidget(
+                    'Đã tham gia:', '$memberCountText/$maxMemberText người'),
           if (widget.plan.status != 'PENDING')
             SizedBox(
               height: 1.h,
             ),
-          if (widget.plan.status != null && widget.plan.status != planStatuses[0].engName)
+          if (status != null && status!.value != 0)
             buildInforWidget('Trạng thái:', status!.name),
           SizedBox(
             height: 1.h,
@@ -254,39 +255,40 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                               color: Colors.black),
                         ),
                         const Spacer(),
-                        if(widget.plan.memberCount != null)
-                        TextButton(
-                            style: ButtonStyle(
-                                foregroundColor: MaterialStatePropertyAll(
-                                    widget.plan.memberCount! != 0
-                                        ? primaryColor
-                                        : Colors.grey)),
-                            onPressed: () {
-                              if (widget.plan.memberCount != 0) {
-                                showModalBottomSheet(
-                                    context: context,
-                                    builder: (ctx) => MemberListWidget(
-                                          members: widget.members
-                                              .where((element) =>
-                                                  element.weight != 0)
-                                              .toList(),
-                                          onRemoveMember: onRemoveMember,
-                                        ));
-                              }
-                            },
-                            child: const Row(
-                              children: [
-                                Text(
-                                  'Xem tất cả',
-                                  style: TextStyle(
-                                      fontFamily: 'NotoSans', fontSize: 16),
-                                ),
-                                Icon(
-                                  Icons.keyboard_arrow_right,
-                                  size: 23,
-                                )
-                              ],
-                            ))
+                        if (widget.plan.memberCount != null)
+                          TextButton(
+                              style: ButtonStyle(
+                                  foregroundColor: MaterialStatePropertyAll(
+                                      widget.plan.memberCount! != 0
+                                          ? primaryColor
+                                          : Colors.grey)),
+                              onPressed: () {
+                                if (widget.plan.memberCount != 0) {
+                                  showModalBottomSheet(
+                                      context: context,
+                                      builder: (ctx) => MemberListWidget(
+                                            status: status!,
+                                            members: widget.members
+                                                .where((element) =>
+                                                    element.weight != 0)
+                                                .toList(),
+                                            onRemoveMember: onRemoveMember,
+                                          ));
+                                }
+                              },
+                              child: const Row(
+                                children: [
+                                  Text(
+                                    'Xem tất cả',
+                                    style: TextStyle(
+                                        fontFamily: 'NotoSans', fontSize: 16),
+                                  ),
+                                  Icon(
+                                    Icons.keyboard_arrow_right,
+                                    size: 23,
+                                  )
+                                ],
+                              ))
                       ],
                     ),
                     for (int i = 0;
@@ -333,7 +335,13 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                               ),
                             ],
                           ),
-                        )
+                        ),
+                    if (widget.members.length > 3)
+                      Text(
+                        '  ... +${widget.members.length - 3} thành viên',
+                        style: const TextStyle(
+                            fontSize: 17, fontFamily: 'NotoSans', color: Colors.black54),
+                      )
                   ],
                 ))
         ]));

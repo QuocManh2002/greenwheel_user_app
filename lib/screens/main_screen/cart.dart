@@ -3,25 +3,26 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/holiday.dart';
-import 'package:greenwheel_user_app/models/menu_item_cart.dart';
-import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/session.dart';
-import 'package:greenwheel_user_app/screens/sub_screen/select_order_date.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/order_create.dart';
-import 'package:greenwheel_user_app/view_models/order_detail.dart';
-import 'package:greenwheel_user_app/view_models/supplier.dart';
-import 'package:greenwheel_user_app/widgets/order_screen_widget/cart_item_card.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/global_constant.dart';
+import '../../core/constants/urls.dart';
+import '../../helpers/util.dart';
+import '../../main.dart';
+import '../../models/holiday.dart';
+import '../../models/menu_item_cart.dart';
+import '../../models/service_type.dart';
+import '../../models/session.dart';
+import '../../service/order_service.dart';
+import '../../service/plan_service.dart';
+import '../../view_models/order.dart';
+import '../../view_models/order_create.dart';
+import '../../view_models/order_detail.dart';
+import '../../view_models/supplier.dart';
+import '../../widgets/order_screen_widget/cart_item_card.dart';
+import '../sub_screen/select_order_date.dart';
 
 class CartScreen extends StatefulWidget {
   const CartScreen(
@@ -742,7 +743,6 @@ class _CartScreenState extends State<CartScreen> {
           productName: item.product.name,
           quantity: item.qty!,
           productId: item.product.id,
-          unitPrice: item.product.price.toDouble(),
           price: item.product.price.toDouble()));
       detailsMap.add({
         'productId': item.product.id,

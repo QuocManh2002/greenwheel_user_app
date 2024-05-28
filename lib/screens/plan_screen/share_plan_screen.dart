@@ -61,7 +61,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   List<PlanMemberViewModel> _planMembers = [];
 
   searchCustomer() async {
-    CustomerViewModel? customer = await customerService.GetCustomerByPhone(
+    CustomerViewModel? customer = await customerService.getCustomerByPhone(
         '84${phoneSearch.text.substring(1)}');
     if (customer == null) {
       setState(() {

@@ -2,12 +2,13 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:greenwheel_user_app/screens/offline_screen/offline_detail_screen.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class OfflinePlanCard extends StatelessWidget {
   const OfflinePlanCard({super.key, required this.plan});
-  final dynamic plan;
+  final PlanOfflineViewModel plan;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,7 @@ class OfflinePlanCard extends StatelessWidget {
                   width: 15.h,
                   decoration:
                       BoxDecoration(borderRadius: BorderRadius.circular(14)),
-                  child: Image.memory(base64Decode(plan['plan'].imageUrls![0]), fit: BoxFit.cover,)),
+                  child: Image.memory(base64Decode(plan.plan.imageUrls![0]), fit: BoxFit.cover,)),
               const SizedBox(
                 width: 8,
               ),
@@ -57,7 +58,7 @@ class OfflinePlanCard extends StatelessWidget {
                     Row(
                       children: [
                         Expanded(
-                          child: Text(plan['plan'].name!,
+                          child: Text(plan.plan.name!,
                               overflow: TextOverflow.clip,
                               maxLines: 2,
                               style: const TextStyle(
@@ -71,7 +72,7 @@ class OfflinePlanCard extends StatelessWidget {
                     Row(
                       children: [
                         Text(
-                            '${DateFormat('dd/MM/yyyy').format(plan['plan'].utcDepartAt!.toLocal())} - ${DateFormat('dd/MM/yyyy').format(plan['plan'].utcEndAt!.toLocal())}'),
+                            '${DateFormat('dd/MM/yyyy').format(plan.plan.utcDepartAt!.toLocal())} - ${DateFormat('dd/MM/yyyy').format(plan.plan.utcEndAt!.toLocal())}'),
                         const SizedBox(
                           width: 16,
                         ),

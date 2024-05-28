@@ -1,10 +1,8 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:greenwheel_user_app/core/constants/service_types.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
@@ -124,7 +122,7 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                       height: 15,
                     ),
                   ),
-                  if (widget.isLeader || widget.planType == planStatuses[7].engName)
+                  if (widget.isLeader || widget.planType == 'PUBLISH')
                     InkWell(
                       splashColor: Colors.transparent,
                       onTap: () {
@@ -158,7 +156,7 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                         SizedBox(
                           width: 40.w,
                           child: Text(
-                            '${'${Utils().getPeriodString(widget.order.period!)['text']} '}${DateFormat('dd/MM').format(day.runtimeType == String ? DateTime.parse(day) : day)}',
+                            '${'${Utils().getPeriodString(widget.order.period!)['text']} '}${DateFormat('dd/MM').format( DateTime.parse(day))}',
                             style: const TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,

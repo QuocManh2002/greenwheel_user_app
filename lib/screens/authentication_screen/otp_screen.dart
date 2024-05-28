@@ -159,11 +159,9 @@ class _OTPScreenState extends State<OTPScreen> {
         log('refresh: ${model.refreshToken}');
         sharedPreferences.setString('userToken', model.accessToken);
         sharedPreferences.setString('userRefreshToken', model.refreshToken);
-        if (model.deviceToken != deviceToken) {
-          await customerService.setDevice(deviceToken, context);
-        }
-        CustomerViewModel? traveler = await customerService.GetCustomerByPhone(
-            '84${widget.phoneNumber.substring(1)}');
+
+        CustomerViewModel? traveler = await customerService
+            .getCustomerByPhone('84${widget.phoneNumber.substring(1)}');
         if (traveler == null) {
           Navigator.pushAndRemoveUntil(
               context,
@@ -172,6 +170,9 @@ class _OTPScreenState extends State<OTPScreen> {
                   type: PageTransitionType.rightToLeft),
               (ctx) => false);
         } else {
+          if (model.deviceToken != deviceToken) {
+            await customerService.setDevice(deviceToken, context);
+          }
           customerService.saveAccountToSharePref(traveler);
           Navigator.pushAndRemoveUntil(
               context,

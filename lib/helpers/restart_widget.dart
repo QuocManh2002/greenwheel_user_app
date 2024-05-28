@@ -13,6 +13,7 @@ class RestartWidget extends StatefulWidget {
   }
 
   @override
+  // ignore: library_private_types_in_public_api
   _RestartAppState createState() => _RestartAppState();
 }
 

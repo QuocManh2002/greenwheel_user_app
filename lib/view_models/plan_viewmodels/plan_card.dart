@@ -1,34 +1,35 @@
-
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/province.dart';
-
 class PlanCardViewModel {
-    int id;
-    String? name;
-    DateTime utcStartAt;
-    DateTime utcEndAt;
-    String status;
-    LocationViewModel location;
-    ProvinceViewModel province;
+  int id;
+  String planName;
+  int periodCount;
+  int gcoinBudgetPerCapita;
+  String locationName;
+  String? status;
+  DateTime? utcDepartAt;
+  DateTime? utcEndAt;
 
-    PlanCardViewModel({
-        required this.id,
-        required this.utcEndAt,
-        required this.utcStartAt,
-        required this.location,
-        required this.province,
-        required this.status,
-        this.name
-    });
+  PlanCardViewModel(
+      {required this.id,
+      required this.gcoinBudgetPerCapita,
+      required this.periodCount,
+      required this.planName,
+      required this.locationName,
+      this.status,
+      this.utcDepartAt,
+      this.utcEndAt});
 
-    factory PlanCardViewModel.fromJson(Map<String, dynamic> json) => PlanCardViewModel(
-        id: json["id"],
-        utcEndAt: DateTime.parse(json["utcEndAt"]),
-        utcStartAt: DateTime.parse(json["utcStartAt"]),
-        location: LocationViewModel.fromJson(json["destination"]),
-        province: ProvinceViewModel.fromJson(json["destination"]["province"]),
-        status: json["status"],
-        name: json["name"]
-    );
-
+  factory PlanCardViewModel.fromJson(Map<String, dynamic> json) =>
+      PlanCardViewModel(
+          id: json['id'],
+          periodCount: json['periodCount'],
+          gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'],
+          planName: json['name'],
+          locationName: json['destination']['name'],
+          status: json['status'],
+          utcDepartAt: json['utcDepartAt'] != null
+              ? DateTime.parse(json['utcDepartAt'])
+              : null,
+          utcEndAt: json['utcEndAt'] != null
+              ? DateTime.parse(json['utcEndAt'])
+              : null);
 }

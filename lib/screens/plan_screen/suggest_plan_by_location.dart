@@ -4,9 +4,9 @@ import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/suggest_plan.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/filter_published_plan_dialog.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/suggest_plan_card.dart';
+import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SuggestPlansByLocationScreen extends StatefulWidget {
@@ -21,14 +21,14 @@ class SuggestPlansByLocationScreen extends StatefulWidget {
 class _SuggestPlanByLocationScreenState
     extends State<SuggestPlansByLocationScreen> {
   final PlanService _planService = PlanService();
-  List<SuggestPlanViewModel>? _suggestPlans;
+  List<PlanCardViewModel>? _suggestPlans;
   bool isLoading = true;
 
   int filterCombodateIndex = 0;
   double filterMinAmount = 0;
   double filterMaxAmount = 1;
 
-  List<SuggestPlanViewModel>? _filterPlans;
+  List<PlanCardViewModel>? _filterPlans;
 
   @override
   void initState() {
@@ -37,7 +37,7 @@ class _SuggestPlanByLocationScreenState
   }
 
   setUpData() async {
-    List<SuggestPlanViewModel>? suggestPlans = await _planService
+    List<PlanCardViewModel>? suggestPlans = await _planService
         .getSuggestPlanByLocation(widget.location.id, context);
     if (suggestPlans != null) {
       setState(() {
@@ -178,9 +178,10 @@ class _SuggestPlanByLocationScreenState
                         child: Column(
                           children: [
                             for (final plan in _filterPlans!)
-                              SuggestPlanCard(
-                                plan: plan,
-                              )
+                              PlanCard(
+                                  plan: plan,
+                                  isOwned: false,
+                                  isPublishedPlan: true)
                           ],
                         ),
                       ),
@@ -213,9 +214,7 @@ class _SuggestPlanByLocationScreenState
                         child: Column(
                           children: [
                             for (final plan in _suggestPlans!)
-                              SuggestPlanCard(
-                                plan: plan,
-                              )
+                              PlanCard(plan: plan, isOwned: false, isPublishedPlan: true)
                           ],
                         ),
                       ),

@@ -2,17 +2,16 @@
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_total_info.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
 import '../../core/constants/service_types.dart';
 import '../../screens/plan_screen/list_order_screen.dart';
 import '../../service/location_service.dart';
-import '../../service/plan_service.dart';
 import '../../view_models/order.dart';
 import '../../view_models/plan_viewmodels/plan_detail.dart';
 import 'plan_order_card.dart';
+import 'plan_total_info.dart';
 
 class DetailPlanServiceWidget extends StatefulWidget {
   const DetailPlanServiceWidget(
@@ -41,7 +40,6 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
     with TickerProviderStateMixin {
   late TabController tabController;
   final LocationService _locationService = LocationService();
-  final PlanService _planService = PlanService();
   List<OrderViewModel> _orderList = [];
   List<OrderViewModel> roomOrderList = [];
   List<OrderViewModel> foodOrderList = [];
@@ -57,6 +55,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
 
   setUpData() {
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+
     _totalSurcharge = (widget.plan.surcharges ?? []).fold(
       0,
       (previousValue, element) =>
@@ -71,22 +70,18 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
       foodOrderList = orderGroups[services[0].name] ?? [];
       movingOrderList = orderGroups[services[2].name] ?? [];
     });
+    final totalList = [roomOrderList, foodOrderList, movingOrderList];
+    int index = totalList
+        .indexOf(totalList.firstWhereOrNull((element) => element.isNotEmpty) ?? roomOrderList);
+    tabController.animateTo(index, duration: const Duration(milliseconds: 500), curve: Curves.linear);
     isShowTotal =
         widget.plan.status != 'PENDING' && widget.plan.status != 'REGISTERING';
   }
 
-  refreshData() async {
-    final rs =
-        await _planService.getOrderCreatePlan(widget.plan.id!, widget.planType);
-    if (rs != null) {
-      setState(() {
-        _orderList = rs['orders'];
-        final orderGroups = _orderList.groupListsBy((element) => element.type);
-        roomOrderList = orderGroups[services[1].name] ?? [];
-        foodOrderList = orderGroups[services[0].name] ?? [];
-        movingOrderList = orderGroups[services[2].name] ?? [];
-      });
-    }
+  @override
+  void dispose() {
+    tabController.dispose();
+    super.dispose();
   }
 
   @override

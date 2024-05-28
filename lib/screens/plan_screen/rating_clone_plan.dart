@@ -19,7 +19,7 @@ class _RatingClonePlanState extends State<RatingClonePlan> {
   num rating = 0;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
-  TextEditingController _ratingController = TextEditingController();
+  final TextEditingController _ratingController = TextEditingController();
   bool _isValidSentence(String sentence) {
     List<String> words = sentence.split(' ');
     Map<String, int> wordFrequency = {};
@@ -108,7 +108,7 @@ class _RatingClonePlanState extends State<RatingClonePlan> {
   btnOkColor: primaryColor,
   btnOkText: 'Ok',
   btnOkOnPress: (){
-    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) => TabScreen(pageIndex: 1)), (route) => false);
+    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 1)), (route) => false);
   }
   ).show();
 }

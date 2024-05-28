@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -14,10 +14,12 @@ class DetailPlanSurchargeNote extends StatefulWidget {
     required this.plan,
     required this.isLeader,
     required this.totalOrder,
+    required this.isOffline,
   });
   final PlanDetail plan;
   final bool isLeader;
   final double totalOrder;
+  final bool isOffline;
 
   @override
   State<DetailPlanSurchargeNote> createState() =>
@@ -104,6 +106,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                           isCreate: false,
                           surcharge: widget.plan.surcharges![index],
                           isLeader: widget.isLeader,
+                          isOffline: widget.isOffline,
                           callbackSurcharge: (dynamic) {},
                         ),
                       ),

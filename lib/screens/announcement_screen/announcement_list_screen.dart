@@ -6,6 +6,7 @@ import 'package:greenwheel_user_app/screens/loading_screen/notification_list_loa
 import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:greenwheel_user_app/service/announcement_service.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
+import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
 class AnnouncementListScreen extends StatefulWidget {
@@ -128,22 +129,34 @@ class _AnnouncementListScreenState extends State<AnnouncementListScreen> {
                               noti.isRead = true;
                             });
                           }
-                          if (noti.type == 'PLAN' &&
-                              noti.title == 'Kế hoạch sắp bị huỷ.') {
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => DetailPlanNewScreen(
-                                      isEnableToJoin: true,
-                                      planId: noti.planId!,
-                                      planType: "JOIN",
-                                    )));
-                          } else if (noti.title.contains('lời mời')) {
-                            // ignore: use_build_context_synchronously
-                            Navigator.of(context).push(MaterialPageRoute(
-                                builder: (ctx) => DetailPlanNewScreen(
-                                      isEnableToJoin: true,
-                                      planId: noti.planId!,
-                                      planType: "INVITATION",
-                                    )));
+                          if (noti.type == 'PLAN') {
+                            if (noti.isJoinedPlan != null &&
+                                noti.isJoinedPlan!) {
+                              // ignore: use_build_context_synchronously
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (ctx) => DetailPlanNewScreen(
+                                        isEnableToJoin: true,
+                                        planId: noti.planId!,
+                                        planType: "JOIN",
+                                      )));
+                            } else if (noti.isOwnedPlan != null &&
+                                noti.isOwnedPlan!) {
+                              // ignore: use_build_context_synchronously
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (ctx) => DetailPlanNewScreen(
+                                        isEnableToJoin: true,
+                                        planId: noti.planId!,
+                                        planType: "OWN",
+                                      )));
+                            } else {
+                              // ignore: use_build_context_synchronously
+                              Navigator.of(context).push(MaterialPageRoute(
+                                  builder: (ctx) => DetailPlanNewScreen(
+                                        isEnableToJoin: true,
+                                        planId: noti.planId!,
+                                        planType: "INVITATION",
+                                      )));
+                            }
                           }
                         },
                         child: Container(
@@ -177,13 +190,29 @@ class _AnnouncementListScreenState extends State<AnnouncementListScreen> {
                                     ),
                                     SizedBox(
                                       width: 70.w,
-                                      child: Text(
-                                        noti.body,
-                                        style: const TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w500,
-                                            fontFamily: 'NotoSans'),
-                                        overflow: TextOverflow.clip,
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            noti.body,
+                                            style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                                fontFamily: 'NotoSans'),
+                                            overflow: TextOverflow.clip,
+                                          ),
+                                          SizedBox(
+                                            height: 0.5.h,
+                                          ),
+                                          Text(
+                                            '${DateFormat.Hm().format(noti.createdAt!.toLocal())}${noti.createdAt!.toLocal().day == DateTime.now().day ? '' : ' ${DateFormat('dd/MM/yyyy').format(noti.createdAt!.toLocal())}'}',
+                                            style: const TextStyle(
+                                                fontSize: 13,
+                                                color: Colors.grey,
+                                                fontFamily: 'NotoSans'),
+                                          )
+                                        ],
                                       ),
                                     ),
                                     if (!noti.isRead!)

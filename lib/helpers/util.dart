@@ -355,7 +355,7 @@ class Utils {
     sharedPreferences.setInt('maxCombodateValue', plan.numOfExpPeriod!);
     sharedPreferences.setInt(
         'init_plan_number_of_member', plan.maxMemberCount!);
-    // if (options[0]) {
+
     sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
     sharedPreferences.setInt(
         'plan_combo_date',
@@ -364,23 +364,16 @@ class Utils {
                     (element) => element.duration == plan.numOfExpPeriod)
                 .id -
             1);
-    // }
-    // if (options[1]) {
     sharedPreferences.setInt('plan_number_of_member', plan.maxMemberCount!);
     sharedPreferences.setInt('plan_max_member_weight', plan.maxMemberWeight!);
-    // }
 
-    // if (options[2]) {
     sharedPreferences.setDouble('plan_start_lat', plan.startLocationLat!);
     sharedPreferences.setDouble('plan_start_lng', plan.startLocationLng!);
     sharedPreferences.setString('plan_start_address', plan.departureAddress!);
     sharedPreferences.setString(
         'plan_departureTime', plan.utcDepartAt!.toLocal().toString());
-    // }
 
-    // if (options[3]) {
     sharedPreferences.setString('plan_name', plan.name!);
-    // }
 
     if (options[5]) {
       sharedPreferences.setStringList('selectedIndex',
@@ -393,7 +386,7 @@ class Utils {
         final availableOrder = plan.orders!
             .where((e) =>
                 e.supplier!.isActive! &&
-                e.details!.every((element) => element.isAvailable))
+                e.details!.every((element) => element.isAvailable!))
             .toList();
         final list = availableOrder.map((order) {
           final orderDetailGroupList =
@@ -410,8 +403,7 @@ class Utils {
                         'productName': item.productName,
                         'quantity': item.quantity,
                         'partySize': item.partySize,
-                        'unitPrice': item.unitPrice.toDouble(),
-                        'price': item.price.toDouble()
+                        'price': item.price
                       })
                   .toList(),
               order.period!,
@@ -428,7 +420,7 @@ class Utils {
                       .inDays)
                   .toList(),
               order.uuid,
-              order.total!);
+              order.total! / GlobalConstant().VND_CONVERT_RATE);
         }).toList();
         for (final date in plan.schedule!) {
           for (final item in date) {
@@ -460,9 +452,7 @@ class Utils {
           json.encode(
               plan.surcharges!.map((e) => e.toJsonWithoutImage()).toList()));
     }
-    // if (options[8]) {
     sharedPreferences.setString('plan_note', plan.note ?? 'null');
-    // }
   }
 
   handleAlreadyDraft(BuildContext context, LocationViewModel location,
@@ -552,7 +542,6 @@ class Utils {
               'productName': detail.first.name,
               'quantity': detail.length,
               'partySize': detail.first.partySize,
-              'unitPrice': detail.first.price.toDouble(),
               'price': detail.first.price.toDouble()
             });
           }
@@ -564,7 +553,6 @@ class Utils {
               'productId': detail['productId'],
               'productName': detail['productName'],
               'partySize': detail['partySize'],
-              'unitPrice': detail['unitPrice'].toDouble(),
               'price': detail['price'].toDouble()
             };
             newDetail['quantity'] =
@@ -642,9 +630,7 @@ class Utils {
         order['newServeDates'] = newIndexes
             .map((e) => startDate.add(Duration(days: e)).toString())
             .toList();
-        order['invalidServeDates'] = invalidIndexes
-            .map((e) => startDate.add(Duration(days: e)).toString())
-            .toList();
+        order['invalidIndexes'] = invalidIndexes;
         order['newTotal'] = getTempOrderTotal(order, true);
         updatedOrders.add(order);
       } else {
@@ -689,7 +675,9 @@ class Utils {
               tempOrders.firstWhere((e) => e['orderUUID'] == item['orderUUID']);
           final session = sessions
               .firstWhere((element) => element.enumName == order['period']);
-          if (session.index > endSession.index && (order['type'] == services[0].name || order['type'] == services[2].name)) {
+          if (session.index > endSession.index &&
+              (order['type'] == services[0].name ||
+                  order['type'] == services[2].name)) {
             if (updatedOrders
                 .any((element) => element['orderUUID'] == item['orderUUID'])) {
               order['newIndexes'].remove(order['newIndexes'].last);
@@ -811,7 +799,7 @@ class Utils {
               order['newServeDates'] = null;
               order['newDetails'] = null;
               order['newIndexes'] = null;
-              order['invalidServeDates'] = null;
+              order['invalidIndexes'] = null;
             }
             sharedPreferences.setString(
                 'plan_schedule', json.encode(newSchedule));
@@ -827,7 +815,7 @@ class Utils {
     }
   }
 
-  updateProductPrice(BuildContext context) async {
+  updateProductPrice(BuildContext context, bool isUpdatePlan) async {
     var orders =
         json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
     List<double> newPrice = [];
@@ -1009,7 +997,6 @@ class Utils {
         for (final detail in order['details']) {
           final index = productIds.indexOf(detail['productId']);
           detail['price'] = newPrice[index];
-          detail['unitPrice'] = newPrice[index];
         }
         order['total'] = getTempOrderTotal(order, false);
       }
@@ -1053,7 +1040,7 @@ class Utils {
           0,
           (previousValue, element) =>
               previousValue +
-              (element['unitPrice'] * element['quantity']) *
+              (element['price'] * element['quantity']) *
                   ((1 + upPct / 100) * numberHoliday +
                       ((isUpdate ? order['newServeDates'] : order['serveDates'])
                               .length -
@@ -1064,7 +1051,7 @@ class Utils {
           0,
           (previousValue, element) =>
               previousValue +
-              (element['unitPrice'] * element['quantity']) *
+              (element['price'] * element['quantity']) *
                   ((1 + upPct / 100) * numberHoliday +
                       ((isUpdate ? order['newServeDates'] : order['serveDates'])
                               .length -

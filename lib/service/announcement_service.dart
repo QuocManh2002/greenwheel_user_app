@@ -135,15 +135,7 @@ class AnnouncementService {
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 {
-  announcements(where: {
-    accountId:{
-      eq : $travelerId
-    }
-  }
-  order: {
-  id:DESC
-  
-}) {
+  announcements(where: { accountId: { eq: $travelerId } }, order: { id: DESC }) {
     edges {
       node {
         id
@@ -157,6 +149,12 @@ class AnnouncementService {
         planId
         isRead
         level
+        plan {
+          accountId
+          members {
+            accountId
+          }
+        }
       }
     }
   }

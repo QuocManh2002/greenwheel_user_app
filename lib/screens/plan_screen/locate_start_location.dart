@@ -1,18 +1,23 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/helpers/goong_request.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
+
+import '../../core/constants/colors.dart';
+import '../../helpers/goong_request.dart';
+import '../../helpers/util.dart';
+import '../../main.dart';
+import '../../view_models/location.dart';
+import '../../view_models/plan_viewmodels/plan_create.dart';
+import '../../widgets/style_widget/dialog_style.dart';
 
 class LocateStartLocation extends StatefulWidget {
   const LocateStartLocation(
-      {super.key, required this.location, required this.callback});
+      {super.key, required this.location, required this.callback, this.plan});
   final LocationViewModel location;
-  final void Function(PointLatLng? point) callback;
+  final PlanCreate? plan;
+  final void Function(PointLatLng? point, String? address) callback;
 
   @override
   State<LocateStartLocation> createState() => _LocateStartLocationState();
@@ -22,11 +27,6 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
   CircleAnnotationManager? _circleAnnotationManagerStart;
   PolylinePoints polylinePoints = PolylinePoints();
   PointLatLng? _selectedLocation;
-  String distanceText = '';
-  String durationText = '';
-
-  double distanceValue = 0;
-  double durationValue = 0;
   bool _isHasLine = false;
   MapboxMap? _mapboxMap;
   String? address;
@@ -44,9 +44,8 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
       }
       _mapboxMap!.setCamera(CameraOptions(
           center: Point(
-                  coordinates: Position(
-                      widget.location.longitude, widget.location.latitude))
-              ,
+              coordinates: Position(
+                  widget.location.longitude, widget.location.latitude)),
           zoom: 10));
       _mapboxMap!.flyTo(
           CameraOptions(
@@ -61,9 +60,8 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
         value.create(
           CircleAnnotationOptions(
             geometry: Point(
-                    coordinates: Position(
-                        widget.location.longitude, widget.location.latitude))
-                ,
+                coordinates: Position(
+                    widget.location.longitude, widget.location.latitude)),
             circleColor: redColor.value,
             circleRadius: 12.0,
           ),
@@ -78,16 +76,6 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
     dynamic route;
     if (jsonResponse != null) {
       route = jsonResponse['routes'][0]['overview_polyline']['points'];
-      durationText = jsonResponse['routes'][0]['legs'][0]['duration']['text'];
-      distanceText = jsonResponse['routes'][0]['legs'][0]['distance']['text'];
-      durationValue =
-          jsonResponse['routes'][0]['legs'][0]['duration']['value'] / 3600;
-      distanceValue =
-          jsonResponse['routes'][0]['legs'][0]['distance']['value'] / 1000;
-      sharedPreferences.setString('plan_duration_text', durationText);
-      sharedPreferences.setString('plan_distance_text', distanceText);
-      sharedPreferences.setDouble('plan_duration_value', durationValue);
-      sharedPreferences.setDouble('plan_distance_value', distanceValue);
       List<PointLatLng> result = polylinePoints.decodePolyline(route);
       List<List<double>> coordinates =
           result.map((point) => [point.longitude, point.latitude]).toList();
@@ -110,13 +98,11 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
       _mapboxMap!.setBounds(CameraBoundsOptions(
           bounds: CoordinateBounds(
               southwest: Point(
-                      coordinates: Position(
-                          widget.location.longitude, widget.location.latitude))
-                  ,
+                  coordinates: Position(
+                      widget.location.longitude, widget.location.latitude)),
               northeast: Point(
-                      coordinates: Position(_selectedLocation!.longitude,
-                          _selectedLocation!.latitude))
-                  ,
+                  coordinates: Position(_selectedLocation!.longitude,
+                      _selectedLocation!.latitude)),
               infiniteBounds: true),
           maxZoom: 17,
           minZoom: 0,
@@ -138,46 +124,16 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
         _isHasLine = true;
       }
     }
-    // var lineLayerJson = """{
-    //       "type":"line",
-    //       "id":"line_layer",
-    //       "source":"line",
-    //       "paint":{
-    //       "line-join":"round",
-    //       "line-cap":"round",
-    //       "line-color":"rgb(146, 174, 255)",
-    //       "line-width":9.0
-    //       }
-    //     }""";
-    // await _mapboxMap?.style.addPersistentStyleLayer(lineLayerJson, null);
   }
 
   _onSelectLocation(PointLatLng selectedLocation) async {
     if (!await Utils().checkLoationInSouthSide(
         lon: selectedLocation.longitude, lat: selectedLocation.latitude)) {
-      AwesomeDialog(
-        // ignore: use_build_context_synchronously
-        context: context,
-        dialogType: DialogType.warning,
-        body: const Center(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                'Xin hãy chọn địa điểm trong lãnh thổ Việt Nam',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                textAlign: TextAlign.center,
-              ),
-              SizedBox(
-                height: 16,
-              ),
-            ],
-          ),
-        ),
-        btnOkOnPress: () {},
-        btnOkColor: Colors.orange,
-        btnOkText: 'Ok',
-      ).show();
+      DialogStyle().basicDialog(
+          // ignore: use_build_context_synchronously
+          context: context,
+          title: 'Xin hãy chọn địa điểm trong lãnh thổ Việt Nam',
+          type: DialogType.warning);
     } else {
       _selectedLocation = selectedLocation;
       if (_mapboxMap != null) {
@@ -188,9 +144,8 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
 
         _mapboxMap!.setCamera(CameraOptions(
             center: Point(
-                    coordinates: Position(
-                        selectedLocation.longitude, selectedLocation.latitude))
-                ,
+                coordinates: Position(
+                    selectedLocation.longitude, selectedLocation.latitude)),
             zoom: 10));
         _mapboxMap?.flyTo(
             CameraOptions(
@@ -207,19 +162,22 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
         value.create(
           CircleAnnotationOptions(
             geometry: Point(
-                    coordinates: Position(
-                        selectedLocation.longitude, selectedLocation.latitude))
-                ,
+                coordinates: Position(
+                    selectedLocation.longitude, selectedLocation.latitude)),
             circleColor: primaryColor.value,
             circleRadius: 12.0,
           ),
         );
       });
       _getRouteInfo();
-      sharedPreferences.setDouble(
-          'plan_start_lat', _selectedLocation!.latitude);
-      sharedPreferences.setDouble(
-          'plan_start_lng', _selectedLocation!.longitude);
+      if (widget.plan == null) {
+        sharedPreferences.setDouble(
+            'plan_start_lat', _selectedLocation!.latitude);
+        sharedPreferences.setDouble(
+            'plan_start_lng', _selectedLocation!.longitude);
+      } else {
+        widget.plan?.departCoordinate = _selectedLocation;
+      }
     }
   }
 
@@ -238,21 +196,12 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
           IconButton(
               onPressed: () {
                 if (_selectedLocation == null) {
-                  AwesomeDialog(
-                          context: context,
-                          animType: AnimType.leftSlide,
-                          dialogType: DialogType.warning,
-                          title: 'Hãy chọn địa điểm xuất phát',
-                          titleTextStyle: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              fontFamily: 'NotoSans'),
-                          btnOkColor: Colors.amber,
-                          btnOkOnPress: () {},
-                          btnOkText: 'OK')
-                      .show();
+                  DialogStyle().basicDialog(
+                      context: context,
+                      title: 'Vui lòng chọn địa điểm xuất phát',
+                      type: DialogType.warning);
                 } else {
-                  widget.callback(_selectedLocation!);
+                  widget.callback(_selectedLocation!, address);
                   Navigator.of(context).pop();
                 }
               },
@@ -263,24 +212,99 @@ class _LocateStartLocationState extends State<LocateStartLocation> {
               ))
         ],
       ),
-      body: MapWidget(
-        key: UniqueKey(),
-        cameraOptions: CameraOptions(
-            center: Point(
+      body: Stack(
+        children: [
+          MapWidget(
+            key: UniqueKey(),
+            cameraOptions: CameraOptions(
+                center: Point(
                     coordinates: Position(
-                        widget.location.longitude, widget.location.latitude))
-                ,
-            zoom: 10),
-        styleUri: MapboxStyles.MAPBOX_STREETS,
-        onTapListener: (coordinate) async {
-          if (_circleAnnotationManagerStart != null) {
-            await _circleAnnotationManagerStart!.deleteAll();
-          }
-          await _onSelectLocation(PointLatLng(coordinate.touchPosition.x, coordinate.touchPosition.y));
-        },
-        textureView: false,
-        onMapCreated: _onMapCreated,
+                        widget.location.longitude, widget.location.latitude)),
+                zoom: 10),
+            styleUri: MapboxStyles.MAPBOX_STREETS,
+            onTapListener: (coordinate) async {
+              final tempAddress = await _getPlaceDetail(PointLatLng(
+                  coordinate.point.coordinates.lat.toDouble(),
+                  coordinate.point.coordinates.lng.toDouble()));
+              if (tempAddress == null || tempAddress.toString().isEmpty) {
+                DialogStyle().basicDialog(
+                    // ignore: use_build_context_synchronously
+                    context: context,
+                    title: 'Không xác định được địa chỉ cụ thể',
+                    desc: 'Vui lòng chọn lại một địa điểm khác',
+                    type: DialogType.warning);
+              } else if (tempAddress.toString().length >
+                      GlobalConstant().ADDRESS_MAX_LENGTH ||
+                  tempAddress.toString().length <
+                      GlobalConstant().ADDRESS_MIN_LENGTH) {
+                DialogStyle().basicDialog(
+                    // ignore: use_build_context_synchronously
+                    context: context,
+                    title:
+                        'Độ dài của địa điểm xuất phát phải từ ${GlobalConstant().ADDRESS_MIN_LENGTH} - ${GlobalConstant().ADDRESS_MAX_LENGTH} ký tự',
+                    desc:
+                        'Địa điểm đã chọn: $tempAddress, vui lòng chọn lại địa điểm khác',
+                    type: DialogType.warning);
+              } else {
+                // DialogStyle().ba
+                AwesomeDialog(
+                        // ignore: use_build_context_synchronously
+                        context: context,
+                        animType: AnimType.leftSlide,
+                        dialogType: DialogType.warning,
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        body: Center(
+                          child: RichText(
+                            text: TextSpan(
+                                text: 'Chọn ',
+                                style: const TextStyle(
+                                  fontSize: 17,
+                                  color: Colors.grey,
+                                  fontFamily: 'NotoSans',
+                                ),
+                                children: [
+                                  TextSpan(
+                                      text: tempAddress,
+                                      style: const TextStyle(
+                                          color: Colors.black,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.bold)),
+                                  const TextSpan(
+                                      text: ' làm địa điểm xuất phát.')
+                                ]),
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
+                        btnOkOnPress: () async {
+                          if (_circleAnnotationManagerStart != null) {
+                            await _circleAnnotationManagerStart!.deleteAll();
+                          }
+                          await _onSelectLocation(PointLatLng(
+                              coordinate.point.coordinates.lat.toDouble(),
+                              coordinate.point.coordinates.lng.toDouble()));
+                          address = tempAddress;
+                        },
+                        btnOkColor: Colors.amber,
+                        btnOkText: 'Chọn',
+                        btnCancelColor: Colors.blueAccent,
+                        btnCancelOnPress: () {},
+                        btnCancelText: 'Huỷ')
+                    .show();
+              }
+            },
+            textureView: false,
+            onMapCreated: _onMapCreated,
+          ),
+        ],
       ),
     ));
+  }
+
+  _getPlaceDetail(PointLatLng point) async {
+    var result = await getPlaceDetail(point);
+    if (result != null) {
+      return result['results'][0]['formatted_address'];
+    }
+    return null;
   }
 }
