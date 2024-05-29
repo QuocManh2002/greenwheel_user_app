@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -13,6 +15,10 @@ import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
+import '../../helpers/util.dart';
+import '../../main.dart';
+import '../../models/holiday.dart';
+
 class SupplierCard extends StatelessWidget {
   const SupplierCard(
       {super.key,
@@ -26,6 +32,8 @@ class SupplierCard extends StatelessWidget {
       this.isOrder,
       this.availableGcoinAmount,
       this.initSession,
+      this.serveDates,
+      this.uuid,
       required this.endDate});
   final DateTime startDate;
   final DateTime endDate;
@@ -38,6 +46,8 @@ class SupplierCard extends StatelessWidget {
   final int? availableGcoinAmount;
   final void Function(dynamic tempOrder) callbackFunction;
   final Session? initSession;
+  final List<DateTime>? serveDates;
+  final String? uuid;
 
   @override
   Widget build(BuildContext context) {
@@ -54,22 +64,34 @@ class SupplierCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
+              final holidayUpPCT = Utils().getHolidayUpPct(serviceType.name);
+              final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
+              List<Holiday> holidays = holidaysText!
+                  .map((e) => Holiday.fromJson(json.decode(e)))
+                  .toList();
+              final dates =
+                  Utils().getHolidayServingDates(holidays, serveDates!);
+              // final normalServingDates = dates['normalServingDates'];
+              final holidayServingDates = dates['holidayServingDates'];
               Navigator.push(
                   context,
                   PageTransition(
                       child: ServiceMenuScreen(
                         inputModel: OrderInputModel(
-                          startDate: startDate,
-                          endDate: endDate,
-                          period: 'NOON',
-                          numberOfMember: numberOfMember,
-                          supplier: supplier,
-                          serviceType: serviceType,
-                          isOrder: isOrder,
-                          session: initSession,
-                          availableGcoinAmount: availableGcoinAmount,
-                          callbackFunction: callbackFunction,
-                        ),
+                            startDate: startDate,
+                            holidayUpPCT: holidayUpPCT,
+                            endDate: endDate,
+                            period: 'NOON',
+                            numberOfMember: numberOfMember,
+                            supplier: supplier,
+                            serviceType: serviceType,
+                            isOrder: isOrder,
+                            session: initSession,
+                            availableGcoinAmount: availableGcoinAmount,
+                            callbackFunction: callbackFunction,
+                            holidayServingDates: holidayServingDates,
+                            orderGuid: uuid,
+                            servingDates: serveDates),
                       ),
                       type: PageTransitionType.rightToLeft));
             },

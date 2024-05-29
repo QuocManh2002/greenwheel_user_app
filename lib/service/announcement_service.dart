@@ -153,6 +153,7 @@ class AnnouncementService {
           accountId
           members {
             accountId
+            status
           }
         }
       }

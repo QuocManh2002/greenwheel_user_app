@@ -73,7 +73,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
     final totalList = [roomOrderList, foodOrderList, movingOrderList];
     int index = totalList
         .indexOf(totalList.firstWhereOrNull((element) => element.isNotEmpty) ?? roomOrderList);
-    tabController.animateTo(index, duration: const Duration(milliseconds: 500), curve: Curves.linear);
+    // tabController.animateTo(index, duration: const Duration(milliseconds: 500), curve: Curves.linear);
+    tabController.animateTo(index, duration: const Duration(milliseconds: 500));
     isShowTotal =
         widget.plan.status != 'PENDING' && widget.plan.status != 'REGISTERING';
   }
@@ -109,6 +110,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                         if (rs != null) {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (ctx) => ListOrderScreen(
+                                
                                     availableGcoinAmount:
                                         widget.plan.actualGcoinBudget,
                                     planId: widget.plan.id!,

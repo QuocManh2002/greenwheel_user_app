@@ -1,5 +1,6 @@
-
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:intl/intl.dart';
@@ -17,8 +18,11 @@ class DetailPaymentPlanInfo extends StatelessWidget {
           text,
           textAlign: TextAlign.end,
           overflow: TextOverflow.clip,
-          style: const TextStyle(fontFamily: 'NotoSans',
-              fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black),
+          style: const TextStyle(
+              fontFamily: 'NotoSans',
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              color: Colors.black),
         );
     return Column(
       children: [
@@ -50,13 +54,13 @@ class DetailPaymentPlanInfo extends StatelessWidget {
               children: [
                 const Text(
                   'Chuyến đi',
-                  style: TextStyle(fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
+                  style: TextStyle(
+                      fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
                 ),
-                const Spacer(),
                 SizedBox(
-                  width: 60.w,
-                  child: buildTextWidget(plan.name!),
-                )
+                  width: 2.w,
+                ),
+                Expanded(child: buildTextWidget(plan.name!))
               ],
             ),
             Padding(
@@ -70,13 +74,13 @@ class DetailPaymentPlanInfo extends StatelessWidget {
               children: [
                 const Text(
                   'Địa điểm',
-                  style: TextStyle(fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
+                  style: TextStyle(
+                      fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
                 ),
-                const Spacer(),
                 SizedBox(
-                  width: 60.w,
-                  child: buildTextWidget(plan.locationName!),
-                )
+                  width: 2.w,
+                ),
+                Expanded(child: buildTextWidget(plan.locationName!))
               ],
             ),
             Padding(
@@ -90,40 +94,18 @@ class DetailPaymentPlanInfo extends StatelessWidget {
               children: [
                 const Text(
                   'Thời gian',
-                  style: TextStyle(fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
+                  style: TextStyle(
+                      fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
                 ),
-                const Spacer(),
                 SizedBox(
-                    width: 60.w,
-                    child: buildTextWidget(
-                        '${DateFormat('dd/MM/yyyy').format(plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(plan.utcEndAt!)}'))
+                  width: 2.w,
+                ),
+                Expanded(
+                  child: buildTextWidget(
+                      '${DateFormat('dd/MM/yyyy').format(plan.utcDepartAt!)} - ${DateFormat('dd/MM/yyyy').format(plan.utcEndAt!)}'),
+                )
               ],
             ),
-            // if (!isView)
-            //   Padding(
-            //     padding: const EdgeInsets.symmetric(vertical: 1),
-            //     child: Divider(
-            //       color: Colors.grey.withOpacity(0.5),
-            //     ),
-            //   ),
-            // if (!isView)
-            //   Row(
-            //     crossAxisAlignment: CrossAxisAlignment.start,
-            //     children: [
-            //       const Text(
-            //         'Số người đi cùng tối đa',
-            //         style: TextStyle(fontFamily: 'NotoSans', fontSize: 15, color: Colors.grey),
-            //       ),
-            //       const Spacer(),
-            //       SizedBox(
-            //         width: 30.w,
-            //         child: buildTextWidget(
-            //             plan.maxMemberWeight! < 11 && plan.maxMemberWeight! > 1
-            //                 ? '0${plan.maxMemberWeight! - 1}'
-            //                 : '${plan.maxMemberWeight! - 1}'),
-            //       )
-            //     ],
-            //   ),
             SizedBox(
               height: 0.5.h,
             )

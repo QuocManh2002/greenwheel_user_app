@@ -38,6 +38,7 @@ class PlanDetail {
   DateTime? utcStartAt;
   DateTime? utcEndAt;
   PointLatLng? locationLatLng;
+  bool? isPublished;
 
   PlanDetail(
       {this.id,
@@ -72,6 +73,7 @@ class PlanDetail {
       this.utcRegCloseAt,
       this.utcStartAt,
       this.locationLatLng,
+      this.isPublished,
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
@@ -99,6 +101,7 @@ class PlanDetail {
         displayGcoinBudget: json['displayGcoinBudget'].toInt(),
         memberCount: json['memberCount'],
         departureAddress: json['departureAddress'],
+        isPublished: json['isPublished'],
         gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'].toInt(),
         startLocationLat: json["departure"]["coordinates"][1].toDouble(),
         startLocationLng: json["departure"]["coordinates"][0].toDouble(),

@@ -25,13 +25,12 @@ class SurchargeViewModel {
           gcoinAmount: json['gcoinAmount'],
           note: "${json['note']}");
 
-  factory SurchargeViewModel.fromJsonLocal(dynamic json) =>
-      SurchargeViewModel(
-          id: json['id'].toString(),
-          imagePath: json['imagePath'],
-          alreadyDivided: json['alreadyDivided'],
-          gcoinAmount: json['gcoinAmount'],
-          note: json['note']);
+  factory SurchargeViewModel.fromJsonLocal(dynamic json) => SurchargeViewModel(
+      id: json['id'].toString(),
+      imagePath: json['imagePath'],
+      alreadyDivided: json['alreadyDivided'],
+      gcoinAmount: json['gcoinAmount'],
+      note: json['note']);
 
   Map<String, dynamic> toJson() => {
         'id': id,
@@ -47,5 +46,10 @@ class SurchargeViewModel {
         'imagePath': null,
         'gcoinAmount': gcoinAmount,
         'note': json.encode(note),
+      };
+
+  Map<String, dynamic> toFinalJson() => {
+        'gcoinAmount': gcoinAmount,
+        'note': note,
       };
 }

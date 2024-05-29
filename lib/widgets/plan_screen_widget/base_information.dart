@@ -91,20 +91,21 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
           ),
           buildInforWidget('Kết thúc:',
               '${DateFormat.Hm().format(widget.plan.utcEndAt!.toLocal())} ${DateFormat('dd/MM/yy').format(widget.plan.utcEndAt!)}'),
-          SizedBox(
-            height: 1.h,
-          ),
+          if (memberCountText != null)
+            SizedBox(
+              height: 1.h,
+            ),
           if (memberCountText != null)
             widget.plan.memberCount == 0 || !widget.isLeader
                 ? buildInforWidget('Thành viên tối đa:', '$maxMemberText người')
                 : buildInforWidget(
                     'Đã tham gia:', '$memberCountText/$maxMemberText người'),
-          if (widget.plan.status != 'PENDING')
-            SizedBox(
-              height: 1.h,
-            ),
-          if (status != null && status!.value != 0)
-            buildInforWidget('Trạng thái:', status!.name),
+          // if (widget.plan.status != 'PENDING')
+          //   SizedBox(
+          //     height: 1.h,
+          //   ),
+          // if (status != null && status!.value != 0)
+          //   buildInforWidget('Trạng thái:', status!.name),
           SizedBox(
             height: 1.h,
           ),
@@ -340,7 +341,9 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                       Text(
                         '  ... +${widget.members.length - 3} thành viên',
                         style: const TextStyle(
-                            fontSize: 17, fontFamily: 'NotoSans', color: Colors.black54),
+                            fontSize: 17,
+                            fontFamily: 'NotoSans',
+                            color: Colors.black54),
                       )
                   ],
                 ))

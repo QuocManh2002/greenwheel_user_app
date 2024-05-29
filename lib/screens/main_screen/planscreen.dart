@@ -1,5 +1,7 @@
 import 'package:collection/collection.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -46,6 +48,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
     List<PlanCardViewModel> canceledPlans = [];
     List<PlanCardViewModel> historyPlans = [];
     List<PlanCardViewModel> readyPlans = [];
+    List<PlanCardViewModel> joinedPlans = [];
     List<PlanCardViewModel>? totalPlans =
         await _planService.getPlanCards(false);
 
@@ -57,11 +60,13 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
       onGoingPlans.addAll(planGroupList[planStatuses[4].engName] ?? []);
       historyPlans.addAll(planGroupList[planStatuses[5].engName] ?? []);
       historyPlans.addAll(planGroupList[planStatuses[6].engName] ?? []);
+      joinedPlans.addAll(planGroupList[planStatuses[1].engName] ?? []);
       setState(() {
         _totalPlans.add(readyPlans);
         _totalPlans.add(onGoingPlans);
         _totalPlans.add(historyPlans);
         _totalPlans.add(canceledPlans);
+        _totalPlans.add(joinedPlans);
         isLoading = false;
       });
     }
@@ -205,126 +210,158 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                       height: 1.h,
                     ),
                     if (!isSearch)
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: InkWell(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12)),
-                              onTap: () {
-                                setState(() {
-                                  _selectedTab = 0;
-                                });
-                              },
-                              child: TabIconButton(
-                                iconDefaultUrl: upComingGreen,
-                                iconSelectedUrl: upComingWhite,
-                                text: 'Sắp đến',
-                                isSelected: _selectedTab == 0,
-                                index: 0,
-                                hasHeight: true,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12)),
-                              onTap: () {
-                                setState(() {
-                                  _selectedTab = 1;
-                                });
-                              },
-                              child: TabIconButton(
-                                iconDefaultUrl: onGoingGreen,
-                                iconSelectedUrl: onGoingWhite,
-                                text: 'Đang diễn ra',
-                                isSelected: _selectedTab == 1,
-                                index: 1,
-                                hasHeight: true,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12)),
-                              onTap: () {
-                                setState(() {
-                                  _selectedTab = 2;
-                                });
-                              },
-                              child: TabIconButton(
-                                iconDefaultUrl: historyGreen,
-                                iconSelectedUrl: historyWhite,
-                                text: 'Lịch sử',
-                                isSelected: _selectedTab == 2,
-                                index: 2,
-                                hasHeight: true,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12)),
-                              onTap: () {
-                                setState(() {
-                                  _selectedTab = 3;
-                                });
-                              },
-                              child: TabIconButton(
-                                iconDefaultUrl: cancelGreen,
-                                iconSelectedUrl: cancelWhite,
-                                text: 'Đã hủy',
-                                isSelected: _selectedTab == 3,
-                                index: 3,
-                                hasHeight: true,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
-                          Expanded(
-                            child: InkWell(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(12)),
-                              onTap: () async {
-                                setState(() {
-                                  isLoading = true;
-                                  _selectedTab = 4;
-                                });
-                                List<PlanCardViewModel>? myplans =
-                                    await _planService.getPlanCards(true);
-                                if (myplans != null) {
+                      SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 17.w,
+                              child: InkWell(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
+                                onTap: () {
                                   setState(() {
-                                    isLoading = false;
-                                    _myPlans = myplans;
+                                    _selectedTab = 0;
                                   });
-                                }
-                              },
-                              child: TabIconButton(
-                                iconDefaultUrl: draftGreen,
-                                iconSelectedUrl: draftWhite,
-                                text: 'Chuyến đi của tôi',
-                                isSelected: _selectedTab == 4,
-                                index: 4,
-                                hasHeight: true,
+                                },
+                                child: TabIconButton(
+                                  iconDefaultUrl: upComingGreen,
+                                  iconSelectedUrl: upComingWhite,
+                                  text: 'Sắp đến',
+                                  isSelected: _selectedTab == 0,
+                                  index: 0,
+                                  hasHeight: true,
+                                ),
                               ),
                             ),
-                          ),
-                        ],
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            SizedBox(
+                              width: 17.w,
+                              child: InkWell(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedTab = 1;
+                                  });
+                                },
+                                child: TabIconButton(
+                                  iconDefaultUrl: onGoingGreen,
+                                  iconSelectedUrl: onGoingWhite,
+                                  text: 'Đang diễn ra',
+                                  isSelected: _selectedTab == 1,
+                                  index: 1,
+                                  hasHeight: true,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            SizedBox(
+                              width: 17.w,
+                              child: InkWell(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedTab = 2;
+                                  });
+                                },
+                                child: TabIconButton(
+                                  iconDefaultUrl: historyGreen,
+                                  iconSelectedUrl: historyWhite,
+                                  text: 'Lịch sử',
+                                  isSelected: _selectedTab == 2,
+                                  index: 2,
+                                  hasHeight: true,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            SizedBox(
+                              width: 17.w,
+                              child: InkWell(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedTab = 3;
+                                  });
+                                },
+                                child: TabIconButton(
+                                  iconDefaultUrl: cancelGreen,
+                                  iconSelectedUrl: cancelWhite,
+                                  text: 'Đã hủy',
+                                  isSelected: _selectedTab == 3,
+                                  index: 3,
+                                  hasHeight: true,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            SizedBox(
+                              width: 17.w,
+                              child: InkWell(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
+                                onTap: () {
+                                  setState(() {
+                                    _selectedTab = 4;
+                                  });
+                                },
+                                child: TabIconButton(
+                                  iconDefaultUrl: compassGreen,
+                                  iconSelectedUrl: compassWhite,
+                                  text: 'Đã tham gia',
+                                  isSelected: _selectedTab == 4,
+                                  index: 4,
+                                  hasHeight: true,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(
+                              width: 8,
+                            ),
+                            SizedBox(
+                              width: 17.w,
+                              child: InkWell(
+                                borderRadius:
+                                    const BorderRadius.all(Radius.circular(12)),
+                                onTap: () async {
+                                  setState(() {
+                                    isLoading = true;
+                                    _selectedTab = 5;
+                                  });
+                                  List<PlanCardViewModel>? myplans =
+                                      await _planService.getPlanCards(true);
+                                  if (myplans != null) {
+                                    setState(() {
+                                      isLoading = false;
+                                      _myPlans = myplans;
+                                    });
+                                  }
+                                },
+                                child: TabIconButton(
+                                  iconDefaultUrl: draftGreen,
+                                  iconSelectedUrl: draftWhite,
+                                  text: 'Chuyến đi của tôi',
+                                  isSelected: _selectedTab == 5,
+                                  index: 5,
+                                  hasHeight: true,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     if (isSearch)
                       Expanded(
@@ -349,7 +386,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                       Expanded(
                           child: Container(
                               margin: const EdgeInsets.only(top: 8),
-                              child: _selectedTab != 4
+                              child: _selectedTab != 5
                                   ? _totalPlans[_selectedTab].isEmpty
                                       ? ListView.builder(
                                           shrinkWrap: true,

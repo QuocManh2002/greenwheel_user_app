@@ -43,9 +43,7 @@ void main() async {
   sharedPreferences = await SharedPreferences.getInstance();
   await dotenv.load(fileName: 'keys.env');
 
-  // await initHiveForFlutter();
   await Hive.initFlutter();
-  // await Hive.openBox('myPlans');
 
   MapboxOptions.setAccessToken(dotenv.env['mapbox_access_token'].toString());
   localization = FlutterLocalization.instance;

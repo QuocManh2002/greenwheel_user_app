@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/supplier_order_card.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/urls.dart';
+import '../../view_models/location.dart';
+import '../../view_models/order.dart';
+import '../../widgets/plan_screen_widget/supplier_order_card.dart';
 
 class ListOrderScreen extends StatelessWidget {
   const ListOrderScreen(
@@ -58,6 +59,7 @@ class ListOrderScreen extends StatelessWidget {
                             endDate: endDate,
                             availableGcoinAmount: availableGcoinAmount,
                             planId: planId,
+                            location: location,
                           )),
                 )
               : Center(

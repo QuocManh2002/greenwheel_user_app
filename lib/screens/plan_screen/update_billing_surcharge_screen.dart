@@ -1,4 +1,4 @@
-import 'package:awesome_dialog/awesome_dialog.dart';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
@@ -7,13 +7,19 @@ import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/image_handler.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
+import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 class UpdateBillingSurchargeScreen extends StatefulWidget {
-  const UpdateBillingSurchargeScreen({super.key, required this.isLeader, required this.surcharge});
+  const UpdateBillingSurchargeScreen(
+      {super.key,
+      required this.isLeader,
+      required this.surcharge,
+      required this.onRefreshData});
   final SurchargeViewModel surcharge;
   final bool isLeader;
+  final void Function() onRefreshData;
 
   @override
   State<UpdateBillingSurchargeScreen> createState() =>
@@ -48,19 +54,12 @@ class _UpdateBillingSurchargeScreenState
                     setState(() {
                       widget.surcharge.imagePath = result;
                     });
-                    AwesomeDialog(
+                    widget.onRefreshData();
+                    DialogStyle().successDialog(
                       // ignore: use_build_context_synchronously
-                      context: context,
-                      animType: AnimType.leftSlide,
-                      dialogType: DialogType.success,
-                      title: 'Cập nhật hoá đơn thành công',
-                      titleTextStyle: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        fontFamily: 'NotoSans',
-                      ),
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                    ).show();
+                      context,
+                      'Cập nhật hoá đơn thành công',
+                    );
                     Future.delayed(
                       const Duration(seconds: 1),
                       () {

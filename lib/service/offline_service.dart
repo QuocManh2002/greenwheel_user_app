@@ -28,6 +28,7 @@ class OfflineService {
     final myPlans = await Hive.openBox('myPlans');
     final LocationService locationService = LocationService();
     final PlanService planService = PlanService();
+    final OrderService orderService = OrderService();
     List<PlanCardViewModel>? planCards = await planService.getPlanCards(false);
     for (final planCard in planCards!) {
       if (planCard.status == planStatuses[2].engName &&
@@ -36,7 +37,7 @@ class OfflineService {
         final location =
             await locationService.getLocationById(plan!.locationId!);
         final planOrders =
-            await planService.getOrderCreatePlan(plan.id!, 'JOIN');
+            await orderService.getOrderByPlan(plan.id!, 'JOIN');
         if (location != null) {
           await myPlans.put(
               plan.id, convertToOfflinePlan(plan, location, planOrders));
@@ -243,6 +244,7 @@ class OfflineService {
     try {
       final PlanService planService = PlanService();
       final LocationService locationService = LocationService();
+      final OrderService orderService = OrderService();
       await Hive.initFlutter();
       final myPlans = await Hive.openBox('myPlans');
       final ids = [3263, 3264, 3265];
@@ -251,7 +253,7 @@ class OfflineService {
         final location =
             await locationService.getLocationById(plan!.locationId!);
         final planOrders =
-            await planService.getOrderCreatePlan(plan.id!, 'PUBLISH');
+            await orderService.getOrderByPlan(plan.id!, 'PUBLISH');
         if (location != null) {
           await myPlans.put(
               plan.id, convertToOfflinePlan(plan, location, planOrders));

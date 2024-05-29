@@ -53,13 +53,13 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   bool isShowDialog = false;
   int initMemberCount = 0;
   int _maxCombodateIndex = 0;
-  // ComboDate? initCombodate;
   int? numberOfNight;
   DateTime? _departureTime;
   DateTime? _departureDate;
   DateTime? _endDate;
   bool? isOverDate;
   bool? _isCloneComboDate;
+  bool? _isCloneNumOfMember;
 
   @override
   void initState() {
@@ -103,6 +103,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       final cloneOptions =
           json.decode(sharedPreferences.getString('plan_clone_options')!);
       _isCloneComboDate = cloneOptions[3];
+      _isCloneNumOfMember = cloneOptions[4];
     }
     if (numOfExpPeriod != null) {
       selectedComboDate = listComboDate.firstWhere(
@@ -242,18 +243,12 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                 .add(const Duration(days: 1))
                 .toString()
                 .split(' ')[0]);
-
-        
       } else {
-        widget.plan!.startDate = _departureDate!
-            .add(const Duration(days: 1));
-
-            // .add(Duration(hours: _departureTime!.hour))
-            // .add(Duration(minutes: _departureTime!.minute));
+        widget.plan!.startDate = _departureDate!.add(const Duration(days: 1));
       }
       numberOfNight = listComboDate[_selectedCombo].numberOfNight + 1;
-        _endDate = _departureDate!
-            .add(Duration(days: listComboDate[_selectedCombo].numberOfDay));
+      _endDate = _departureDate!
+          .add(Duration(days: listComboDate[_selectedCombo].numberOfDay));
     } else {
       if (rs['numOfExpPeriod'] !=
           listComboDate[_selectedCombo].duration.toInt()) {
@@ -274,8 +269,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
             'plan_start_date', _departureDate!.toString().split(' ')[0]);
       } else {
         widget.plan!.startDate = _departureDate!;
-            // .add(Duration(hours: _departureTime!.hour))
-            // .add(Duration(minutes: _departureTime!.minute));
+        // .add(Duration(hours: _departureTime!.hour))
+        // .add(Duration(minutes: _departureTime!.minute));
       }
     }
     if (widget.plan == null) {
@@ -290,7 +285,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       if (widget.isCreate) {
         sharedPreferences.setInt('numOfExpPeriod',
             listComboDate[_selectedCombo].numberOfDay + numberOfNight!);
-      } 
+      }
       // else {
       //   setState(() {
       //     widget.plan!.numOfExpPeriod =
@@ -360,7 +355,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
               SizedBox(
                 height: 3.h,
               ),
-              _isSelecting && (widget.isClone && !_isCloneComboDate!)
+              _isSelecting
                   ? SizedBox(
                       height: 250,
                       child: CupertinoPicker(
@@ -415,13 +410,15 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                   ))),
                     )
                   : InkWell(
-                      onTap: () {
-                        setState(() {
-                          _isSelecting = true;
-                        });
-                        _scrollController = FixedExtentScrollController(
-                            initialItem: _selectedCombo);
-                      },
+                      onTap: (widget.isClone && _isCloneComboDate!)
+                          ? null
+                          : () {
+                              setState(() {
+                                _isSelecting = true;
+                              });
+                              _scrollController = FixedExtentScrollController(
+                                  initialItem: _selectedCombo);
+                            },
                       child: Container(
                           width: 70.w,
                           padding: const EdgeInsets.all(12),
@@ -452,15 +449,16 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  IconButton(
-                      color: primaryColor,
-                      iconSize: 30,
-                      onPressed: () {
-                        if (int.parse(_memberController.text) > 2) {
-                          onChangeMaxMemberCount("subtract");
-                        }
-                      },
-                      icon: const Icon(Icons.remove)),
+                  if (!(widget.isClone && _isCloneNumOfMember!))
+                    IconButton(
+                        color: primaryColor,
+                        iconSize: 30,
+                        onPressed: () {
+                          if (int.parse(_memberController.text) > 2) {
+                            onChangeMaxMemberCount("subtract");
+                          }
+                        },
+                        icon: const Icon(Icons.remove)),
                   Container(
                       alignment: Alignment.center,
                       width: 10.h,
@@ -529,15 +527,16 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                           textAlign: TextAlign.center,
                           controller: _memberController,
                           inputType: TextInputType.number)),
-                  IconButton(
-                      color: primaryColor,
-                      iconSize: 30,
-                      onPressed: () {
-                        if (int.parse(_memberController.text) < 20) {
-                          onChangeMaxMemberCount('add');
-                        }
-                      },
-                      icon: const Icon(Icons.add)),
+                  if (!(widget.isClone && _isCloneNumOfMember!))
+                    IconButton(
+                        color: primaryColor,
+                        iconSize: 30,
+                        onPressed: () {
+                          if (int.parse(_memberController.text) < 20) {
+                            onChangeMaxMemberCount('add');
+                          }
+                        },
+                        icon: const Icon(Icons.add)),
                 ],
               ),
               SizedBox(
@@ -555,15 +554,17 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    IconButton(
-                        color: primaryColor,
-                        iconSize: 30,
-                        onPressed: () {
-                          if (int.parse(_maxMemberWeightController.text) > 0) {
-                            onChangeMaxWeightMember("subtract");
-                          }
-                        },
-                        icon: const Icon(Icons.remove)),
+                    if (!(widget.isClone && _isCloneNumOfMember!))
+                      IconButton(
+                          color: primaryColor,
+                          iconSize: 30,
+                          onPressed: () {
+                            if (int.parse(_maxMemberWeightController.text) >
+                                0) {
+                              onChangeMaxWeightMember("subtract");
+                            }
+                          },
+                          icon: const Icon(Icons.remove)),
                     SizedBox(
                         width: 10.h,
                         height: 5.h,
@@ -631,16 +632,18 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                             textAlign: TextAlign.center,
                             controller: _maxMemberWeightController,
                             inputType: TextInputType.number)),
-                    IconButton(
-                        color: primaryColor,
-                        iconSize: 30,
-                        onPressed: () {
-                          if (int.parse(_maxMemberWeightController.text) + 1 <
-                              (int.parse(_memberController.text) / 3).floor()) {
-                            onChangeMaxWeightMember('add');
-                          }
-                        },
-                        icon: const Icon(Icons.add)),
+                    if (!(widget.isClone && _isCloneNumOfMember!))
+                      IconButton(
+                          color: primaryColor,
+                          iconSize: 30,
+                          onPressed: () {
+                            if (int.parse(_maxMemberWeightController.text) + 1 <
+                                (int.parse(_memberController.text) / 3)
+                                    .floor()) {
+                              onChangeMaxWeightMember('add');
+                            }
+                          },
+                          icon: const Icon(Icons.add)),
                   ],
                 ),
               SizedBox(

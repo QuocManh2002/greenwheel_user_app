@@ -3,20 +3,21 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/goong_request.dart';
-import 'package:greenwheel_user_app/helpers/image_handler.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/select_default_address.dart';
-import 'package:greenwheel_user_app/service/traveler_service.dart';
-import 'package:greenwheel_user_app/view_models/customer.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/urls.dart';
+import '../../helpers/goong_request.dart';
+import '../../helpers/image_handler.dart';
+import '../../helpers/util.dart';
+import '../../service/traveler_service.dart';
+import '../../view_models/customer.dart';
+import '../../view_models/plan_viewmodels/search_start_location_result.dart';
+import '../../widgets/style_widget/button_style.dart';
+import '../../widgets/style_widget/text_form_field_widget.dart';
+import '../authentication_screen/select_default_address.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   const UpdateProfileScreen({super.key, required this.traveler, required this.callback});
@@ -215,7 +216,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                       },
                       child: Container(
                           alignment: Alignment.center,
-                          height: 6.h,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                               color: isMale
@@ -243,7 +243,6 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
                       },
                       child: Container(
                           alignment: Alignment.center,
-                          height: 6.h,
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                               color: !isMale

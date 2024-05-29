@@ -220,6 +220,9 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
                     isLeader: false,
                     totalOrder: widget.plan.totalOrder,
                     isOffline: true,
+                    onRefreshData: () {
+                      
+                    },
                   ),
                 const SizedBox(
                   height: 16,

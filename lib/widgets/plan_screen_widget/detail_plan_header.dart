@@ -11,6 +11,8 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
+import '../../models/plan_status.dart';
+
 class DetailPlanHeader extends StatefulWidget {
   const DetailPlanHeader(
       {super.key, required this.plan, required this.isAlreadyJoin});
@@ -22,9 +24,10 @@ class DetailPlanHeader extends StatefulWidget {
 }
 
 class _DetailPlanHeaderState extends State<DetailPlanHeader> {
-  Timer? timer;
+  late Timer timer;
   Duration duration = const Duration();
   String comboDateText = '';
+  PlanStatus? status;
 
   @override
   void initState() {
@@ -39,7 +42,8 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
         calculateTimeLeft(widget.plan.utcRegCloseAt!.toLocal());
       });
     }
-
+    status = planStatuses
+        .firstWhere((element) => element.engName == widget.plan.status);
     var tempDuration = DateFormat.Hm().parse(widget.plan.travelDuration!);
     final startTime = DateTime(0, 0, 0, widget.plan.utcDepartAt!.hour,
         widget.plan.utcDepartAt!.minute, 0);
@@ -56,10 +60,8 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
 
   @override
   void dispose() {
+    timer.cancel();
     super.dispose();
-    if (timer != null) {
-      timer!.cancel();
-    }
   }
 
   @override
@@ -123,6 +125,27 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
                 ),
               ],
             ),
+          SizedBox(
+            height: 0.5.h,
+          ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.3.h),
+            decoration: BoxDecoration(
+              color: primaryColor,
+                // border: Border.all(color: primaryColor, width: 1.5),
+                borderRadius: const BorderRadius.all(Radius.circular(12))),
+            child: Text(
+              status!.name,
+              style: const TextStyle(
+                  fontSize: 20,
+                  fontFamily: 'NotoSans',
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(
+            height: 0.5.h,
+          ),
           if (widget.plan.utcRegCloseAt != null &&
               widget.plan.status == planStatuses[1].engName)
             Column(

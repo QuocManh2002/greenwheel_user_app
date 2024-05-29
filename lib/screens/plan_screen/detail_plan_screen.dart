@@ -8,12 +8,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import '../../core/constants/colors.dart';
-import '../../core/constants/global_constant.dart';
 import '../../core/constants/plan_statuses.dart';
 import '../../core/constants/urls.dart';
 import '../../main.dart';
@@ -44,7 +44,6 @@ import '../../widgets/style_widget/dialog_style.dart';
 import '../loading_screen/plan_detail_loading_screen.dart';
 import '../main_screen/tabscreen.dart';
 import 'create_plan/select_start_location_screen.dart';
-import 'history_order_screen.dart';
 import 'join_confirm_plan_screen.dart';
 import 'plan_pdf_view_screen.dart';
 import 'share_plan_screen.dart';
@@ -74,6 +73,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   final LocationService _locationService = LocationService();
   final ProductService _productService = ProductService();
   final CustomerService _customerService = CustomerService();
+  final OrderService _orderService = OrderService();
   PlanDetail? _planDetail;
   List<PlanMemberViewModel> _planMembers = [];
   double _totalOrder = 0;
@@ -134,6 +134,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         });
       }
       _isEnableToConfirm = _planDetail!.status == 'REGISTERING';
+    } else {
+      DialogStyle().basicDialog(
+          context: context,
+          title: 'Không tìm thấy chuyến đi',
+          desc: 'Vui lòng kiểm tra lại thông tin',
+          onOk: () {
+            Navigator.of(context).pop();
+          },
+          type: DialogType.warning);
     }
   }
 
@@ -204,6 +213,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                   productId: product.id,
                   productName: product.name,
                   price: product.price.toDouble(),
+                  isAvailable: product.isAvailable,
                   quantity: e.value);
             }).toList(),
             note: e['note'],
@@ -216,6 +226,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                 name: sampleProduct.supplierName,
                 phone: sampleProduct.supplierPhone,
                 thumbnailUrl: sampleProduct.supplierThumbnailUrl,
+                isActive: sampleProduct.supplierIsActive,
                 address: sampleProduct.supplierAddress),
             type: e['type'],
             period: e['period']);
@@ -228,7 +239,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       orderList = tempOrders!;
     } else {
       final rs =
-          await _planService.getOrderCreatePlan(widget.planId, widget.planType);
+          await _orderService.getOrderByPlan(widget.planId, widget.planType);
       if (rs != null) {
         setState(() {
           orderList = rs['orders'];
@@ -405,7 +416,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                     primaryColor.withOpacity(0.8),
                                 foregroundColor: Colors.white,
                                 backgroundColor: primaryColor),
-                          if (_planDetail!.status == planStatuses[5].engName)
+                          if (_planDetail!.status == planStatuses[5].engName &&
+                              !_planDetail!.isPublished!)
                             SpeedDialChild(
                                 child: const Icon(Icons.print),
                                 labelStyle: const TextStyle(
@@ -544,29 +556,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                           ],
                         ),
                       ),
-                    if (isLeader &&
-                        _planDetail!.status != 'PENDING' &&
-                        _planDetail!.status != 'REGISTERING')
-                      const PopupMenuItem(
-                        value: 3,
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.history,
-                              color: Colors.blueAccent,
-                              size: 32,
-                            ),
-                            SizedBox(
-                              width: 8,
-                            ),
-                            Text(
-                              'Lịch sử đơn hàng',
-                              style: TextStyle(
-                                  color: Colors.blueAccent, fontSize: 18),
-                            )
-                          ],
-                        ),
-                      ),
                   ],
                   onSelected: (value) {
                     switch (value) {
@@ -578,9 +567,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                         break;
                       case 2:
                         handleCancelPlan();
-                        break;
-                      case 3:
-                        handleHistoryOrder();
                         break;
                     }
                   },
@@ -667,9 +653,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                                                   color: Colors
                                                                       .red,
                                                                   width: 1)))),
-                                                  onPressed: () {
-                                                    
-                                                  },
+                                                  onPressed: () {},
                                                   icon: const Icon(
                                                     Icons.flag,
                                                     color: Colors.red,
@@ -831,6 +815,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         isLeader: isLeader,
         totalOrder: _totalOrder,
         isOffline: false,
+        onRefreshData: setupData,
       );
 
   buildServiceWidget() => DetailPlanServiceWidget(
@@ -995,9 +980,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     locationName: _planDetail!.locationName!,
                     orderList: tempOrders,
                     onCompletePlan: () {},
-                    listSurcharges: _planDetail!.surcharges!
-                        .map((e) => e.toJson())
-                        .toList(),
+                    surchargeList: _planDetail!.surcharges,
                     isJoin: true,
                     onJoinPlan: () {
                       confirmJoin(isPublic, null);
@@ -1228,6 +1211,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         btnOkColor: Colors.deepOrangeAccent,
         btnOkText: 'Có',
         onOk: onCancelPlan,
+        onCancel: () {},
         btnCancelColor: Colors.blue,
         btnCancelText: 'Không');
   }
@@ -1425,15 +1409,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             ));
   }
 
-  handleHistoryOrder() {
-    Navigator.push(
-        context,
-        PageTransition(
-            child: HistoryOrderScreen(
-              planId: widget.planId,
-            ),
-            type: PageTransitionType.rightToLeft));
-  }
+  // handleHistoryOrder() {
+  //   Navigator.push(
+  //       context,
+  //       PageTransition(
+  //           child: HistoryOrderScreen(
+  //             planId: widget.planId,
+  //           ),
+  //           type: PageTransitionType.rightToLeft));
+  // }
 
   onClonePlan() async {
     _planDetail!.orders = orderList;

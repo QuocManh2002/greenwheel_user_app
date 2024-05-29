@@ -144,10 +144,14 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
               qtys[index]);
         }
       } else {
-        final groupRoomList = list.groupListsBy((element) => element.partySize,);
+        final groupRoomList = list.groupListsBy(
+          (element) => element.partySize,
+        );
         List<ProductViewModel> sourceList = [];
-        for(final roomList in groupRoomList.values){
-          roomList.sort((a, b) =>  a.price.compareTo(b.price),);
+        for (final roomList in groupRoomList.values) {
+          roomList.sort(
+            (a, b) => a.price.compareTo(b.price),
+          );
           sourceList.add(roomList.first);
         }
         findSumCombinations(sourceList, widget.inputModel.numberOfMember!);
@@ -182,77 +186,59 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: true,
-        appBar: PreferredSize(
-          preferredSize: Size.fromHeight(12.h),
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 1.h),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-            ),
-            child: Column(
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(
-                        Icons.arrow_back,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {
-                        Navigator.of(context).pop();
-                      },
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(left: 14),
-                      child: Text(
-                        widget.inputModel.supplier!.name!,
-                        style: const TextStyle(
-                            fontSize: 16,
-                            fontFamily: 'NotoSans',
-                            fontWeight: FontWeight.bold),
-                      ),
-                    )
-                  ],
-                ),
-                const SizedBox(
-                  height: 6,
-                ),
-                // Padding(
-                //   padding: EdgeInsets.only(left: 4.w, right: 4.w),
-                //   child: Row(
-                //     children: [
-                //       Expanded(
-                //         child: TextField(
-                //           decoration: InputDecoration(
-                //             enabledBorder: OutlineInputBorder(
-                //               borderSide: const BorderSide(
-                //                   width: 1, color: Colors.grey),
-                //               borderRadius: BorderRadius.circular(20),
-                //             ),
-                //             focusedBorder: OutlineInputBorder(
-                //               borderSide: const BorderSide(
-                //                   width: 1, color: Colors.black),
-                //               borderRadius: BorderRadius.circular(20),
-                //             ),
-                //             suffixIcon: IconButton(
-                //               icon: const Icon(
-                //                 Icons.search,
-                //                 color: Colors.black,
-                //               ),
-                //               onPressed: () {},
-                //             ),
-                //             hintText: "Bạn đang cần gì?",
-                //             contentPadding: EdgeInsets.all(4.w),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
-              ],
-            ),
+        appBar: AppBar(
+          title: Text(
+            widget.inputModel.supplier!.name!,
+            overflow: TextOverflow.ellipsis,
           ),
+          actions: [
+            if (widget.inputModel.isOrder!)
+              PopupMenuButton(
+                itemBuilder: (context) => [
+                  PopupMenuItem(
+                      value: 0,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(
+                            Icons.edit_square,
+                            color: Colors.blue,
+                          ),
+                          SizedBox(
+                            width: 1.w,
+                          ),
+                          const Text(
+                            'Thay đổi nhà cung cấp',
+                            style: TextStyle(
+                                color: Colors.blue,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'NotoSans'),
+                          )
+                        ],
+                      ))
+                ],
+                onSelected: (value) {
+                  if (value == 0) {
+                    // Navigator.push(
+                    //     context,
+                    //     PageTransition(
+                    //         child: ServiceMainScreen(
+                    //             serviceType: widget.inputModel.serviceType!,
+                    //             location: widget.inputModel.l.,
+                    //             numberOfMember: widget.inputModel.numberOfMember!,
+                    //             startDate: widget.inputModel.startDate!,
+                    //             endDate: widget.inputModel.endDate!,
+                    //             availableGcoinAmount: widget.inputModel.availableGcoinAmount,
+                    //             isOrder: widget.inputModel.isOrder,
+                    //             initSession: widget.inputModel.session,
+                                
+                    //             callbackFunction: widget.inputModel.callbackFunction!),
+                    //         type: PageTransitionType.rightToLeft));
+                  }
+                },
+              )
+          ],
         ),
         body: isLoading
             ? const ServiceMenuLoadingScreen()

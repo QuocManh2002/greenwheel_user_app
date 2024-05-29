@@ -1,6 +1,8 @@
 import 'dart:convert';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
@@ -47,23 +49,19 @@ class SurchargeCard extends StatelessWidget {
               SizedBox(
                 width: 1.w,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  SizedBox(
-                    width: 65.w,
-                    child: Text(
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
                       surcharge.note.substring(0, 1) == "\""
                           ? '${json.decode(surcharge.note)}'
                           : surcharge.note,
                       overflow: TextOverflow.clip,
                       style: const TextStyle(
-                          fontSize: 21, fontWeight: FontWeight.bold),
+                          fontSize: 19, fontWeight: FontWeight.bold),
                     ),
-                  ),
-                  SizedBox(
-                    width: 65.w,
-                    child: Row(
+                    Row(
                       children: [
                         Text(
                           NumberFormat.currency(
@@ -73,7 +71,7 @@ class SurchargeCard extends StatelessWidget {
                                   : (surcharge.gcoinAmount / maxMemberCount)
                                       .ceil()),
                           style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                              fontSize: 17, fontWeight: FontWeight.bold),
                           overflow: TextOverflow.clip,
                         ),
                         SvgPicture.asset(
@@ -92,30 +90,29 @@ class SurchargeCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                  ),
-                  if (surcharge.imagePath != null)
-                    const SizedBox(
-                      height: 3,
-                    ),
-                  if (surcharge.imagePath != null)
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 6, vertical: 2),
-                      decoration: BoxDecoration(
-                          border: Border.all(color: primaryColor, width: 1.5),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(12))),
-                      child: const Text(
-                        'Đã xác nhận',
-                        style: TextStyle(
-                            fontSize: 14,
-                            color: primaryColor,
-                            fontWeight: FontWeight.bold),
+                    if (surcharge.imagePath != null)
+                      const SizedBox(
+                        height: 3,
                       ),
-                    )
-                ],
+                    if (surcharge.imagePath != null)
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                            border: Border.all(color: primaryColor, width: 1.5),
+                            borderRadius:
+                                const BorderRadius.all(Radius.circular(12))),
+                        child: const Text(
+                          'Đã cập nhật',
+                          style: TextStyle(
+                              fontSize: 14,
+                              color: primaryColor,
+                              fontWeight: FontWeight.bold),
+                        ),
+                      )
+                  ],
+                ),
               ),
-              const Spacer(),
               if (isEnableToUpdate)
                 PopupMenuButton(
                   itemBuilder: (context) => [
@@ -217,6 +214,9 @@ class SurchargeCard extends StatelessWidget {
                                 child: UpdateBillingSurchargeScreen(
                                   surcharge: surcharge,
                                   isLeader: isLeader ?? false,
+                                  onRefreshData: () {
+                                    callbackSurcharge(null);
+                                  },
                                 ),
                                 type: PageTransitionType.rightToLeft));
                         break;

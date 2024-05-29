@@ -763,7 +763,7 @@ class _CartScreenState extends State<CartScreen> {
             .map((e) => DateTime.parse(e).difference(widget.startDate).inDays)
             .toList(),
         widget.orderGuid,
-        total * serveDates.length);
+        (total * serveDates.length) / GlobalConstant().VND_CONVERT_RATE);
     if (!widget.isOrder!) {
       AwesomeDialog(
               context: context,

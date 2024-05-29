@@ -214,18 +214,18 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
           "Chia sẻ kế hoạch",
           style: TextStyle(color: Colors.white),
         ),
-        actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 8),
-            child: IconButton(
-                onPressed: onScan,
-                icon: const Icon(
-                  Icons.qr_code_scanner_outlined,
-                  size: 35,
-                  color: Colors.white,
-                )),
-          )
-        ],
+        // actions: [
+        //   Padding(
+        //     padding: const EdgeInsets.only(right: 8),
+        //     child: IconButton(
+        //         onPressed: onScan,
+        //         icon: const Icon(
+        //           Icons.qr_code_scanner_outlined,
+        //           size: 35,
+        //           color: Colors.white,
+        //         )),
+        //   )
+        // ],
       ),
       body: Stack(
         children: [

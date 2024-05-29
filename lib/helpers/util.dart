@@ -1154,9 +1154,7 @@ class Utils {
               title: 'Độ dài địa chỉ mặc định phải từ 3 - 120 ký tự',
               type: DialogType.warning);
         } else {
-          // setState(() {
           defaultAddress = result['results'][0]['formatted_address'];
-          // });
           isValid = true;
         }
       }

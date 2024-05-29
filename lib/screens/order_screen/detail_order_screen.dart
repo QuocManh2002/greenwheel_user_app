@@ -6,31 +6,34 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
-import 'package:greenwheel_user_app/core/constants/service_types.dart';
-import 'package:greenwheel_user_app/core/constants/sessions.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/holiday.dart';
-import 'package:greenwheel_user_app/models/menu_item_cart.dart';
-import 'package:greenwheel_user_app/models/order_input_model.dart';
-import 'package:greenwheel_user_app/models/session.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_menu_screen.dart';
-import 'package:greenwheel_user_app/screens/order_screen/rate_order_screen.dart';
-import 'package:greenwheel_user_app/screens/sub_screen/local_map_screen.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/order_detail.dart';
-import 'package:greenwheel_user_app/view_models/product.dart';
-import 'package:greenwheel_user_app/widgets/order_screen_widget/cancel_order_bottom_sheet.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:greenwheel_user_app/core/constants/order_status.dart';
+import 'package:greenwheel_user_app/screens/loading_screen/order_detail_loading_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/global_constant.dart';
+import '../../core/constants/plan_statuses.dart';
+import '../../core/constants/service_types.dart';
+import '../../core/constants/sessions.dart';
+import '../../core/constants/urls.dart';
+import '../../helpers/util.dart';
+import '../../main.dart';
+import '../../models/holiday.dart';
+import '../../models/menu_item_cart.dart';
+import '../../models/order_input_model.dart';
+import '../../models/session.dart';
+import '../../view_models/order.dart';
+import '../../view_models/order_detail.dart';
+import '../../view_models/product.dart';
+import '../../widgets/order_screen_widget/cancel_order_bottom_sheet.dart';
+import '../../widgets/style_widget/button_style.dart';
+import '../main_screen/service_menu_screen.dart';
+import '../sub_screen/local_map_screen.dart';
+import 'rate_order_screen.dart';
 
 class OrderDetailScreen extends StatefulWidget {
   const OrderDetailScreen(
@@ -79,10 +82,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   setUpData() async {
+    
     noteController.text = widget.order.note ?? '';
-    _servingDates = (widget.order.serveDates ?? [])
-        .map((e) =>DateTime.parse(e))
-        .toList();
+    _servingDates =
+        (widget.order.serveDates ?? []).map((e) => DateTime.parse(e)).toList();
     _servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
         .range;
@@ -92,9 +95,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       details.add(temp.first);
       _listedPricePerDay += (temp.first.price! * temp.first.quantity);
     }
-    setState(() {
-      isLoading = false;
-    });
     holidayUpPCT = Utils().getHolidayUpPct(widget.order.type!);
     final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
     List<Holiday> holidays =
@@ -102,6 +102,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
     final dates = Utils().getHolidayServingDates(holidays, _servingDates);
     normalServingDates = dates['normalServingDates'];
     holidayServingDates = dates['holidayServingDates'];
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
@@ -112,10 +115,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         title: const Text('Chi tiết đơn hàng'),
         actions: [
           if (widget.planType == planStatuses[2].engName ||
-              (widget.endDate != null &&
-                  DateTime.now().isAfter(widget.endDate!
-                      .toLocal()
-                      .add(GlobalConstant().MIN_DURATION_REPORT_ORDER))))
+              (widget.order.currentStatus != null &&
+                  widget.order.currentStatus == orderStatuses[2]))
             PopupMenuButton(
               itemBuilder: (context) => [
                 if (widget.planType == planStatuses[2].engName)
@@ -142,10 +143,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       ],
                     ),
                   ),
-                if (widget.endDate != null &&
-                    DateTime.now().isAfter(widget.endDate!
-                        .toLocal()
-                        .add(GlobalConstant().MIN_DURATION_REPORT_ORDER)))
+                if (widget.order.currentStatus != null &&
+                    widget.order.currentStatus == orderStatuses[2])
                   const PopupMenuItem(
                     value: 1,
                     child: Row(
@@ -188,8 +187,9 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                       PageTransition(
                           child: RateOrderScreen(
                             order: widget.order,
+                            isRate: false,
                           ),
-                          type: PageTransitionType.rightToLeft));
+                          type: PageTransitionType.topToBottom));
                 }
               },
             ),
@@ -199,9 +199,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         ],
       ),
       body: isLoading
-          ? const Center(
-              child: Text('Đang tải'),
-            )
+          ? const OrderDetailLoadingScreen()
           : Column(
               children: [
                 Expanded(
@@ -839,6 +837,25 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ),
               ],
             ),
+      bottomNavigationBar: widget.order.currentStatus != null &&
+              widget.order.currentStatus == orderStatuses[2]
+          ? Padding(
+              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
+              child: ElevatedButton(
+                  style: elevatedButtonStyle,
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        PageTransition(
+                            child: RateOrderScreen(
+                              order: widget.order,
+                              isRate: true,
+                            ),
+                            type: PageTransitionType.bottomToTop));
+                  },
+                  child: const Text('Đánh giá đơn hàng')),
+            )
+          : null,
     ));
   }
 }

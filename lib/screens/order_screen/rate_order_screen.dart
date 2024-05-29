@@ -5,24 +5,22 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
+import '../../core/constants/colors.dart';
+import '../../core/constants/global_constant.dart';
+import '../../core/constants/urls.dart';
+import '../../service/order_service.dart';
+import '../../view_models/order.dart';
 import '../../view_models/order_detail.dart';
+import '../../widgets/style_widget/dialog_style.dart';
+import '../../widgets/style_widget/text_form_field_widget.dart';
 
 class RateOrderScreen extends StatefulWidget {
-  const RateOrderScreen({
-    super.key,
-    required this.order,
-  });
+  const RateOrderScreen({super.key, required this.order, required this.isRate});
   final OrderViewModel order;
+  final bool isRate;
 
   @override
   State<RateOrderScreen> createState() => _RateOrderScreenState();
@@ -56,13 +54,20 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
     return SafeArea(
         child: Scaffold(
       appBar: AppBar(
-        title: const Text('Đánh giá đơn hàng'),
+        title: Text('${widget.isRate ? 'Đánh giá' : 'Báo cáo'} đơn hàng'),
         actions: [
           TextButton(
               onPressed: () async {
                 if (_formKey.currentState!.validate()) {
-                  final rs = await _orderService.rateOrder(widget.order.id!,
-                      ratingValue, _commentController.text, context);
+                  int? rs;
+                  if (widget.isRate) {
+                    rs = await _orderService.rateOrder(widget.order.id!,
+                        ratingValue, _commentController.text, context);
+                  } else {
+                    rs = await _orderService.complainOrder(
+                        _commentController.text, widget.order.id!, context);
+                  }
+
                   showDialog(
                     context: context,
                     builder: (context) => AlertDialog(
@@ -78,8 +83,8 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
                   );
                   if (rs != null) {
                     Navigator.of(context).pop();
-                    DialogStyle()
-                        .successDialog(context, 'Đã thêm đánh giá đơn hàng');
+                    DialogStyle().successDialog(context,
+                        'Đã thêm ${widget.isRate ? 'đánh giá' : 'báo cáo'} đơn hàng');
                     Future.delayed(
                       const Duration(milliseconds: 1500),
                       () {
@@ -161,39 +166,45 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
               SizedBox(
                 height: 1.h,
               ),
-              Divider(
-                color: Colors.grey.withOpacity(0.5),
-                thickness: 1.5,
-              ),
-              SizedBox(
-                height: 2.h,
-              ),
-              RatingBar.builder(
-                initialRating: 5,
-                itemSize: 40,
-                itemCount: 5,
-                maxRating: 5,
-                minRating: 1,
-                updateOnDrag: true,
-                itemPadding: EdgeInsets.symmetric(horizontal: 1.w),
-                itemBuilder: (context, index) => Icon(
-                  index < ratingValue ? Icons.star : Icons.star_outline,
-                  color: Colors.amberAccent,
+              if (widget.isRate)
+                Column(
+                  children: [
+                    Divider(
+                      color: Colors.grey.withOpacity(0.5),
+                      thickness: 1.5,
+                    ),
+                    SizedBox(
+                      height: 2.h,
+                    ),
+                    RatingBar.builder(
+                      initialRating: 5,
+                      itemSize: 40,
+                      itemCount: 5,
+                      maxRating: 5,
+                      minRating: 1,
+                      updateOnDrag: true,
+                      itemPadding: EdgeInsets.symmetric(horizontal: 1.w),
+                      itemBuilder: (context, index) => Icon(
+                        index < ratingValue ? Icons.star : Icons.star_outline,
+                        color: Colors.amberAccent,
+                      ),
+                      unratedColor: Colors.amberAccent,
+                      onRatingUpdate: (value) {
+                        if (_commentController.text.isEmpty &&
+                            value <
+                                GlobalConstant().ORDER_MIN_RATING_NO_COMMENT) {
+                          DialogStyle().basicDialog(
+                              context: context,
+                              title:
+                                  'Với đánh giá từ ${GlobalConstant().ORDER_MIN_RATING_NO_COMMENT - 1} sao trở xuống, phải thêm nhận xét cho đánh giá đơn hàng',
+                              type: DialogType.warning);
+                        } else {
+                          ratingValue = value.toInt();
+                        }
+                      },
+                    ),
+                  ],
                 ),
-                unratedColor: Colors.amberAccent,
-                onRatingUpdate: (value) {
-                  if (_commentController.text.isEmpty &&
-                      value < GlobalConstant().ORDER_MIN_RATING_NO_COMMENT) {
-                    DialogStyle().basicDialog(
-                        context: context,
-                        title:
-                            'Với đánh giá từ ${GlobalConstant().ORDER_MIN_RATING_NO_COMMENT - 1} sao trở xuống, phải thêm nhận xét cho đánh giá đơn hàng',
-                        type: DialogType.warning);
-                  } else {
-                    ratingValue = value.toInt();
-                  }
-                },
-              ),
               SizedBox(
                 height: 2.h,
               ),
@@ -208,17 +219,21 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
                 key: _formKey,
                 child: defaultTextFormField(
                     controller: _commentController,
-                    text: 'Nhận xét',
+                    text: widget.isRate ? 'Nhận xét' : 'Nội dung báo cáo ',
                     maxLength: GlobalConstant().ORDER_COMMENT_MAX_LENGTH,
                     maxline: 5,
                     minLine: 5,
-                    hinttext: 'Hãy chia sẻ nhận xét của bạn cho đơn hàng này',
+                    hinttext: widget.isRate
+                        ? 'Hãy chia sẻ nhận xét của bạn cho đơn hàng này'
+                        : 'Hãy để lại góp ý cho nhà cung cấp, chúng tôi xin tiếp nhận và sửa đổi',
                     onValidate: (value) {
                       if (value != null &&
-                          value.isNotEmpty &&
-                          value.length <
-                              GlobalConstant().ORDER_COMMENT_MIN_LENGTH) {
-                        return 'Nhận xét của đơn hàng phải từ ${GlobalConstant().ORDER_COMMENT_MIN_LENGTH} đến ${GlobalConstant().ORDER_COMMENT_MAX_LENGTH} kí tự';
+                          value.isEmpty &&
+                          (value.length <
+                                  GlobalConstant().ORDER_COMMENT_MIN_LENGTH ||
+                              value.length >
+                                  GlobalConstant().ORDER_COMMENT_MAX_LENGTH)) {
+                        return '${widget.isRate ? 'Nhận xét' : 'Báo cáo'} của đơn hàng phải từ ${GlobalConstant().ORDER_COMMENT_MIN_LENGTH} đến ${GlobalConstant().ORDER_COMMENT_MAX_LENGTH} kí tự';
                       }
                       return null;
                     },

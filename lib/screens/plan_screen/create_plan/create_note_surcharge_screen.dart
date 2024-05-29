@@ -53,9 +53,9 @@ class CreateNoteSurchargeScreen extends StatefulWidget {
 class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   int _selectedIndex = 0;
   HtmlEditorController controller = HtmlEditorController();
-  List<dynamic> _listSurchargeObjects = [];
+  List<SurchargeViewModel> _listSurchargeObjects = [];
   double _totalSurcharge = 0;
-  List<Widget> _listSurcharges = [];
+  List<Widget> _listSurchargeCards = [];
   final PlanService _planService = PlanService();
   final OrderService _orderService = OrderService();
   int? memberLimit;
@@ -116,7 +116,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
           if (_selectedIndex == 0)
             IconButton(
                 onPressed: () {
-                  if (_listSurcharges.length == 10) {
+                  if (_listSurchargeCards.length == 10) {
                     DialogStyle().basicDialog(
                       context: context,
                       title:
@@ -253,7 +253,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
             _selectedIndex == 0
                 ? SizedBox(
                     height: 55.h,
-                    child: _listSurcharges.isEmpty
+                    child: _listSurchargeCards.isEmpty
                         ? Column(
                             crossAxisAlignment: CrossAxisAlignment.center,
                             children: [
@@ -283,7 +283,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.start,
                               children: [
-                                for (final sur in _listSurcharges) sur,
+                                for (final sur in _listSurchargeCards) sur,
                               ],
                             ),
                           ),
@@ -428,20 +428,19 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
     final surcharges = widget.plan == null
         ? json.decode(sharedPreferences.getString('plan_surcharge') ?? '[]')
         : widget.plan!.surcharges!;
-    _listSurchargeObjects = surcharges
-        .map((e) => {
-              'gcoinAmount': e.runtimeType == SurchargeViewModel
-                  ? e.alreadyDivided
-                      ? e.amount
-                      : (e.amount / memberLimit).ceil()
-                  : e['alreadyDivided'] ?? true
-                      ? e['gcoinAmount']
-                      : (e['gcoinAmount'] / memberLimit).ceil(),
-              'note': e.runtimeType == SurchargeViewModel
-                  ? json.encode(e.note)
-                  : e['note'],
-            })
-        .toList();
+    _listSurchargeObjects = List<SurchargeViewModel>.from(
+        surcharges.map((sur) => SurchargeViewModel(
+              gcoinAmount: sur.runtimeType == SurchargeViewModel
+                  ? sur.alreadyDivided
+                      ? sur.amount
+                      : (sur.amount / memberLimit).ceil()
+                  : sur['alreadyDivided'] ?? true
+                      ? sur['gcoinAmount']
+                      : (sur['gcoinAmount'] / memberLimit).ceil(),
+              note: sur.runtimeType == SurchargeViewModel
+                  ? json.encode(sur.note)
+                  : sur['note'],
+            ))).toList();
     for (final sur in surcharges) {
       listSurcharges.add(SurchargeCard(
         isLeader: null,
@@ -472,7 +471,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
     }
 
     setState(() {
-      _listSurcharges = listSurcharges;
+      _listSurchargeCards = listSurcharges;
     });
   }
 
@@ -490,8 +489,9 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       DateTime travelDuration = DateTime(0, 0, 0).add(Duration(
           seconds: (sharedPreferences.getDouble('plan_duration_value')! * 3600)
               .toInt()));
-     final orderList = json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
-     orders = _orderService.getOrderFromJson(orderList);
+      final orderList =
+          json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+      orders = _orderService.getOrderFromJson(orderList);
       _plan = PlanCreate(
         tempOrders: orders,
         departAddress: sharedPreferences.getString('plan_start_address'),
@@ -527,7 +527,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
                 onCompletePlan: onCompletePlan,
                 plan: widget.plan ?? _plan,
                 onJoinPlan: () {},
-                listSurcharges: _listSurchargeObjects,
+                surchargeList: _listSurchargeObjects,
                 isJoin: false,
               ),
             ));
@@ -543,13 +543,15 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       _isAvailableToOrder = DateTime(departDate.year, departDate.month,
               departDate.day, departTime.hour, departTime.minute)
           .isAfter(DateTime.now().add(const Duration(days: 7)));
+      final surchargeText =
+          _listSurchargeObjects.map((e) => e.toFinalJson()).toList().toString();
       if (_isAvailableToOrder) {
         if (widget.isClone) {
           rs = await _planService.clonePlan(
-              _plan!, context, _listSurchargeObjects.toString());
+              _plan!, context, surchargeText);
         } else {
           rs = await _planService.createNewPlan(
-              _plan!, context, _listSurchargeObjects.toString());
+              _plan!, context, surchargeText);
         }
       } else {
         rs = 0;
@@ -561,8 +563,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
 
     if (rs != null) {
       Navigator.of(context).pop();
-      if (
-        widget.plan == null && rs != 0) {
+      if (widget.plan == null && rs != 0) {
         await initializeService();
       }
       AwesomeDialog(

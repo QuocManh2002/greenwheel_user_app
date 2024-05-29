@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
@@ -57,7 +58,7 @@ mutation{
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
             rs.parsedResponse.errors.first.message.toString(),
-             // ignore: use_build_context_synchronously
+            // ignore: use_build_context_synchronously
             context);
 
         throw Exception(result.exception!.linkException!);
@@ -184,7 +185,18 @@ mutation {
       List<Map<String, dynamic>> details = order.details!.map((detail) {
         return {'key': detail.id, 'value': detail.quantity};
       }).toList();
-
+      log("""
+mutation{
+  createOrder(dto: {
+    cart:$details
+    note:"${order.note}"
+    planId:$planId
+    uuid:"${order.uuid}"
+  }){
+    id
+  }
+}
+""");
       String mutationText = """
 mutation{
   createOrder(dto: {
@@ -455,13 +467,132 @@ mutation{
       if (result.hasException) {
         dynamic rs = result.exception!.linkException!;
         Utils().handleServerException(
-            // ignore: use_build_context_synchronously
             rs.parsedResponse.errors.first.message.toString(),
+            // ignore: use_build_context_synchronously
             context);
 
         throw Exception(result.exception!.linkException!);
       }
       return result.data!['rateOrder']['id'];
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<Map?> getOrderByPlan(int planId, String planType) async {
+    try {
+      String type = '';
+      switch (planType) {
+        case 'OWN':
+          type = 'ownedPlans';
+          break;
+        case 'JOIN':
+          type = 'joinedPlans';
+          break;
+        case 'PUBLISH':
+          type = 'publishedPlans';
+      }
+      GraphQLClient newClient = await config.getOfflineClient();
+      QueryResult result = await newClient.query(
+          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
+{
+  $type(where: { id: { eq: $planId } }) {
+    nodes {
+      actualGcoinBudget
+      orders {
+        id
+        planId
+        total
+        serveDates
+        note
+        createdAt
+        period
+        type
+        currentStatus
+        uuid
+        provider {
+          coordinate{
+            coordinates
+          }
+          type
+          id
+          phone
+          name
+          imagePath
+          address
+          isActive
+        }
+        details {
+          id
+          price
+          quantity
+          product {
+            id
+            partySize
+            name
+            type
+            price
+            isAvailable
+          }
+        }
+      }
+    }
+  }
+}
+""")));
+
+      if (result.hasException) {
+        throw Exception(result.exception!.linkException!);
+      }
+
+      List? res = result.data![type]['nodes'][0]['orders'];
+      if (res == null) {
+        return null;
+      }
+      List<OrderViewModel>? orders = [];
+      for (final item in res) {
+        OrderViewModel order = OrderViewModel.fromJson(item);
+        if (order.currentStatus != 'CANCELLED') {
+          List<OrderDetailViewModel>? details = [];
+          for (final detail in item['details']) {
+            details.add(OrderDetailViewModel.fromJson(detail));
+            order.details = details;
+          }
+          orders.add(order);
+        }
+      }
+      return {
+        'orders': orders,
+        'currentBudget': result.data![type]['nodes'][0]['actualGcoinBudget']
+      };
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int?> complainOrder(
+      String description, int orderId, BuildContext context) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql('''
+mutation{
+  complainOrder(dto: {
+    description: "$description"
+    orderId:$orderId
+  }){
+    id
+  }
+}
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(),
+            // ignore: use_build_context_synchronously
+            context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+      return result.data!['complainOrder']['id'];
     } catch (error) {
       throw Exception(error);
     }

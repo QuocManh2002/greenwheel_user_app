@@ -25,6 +25,8 @@ class ServiceMainScreen extends StatefulWidget {
       this.isFromTempOrder,
       this.initSession,
       this.endSession,
+      this.serveDates,
+      this.uuid,
       required this.callbackFunction});
   final int numberOfMember;
   final ServiceType serviceType;
@@ -37,6 +39,8 @@ class ServiceMainScreen extends StatefulWidget {
   final void Function(dynamic tempOrder) callbackFunction;
   final Session? initSession;
   final Session? endSession;
+  final List<DateTime>? serveDates;
+  final String? uuid;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();
@@ -124,38 +128,6 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                 const SizedBox(
                   height: 6,
                 ),
-                // Padding(
-                //   padding: EdgeInsets.only(left: 4.w, right: 4.w),
-                //   child: Row(
-                //     children: [
-                //       Expanded(
-                //         child: TextField(
-                //           decoration: InputDecoration(
-                //             enabledBorder: OutlineInputBorder(
-                //               borderSide: const BorderSide(
-                //                   width: 1, color: Colors.grey),
-                //               borderRadius: BorderRadius.circular(20),
-                //             ),
-                //             focusedBorder: OutlineInputBorder(
-                //               borderSide: const BorderSide(
-                //                   width: 1, color: Colors.black),
-                //               borderRadius: BorderRadius.circular(20),
-                //             ),
-                //             suffixIcon: IconButton(
-                //               icon: const Icon(
-                //                 Icons.search,
-                //                 color: Colors.black,
-                //               ),
-                //               onPressed: () {},
-                //             ),
-                //             hintText: "Bạn cần tìm dịch vụ nào?",
-                //             contentPadding: EdgeInsets.all(4.w),
-                //           ),
-                //         ),
-                //       ),
-                //     ],
-                //   ),
-                // ),
               ],
             ),
           ),
@@ -230,6 +202,8 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                                 location: widget.location,
                                 initSession: widget.initSession,
                                 callbackFunction: widget.callbackFunction,
+                                serveDates: widget.serveDates,
+                                uuid: widget.uuid,
                               );
                             },
                           ),

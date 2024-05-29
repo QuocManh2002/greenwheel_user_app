@@ -89,7 +89,7 @@ class TransactionCard extends StatelessWidget {
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 2.h, top: 1.5.h),
+              padding: EdgeInsets.only(left: 2.w, top: 1.5.h, right: 2.w),
               child: Row(
                 children: [
                   Container(
@@ -103,30 +103,28 @@ class TransactionCard extends StatelessWidget {
                   SizedBox(
                     width: 1.h,
                   ),
-                  SizedBox(
-                    width: 78.w,
+                  Expanded(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(
-                            width: 70.w,
-                            child: Text(
-                              transaction.description ?? 'Không có mô tả',
-                              style: const TextStyle(
-                                  fontSize: 17,
-                                  fontFamily: 'NotoSans',
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.black54),
-                              overflow: TextOverflow.clip,
-                            )),
+                        Text(
+                          transaction.description ?? 'Không có mô tả',
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontFamily: 'NotoSans',
+                              fontWeight: FontWeight.bold,
+                              color: Colors.black54),
+                          overflow: TextOverflow.clip,
+                        ),
+                        SizedBox(height: 0.5.h,),
                         Row(
                           mainAxisSize: MainAxisSize.max,
                           children: [
                             Text(
                               '${DateFormat.Hm().format(transaction.createdAt!.add(const Duration(hours: 7)))} - ${DateFormat('dd/MM/yyyy').format(transaction.createdAt!.add(const Duration(hours: 7)))}',
                               style: const TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 14,
                                   color: Colors.grey,
                                   fontFamily: 'NotoSans'),
                             ),
@@ -135,12 +133,12 @@ class TransactionCard extends StatelessWidget {
                               '${isNegative ? '-' : '+'}${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(transaction.amount)}',
                               style: const TextStyle(
                                   fontFamily: 'NotoSans',
-                                  fontSize: 16,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.bold),
                             ),
                             SvgPicture.asset(
                               gcoinLogo,
-                              height: 25,
+                              height: 20,
                             )
                           ],
                         )

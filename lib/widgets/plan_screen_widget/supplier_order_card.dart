@@ -1,11 +1,19 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
+
+import '../../core/constants/service_types.dart';
+import '../../screens/main_screen/service_main_screen.dart';
+import '../style_widget/dialog_style.dart';
 
 class SupplierOrderCard extends StatelessWidget {
   const SupplierOrderCard(
@@ -18,6 +26,7 @@ class SupplierOrderCard extends StatelessWidget {
       required this.order,
       required this.startDate,
       required this.isTempOrder,
+      this.location,
       this.planId});
   final OrderViewModel order;
   final DateTime startDate;
@@ -28,25 +37,105 @@ class SupplierOrderCard extends StatelessWidget {
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
   final void Function(dynamic) callback;
+  final LocationViewModel? location;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (ctx) => OrderDetailScreen(
-                  memberLimit: memberLimit,
-                  availableGcoinAmount: availableGcoinAmount,
-                  endDate: endDate,
-                  order: order,
-                  startDate: startDate,
-                  isFromTempOrder: isFromTempOrder,
-                  isTempOrder: isTempOrder,
-                  planId: planId,
-                  callback: () {
-                    callback(null);
-                  },
-                )));
+        if (!order.supplier!.isActive!) {
+          DialogStyle().basicDialog(
+              context: context,
+              title: 'Nhà cung cấp đã không còn khả dụng',
+              desc: 'Vui lòng chọn lại một nhà cung cấp khác',
+              onOk: () {
+                Navigator.push(
+                    context,
+                    PageTransition(
+                        child: ServiceMainScreen(
+                            serviceType: services.firstWhere(
+                                (element) => element.name == order.type),
+                            location: location!,
+                            isOrder: true,
+                            isFromTempOrder: isFromTempOrder,
+                            availableGcoinAmount: availableGcoinAmount,
+                            initSession: sessions.firstWhere((element) => element.enumName == order.period),
+                            numberOfMember: memberLimit!,
+                            startDate: startDate,
+                            endDate: endDate!,
+                            uuid: order.uuid,
+                            serveDates: order.serveDates!.map((e) => DateTime.parse(e)).toList(),
+                            callbackFunction: callback),
+                        type: PageTransitionType.rightToLeft));
+              },
+              type: DialogType.warning);
+        } else if (order.details!.any((detail) => !detail.isAvailable!)) {
+          final invalidProduct =
+              order.details!.where((detail) => !detail.isAvailable!).toList();
+          AwesomeDialog(
+                  context: context,
+                  animType: AnimType.leftSlide,
+                  dialogType: DialogType.warning,
+                  body: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 2.w),
+                    child: Column(
+                      children: [
+                        RichText(
+                          text: TextSpan(
+                              text: 'Sản phẩm: ',
+                              style: const TextStyle(
+                                  fontSize: 17,
+                                  color: Colors.black,
+                                  fontFamily: 'NotoSans',
+                                  fontWeight: FontWeight.bold),
+                              children: [
+                                for (final prod in invalidProduct)
+                                  TextSpan(
+                                      text:
+                                          '${prod.productName} ${prod != invalidProduct.last ? ',' : ''}',
+                                      style: const TextStyle(
+                                          color: Colors.black87)),
+                                const TextSpan(text: 'đã không còn khả dụng')
+                              ]),
+                          overflow: TextOverflow.clip,
+                          textAlign: TextAlign.center,
+                        ),
+                        SizedBox(
+                          height: 1.h,
+                        ),
+                        const Text(
+                          'Vui lòng điều chỉnh lại đơn hàng',
+                          style: TextStyle(
+                              color: Colors.grey,
+                              fontSize: 15,
+                              fontFamily: 'NotoSans'),
+                        )
+                      ],
+                    ),
+                  ),
+                  btnOkColor: Colors.amber,
+                  btnOkOnPress: () {},
+                  btnOkText: 'Ok',
+                  btnCancelColor: Colors.blue,
+                  btnCancelOnPress: () {},
+                  btnCancelText: 'Huỷ')
+              .show();
+        } else {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (ctx) => OrderDetailScreen(
+                    memberLimit: memberLimit,
+                    availableGcoinAmount: availableGcoinAmount,
+                    endDate: endDate,
+                    order: order,
+                    startDate: startDate,
+                    isFromTempOrder: isFromTempOrder,
+                    isTempOrder: isTempOrder,
+                    planId: planId,
+                    callback: () {
+                      callback(null);
+                    },
+                  )));
+        }
       },
       child: Container(
         decoration: BoxDecoration(

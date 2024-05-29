@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -9,17 +8,18 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.da
 import 'package:sizer2/sizer2.dart';
 
 class DetailPlanSurchargeNote extends StatefulWidget {
-  const DetailPlanSurchargeNote({
-    super.key,
-    required this.plan,
-    required this.isLeader,
-    required this.totalOrder,
-    required this.isOffline,
-  });
+  const DetailPlanSurchargeNote(
+      {super.key,
+      required this.plan,
+      required this.isLeader,
+      required this.totalOrder,
+      required this.isOffline,
+      required this.onRefreshData});
   final PlanDetail plan;
   final bool isLeader;
   final double totalOrder;
   final bool isOffline;
+  final void Function() onRefreshData;
 
   @override
   State<DetailPlanSurchargeNote> createState() =>
@@ -96,8 +96,7 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                           ? widget.plan.surcharges!.length
                           : 0,
                       itemBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8),
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
                         child: SurchargeCard(
                           maxMemberCount: widget.plan.maxMemberCount!,
                           isEnableToUpdate:
@@ -107,7 +106,9 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                           surcharge: widget.plan.surcharges![index],
                           isLeader: widget.isLeader,
                           isOffline: widget.isOffline,
-                          callbackSurcharge: (dynamic) {},
+                          callbackSurcharge: (dynamic) {
+                            widget.onRefreshData();
+                          },
                         ),
                       ),
                     ),

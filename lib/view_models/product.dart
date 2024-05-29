@@ -10,6 +10,8 @@ class ProductViewModel {
   String? supplierPhone;
   String? supplierAddress;
   String? supplierType;
+  bool? supplierIsActive;
+  bool? isAvailable;
 
   ProductViewModel(
       {required this.id,
@@ -22,12 +24,15 @@ class ProductViewModel {
       this.supplierThumbnailUrl,
       this.supplierPhone,
       this.supplierType,
+      this.isAvailable,
+      this.supplierIsActive,
       this.supplierAddress});
 
   factory ProductViewModel.fromJson(Map<String, dynamic> json) =>
       ProductViewModel(
           id: json["id"],
           name: json["name"],
+          isAvailable: json['isAvailable'],
           price: json["price"].toDouble(),
           thumbnailUrl: json["imagePath"],
           supplierId: json["provider"]["id"],
@@ -36,6 +41,7 @@ class ProductViewModel {
           supplierThumbnailUrl: json['provider']['imagePath'],
           supplierPhone: json['provider']['phone'],
           supplierType: json['provider']['type'],
+          supplierIsActive: json['provider']['isActive'],
           supplierAddress: json['provider']['address']);
 
   Map<String, dynamic> toJson() => {

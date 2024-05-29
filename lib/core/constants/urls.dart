@@ -40,6 +40,9 @@ const String surchargeWhite = '${baseImage}surcharge_white.svg';
 const String maleDefaultAvatar = '${baseImage}man.png';
 const String femaleDefaultAvatar = '${baseImage}woman.png';
 const String noImage = '${baseImage}no_image.svg';
+const String compassWhite = '${baseImage}compass_white.svg';
+const String compassGreen = '${baseImage}compass_green.svg';
+
 
 
 const String baseBucketImage = 'https://d38ozmgi8b70tu.cloudfront.net';

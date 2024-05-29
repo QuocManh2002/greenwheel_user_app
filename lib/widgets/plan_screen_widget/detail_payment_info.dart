@@ -21,7 +21,7 @@ class DetailPaymentInfo extends StatelessWidget {
           overflow: TextOverflow.clip,
           style: const TextStyle(
               fontFamily: 'NotoSans',
-              fontSize: 17,
+              fontSize: 16,
               fontWeight: FontWeight.bold,
               color: Colors.black),
         );
@@ -31,7 +31,7 @@ class DetailPaymentInfo extends StatelessWidget {
           overflow: TextOverflow.clip,
           style: const TextStyle(
               fontFamily: 'NotoSans',
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.bold,
               color: Colors.black),
         );
@@ -78,7 +78,7 @@ class DetailPaymentInfo extends StatelessWidget {
                         shape: BoxShape.circle,
                         border: Border.all(
                             color: Colors.grey.withOpacity(0.5), width: 0.5)),
-                    child: Icon(transactionType.icon),
+                    child: Icon(transactionType.icon, color: transactionType.color,),
                   ),
                   SizedBox(
                     width: 4.w,
@@ -92,7 +92,7 @@ class DetailPaymentInfo extends StatelessWidget {
                           overflow: TextOverflow.clip,
                           style: const TextStyle(
                               fontFamily: 'NotoSans',
-                              fontSize: 18,
+                              fontSize: 17,
                               fontWeight: FontWeight.bold),
                         ),
                         Row(

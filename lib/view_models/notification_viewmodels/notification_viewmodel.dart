@@ -46,7 +46,7 @@ class AnnouncementViewModel {
         isJoinedPlan: json['plan'] == null
             ? null
             : json['plan']['members'].any(
-                (e) => e['accountId'] == sharedPreferences.getInt('userId')),
+                (e) => e['accountId'] == sharedPreferences.getInt('userId') && e['status'] == 'JOINED'),
         isOwnedPlan: json['plan'] == null
             ? null
             : json['plan']['accountId'] == sharedPreferences.getInt('userId'),

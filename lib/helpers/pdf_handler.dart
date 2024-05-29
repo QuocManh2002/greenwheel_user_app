@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/customer.dart';
@@ -68,17 +69,14 @@ buildMarkSvgImage(double size) => pw.SvgImage(
 Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   final PlanService planService = PlanService();
   final CustomerService cusomterService = CustomerService();
-  // List<dynamic> roomOrderList = [];
-  // List<dynamic> foodOrderList = [];
-  // List<PlanJoinServiceInfor> listRoom = [];
-  // List<PlanJoinServiceInfor> listFood = [];
+  final OrderService orderService = OrderService();
   List<dynamic>? newRoomOrderList = [];
   List<dynamic>? newFoodOrderList = [];
   PlanDetail? plan = await planService.getPlanById(
       sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   final rs = await cusomterService.getCustomerById(plan!.leaderId!);
-  final res = await planService
-      .getOrderCreatePlan(sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
+  final res = await orderService
+      .getOrderByPlan(sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   if (res != null) {
     plan.orders = res['orders'];
   }
@@ -86,18 +84,6 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
   final doc = pw.Document(
     title: 'Test Generate PDF',
   );
-
-  // if (_plan.orders != null) {
-  //   for (final order in _plan.orders!) {
-  //     if (order.type == 'MEAL') {
-  //       foodOrderList.add(order);
-  //     } else {
-  //       roomOrderList.add(order);
-  //     }
-  //   }
-  // }
-  // List<int> indexRoomOrder = [];
-  // List<int> indexFoodOrder = [];
 
   if (plan.orders != null) {
     final serviceMap = plan.orders!.groupListsBy((e) => e.type);
@@ -110,43 +96,6 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
         .toList()
         .firstOrNull;
   }
-
-  // if (roomOrderList.isNotEmpty) {
-  //   for (final order in roomOrderList) {
-  //     for (final index in order.serveDates) {
-  //       if (!indexRoomOrder.contains(index)) {
-  //         indexRoomOrder.add(index);
-  //       }
-  //     }
-  //   }
-  // }
-  // if (foodOrderList.isNotEmpty) {
-  //   for (final order in foodOrderList) {
-  //     for (final index in order.serveDates) {
-  //       if (!indexFoodOrder.contains(index)) {
-  //         indexFoodOrder.add(index);
-  //       }
-  //     }
-  //   }
-  // }
-  // for (final day in indexRoomOrder) {
-  //   var orderList = [];
-  //   for (final order in roomOrderList) {
-  //     if (order.serveDates.contains(day)) {
-  //       orderList.add(order);
-  //     }
-  //   }
-  //   listRoom.add(PlanJoinServiceInfor(dayIndex: day, orderList: orderList));
-  // }
-  // for (final day in indexFoodOrder) {
-  //   var orderList = [];
-  //   for (final order in foodOrderList) {
-  //     if (order.serveDates.contains(day)) {
-  //       orderList.add(order);
-  //     }
-  //   }
-  //   listFood.add(PlanJoinServiceInfor(dayIndex: day, orderList: orderList));
-  // }
 
   final logoImage = pw.MemoryImage(
     (await rootBundle.load('assets/images/logopng.png')).buffer.asUint8List(),
@@ -403,11 +352,6 @@ buildServiceWidget(String type, List<dynamic> orders, pw.Font font) =>
                       font: font, fontSize: 17, fontWeight: pw.FontWeight.bold),
                   overflow: pw.TextOverflow.clip,
                 ),
-                // pw.Text
-                // SvgPicture.asset(
-                //   gcoin_logo,
-                //   height: 23,
-                // )
               ],
             ),
           ),

@@ -4,7 +4,6 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
-import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -17,13 +16,13 @@ import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/order_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_member.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
@@ -237,97 +236,6 @@ mutation{
     }
   }
 
-  Future<Map?> getOrderCreatePlan(int planId, String planType) async {
-    try {
-      String type = '';
-      switch (planType) {
-        case 'OWN':
-          type = 'ownedPlans';
-          break;
-        case 'JOIN':
-          type = 'joinedPlans';
-          break;
-        case 'PUBLISH':
-          type = 'publishedPlans';
-      }
-      GraphQLClient newClient = await graphQlConfig.getOfflineClient();
-      QueryResult result = await newClient.query(
-          QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-{
-  $type(where: { id: { eq: $planId } }) {
-    nodes {
-      actualGcoinBudget
-      orders {
-        id
-        planId
-        total
-        serveDates
-        note
-        createdAt
-        period
-        type
-        currentStatus
-        uuid
-        provider {
-          coordinate{
-            coordinates
-          }
-          type
-          id
-          phone
-          name
-          imagePath
-          address
-          isActive
-        }
-        details {
-          id
-          price
-          quantity
-          product {
-            id
-            partySize
-            name
-            type
-            price
-            isAvailable
-          }
-        }
-      }
-    }
-  }
-}
-""")));
-
-      if (result.hasException) {
-        throw Exception(result.exception!.linkException!);
-      }
-
-      List? res = result.data![type]['nodes'][0]['orders'];
-      if (res == null) {
-        return null;
-      }
-      List<OrderViewModel>? orders = [];
-      for (final item in res) {
-        OrderViewModel order = OrderViewModel.fromJson(item);
-        if (order.currentStatus != 'CANCELLED') {
-          List<OrderDetailViewModel>? details = [];
-          for (final detail in item['details']) {
-            details.add(OrderDetailViewModel.fromJson(detail));
-            order.details = details;
-          }
-          orders.add(order);
-        }
-      }
-      return {
-        'orders': orders,
-        'currentBudget': result.data![type]['nodes'][0]['actualGcoinBudget']
-      };
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
   Future<PlanDetail?> getPlanById(int planId, String type) async {
     try {
       String planType = '';
@@ -418,6 +326,7 @@ mutation{
       utcStartAt
       utcEndAt
       schedule
+      isPublished
       tempOrders{
         cart
         uuid
@@ -1103,6 +1012,16 @@ mutation{
   Future<int?> verifyPlan(
       int planId, PointLatLng coordinate, BuildContext context) async {
     try {
+      log('''
+mutation{
+  verifyPlan(dto: {
+    coordinate:[${coordinate.longitude},${coordinate.latitude}]
+    planId:$planId
+  }){
+    id
+  }
+}
+''');
       QueryResult result = await client.mutate(MutationOptions(document: gql('''
 mutation{
   verifyPlan(dto: {
@@ -1151,40 +1070,15 @@ mutation{
       bool isClone, PlanCreate? plan) async {
     final OrderService orderService = OrderService();
     List<OrderViewModel> orders = [];
-    var surcharge = [];
+    List<SurchargeViewModel> surcharges = [];
     if (plan == null) {
-      final orderList = json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+      final orderList =
+          json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
       orders = orderService.getOrderFromJson(orderList);
-    } else {
-      for (final order in plan.tempOrders!) {
-        final orderDetailGroupList =
-            order.details!.groupListsBy((e) => e.productId);
-        final orderDetailList =
-            orderDetailGroupList.entries.map((e) => e.value.first).toList();
-        orders.add(orderService.convertToTempOrder(
-            order.supplier!,
-            order.note,
-            order.type!,
-            orderDetailList
-                .map((item) => {
-                      'productId': item.productId,
-                      'productName': item.productName,
-                      'quantity': item.quantity,
-                      'partySize': item.partySize,
-                      'price': item.price
-                    })
-                .toList(),
-            order.period!,
-            order.serveDates!,
-            order.serveDates!
-                .map((date) => DateTime.parse(date.toString())
-                    .difference(DateTime(plan.startDate!.year,
-                        plan.startDate!.month, plan.startDate!.day, 0, 0, 0))
-                    .inDays)
-                .toList(),
-            order.uuid,
-            order.total!));
-      }
+      final surchargeList =
+          json.decode(sharedPreferences.getString('plan_surcharge') ?? '[]');
+      surcharges = List<SurchargeViewModel>.from(surchargeList.map(
+          (surcharge) => SurchargeViewModel.fromJsonLocal(surcharge))).toList();
     }
     showDialog(
         context: context,
@@ -1219,10 +1113,11 @@ mutation{
               locationName: location.name,
               isInfo: true,
               orderList: orders,
-              listSurcharges: json.decode(
-                  sharedPreferences.getString('plan_surcharge') ?? '[]'),
+              surchargeList: surcharges,
               plan: plan ??
                   PlanCreate(
+                      tempOrders: orders,
+                      surcharges: surcharges,
                       endDate: sharedPreferences.getString('plan_end_date') ==
                               null
                           ? null

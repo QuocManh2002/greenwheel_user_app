@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/filter_published_plan_dialog.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_card.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/combo_date_plan.dart';
+import '../../core/constants/urls.dart';
+import '../../service/plan_service.dart';
+import '../../view_models/location.dart';
+import '../../view_models/plan_viewmodels/plan_card.dart';
+import '../../widgets/plan_screen_widget/filter_published_plan_dialog.dart';
+import '../../widgets/plan_screen_widget/plan_card.dart';
+import '../loading_screen/publish_plan_loading_screen.dart';
 
 class SuggestPlansByLocationScreen extends StatefulWidget {
   const SuggestPlansByLocationScreen({super.key, required this.location});
@@ -146,9 +148,7 @@ class _SuggestPlanByLocationScreenState
         ],
       ),
       body: isLoading
-          ? const Center(
-              child: Text('Loading...'),
-            )
+          ? const PublishPlanLoadingScreen()
           : _filterPlans != null
               ? _filterPlans!.isEmpty
                   ? Container(

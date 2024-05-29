@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
@@ -9,6 +10,7 @@ import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/bottom_sheet_container_widget.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
@@ -21,7 +23,7 @@ class ConfirmPlanBottomSheet extends StatefulWidget {
       required this.locationName,
       this.orderList,
       this.onCompletePlan,
-      this.listSurcharges,
+      this.surchargeList,
       this.plan,
       required this.isJoin,
       this.onCancel,
@@ -31,7 +33,7 @@ class ConfirmPlanBottomSheet extends StatefulWidget {
   final String locationName;
   final List<OrderViewModel>? orderList;
   final void Function()? onCompletePlan;
-  final List<dynamic>? listSurcharges;
+  final List<SurchargeViewModel>? surchargeList;
   final PlanCreate? plan;
   final bool isJoin;
   final void Function()? onJoinPlan;
@@ -66,9 +68,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     for (final order in widget.orderList!) {
       total += order.total!;
     }
-    if (widget.listSurcharges != null && widget.listSurcharges!.isNotEmpty) {
-      for (final sur in widget.listSurcharges!) {
-        total += sur['gcoinAmount'] * widget.plan!.maxMemberCount!;
+    if (widget.surchargeList != null && widget.surchargeList!.isNotEmpty) {
+      for (final sur in widget.surchargeList!) {
+        total += sur.gcoinAmount * widget.plan!.maxMemberCount!;
       }
     }
 
@@ -451,13 +453,13 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           )
                       ],
                     )),
-              if (widget.listSurcharges != null &&
-                  widget.listSurcharges!.isNotEmpty)
+              if (widget.surchargeList != null &&
+                  widget.surchargeList!.isNotEmpty)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.listSurcharges != null &&
-                  widget.listSurcharges!.isNotEmpty)
+              if (widget.surchargeList != null &&
+                  widget.surchargeList!.isNotEmpty)
                 Container(
                   width: 100.w,
                   padding:
@@ -479,37 +481,46 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                           'Phụ thu',
                           style: TextStyle(fontSize: 16),
                         ),
-                        for (final sur in widget.listSurcharges!)
-                          Row(
+                        for (final sur in widget.surchargeList!)
+                          Column(
                             children: [
-                              SizedBox(
-                                width: 50.w,
-                                child: Text(
-                                  '${sur['note'].toString().substring(0, 1) == '"' ? '${json.decode(sur['note'])}' : sur['note']}',
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold),
-                                  overflow: TextOverflow.clip,
-                                ),
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      sur.note.substring(0, 1) == '"' ? '${json.decode(sur.note)}' : sur.note,
+                                      style: const TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold),
+                                      overflow: TextOverflow.clip,
+                                    ),
+                                  ),
+                                  Text(
+                                    NumberFormat.simpleCurrency(
+                                            decimalDigits: 0,
+                                            locale: 'vi_VN',
+                                            name: '')
+                                        .format(sur.gcoinAmount *
+                                            widget.plan!.maxMemberCount!),
+                                    style: const TextStyle(
+                                        fontSize: 15, fontWeight: FontWeight.bold),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 2),
+                                    child: SvgPicture.asset(
+                                      gcoinLogo,
+                                      height: 18,
+                                    ),
+                                  )
+                                ],
                               ),
-                              const Spacer(),
-                              Text(
-                                NumberFormat.simpleCurrency(
-                                        decimalDigits: 0,
-                                        locale: 'vi_VN',
-                                        name: '')
-                                    .format(sur['gcoinAmount'] *
-                                        widget.plan!.maxMemberCount),
-                                style: const TextStyle(
-                                    fontSize: 15, fontWeight: FontWeight.bold),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(top: 2),
-                                child: SvgPicture.asset(
-                                  gcoinLogo,
-                                  height: 18,
-                                ),
+                              if(sur != widget.surchargeList!.last)
+                              Divider(
+                                thickness: 1,
+                                height: 8,
+                                color: Colors.grey.withOpacity(0.3),
                               )
                             ],
                           )

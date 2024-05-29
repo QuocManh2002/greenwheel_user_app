@@ -256,13 +256,13 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
                 zoom: 11),
             styleUri: MapboxStyles.MAPBOX_STREETS,
             textureView: false,
-            onLongTapListener: (coordinate) async {
+            onTapListener: (coordinate) async {
               if (_circleAnnotationSelected != null) {
                 await _circleAnnotationSelected!.deleteAll();
               }
               _selectedSearchResult = null;
-              _selectedLatLng = PointLatLng(coordinate.touchPosition.x, coordinate.touchPosition.y);
-              await _onSelectLocation(PointLatLng(coordinate.touchPosition.x, coordinate.touchPosition.y));
+              _selectedLatLng = PointLatLng(coordinate.point.coordinates.lat.toDouble(), coordinate.point.coordinates.lng.toDouble());
+              await _onSelectLocation(PointLatLng(coordinate.point.coordinates.lat.toDouble(), coordinate.point.coordinates.lng.toDouble()));
             },
             onMapCreated: _onMapCreated,
           ),
@@ -321,16 +321,6 @@ class _SelectDefaultAddressState extends State<SelectDefaultAddress> {
                           } else {
                             widget.callback(null, _selectedLatLng!);
                           }
-                          // switch (widget.type) {
-                          //   case 0:
-                          //     Navigator.of(context).pop();
-                          //     Navigator.push(context, )
-                          //     break;
-                          //   case 1:
-                          //     break;
-                          //   case 2:
-                          //     break;
-                          // }
                           Navigator.of(context).pop();
                         },
                         child: const Text('Lưu')),

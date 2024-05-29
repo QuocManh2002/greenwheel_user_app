@@ -89,6 +89,7 @@ GraphQLClient client = config.getClient();
       price
       imagePath
       partySize
+      isAvailable
       provider {
         id
         name
@@ -96,6 +97,7 @@ GraphQLClient client = config.getClient();
         phone
         address
         type
+        isActive
       }
     }
   }

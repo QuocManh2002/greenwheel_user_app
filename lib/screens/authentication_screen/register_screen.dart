@@ -153,7 +153,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                         child: Container(
                             alignment: Alignment.center,
-                            height: 6.h,
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                                 color: isMale
@@ -182,7 +181,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         },
                         child: Container(
                             alignment: Alignment.center,
-                            height: 6.h,
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
                                 color: !isMale
