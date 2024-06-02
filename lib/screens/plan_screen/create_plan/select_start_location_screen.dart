@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
 import 'package:intl/intl.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:page_transition/page_transition.dart';
@@ -21,6 +20,7 @@ import '../../../view_models/plan_viewmodels/search_start_location_result.dart';
 import '../../../widgets/plan_screen_widget/craete_plan_header.dart';
 import '../../../widgets/plan_screen_widget/search_location_result_card.dart';
 import '../../../widgets/style_widget/button_style.dart';
+import '../../../widgets/style_widget/dialog_style.dart';
 import '../locate_start_location.dart';
 import 'select_start_date_screen.dart';
 

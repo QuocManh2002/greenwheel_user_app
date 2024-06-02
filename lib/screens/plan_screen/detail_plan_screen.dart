@@ -8,6 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:phuot_app/core/constants/enums.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -80,12 +81,15 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   List<ProductViewModel> products = [];
   List<OrderViewModel>? tempOrders = [];
   List<OrderViewModel> orderList = [];
+  bool _isEnableToJoin = false;
   bool isLeader = false;
   bool _isAlreadyJoin = false;
   bool _isEnableToConfirm = false;
   bool _isEnableToRegisterMore = false;
   PlanMemberViewModel? myAccount;
   late PlanStatus status;
+  final myId = sharedPreferences.getInt('userId');
+
   @override
   void initState() {
     super.initState();
@@ -134,7 +138,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     } else {
       DialogStyle().basicDialog(
           context: context,
-          title: 'Không tìm thấy chuyến đi',
+          title: 'Chuyến đi không tồn tại hoặc không còn khả dụng',
           desc: 'Vui lòng kiểm tra lại thông tin',
           onOk: () {
             Navigator.of(context).pop();
@@ -184,6 +188,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               2 &&
           myAccount!.weight < _planDetail!.maxMemberWeight! &&
           _planDetail!.memberCount! < _planDetail!.maxMemberCount!;
+    } else {
+      _isEnableToJoin = status.value < 2 &&
+          _planDetail!.memberCount! < _planDetail!.maxMemberWeight! &&
+          !_planMembers.any((member) =>
+              member.accountId == myId &&
+              (member.status == MemberStatus.BLOCKED.name ||
+                  member.status == MemberStatus.SELF_BLOCKED.name));
     }
   }
 
@@ -443,100 +454,100 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     foregroundColor: MaterialStatePropertyAll(Colors.white)),
               ),
               actions: [
-                if(_planDetail != null)
-                if ((isLeader &&
-                        _planDetail!.status == planStatuses[0].engName) ||
-                    (!isLeader &&
-                        _isAlreadyJoin &&
-                        _planDetail!.status == planStatuses[1].engName) ||
-                    (isLeader &&
-                        (_planDetail!.status == planStatuses[0].engName ||
-                            _planDetail!.status == planStatuses[1].engName)))
-                  PopupMenuButton(
-                    itemBuilder: (ctx) => [
-                      if (isLeader &&
-                          _planDetail!.status == planStatuses[0].engName)
-                        const PopupMenuItem(
-                          value: 0,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.edit_square,
-                                color: Colors.blueAccent,
-                                size: 32,
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Text(
-                                'Chỉnh sửa',
-                                style: TextStyle(
-                                    color: Colors.blueAccent, fontSize: 18),
-                              )
-                            ],
-                          ),
-                        ),
-                      if (!isLeader &&
+                if (_planDetail != null)
+                  if ((isLeader &&
+                          _planDetail!.status == planStatuses[0].engName) ||
+                      (!isLeader &&
                           _isAlreadyJoin &&
-                          _planDetail!.status == planStatuses[1].engName)
-                        const PopupMenuItem(
-                          value: 1,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.logout,
-                                color: Colors.amber,
-                                size: 32,
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Text(
-                                'Rời khỏi',
-                                style: TextStyle(
-                                    color: Colors.amber, fontSize: 18),
-                              )
-                            ],
-                          ),
-                        ),
-                      if (isLeader &&
+                          _planDetail!.status == planStatuses[1].engName) ||
+                      (isLeader &&
                           (_planDetail!.status == planStatuses[0].engName ||
-                              _planDetail!.status == planStatuses[1].engName))
-                        const PopupMenuItem(
-                          value: 2,
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.cancel_outlined,
-                                color: Colors.redAccent,
-                                size: 32,
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Text(
-                                'Huỷ kế hoạch',
-                                style: TextStyle(
-                                    color: Colors.redAccent, fontSize: 18),
-                              )
-                            ],
+                              _planDetail!.status == planStatuses[1].engName)))
+                    PopupMenuButton(
+                      itemBuilder: (ctx) => [
+                        if (isLeader &&
+                            _planDetail!.status == planStatuses[0].engName)
+                          const PopupMenuItem(
+                            value: 0,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.edit_square,
+                                  color: Colors.blueAccent,
+                                  size: 32,
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                  'Chỉnh sửa',
+                                  style: TextStyle(
+                                      color: Colors.blueAccent, fontSize: 18),
+                                )
+                              ],
+                            ),
                           ),
-                        ),
-                    ],
-                    onSelected: (value) {
-                      switch (value) {
-                        case 0:
-                          updatePlan();
-                          break;
-                        case 1:
-                          handleQuitPlan();
-                          break;
-                        case 2:
-                          handleCancelPlan();
-                          break;
-                      }
-                    },
-                  )
+                        if (!isLeader &&
+                            _isAlreadyJoin &&
+                            _planDetail!.status == planStatuses[1].engName)
+                          const PopupMenuItem(
+                            value: 1,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.logout,
+                                  color: Colors.amber,
+                                  size: 32,
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                  'Rời khỏi',
+                                  style: TextStyle(
+                                      color: Colors.amber, fontSize: 18),
+                                )
+                              ],
+                            ),
+                          ),
+                        if (isLeader &&
+                            (_planDetail!.status == planStatuses[0].engName ||
+                                _planDetail!.status == planStatuses[1].engName))
+                          const PopupMenuItem(
+                            value: 2,
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.cancel_outlined,
+                                  color: Colors.redAccent,
+                                  size: 32,
+                                ),
+                                SizedBox(
+                                  width: 8,
+                                ),
+                                Text(
+                                  'Huỷ kế hoạch',
+                                  style: TextStyle(
+                                      color: Colors.redAccent, fontSize: 18),
+                                )
+                              ],
+                            ),
+                          ),
+                      ],
+                      onSelected: (value) {
+                        switch (value) {
+                          case 0:
+                            updatePlan();
+                            break;
+                          case 1:
+                            handleQuitPlan();
+                            break;
+                          case 2:
+                            handleCancelPlan();
+                            break;
+                        }
+                      },
+                    )
               ],
             ),
             body: isLoading
@@ -714,10 +725,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             ],
                           )),
                         ),
-                        if ((widget.isFromHost == null || widget.isFromHost!) &&
-                                (widget.isEnableToJoin && !_isAlreadyJoin) &&
-                                status.value < 2 ||
-                            widget.planType == 'PUBLISH')
+                        if (_isEnableToJoin || widget.planType == 'PUBLISH')
                           buildNewFooter()
                       ],
                     ),
@@ -737,7 +745,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       isLeader: isLeader,
       tempOrders: tempOrders!,
       orderList: orderList,
-      planType: widget.planType,
       totalOrder: _totalOrder,
       onGetOrderList: () async {
         setupData();
@@ -880,17 +887,17 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                     isInfo: false,
                     isFromHost: isLeader,
                     plan: PlanCreate(
-                      departAddress: _planDetail!.departureAddress,
-                      schedule: json.encode(_planDetail!.schedule),
-                      savedContacts: json.encode(emerList),
-                      name: _planDetail!.name,
-                      maxMemberCount: _planDetail!.maxMemberCount,
-                      startDate: _planDetail!.utcStartAt,
-                      endDate: _planDetail!.utcEndAt,
-                      travelDuration: _planDetail!.travelDuration,
-                      departAt: _planDetail!.utcDepartAt,
-                      note: _planDetail!.note,
-                    ),
+                        departAddress: _planDetail!.departureAddress,
+                        schedule: json.encode(_planDetail!.schedule),
+                        savedContacts: json.encode(emerList),
+                        name: _planDetail!.name,
+                        maxMemberCount: _planDetail!.maxMemberCount,
+                        startDate: _planDetail!.utcStartAt,
+                        endDate: _planDetail!.utcEndAt,
+                        travelDuration: _planDetail!.travelDuration,
+                        departAt: _planDetail!.utcDepartAt!.toLocal(),
+                        note: _planDetail!.note,
+                        numOfExpPeriod: _planDetail!.numOfExpPeriod),
                     locationName: _planDetail!.locationName!,
                     orderList: tempOrders,
                     onCompletePlan: () {},
@@ -1050,7 +1057,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                 child: Column(
                   children: [
                     Text(
-                      'Rời khỏi ${_planDetail!.name}',
+                      'Rời khỏi "${_planDetail!.name}"',
                       textAlign: TextAlign.center,
                       overflow: TextOverflow.clip,
                       style: const TextStyle(

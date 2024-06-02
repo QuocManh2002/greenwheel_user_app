@@ -8,11 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/pagination.dart';
-import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
+import 'package:phuot_app/config/graphql_config.dart';
+import 'package:phuot_app/helpers/util.dart';
+import 'package:phuot_app/main.dart';
+import 'package:phuot_app/models/pagination.dart';
+import 'package:phuot_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 
 class AnnouncementService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();

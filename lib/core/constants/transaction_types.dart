@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/colors.dart';
 
 import '../../models/transaction_type.dart';
 

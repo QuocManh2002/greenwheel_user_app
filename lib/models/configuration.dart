@@ -1,6 +1,5 @@
-import 'dart:ffi';
 
-import 'package:greenwheel_user_app/models/holiday.dart';
+import 'package:phuot_app/models/holiday.dart';
 
 class ConfigurationModel {
   List<Holiday>? HOLIDAYS;
@@ -13,8 +12,8 @@ class ConfigurationModel {
   int? ORDER_REFUND_CUSTOMER_CANCEL_2_DAY_PCT;
   DateTime? LAST_MODIFIED;
   int? DEFAULT_PRESTIGE_POINT;
-  Long? MIN_TOPUP;
-  Long? MAX_TOPUP;
+  int? MIN_TOPUP;
+  int? MAX_TOPUP;
   int? ORDER_DATE_MIN_DIFF;
   int? ORDER_CANCEL_DATE_DURATION;
   int? MEMBER_REFUND_SELF_REMOVE_1_DAY_PCT;

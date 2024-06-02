@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/main_screen/search_screen.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/screens/main_screen/search_screen.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 

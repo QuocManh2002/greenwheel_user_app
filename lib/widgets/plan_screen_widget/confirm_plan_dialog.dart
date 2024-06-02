@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/order_plan.dart';
+import 'package:phuot_app/view_models/location.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/order_plan.dart';
 
 class ConfirmPlan extends StatefulWidget {
   const ConfirmPlan(

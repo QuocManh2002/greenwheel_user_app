@@ -1,4 +1,4 @@
-import 'package:greenwheel_user_app/models/menu_item.dart';
+import 'package:phuot_app/models/menu_item.dart';
 
 class Supplier {
   const Supplier(

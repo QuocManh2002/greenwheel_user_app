@@ -1,6 +1,6 @@
 {
-    "name": "greenwheel_user_app",
-    "short_name": "greenwheel_user_app",
+    "name": "phuot_app",
+    "short_name": "phuot_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

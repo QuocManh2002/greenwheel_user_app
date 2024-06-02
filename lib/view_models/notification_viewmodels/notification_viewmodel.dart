@@ -1,4 +1,4 @@
-import 'package:greenwheel_user_app/main.dart';
+import 'package:phuot_app/main.dart';
 
 class AnnouncementViewModel {
   int id;

@@ -1,5 +1,5 @@
 
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_detail.dart';
 
 class PlanOfflineViewModel {
   PlanDetail plan;

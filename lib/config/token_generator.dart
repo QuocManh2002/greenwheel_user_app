@@ -1,6 +1,6 @@
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/temp_plan.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/temp_plan.dart';
 
 
 

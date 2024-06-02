@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/shimmer_widget.dart';
+import 'package:phuot_app/widgets/style_widget/shimmer_widget.dart';
 import 'package:sizer2/sizer2.dart';
 
 class TransactionDetailLoadingScreen extends StatelessWidget {

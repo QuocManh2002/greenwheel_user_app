@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/select_emergency_detail_service.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/screens/plan_screen/select_emergency_detail_service.dart';
+import 'package:phuot_app/view_models/location_viewmodels/emergency_contact.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class EmergencyContactView extends StatelessWidget {

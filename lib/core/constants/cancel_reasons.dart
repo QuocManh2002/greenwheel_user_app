@@ -1,4 +1,4 @@
-import 'package:greenwheel_user_app/models/cancel_reason.dart';
+import 'package:phuot_app/models/cancel_reason.dart';
 
 List<CancelReason> cancelReasons = const [
   CancelReason(id: 1,text: 'Tìm thấy cửa hàng khác rẻ hơn'),

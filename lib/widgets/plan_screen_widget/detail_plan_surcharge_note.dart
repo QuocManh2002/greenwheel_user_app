@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/plan_total_info.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/surcharge_card.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/plan_statuses.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:phuot_app/widgets/plan_screen_widget/plan_total_info.dart';
+import 'package:phuot_app/widgets/plan_screen_widget/surcharge_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class DetailPlanSurchargeNote extends StatefulWidget {
@@ -90,39 +90,44 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                 children: [
                   Expanded(
                     child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: widget.plan.surcharges != null
-                          ? widget.plan.surcharges!.length
-                          : 0,
-                      itemBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8),
-                        child: SurchargeCard(
-                          maxMemberCount: widget.plan.maxMemberCount!,
-                          isEnableToUpdate: (widget.isLeader &&
-                                  planStatuses
-                                          .firstWhere((element) =>
-                                              element.engName ==
-                                              widget.plan.status)
-                                          .value >
-                                      1) ||
-                              (!widget.isLeader &&
-                                  widget.plan.surcharges![index].imagePath !=
-                                      null),
-                          isCreate: false,
-                          surcharge: widget.plan.surcharges![index],
-                          isLeader: widget.isLeader,
-                          isOffline: widget.isOffline,
-                          callbackSurcharge: (dynamic) {
-                            widget.onRefreshData();
-                          },
-                        ),
-                      ),
-                    ),
+                        physics: const BouncingScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: widget.plan.surcharges != null
+                            ? widget.plan.surcharges!.length
+                            : 0,
+                        itemBuilder: (context, index) {
+                          final statusIndex = planStatuses
+                              .firstWhere(
+                                (element) =>
+                                    element.engName == widget.plan.status,
+                              )
+                              .value;
+                          return Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 8),
+                            child: SurchargeCard(
+                              maxMemberCount: widget.plan.maxMemberCount!,
+                              isEnableToUpdate: (widget.isLeader &&
+                                      statusIndex > 1 &&
+                                      statusIndex < 5) ||
+                                  (!widget.isLeader &&
+                                      widget.plan.surcharges![index]
+                                              .imagePath !=
+                                          null),
+                              isCreate: false,
+                              surcharge: widget.plan.surcharges![index],
+                              isLeader: widget.isLeader,
+                              isOffline: widget.isOffline,
+                              callbackSurcharge: (dynamic) {
+                                widget.onRefreshData();
+                              },
+                            ),
+                          );
+                        }),
                   ),
                   SizedBox(
                     height: 1.h,
                   ),
+                  if (widget.isLeader)
                   PlanTotalInfo(
                       plan: widget.plan,
                       isShowTotal: isShowTotal,

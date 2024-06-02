@@ -6,18 +6,18 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/login.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/register_screen.dart';
-import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
-import 'package:greenwheel_user_app/service/traveler_service.dart';
-import 'package:greenwheel_user_app/view_models/customer.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/main.dart';
+import 'package:phuot_app/models/login.dart';
+import 'package:phuot_app/screens/authentication_screen/register_screen.dart';
+import 'package:phuot_app/screens/introduce_screen/splash_screen.dart';
+import 'package:phuot_app/service/traveler_service.dart';
+import 'package:phuot_app/view_models/customer.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:pinput/pinput.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/widgets/style_widget/button_style.dart';
 
 class OTPScreen extends StatefulWidget {
   const OTPScreen({super.key, required this.phoneNumber});

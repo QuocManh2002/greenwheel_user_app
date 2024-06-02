@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/search_start_location_result.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/search_start_location_result.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SearchLocationResultCard extends StatelessWidget {

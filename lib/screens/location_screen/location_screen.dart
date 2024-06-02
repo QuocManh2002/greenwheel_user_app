@@ -4,7 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
+import 'package:phuot_app/service/plan_service.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:readmore/readmore.dart';
 import 'package:sizer2/sizer2.dart';

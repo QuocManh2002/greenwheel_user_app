@@ -2,10 +2,10 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/main.dart';
+import 'package:phuot_app/view_models/order.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 

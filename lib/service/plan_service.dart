@@ -8,23 +8,23 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/plan_member.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
+import 'package:phuot_app/config/graphql_config.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/shedule_item_type.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/helpers/util.dart';
+import 'package:phuot_app/main.dart';
+import 'package:phuot_app/service/order_service.dart';
+import 'package:phuot_app/view_models/location.dart';
+import 'package:phuot_app/view_models/order.dart';
+import 'package:phuot_app/view_models/plan_member.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_card.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_create.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_schedule.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/surcharge.dart';
+import 'package:phuot_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:sizer2/sizer2.dart';
@@ -270,7 +270,12 @@ mutation{
       QueryResult result = await newClient.query(QueryOptions(
         document: gql("""
 {
-  $planType(where: { id: { eq: $planId } }) {
+  $planType(
+    where: { 
+      id: { eq: $planId } 
+      ${type == 'INVITATION' ? 'joinMethod:{neq:NONE}' : ''}
+      ${type == 'SCAN' ? 'joinMethod:{eq:SCAN}' : ''}
+    }) {
     nodes {
       name
       id
@@ -1114,6 +1119,15 @@ mutation{
                     (sharedPreferences.getDouble('plan_duration_value')! * 60)
                         .toInt()))
             : null;
+    DateTime? departDate = sharedPreferences.getString('plan_departureDate') ==
+            null
+        ? null
+        : DateTime.parse(sharedPreferences.getString('plan_departureDate')!);
+    DateTime? departTime = sharedPreferences.getString('plan_departureTime') ==
+            null
+        ? null
+        : DateTime.parse(sharedPreferences.getString('plan_departureTime')!);
+
     showModalBottomSheet(
         context: context,
         backgroundColor: lightPrimaryTextColor,
@@ -1144,19 +1158,17 @@ mutation{
                               : sharedPreferences
                                   .getInt('plan_number_of_member')
                           : plan.maxMemberCount,
-                      departAt: sharedPreferences
-                                  .getString('plan_departureDate') ==
-                              null
+                      departAt: departDate == null
                           ? null
-                          : DateTime.parse(sharedPreferences
-                              .getString('plan_departureDate')!),
+                          : DateTime(departDate.year, departDate.month, departDate.day)
+                              .add(Duration(hours: departTime!.hour))
+                              .add(Duration(minutes: departTime.minute)),
                       name: sharedPreferences.getString('plan_name'),
-                      startDate: sharedPreferences
-                                  .getString('plan_start_date') ==
-                              null
-                          ? null
-                          : DateTime.parse(
-                              sharedPreferences.getString('plan_start_date')!),
+                      startDate:
+                          sharedPreferences.getString('plan_start_date') == null
+                              ? null
+                              : DateTime.parse(sharedPreferences
+                                  .getString('plan_start_date')!),
                       schedule: sharedPreferences.getString('plan_schedule'),
                       note: sharedPreferences.getString('plan_note'),
                       departAddress:
@@ -1321,14 +1333,14 @@ mutation{
 
     sharedPreferences.setString('plan_name', plan.name!);
 
-    if (options[5]) {
+    if (options[4]) {
       sharedPreferences.setStringList('selectedIndex',
           plan.savedContacts!.map((e) => e.providerId.toString()).toList());
     }
 
-    if (options[6]) {
+    if (options[5]) {
       sharedPreferences.setBool('notAskScheduleAgain', false);
-      if (options[7]) {
+      if (options[6]) {
         final availableOrder = plan.orders!
             .where((e) =>
                 e.supplier!.isActive! &&
@@ -1392,7 +1404,7 @@ mutation{
       sharedPreferences.setString('plan_schedule', json.encode(plan.schedule));
     }
 
-    if (options[8]) {
+    if (options[7]) {
       sharedPreferences.setString(
           'plan_surcharge',
           json.encode(

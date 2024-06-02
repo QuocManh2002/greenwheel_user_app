@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/models/activity.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/service_supplier_loading_screen.dart';
-import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
-import 'package:greenwheel_user_app/view_models/province.dart';
-import 'package:greenwheel_user_app/widgets/search_screen_widget/filter_location_card.dart';
+import 'package:phuot_app/models/activity.dart';
+import 'package:phuot_app/screens/loading_screen/service_supplier_loading_screen.dart';
+import 'package:phuot_app/service/location_service.dart';
+import 'package:phuot_app/view_models/location_viewmodels/location_card.dart';
+import 'package:phuot_app/view_models/province.dart';
+import 'package:phuot_app/widgets/search_screen_widget/filter_location_card.dart';
 
 class FilterLocationScreen extends StatefulWidget {
   const FilterLocationScreen({super.key, this.province, this.activity});

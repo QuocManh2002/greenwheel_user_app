@@ -37,3 +37,5 @@ enum Topographic{
   Waterfall,
   Hill
 }
+
+enum MemberStatus { INVITED, JOINED, REMOVED, BLOCKED, SELF_BLOCKED }

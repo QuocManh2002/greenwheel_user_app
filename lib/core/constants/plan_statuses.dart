@@ -1,4 +1,4 @@
-import 'package:greenwheel_user_app/models/plan_status.dart';
+import 'package:phuot_app/models/plan_status.dart';
 
 List<PlanStatus> planStatuses = [
   PlanStatus(engName: 'PENDING', name: 'Chờ xác nhận', value: 0),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/main.dart';
+import 'package:phuot_app/main.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';

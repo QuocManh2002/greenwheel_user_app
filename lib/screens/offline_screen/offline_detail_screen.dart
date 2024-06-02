@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:draggable_fab/draggable_fab.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_offline.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -211,7 +211,6 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
                       isLeader: true,
                       tempOrders: const [],
                       orderList: widget.plan.plan.orders,
-                      planType: 'JOIN',
                       totalOrder: widget.plan.totalOrder,
                       onGetOrderList: () {}),
                 if (_selectedTab == 3)

@@ -1,9 +1,9 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/main.dart';
+import 'package:phuot_app/view_models/location_viewmodels/emergency_contact.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:sizer2/sizer2.dart';
 
 class EmergencyContactCard extends StatelessWidget {

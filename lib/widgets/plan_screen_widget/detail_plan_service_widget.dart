@@ -1,8 +1,10 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:developer';
+
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
+import 'package:phuot_app/core/constants/plan_statuses.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
@@ -21,7 +23,6 @@ class DetailPlanServiceWidget extends StatefulWidget {
       required this.isLeader,
       required this.tempOrders,
       required this.totalOrder,
-      required this.planType,
       this.orderList,
       required this.onGetOrderList});
   final PlanDetail plan;
@@ -30,7 +31,6 @@ class DetailPlanServiceWidget extends StatefulWidget {
   final List<OrderViewModel>? orderList;
   final List<OrderViewModel> tempOrders;
   final double totalOrder;
-  final String planType;
 
   @override
   State<DetailPlanServiceWidget> createState() =>
@@ -75,6 +75,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
     int index = totalList.indexOf(
         totalList.firstWhereOrNull((element) => element.isNotEmpty) ??
             roomOrderList);
+            log(index.toString());
     // tabController.animateTo(index, duration: const Duration(milliseconds: 500));
     isShowTotal =
         widget.plan.status != planStatuses[0].engName && widget.plan.status != planStatuses[1].engName;
@@ -166,7 +167,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                     foodOrderList.isEmpty &&
                     widget.plan.surcharges!.isEmpty
                 ? 0.h
-                : 35.h,
+                : 55.h,
             child: TabBarView(controller: tabController, children: [
               ListView.builder(
                 physics: const BouncingScrollPhysics(),
@@ -177,10 +178,9 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                       callback: () {
                         widget.onGetOrderList();
                       },
-                      isShowQuantity: true,
-                      endDate: widget.plan.utcEndAt,
-                      planType: widget.plan.status,
+                      planStatus: widget.plan.status,
                       order: roomOrderList[index],
+                      isPublish: widget.plan.isPublished ?? false,
                       isLeader: widget.isLeader);
                 },
               ),
@@ -193,9 +193,9 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                       callback: () {
                         widget.onGetOrderList();
                       },
-                      isShowQuantity: true,
-                      planType: widget.plan.status,
+                      planStatus: widget.plan.status,
                       order: foodOrderList[index],
+                      isPublish: widget.plan.isPublished ?? false,
                       isLeader: widget.isLeader);
                 },
               ),
@@ -208,8 +208,8 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                       callback: () {
                         widget.onGetOrderList();
                       },
-                      isShowQuantity: true,
-                      planType: widget.plan.status,
+                      isPublish: widget.plan.isPublished ?? false,
+                      planStatus: widget.plan.status,
                       order: movingOrderList[index],
                       isLeader: widget.isLeader);
                 },

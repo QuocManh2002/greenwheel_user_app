@@ -1,12 +1,11 @@
-import 'dart:developer';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/models/session.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
-import 'package:greenwheel_user_app/view_models/supplier.dart';
+import 'package:phuot_app/config/graphql_config.dart';
+import 'package:phuot_app/models/session.dart';
+import 'package:phuot_app/view_models/location_viewmodels/emergency_contact.dart';
+import 'package:phuot_app/view_models/supplier.dart';
 
 import '../helpers/util.dart';
 
@@ -17,58 +16,6 @@ class SupplierService extends Iterable {
   Future<List<SupplierViewModel>> getSuppliers(
       PointLatLng coordinate, List<String> types, Session? session) async {
     try {
-      log('''
-{
-  providers(
-    where: {
-      and: [
-        {
-          coordinate: {
-            distance: {
-              lte: 10000
-              geometry: {
-                type: Point
-                coordinates: [${coordinate.longitude}, ${coordinate.latitude}]
-              }
-            }
-          }
-        }
-        {
-          products: {
-            some: {
-              and: [
-                { type: { eq: ${types.first} } }
-                { periods: { some: { in: ${session!.enumName} } } }
-              ]
-            }
-          }
-        }
-        { isActive: { eq: true } }
-      ]
-    }
-  ) {
-    edges {
-      node {
-        id
-        name
-        address
-        phone
-        imagePath
-        standard
-        products{
-          id
-          name
-          periods
-          type
-        }
-        coordinate{
-                coordinates
-              }
-      }
-    }
-  }
-}
-''');
       final QueryResult result = await client.query(
         QueryOptions(
           fetchPolicy: FetchPolicy.noCache,
@@ -93,7 +40,7 @@ class SupplierService extends Iterable {
             some: {
               and: [
                 { type: { eq: ${types.first} } }
-                { periods: { some: { in: ${session.enumName} } } }
+                { periods: { some: { in: ${session!.enumName} } } }
               ]
             }
           }

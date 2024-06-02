@@ -2,14 +2,14 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/models/activity.dart';
-import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/location_card.dart';
-import 'package:greenwheel_user_app/view_models/province.dart';
+import 'package:phuot_app/config/graphql_config.dart';
+import 'package:phuot_app/helpers/util.dart';
+import 'package:phuot_app/models/activity.dart';
+import 'package:phuot_app/models/tag.dart';
+import 'package:phuot_app/view_models/location.dart';
+import 'package:phuot_app/view_models/location_viewmodels/comment.dart';
+import 'package:phuot_app/view_models/location_viewmodels/location_card.dart';
+import 'package:phuot_app/view_models/province.dart';
 
 class LocationService extends Iterable {
   static GraphQlConfig graphQlConfig = GraphQlConfig();

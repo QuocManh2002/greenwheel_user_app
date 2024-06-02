@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/service_types.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
-import 'package:greenwheel_user_app/screens/sub_screen/select_session_screen.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/service_types.dart';
+import 'package:phuot_app/screens/main_screen/service_main_screen.dart';
+import 'package:phuot_app/screens/sub_screen/select_session_screen.dart';
+import 'package:phuot_app/view_models/location.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 

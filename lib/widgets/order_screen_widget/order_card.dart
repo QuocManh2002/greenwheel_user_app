@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/models/order.dart';
-import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/screens/main_screen/order_detail_screen.dart';
+import 'package:phuot_app/models/order.dart';
+import 'package:phuot_app/models/service_type.dart';
+import 'package:phuot_app/screens/main_screen/order_detail_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';

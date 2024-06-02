@@ -1,6 +1,6 @@
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/main.dart';
+import 'package:phuot_app/config/graphql_config.dart';
+import 'package:phuot_app/main.dart';
 
 class DeviceService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();

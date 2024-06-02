@@ -1,5 +1,5 @@
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/models/session.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/models/session.dart';
 
 const List<Session> sessions = [
   Session(

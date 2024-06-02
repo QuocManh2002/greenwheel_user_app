@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/sessions.dart';
-import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/session.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/widgets/order_screen_widget/session_card.dart';
+import 'package:phuot_app/core/constants/sessions.dart';
+import 'package:phuot_app/models/service_type.dart';
+import 'package:phuot_app/models/session.dart';
+import 'package:phuot_app/view_models/location.dart';
+import 'package:phuot_app/widgets/order_screen_widget/session_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SelectSessionScreen extends StatefulWidget {

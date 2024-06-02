@@ -3,7 +3,8 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
+import 'package:phuot_app/core/constants/global_constant.dart';
+import 'package:phuot_app/service/order_service.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -40,7 +41,6 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _timeController = TextEditingController();
   final TextEditingController _dateController = TextEditingController();
-  bool? _isCloneName;
   bool? _isCloneTime;
   bool isAvailableToOrder = false;
 
@@ -74,8 +74,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
     if (widget.isClone) {
       final cloneOptions =
           json.decode(sharedPreferences.getString('plan_clone_options')!);
-      _isCloneName = cloneOptions[1];
-      _isCloneTime = cloneOptions[2];
+      _isCloneTime = cloneOptions[1];
     }
     final name = sharedPreferences.getString('plan_name');
     if (name != null) {
@@ -174,8 +173,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                 padding: const EdgeInsets.only(left: 12),
                 controller: _nameController,
                 inputType: TextInputType.name,
-                readonly: widget.isClone && _isCloneName!,
-                maxLength: 30,
+                maxLength: GlobalConstant().PLAN_NAME_MAX_LENGTH,
                 onChange: (value) {
                   if (widget.plan == null) {
                     sharedPreferences.setString('plan_name', value!);
@@ -186,8 +184,10 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                 onValidate: (value) {
                   if (value == null || value.isEmpty) {
                     return "Tên của chuyến đi không được để trống";
-                  } else if (value.length < 3 || value.length > 30) {
-                    return "Tên của chuyến đi phải có độ dài từ 3 - 30 kí tự";
+                  } else if (value.length <
+                          GlobalConstant().PLAN_NAME_MIN_LENGTH ||
+                      value.length > GlobalConstant().PLAN_NAME_MAX_LENGTH) {
+                    return "Tên của chuyến đi phải có độ dài từ ${GlobalConstant().PLAN_NAME_MIN_LENGTH} - ${GlobalConstant().PLAN_NAME_MAX_LENGTH} kí tự";
                   }
                   return null;
                 },

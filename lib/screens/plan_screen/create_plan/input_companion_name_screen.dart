@@ -1,8 +1,8 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/widgets/style_widget/button_style.dart';
+import 'package:phuot_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:sizer2/sizer2.dart';
 
 class InputCompanionNameScreen extends StatefulWidget {
@@ -354,7 +354,7 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
             context: context,
             animType: AnimType.leftSlide,
             dialogType: DialogType.question,
-            title: 'Xoá ${names[index]}?',
+            title: 'Xoá "${names[index]}" ?',
             titleTextStyle: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,

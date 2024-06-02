@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/features/home/presentation/providers/home_provider.dart';
-import 'package:greenwheel_user_app/features/home/presentation/widgets/location_card.dart';
+import 'package:phuot_app/features/home/presentation/providers/home_provider.dart';
+import 'package:phuot_app/features/home/presentation/widgets/location_card.dart';
 import 'package:provider/provider.dart';
 import 'package:sizer2/sizer2.dart';
 

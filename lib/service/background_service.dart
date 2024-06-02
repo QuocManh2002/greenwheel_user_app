@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
-import 'package:greenwheel_user_app/service/offline_service.dart';
+import 'package:phuot_app/service/offline_service.dart';
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();

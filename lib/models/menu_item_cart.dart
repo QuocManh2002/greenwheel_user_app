@@ -1,4 +1,4 @@
-import 'package:greenwheel_user_app/view_models/product.dart';
+import 'package:phuot_app/view_models/product.dart';
 
 class ItemCart {
   ItemCart({

@@ -1,6 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/colors.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 

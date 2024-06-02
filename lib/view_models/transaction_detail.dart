@@ -1,6 +1,6 @@
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
+import 'package:phuot_app/view_models/order.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:phuot_app/view_models/profile_viewmodels/transaction.dart';
 
 class TransactionDetailViewModel {
   TransactionViewModel? transaction;

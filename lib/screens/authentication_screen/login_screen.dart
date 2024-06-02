@@ -3,11 +3,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/authentication_screen/otp_screen.dart';
-import 'package:greenwheel_user_app/service/traveler_service.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/screens/authentication_screen/otp_screen.dart';
+import 'package:phuot_app/service/traveler_service.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:phuot_app/widgets/style_widget/button_style.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});

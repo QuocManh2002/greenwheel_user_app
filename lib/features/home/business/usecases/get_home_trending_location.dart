@@ -1,5 +1,5 @@
-import 'package:greenwheel_user_app/features/home/business/entities/home_location_entity.dart';
-import 'package:greenwheel_user_app/features/home/business/repositories/home_repository.dart';
+import 'package:phuot_app/features/home/business/entities/home_location_entity.dart';
+import 'package:phuot_app/features/home/business/repositories/home_repository.dart';
 
 class GetHomeTrendingLocations {
   final HomeRepository repository;

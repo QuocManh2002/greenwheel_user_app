@@ -1,4 +1,4 @@
-import 'package:greenwheel_user_app/models/activity.dart';
+import 'package:phuot_app/models/activity.dart';
 
 const List<Activity> activities = [
   Activity(

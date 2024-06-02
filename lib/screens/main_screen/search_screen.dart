@@ -1,17 +1,17 @@
 import 'package:choose_input_chips/choose_input_chips.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/search.dart';
-import 'package:greenwheel_user_app/models/tag.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/search_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/main_screen/search_category_screen.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/recent_card.dart';
+import 'package:phuot_app/core/constants/search.dart';
+import 'package:phuot_app/models/tag.dart';
+import 'package:phuot_app/screens/loading_screen/search_loading_screen.dart';
+import 'package:phuot_app/screens/main_screen/search_category_screen.dart';
+import 'package:phuot_app/screens/main_screen/tabscreen.dart';
+import 'package:phuot_app/service/location_service.dart';
+import 'package:phuot_app/view_models/location.dart';
+import 'package:phuot_app/widgets/style_widget/recent_card.dart';
 import 'package:sizer2/sizer2.dart';
-import 'package:greenwheel_user_app/core/constants/recent_search.dart';
-import 'package:greenwheel_user_app/widgets/search_screen_widget/search_card.dart';
-import 'package:greenwheel_user_app/widgets/search_screen_widget/tag.dart';
+import 'package:phuot_app/core/constants/recent_search.dart';
+import 'package:phuot_app/widgets/search_screen_widget/search_card.dart';
+import 'package:phuot_app/widgets/search_screen_widget/tag.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({

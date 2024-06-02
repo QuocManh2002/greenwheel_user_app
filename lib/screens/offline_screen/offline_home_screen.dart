@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/screens/offline_screen/offline_detail_screen.dart';
-import 'package:greenwheel_user_app/service/offline_service.dart';
-import 'package:greenwheel_user_app/widgets/offline_screen_widget/offline_plan_card.dart';
+import 'package:phuot_app/screens/offline_screen/offline_detail_screen.dart';
+import 'package:phuot_app/service/offline_service.dart';
+import 'package:phuot_app/widgets/offline_screen_widget/offline_plan_card.dart';
 import 'package:page_transition/page_transition.dart';
 
 class OfflineHomeScreen extends StatefulWidget {

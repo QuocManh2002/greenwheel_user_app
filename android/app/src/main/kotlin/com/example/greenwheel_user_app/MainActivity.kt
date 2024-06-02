@@ -1,4 +1,4 @@
-package com.example.greenwheel_user_app
+package com.example.phuot_app
 
 import io.flutter.embedding.android.FlutterActivity
 

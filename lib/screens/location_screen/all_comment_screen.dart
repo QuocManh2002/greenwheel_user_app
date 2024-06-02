@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/all_comments_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/location_screen/add_comment_screen.dart';
-import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
-import 'package:greenwheel_user_app/widgets/plan_screen_widget/comment_card.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:phuot_app/screens/loading_screen/all_comments_loading_screen.dart';
+import 'package:phuot_app/screens/location_screen/add_comment_screen.dart';
+import 'package:phuot_app/service/location_service.dart';
+import 'package:phuot_app/view_models/location_viewmodels/comment.dart';
+import 'package:phuot_app/widgets/plan_screen_widget/comment_card.dart';
+import 'package:phuot_app/widgets/style_widget/button_style.dart';
 import 'package:sizer2/sizer2.dart';
 
 class AllCommentScreen extends StatefulWidget {

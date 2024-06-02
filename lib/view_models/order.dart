@@ -1,5 +1,5 @@
-import 'package:greenwheel_user_app/view_models/order_detail.dart';
-import 'package:greenwheel_user_app/view_models/supplier.dart';
+import 'package:phuot_app/view_models/order_detail.dart';
+import 'package:phuot_app/view_models/supplier.dart';
 
 class OrderViewModel {
   int? id;

@@ -1,6 +1,6 @@
-import 'package:greenwheel_user_app/models/menu_item_cart.dart';
-import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/supplier.dart';
+import 'package:phuot_app/models/menu_item_cart.dart';
+import 'package:phuot_app/models/service_type.dart';
+import 'package:phuot_app/models/supplier.dart';
 
 class Order {
   const Order(

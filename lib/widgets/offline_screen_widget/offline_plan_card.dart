@@ -1,8 +1,8 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/screens/offline_screen/offline_detail_screen.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_offline.dart';
+import 'package:phuot_app/screens/offline_screen/offline_detail_screen.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_offline.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 

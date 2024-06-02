@@ -125,6 +125,7 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
           SizedBox(
             height: 0.5.h,
           ),
+          if(widget.plan.isPublished == null && !widget.plan.isPublished!)
           Container(
             padding: EdgeInsets.symmetric(horizontal: 1.5.w, vertical: 0.2.h),
             decoration: const BoxDecoration(
@@ -139,6 +140,7 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
                   fontWeight: FontWeight.bold),
             ),
           ),
+          if(widget.plan.isPublished == null && !widget.plan.isPublished!)
           SizedBox(
             height: 0.5.h,
           ),

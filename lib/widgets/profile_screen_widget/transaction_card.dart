@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/profie_screen/transaction_detail_screen.dart';
-import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/screens/profie_screen/transaction_detail_screen.dart';
+import 'package:phuot_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -89,7 +90,7 @@ class TransactionCard extends StatelessWidget {
         child: Column(
           children: [
             Padding(
-              padding: EdgeInsets.only(left: 2.w, top: 1.5.h, right: 2.w),
+              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.7.h,),
               child: Row(
                 children: [
                   Container(
@@ -108,16 +109,48 @@ class TransactionCard extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.start,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          transaction.description ?? 'Không có mô tả',
-                          style: const TextStyle(
-                              fontSize: 16,
-                              fontFamily: 'NotoSans',
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black54),
-                          overflow: TextOverflow.clip,
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                transaction.description ?? 'Không có mô tả',
+                                style: const TextStyle(
+                                    fontSize: 16,
+                                    fontFamily: 'NotoSans',
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black54),
+                                overflow: TextOverflow.clip,
+                              ),
+                            ),
+                          ],
                         ),
-                        SizedBox(height: 0.5.h,),
+                        SizedBox(
+                          height: 0.3.h,
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 4),
+                          decoration: BoxDecoration(
+                              color: transaction.status == 'ACCEPTED'
+                                  ? primaryColor.withOpacity(0.1)
+                                  : Colors.redAccent.withOpacity(0.1),
+                              borderRadius:
+                                  const BorderRadius.all(Radius.circular(4))),
+                          child: Text(
+                            transaction.status == 'ACCEPTED'
+                                ? 'Thành công'
+                                : 'Thất bại',
+                            style: TextStyle(
+                                fontSize: 10,
+                                fontFamily: 'NotoSans',
+                                color: transaction.status == 'ACCEPTED'
+                                    ? primaryColor
+                                    : Colors.redAccent),
+                          ),
+                        ),
+                        SizedBox(
+                          height: 0.3.h,
+                        ),
                         Row(
                           mainAxisSize: MainAxisSize.max,
                           children: [
@@ -148,7 +181,7 @@ class TransactionCard extends StatelessWidget {
                 ],
               ),
             ),
-            SizedBox(height: 1.h,),
+            
             Container(
               color: Colors.grey.withOpacity(0.5),
               height: 1,

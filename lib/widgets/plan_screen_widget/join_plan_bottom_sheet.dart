@@ -1,11 +1,11 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/main.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_detail.dart';
+import 'package:phuot_app/widgets/style_widget/button_style.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 

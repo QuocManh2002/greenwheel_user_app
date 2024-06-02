@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/models/login.dart';
-import 'package:greenwheel_user_app/models/register.dart';
-import 'package:greenwheel_user_app/view_models/customer.dart';
-import 'package:greenwheel_user_app/view_models/register.dart';
+import 'package:phuot_app/config/graphql_config.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/helpers/util.dart';
+import 'package:phuot_app/main.dart';
+import 'package:phuot_app/models/login.dart';
+import 'package:phuot_app/models/register.dart';
+import 'package:phuot_app/view_models/customer.dart';
+import 'package:phuot_app/view_models/register.dart';
 
 class CustomerService {
   GraphQlConfig graphQlConfig = GraphQlConfig();
@@ -61,28 +61,7 @@ class CustomerService {
     }
   }
 
-  Future<String?> addBalance(int balance) async {
-    GraphQLClient client = graphQlConfig.getClient();
-    try {
-      QueryResult result = await client.mutate(
-          MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
-mutation{
-  createTopUpRequest(model: {
-    amount: $balance
-    gateway:STRIPE
-  })
-}
-""")));
-      if (result.hasException) {
-        throw Exception(result.exception);
-      } else {
-        String transactionId = result.data!['createTopUpRequest'];
-        return transactionId;
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
+  
 
   Future<RegisterModel?> registerTraveler(RegisterViewModel model) async {
     GraphQLClient client = graphQlConfig.getClient();

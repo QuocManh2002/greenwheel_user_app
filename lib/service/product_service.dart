@@ -1,14 +1,13 @@
 
 import 'package:flutter/cupertino.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/view_models/product.dart';
+import 'package:phuot_app/config/graphql_config.dart';
+import 'package:phuot_app/view_models/product.dart';
 
 import '../helpers/util.dart';
 
 class ProductService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
-  // static GraphQLClient client = config.getClient();
 
   Future<List<ProductViewModel>> getProductsBySupplierId(
       int supplierId, String session) async {

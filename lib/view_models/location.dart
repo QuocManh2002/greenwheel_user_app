@@ -1,6 +1,6 @@
 
-import 'package:greenwheel_user_app/view_models/location_viewmodels/comment.dart';
-import 'package:greenwheel_user_app/view_models/province.dart';
+import 'package:phuot_app/view_models/location_viewmodels/comment.dart';
+import 'package:phuot_app/view_models/province.dart';
 
 class LocationViewModel {
   int id;

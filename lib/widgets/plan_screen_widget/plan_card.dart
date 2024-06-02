@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_card.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/screens/plan_screen/detail_plan_screen.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_card.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/features/home/presentation/widgets/home_header.dart';
-import 'package:greenwheel_user_app/features/home/presentation/widgets/hot_locations.dart';
-import 'package:greenwheel_user_app/features/home/presentation/widgets/provinces.dart';
-import 'package:greenwheel_user_app/features/home/presentation/widgets/trending_locations.dart';
+import 'package:phuot_app/features/home/presentation/widgets/home_header.dart';
+import 'package:phuot_app/features/home/presentation/widgets/hot_locations.dart';
+import 'package:phuot_app/features/home/presentation/widgets/provinces.dart';
+import 'package:phuot_app/features/home/presentation/widgets/trending_locations.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});

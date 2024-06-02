@@ -251,7 +251,7 @@ class MemberListWidget extends StatelessWidget {
                           } else if (value == 1) {
                             DialogStyle().basicDialog(
                               context: context,
-                              title: 'Xoá ${mem.name} khỏi chuyến đi này ?',
+                              title: 'Xoá "${mem.name}" khỏi chuyến đi này ?',
                               type: DialogType.question,
                               onOk: () {
                                 onRemoveMember(mem.memberId, false);
@@ -260,11 +260,12 @@ class MemberListWidget extends StatelessWidget {
                               btnOkColor: Colors.deepOrangeAccent,
                               btnCancelText: 'Huỷ',
                               btnCancelColor: Colors.blue,
+                              onCancel: (){}
                             );
                           } else if (value == 2) {
                             DialogStyle().basicDialog(
                                 context: context,
-                                title: 'Chặn ${mem.name} khỏi chuyến đi này ?',
+                                title: 'Chặn "${mem.name}" khỏi chuyến đi này ?',
                                 type: DialogType.question,
                                 btnOkText: 'Chặn',
                                 onOk: () {
@@ -272,6 +273,9 @@ class MemberListWidget extends StatelessWidget {
                                 },
                                 btnOkColor: Colors.deepOrangeAccent,
                                 btnCancelText: 'Huỷ',
+                                onCancel: () {
+                                  
+                                },
                                 btnCancelColor: Colors.blue);
                           }
                         },

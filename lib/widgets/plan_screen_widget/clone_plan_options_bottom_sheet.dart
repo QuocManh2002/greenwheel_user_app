@@ -1,17 +1,18 @@
 // ignore_for_file: use_build_context_synchronously
 
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/clone_plan_options.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_start_location_screen.dart';
-import 'package:greenwheel_user_app/service/location_service.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/clone_plan_options.dart';
+import '../../core/constants/colors.dart';
+import '../../helpers/util.dart';
+import '../../main.dart';
+import '../../screens/plan_screen/create_plan/select_start_location_screen.dart';
+import '../../service/location_service.dart';
+import '../../service/plan_service.dart';
+import '../../view_models/plan_viewmodels/plan_detail.dart';
+import '../style_widget/button_style.dart';
 
 class ClonePlanOptionsBottomSheet extends StatefulWidget {
   const ClonePlanOptionsBottomSheet({
@@ -97,9 +98,16 @@ class _ClonePlanOptionsBottomSheetState
                     activeColor: primaryColor,
                     value: values[index],
                     onChanged: (value) {
-                      setState(() {
-                        values[index] = !values[index];
-                      });
+                      if (index == 6 && value! && !values[5]) {
+                        setState(() {
+                          values[6] = true;
+                          values[5] = true;
+                        });
+                      } else {
+                        setState(() {
+                          values[index] = !values[index];
+                        });
+                      }
                     },
                   ),
                   SizedBox(

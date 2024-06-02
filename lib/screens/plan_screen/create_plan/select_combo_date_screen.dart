@@ -4,8 +4,8 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_emergency_service.dart';
-import 'package:greenwheel_user_app/service/order_service.dart';
+import 'package:phuot_app/screens/plan_screen/create_plan/select_emergency_service.dart';
+import 'package:phuot_app/service/order_service.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -104,8 +104,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
           .id;
       final cloneOptions =
           json.decode(sharedPreferences.getString('plan_clone_options')!);
-      _isCloneComboDate = cloneOptions[3];
-      _isCloneNumOfMember = cloneOptions[4];
+      _isCloneComboDate = cloneOptions[2];
+      _isCloneNumOfMember = cloneOptions[3];
     }
     if (numOfExpPeriod != null) {
       selectedComboDate = listComboDate.firstWhere(

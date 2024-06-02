@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/features/home/presentation/pages/home_screen.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/announcement_screen/announcement_list_screen.dart';
-import 'package:greenwheel_user_app/screens/main_screen/planscreen.dart';
-import 'package:greenwheel_user_app/screens/profie_screen/profile_screen.dart';
-import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
-import 'package:greenwheel_user_app/service/announcement_service.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/features/home/presentation/pages/home_screen.dart';
+import 'package:phuot_app/main.dart';
+import 'package:phuot_app/screens/announcement_screen/announcement_list_screen.dart';
+import 'package:phuot_app/screens/main_screen/planscreen.dart';
+import 'package:phuot_app/screens/profie_screen/profile_screen.dart';
+import 'package:phuot_app/screens/profie_screen/transaction_history_screen.dart';
+import 'package:phuot_app/service/announcement_service.dart';
 
 class TabScreen extends StatefulWidget {
   const TabScreen({super.key, required this.pageIndex});

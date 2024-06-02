@@ -1,6 +1,6 @@
 
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/helpers/pdf_handler.dart';
+import 'package:phuot_app/helpers/pdf_handler.dart';
 import 'package:printing/printing.dart';
 
 class PlanPdfViewScreen extends StatefulWidget {

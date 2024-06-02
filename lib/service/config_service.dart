@@ -1,13 +1,13 @@
 import 'package:flutter/cupertino.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/models/configuration.dart';
+import 'package:phuot_app/config/graphql_config.dart';
+import 'package:phuot_app/helpers/util.dart';
+import 'package:phuot_app/models/configuration.dart';
 
 class ConfigService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
   
-  Future<ConfigurationModel?> getOrderConfig(BuildContext context) async {
+  Future<ConfigurationModel?> getConfig(BuildContext context) async {
     try {
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(QueryOptions(document: gql('''
@@ -18,6 +18,8 @@ class ConfigService {
       from
       to
     }
+    MAX_TOPUP
+    MIN_TOPUP
     HOLIDAY_RIDING_UP_PCT
     HOLIDAY_LODGING_UP_PCT
     HOLIDAY_MEAL_UP_PCT

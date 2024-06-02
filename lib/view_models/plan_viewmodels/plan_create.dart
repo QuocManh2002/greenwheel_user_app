@@ -1,6 +1,6 @@
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
+import 'package:phuot_app/view_models/order.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/surcharge.dart';
 
 class PlanCreate {
   int? locationId;

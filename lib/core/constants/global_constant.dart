@@ -97,4 +97,6 @@ class GlobalConstant {
   final int ORDER_MIN_RATING_NO_COMMENT = 4;
   final int ADDRESS_MIN_LENGTH = 20;
   final int ADDRESS_MAX_LENGTH = 120;
+  final int PLAN_NAME_MIN_LENGTH = 3;
+  final int PLAN_NAME_MAX_LENGTH = 30;
 }

@@ -1,4 +1,4 @@
-import 'package:greenwheel_user_app/features/home/business/entities/home_location_entity.dart';
+import 'package:phuot_app/features/home/business/entities/home_location_entity.dart';
 
 class HomeLocationModel extends HomeLocationEntity {
   // int id;

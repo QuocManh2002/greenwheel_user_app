@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/transaction_types.dart';
-import 'package:greenwheel_user_app/models/transaction_type.dart';
+import 'package:phuot_app/core/constants/transaction_types.dart';
+import 'package:phuot_app/models/transaction_type.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 

@@ -1,6 +1,5 @@
 List<String> clonePlanOptions = [
   'Địa điểm xuất phát',
-  'Tên chuyến đi',
   'Thời điểm xuất phát',
   'Thời gian trải nghiệm',
   'Số lượng thành viên và số người của mỗi nhóm',

@@ -1,28 +1,29 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
-import 'package:greenwheel_user_app/config/token_generator.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/temp_plan.dart';
-import 'package:greenwheel_user_app/service/traveler_service.dart';
-import 'package:greenwheel_user_app/service/plan_service.dart';
-import 'package:greenwheel_user_app/view_models/customer.dart';
-import 'package:greenwheel_user_app/view_models/plan_member.dart';
-import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:phuot_app/widgets/style_widget/dialog_style.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../config/token_generator.dart';
+import '../../core/constants/colors.dart';
+import '../../core/constants/urls.dart';
+import '../../helpers/util.dart';
+import '../../service/plan_service.dart';
+import '../../service/traveler_service.dart';
+import '../../view_models/customer.dart';
+import '../../view_models/plan_member.dart';
+import '../../view_models/plan_viewmodels/temp_plan.dart';
+import '../../widgets/style_widget/button_style.dart';
 
 class SharePlanScreen extends StatefulWidget {
   const SharePlanScreen(
@@ -61,15 +62,17 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   List<PlanMemberViewModel> _planMembers = [];
 
   searchCustomer() async {
-    CustomerViewModel? customer = await customerService.getCustomerByPhone(
-        '84${phoneSearch.text.substring(1)}');
+    CustomerViewModel? customer = await customerService
+        .getCustomerByPhone('84${phoneSearch.text.substring(1)}');
     if (customer == null) {
       setState(() {
         _isEmptySearchResult = true;
         _isSearchingLoading = false;
       });
     } else {
-      if (_planMembers.any((member) => member.accountId == customer.id && (member.status == 'JOINED' || member.status == 'BLOCKED'))) {
+      if (_planMembers.any((member) =>
+          member.accountId == customer.id &&
+          (member.status == 'JOINED' || member.status == 'BLOCKED'))) {
         setState(() {
           _isEnableToInvite = false;
         });
@@ -155,32 +158,29 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   }
 
   onInvite() async {
-    var rs = await _planService.inviteToPlan(widget.planId, _customer!.id, context);
+    var rs =
+        await _planService.inviteToPlan(widget.planId, _customer!.id, context);
     if (rs != 0) {
-      AwesomeDialog(
-              // ignore: use_build_context_synchronously
-              context: context,
-              title: 'Đã gửi lời mời',
-              dialogType: DialogType.success,
-              titleTextStyle:
-                  const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              btnOkColor: primaryColor,
-              btnOkOnPress: () {
-                phoneSearch.clear();
-                _planMembers.add(PlanMemberViewModel(
-                    name: _customer!.name,
-                    memberId: _customer!.id,
-                    phone: _customer!.phone,
-                    accountId: _customer!.id,
-                    weight: 1,
-                    isMale: _customer!.isMale,
-                    status: "INVITED"));
-                setState(() {
-                  _isSearch = false;
-                });
-              },
-              btnOkText: 'Ok')
-          .show();
+      // ignore: use_build_context_synchronously
+      DialogStyle().successDialog(context, 'Đã gửi lời mời');
+      Future.delayed(
+        const Duration(milliseconds: 1500),
+        () {
+          phoneSearch.clear();
+          _planMembers.add(PlanMemberViewModel(
+              name: _customer!.name,
+              memberId: _customer!.id,
+              phone: _customer!.phone,
+              accountId: _customer!.id,
+              weight: 1,
+              isMale: _customer!.isMale,
+              status: "INVITED"));
+          Navigator.of(context).pop();
+          setState(() {
+            _isSearch = false;
+          });
+        },
+      );
     }
   }
 
@@ -214,18 +214,6 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
           "Chia sẻ kế hoạch",
           style: TextStyle(color: Colors.white),
         ),
-        // actions: [
-        //   Padding(
-        //     padding: const EdgeInsets.only(right: 8),
-        //     child: IconButton(
-        //         onPressed: onScan,
-        //         icon: const Icon(
-        //           Icons.qr_code_scanner_outlined,
-        //           size: 35,
-        //           color: Colors.white,
-        //         )),
-        //   )
-        // ],
       ),
       body: Stack(
         children: [

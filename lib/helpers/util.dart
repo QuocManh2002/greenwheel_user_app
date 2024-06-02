@@ -71,6 +71,9 @@ class Utils {
     sharedPreferences.remove('plan_location_id');
     sharedPreferences.remove('plan_arrivedTime');
     sharedPreferences.remove('plan_sourceId');
+    sharedPreferences.remove('plan_clone_options');
+    sharedPreferences.remove('maxCombodateValue');
+    sharedPreferences.remove('init_plan_number_of_member');
   }
 
   Future<String> getImageBase64Encoded(String imageUrl) async {

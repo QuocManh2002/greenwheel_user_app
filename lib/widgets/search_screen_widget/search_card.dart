@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/location_screen/location_screen.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/screens/location_screen/location_screen.dart';
+import 'package:phuot_app/view_models/location.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 

@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:sizer2/sizer2.dart';
@@ -24,8 +23,6 @@ import '../view_models/order_detail.dart';
 import '../view_models/plan_viewmodels/plan_create.dart';
 import '../view_models/product.dart';
 import '../view_models/supplier.dart';
-import '../view_models/topup_request.dart';
-import '../view_models/topup_viewmodel.dart';
 import 'product_service.dart';
 import 'supplier_service.dart';
 
@@ -79,93 +76,6 @@ mutation{
     }
   }
 
-  Future<TopupRequestViewModel?> topUpRequest(
-      int amount, BuildContext context) async {
-    try {
-      final QueryResult result = await client.query(
-        QueryOptions(
-          fetchPolicy: FetchPolicy.noCache,
-          document: gql('''
-mutation {
-  createTopUp(dto: { amount: $amount, gateway: VNPAY }) {
-    transaction {
-      id
-    }
-    paymentUrl
-  }
-}
-          '''),
-        ),
-      );
-
-      if (result.hasException) {
-        dynamic rs = result.exception!.linkException!;
-        Utils().handleServerException(
-            // ignore: use_build_context_synchronously
-            rs.parsedResponse.errors.first.message.toString(),
-            context);
-
-        throw Exception(result.exception!.linkException!);
-      }
-      final rs = result.data!['createTopUp'];
-      if (rs == null) {
-        return null;
-      } else {
-        return TopupRequestViewModel.fromJson(rs);
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<TopupViewModel?> topUpSubcription(int transactionId) async {
-    try {
-      final QueryResult result = await client.query(
-        QueryOptions(
-          fetchPolicy: FetchPolicy.noCache,
-          document: gql('''
-          subscription topUp (\$input: Int!) {
-  topUpSuccess(transactionId: \$input) {
-    id
-    status
-    gateway
-    description
-    transactionCode
-  }
-}
-          '''),
-          variables: {"input": transactionId},
-        ),
-      );
-
-      if (result.hasException) {
-        throw Exception(result.exception);
-      }
-
-      var res = result.data?['topUpSuccess'];
-      if (res == null) {
-        return null;
-      }
-
-      final int id = result.data?['topUpSuccess']['id'];
-      final String status = result.data?['topUpSuccess']['status'];
-      final String gateway = result.data?['topUpSuccess']['gateway'];
-      final String? description = result.data?['topUpSuccess']['description'];
-      final String transactionCode =
-          result.data?['topUpSuccess']['transactionCode'];
-      TopupViewModel topup = TopupViewModel(
-        id: id,
-        status: status,
-        gateway: gateway,
-        description: description,
-        transactionCode: transactionCode,
-      );
-      return topup;
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
   List<dynamic> convertTempOrders(
       List<OrderViewModel> sourceOrders, DateTime startDate) {
     var orders = [];
@@ -193,18 +103,6 @@ mutation {
       List<Map<String, dynamic>> details = order.details!.map((detail) {
         return {'key': detail.id, 'value': detail.quantity};
       }).toList();
-      log("""
-mutation{
-  createOrder(dto: {
-    cart:$details
-    note:"${order.note}"
-    planId:$planId
-    uuid:"${order.uuid}"
-  }){
-    id
-  }
-}
-""");
       String mutationText = """
 mutation{
   createOrder(dto: {
@@ -394,7 +292,7 @@ mutation {
     return true;
   }
 
-  void saveOrderConfigToPref(ConfigurationModel model) {
+  void saveConfigToPref(ConfigurationModel model) {
     sharedPreferences.setStringList('HOLIDAYS',
         (model.HOLIDAYS ?? []).map((e) => json.encode(e.toJson())).toList());
     sharedPreferences.setInt(
@@ -405,6 +303,8 @@ mutation {
         'HOLIDAY_MEAL_UP_PCT', model.HOLIDAY_MEAL_UP_PCT ?? 0);
     sharedPreferences.setString(
         'LAST_MODIFIED', model.LAST_MODIFIED.toString());
+    sharedPreferences.setInt('MAX_TOPUP', model.MAX_TOPUP ?? 0);
+    sharedPreferences.setInt('MIN_TOPUP', model.MIN_TOPUP ?? 0);
   }
 
   List<ProductViewModel> getCheapestDetailCheckinOrder(
@@ -922,7 +822,10 @@ mutation{
             price: product.price.toDouble(),
             isAvailable: product.isAvailable,
             quantity: detail.value));
-        actualTotal += product.price * detail.value * serveDates.length / GlobalConstant().VND_CONVERT_RATE;
+        actualTotal += product.price *
+            detail.value *
+            serveDates.length /
+            GlobalConstant().VND_CONVERT_RATE;
       }
 
       return OrderViewModel(

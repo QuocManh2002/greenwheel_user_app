@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:phuot_app/core/constants/global_constant.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
@@ -156,7 +157,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
                   Expanded(
                     child: TextField(
                       controller: _searchController,
-                      maxLength: 30,
+                      maxLength: GlobalConstant().PLAN_NAME_MAX_LENGTH,
                       maxLines: 1,
                       cursorColor: primaryColor,
                       onChanged: (value) {

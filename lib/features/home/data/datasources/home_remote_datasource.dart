@@ -1,10 +1,10 @@
 import 'dart:convert';
 
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:greenwheel_user_app/config/graphql_config.dart';
-import 'package:greenwheel_user_app/features/home/data/models/home_location_model.dart';
-import 'package:greenwheel_user_app/features/home/data/models/home_provinces_model.dart';
-import 'package:greenwheel_user_app/models/pagination.dart';
+import 'package:phuot_app/config/graphql_config.dart';
+import 'package:phuot_app/features/home/data/models/home_location_model.dart';
+import 'package:phuot_app/features/home/data/models/home_provinces_model.dart';
+import 'package:phuot_app/models/pagination.dart';
 
 abstract class HomeRemoteDataSource {
   Future<Pagination<HomeLocationModel>?> getHotLocations(String? cursor);

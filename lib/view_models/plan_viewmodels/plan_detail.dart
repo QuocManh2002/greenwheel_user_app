@@ -1,8 +1,8 @@
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:greenwheel_user_app/view_models/location_viewmodels/emergency_contact.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/plan_member.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
+import 'package:phuot_app/view_models/location_viewmodels/emergency_contact.dart';
+import 'package:phuot_app/view_models/order.dart';
+import 'package:phuot_app/view_models/plan_member.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/surcharge.dart';
 
 class PlanDetail {
   int? id;

@@ -1,14 +1,14 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/global_constant.dart';
-import 'package:greenwheel_user_app/core/constants/service_types.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
-import 'package:greenwheel_user_app/view_models/order.dart';
-import 'package:greenwheel_user_app/view_models/order_detail.dart';
+import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/global_constant.dart';
+import 'package:phuot_app/core/constants/service_types.dart';
+import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/helpers/util.dart';
+import 'package:phuot_app/screens/order_screen/detail_order_screen.dart';
+import 'package:phuot_app/view_models/order.dart';
+import 'package:phuot_app/view_models/order_detail.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -16,17 +16,15 @@ import 'package:sizer2/sizer2.dart';
 class PlanOrderCard extends StatefulWidget {
   const PlanOrderCard(
       {super.key,
-      required this.isShowQuantity,
       required this.order,
-      this.planType,
-      this.endDate,
+      this.planStatus,
       required this.callback,
+      required this.isPublish,
       required this.isLeader});
   final OrderViewModel order;
   final bool isLeader;
-  final String? planType;
-  final bool isShowQuantity;
-  final DateTime? endDate;
+  final String? planStatus;
+  final bool isPublish;
   final void Function() callback;
 
   @override
@@ -59,9 +57,8 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                 PageTransition(
                     child: OrderDetailScreen(
                         order: widget.order,
-                        planStatus: widget.planType,
+                        planStatus: widget.planStatus,
                         startDate: DateTime.now(),
-                        endDate: widget.endDate,
                         callback: widget.callback,
                         isTempOrder: false),
                     type: PageTransitionType.rightToLeft));
@@ -122,7 +119,7 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                       height: 15,
                     ),
                   ),
-                  if (widget.isLeader || widget.planType == 'PUBLISH')
+                  if (widget.isLeader || widget.isPublish)
                     InkWell(
                       splashColor: Colors.transparent,
                       onTap: () {
@@ -183,7 +180,6 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                               fontFamily: 'NotoSans'),
                         ),
                         const Spacer(),
-                        if (widget.isShowQuantity)
                           Text(
                             'x${detail.quantity}',
                             style: const TextStyle(

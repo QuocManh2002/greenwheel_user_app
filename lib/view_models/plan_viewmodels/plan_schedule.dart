@@ -1,4 +1,4 @@
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_schedule_item.dart';
+import 'package:phuot_app/view_models/plan_viewmodels/plan_schedule_item.dart';
 
 class PlanSchedule {
   final DateTime? date;

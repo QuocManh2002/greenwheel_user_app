@@ -1,9 +1,9 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/models/service_type.dart';
-import 'package:greenwheel_user_app/models/session.dart';
-import 'package:greenwheel_user_app/screens/main_screen/service_main_screen.dart';
-import 'package:greenwheel_user_app/view_models/location.dart';
+import 'package:phuot_app/models/service_type.dart';
+import 'package:phuot_app/models/session.dart';
+import 'package:phuot_app/screens/main_screen/service_main_screen.dart';
+import 'package:phuot_app/view_models/location.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SessionCard extends StatelessWidget {

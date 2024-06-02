@@ -1,7 +1,7 @@
 
 import 'package:dart_jsonwebtoken/dart_jsonwebtoken.dart';
 import 'package:flutter/material.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/colors.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:scan/scan.dart';
 import 'package:sizer2/sizer2.dart';
