@@ -511,6 +511,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
         travelDuration: DateFormat.Hm().format(travelDuration),
         note: sharedPreferences.getString('plan_note'),
         maxMemberWeight: sharedPreferences.getInt('plan_max_member_weight'),
+        sourceId: sharedPreferences.getInt('plan_sourceId')
       );
     }
     showModalBottomSheet(
@@ -547,11 +548,9 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
           _listSurchargeObjects.map((e) => e.toFinalJson()).toList().toString();
       if (_isAvailableToOrder) {
         if (widget.isClone) {
-          rs = await _planService.clonePlan(
-              _plan!, context, surchargeText);
+          rs = await _planService.clonePlan(_plan!, context, surchargeText);
         } else {
-          rs = await _planService.createNewPlan(
-              _plan!, context, surchargeText);
+          rs = await _planService.createNewPlan(_plan!, context, surchargeText);
         }
       } else {
         rs = 0;
@@ -566,19 +565,11 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       if (widget.plan == null && rs != 0) {
         await initializeService();
       }
-      AwesomeDialog(
-        context: context,
-        animType: AnimType.leftSlide,
-        dialogType: DialogType.success,
-        title: widget.plan == null
-            ? widget.isClone
-                ? 'Sao chép kế hoạch thành công'
-                : 'Tạo kế hoạch thành công'
-            : 'Cập nhật kế hoạch thành công',
-        titleTextStyle:
-            const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        padding: const EdgeInsets.all(12),
-      ).show();
+      DialogStyle().successDialog(
+          context,
+          widget.plan == null
+              ? 'Tạo kế hoạch thành công'
+              : 'Cập nhật kế hoạch thành công');
       Future.delayed(
           const Duration(
             seconds: 2,

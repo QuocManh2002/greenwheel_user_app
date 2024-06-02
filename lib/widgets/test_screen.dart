@@ -8,11 +8,13 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/dialog_style.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:mapbox_maps_flutter/mapbox_maps_flutter.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:sizer2/sizer2.dart';
 
 import '../helpers/goong_request.dart';
 
@@ -42,16 +44,24 @@ class _TestScreenState extends State<TestScreen> {
     await _snapshotter?.style.setStyleURI(MapboxStyles.OUTDOORS);
   }
 
+  List<String> list = ['Manh', 'Huy', 'Nhat', 'Duy', 'Cong'];
+
   @override
   void initState() {
     // if (hasConnection) {
-    setUpData();
+    // setUpData();
     // } else {
     //   if (_mapboxMap != null) {
     //     setUpDataOffline();
     //   }
     // }
     super.initState();
+  }
+
+  onRefresh()async{
+    setState(() {
+      list.add('Manhh');
+    });
   }
 
   setUpDataOffline() async {
@@ -168,10 +178,7 @@ class _TestScreenState extends State<TestScreen> {
     // }
   }
 
-  _onMapIdle(MapIdleEventData data) async {
-
-    
-  }
+  _onMapIdle(MapIdleEventData data) async {}
 
   @override
   Widget build(BuildContext context) {
@@ -186,43 +193,47 @@ class _TestScreenState extends State<TestScreen> {
       // onMapIdleListener: _onMapIdle,
     );
     return Scaffold(
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          Expanded(child: mapWidget),
-          SizedBox(
-            height: 12,
-            child: ColoredBox(
-              color: Colors.amber,
+        appBar: AppBar(
+          title: Text('app bar'),
+        ),
+        body: RefreshIndicator(
+          onRefresh: () async{
+            onRefresh();
+          },
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            shrinkWrap: true,
+            itemCount: list.length,
+            itemBuilder: (context, index) => Padding(
+              padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
+              child: Container(
+                padding: EdgeInsets.symmetric(),
+                decoration: BoxDecoration(
+                  color: primaryColor.withOpacity(0.5),
+                ),
+                child: Text(
+                  list[index],
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                ),
+              ),
             ),
           ),
-          Expanded(
-              child: RepaintBoundary(
-                  key: _snapshotKey,
-                  child: isSnapshot
-                      ? snapshotImage
-                      : ColoredBox(color: Colors.grey))),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton(onPressed: () {
-        onSave(context);
-      }),
-    );
+        ));
   }
 
   onSave(BuildContext context) async {
     try {
-
       RenderBox snapshotBox =
-        _snapshotKey.currentContext!.findRenderObject() as RenderBox;
-    if (snapshotBox.hasSize) {
-      _snapshotter?.setSize(
-          Size(width: snapshotBox.size.width, height: snapshotBox.size.height));
-    }
+          _snapshotKey.currentContext!.findRenderObject() as RenderBox;
+      if (snapshotBox.hasSize) {
+        _snapshotter?.setSize(Size(
+            width: snapshotBox.size.width, height: snapshotBox.size.height));
+      }
 
-    final cameraState = await _mapboxMap!.getCameraState();
-    _snapshotter?.setCamera(cameraState.toCameraOptions());
-    var geojson = '''{
+      final cameraState = await _mapboxMap!.getCameraState();
+      _snapshotter?.setCamera(cameraState.toCameraOptions());
+      var geojson = '''{
       "type": "FeatureCollection",
       "features": [
         {
@@ -238,15 +249,15 @@ class _TestScreenState extends State<TestScreen> {
       ]
     }''';
 
-    if (isSnapshot) {
-      _snapshotter?.style.removeStyleSource('line');
-      _snapshotter?.style.removeStyleLayer('line_layer');
-    }
-    // if (await _snapshotter?.style.getLayer('line_layer') != null) {
-    // }
+      if (isSnapshot) {
+        _snapshotter?.style.removeStyleSource('line');
+        _snapshotter?.style.removeStyleLayer('line_layer');
+      }
+      // if (await _snapshotter?.style.getLayer('line_layer') != null) {
+      // }
 
-    _snapshotter?.style.addSource(GeoJsonSource(id: 'line', data: geojson));
-    var lineLayerJson = """{
+      _snapshotter?.style.addSource(GeoJsonSource(id: 'line', data: geojson));
+      var lineLayerJson = """{
           "type":"line",
           "id":"line_layer",
           "source":"line",
@@ -258,18 +269,18 @@ class _TestScreenState extends State<TestScreen> {
           }
         }""";
 
-    _snapshotter?.style.addPersistentStyleLayer(lineLayerJson, null);
+      _snapshotter?.style.addPersistentStyleLayer(lineLayerJson, null);
 
-    final snapshot = await _snapshotter?.start();
+      final snapshot = await _snapshotter?.start();
 
-    if (snapshot != null) {
+      if (snapshot != null) {
+        setState(() {
+          snapshotImage = Image.memory(snapshot);
+        });
+      }
       setState(() {
-        snapshotImage = Image.memory(snapshot);
+        isSnapshot = true;
       });
-    }
-    setState(() {
-      isSnapshot = true;
-    });
 
       RenderRepaintBoundary boundary = _snapshotKey.currentContext!
           .findRenderObject() as RenderRepaintBoundary;

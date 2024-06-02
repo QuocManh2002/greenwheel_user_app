@@ -17,3 +17,9 @@ final scheduleItemTypesVn = [
   "Check-out",
   "Tự do"
 ];
+
+final orderScheduleItemTypesVn = [
+  "Ăn uống",
+  "Tham quan",
+  "Check-in",
+];

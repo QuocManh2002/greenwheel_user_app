@@ -1,18 +1,29 @@
+import 'dart:convert';
+
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
+import 'package:greenwheel_user_app/models/pagination.dart';
 import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 import 'package:greenwheel_user_app/view_models/transaction_detail.dart';
 
 class TransactionService {
   GraphQlConfig graphQlConfig = GraphQlConfig();
 
-  Future<List<Transaction>?> getTransactionList() async {
+  Future<Pagination<TransactionViewModel>?> getTransactionList(
+      String? cursor) async {
     try {
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  transactions(order: { id: DESC }) {
+  transactions(
+    order: { id: DESC }
+    after: ${cursor == null ? null : json.encode(cursor)}
+    first: 15
+    ) {
+      pageInfo {
+      endCursor
+    }
     edges {
       node {
         id
@@ -38,11 +49,14 @@ class TransactionService {
       }
       List? res = result.data!['transactions']['edges'];
       if (res == null || res.isEmpty) {
-        return [];
+        return Pagination(pageSize: 15, cursor: cursor, objects: []);
       }
-      List<Transaction> rs =
-          res.map((e) => Transaction.fromJson(e['node'])).toList();
-      return rs;
+
+      cursor = result.data!['transactions']['pageInfo']['endCursor'];
+      final listObjects = res
+          .map((e) => TransactionViewModel.fromJson(e['node']))
+          .toList();
+      return Pagination(pageSize: 15, cursor: cursor, objects: listObjects);
     } catch (error) {
       throw Exception(error);
     }

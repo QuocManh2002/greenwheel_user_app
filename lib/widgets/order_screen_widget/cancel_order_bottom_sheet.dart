@@ -193,6 +193,7 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                   ),
                   Text(
                     reason.text,
+                    overflow: TextOverflow.clip,
                     style:
                         const TextStyle(fontSize: 16, fontFamily: 'NotoSans'),
                   )

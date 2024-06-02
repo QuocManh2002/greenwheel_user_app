@@ -2,6 +2,7 @@
 
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
@@ -71,12 +72,12 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
       movingOrderList = orderGroups[services[2].name] ?? [];
     });
     final totalList = [roomOrderList, foodOrderList, movingOrderList];
-    int index = totalList
-        .indexOf(totalList.firstWhereOrNull((element) => element.isNotEmpty) ?? roomOrderList);
-    // tabController.animateTo(index, duration: const Duration(milliseconds: 500), curve: Curves.linear);
-    tabController.animateTo(index, duration: const Duration(milliseconds: 500));
+    int index = totalList.indexOf(
+        totalList.firstWhereOrNull((element) => element.isNotEmpty) ??
+            roomOrderList);
+    // tabController.animateTo(index, duration: const Duration(milliseconds: 500));
     isShowTotal =
-        widget.plan.status != 'PENDING' && widget.plan.status != 'REGISTERING';
+        widget.plan.status != planStatuses[0].engName && widget.plan.status != planStatuses[1].engName;
   }
 
   @override
@@ -104,20 +105,17 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
               if (widget.isLeader)
                 TextButton(
                     onPressed: () async {
-                      if (widget.plan.status == 'READY') {
+                      if (widget.plan.status == planStatuses[2].engName) {
                         final rs = await _locationService
                             .getLocationById(widget.plan.locationId!);
                         if (rs != null) {
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (ctx) => ListOrderScreen(
-                                
                                     availableGcoinAmount:
                                         widget.plan.actualGcoinBudget,
                                     planId: widget.plan.id!,
-                                    orders: widget.tempOrders
-                                        .where((element) => !_orderList
-                                            .any((e) => e.uuid == element.uuid))
-                                        .toList(),
+                                    tempOrders: widget.tempOrders,
+                                    orders: _orderList,
                                     startDate:
                                         widget.plan.utcStartAt!.toLocal(),
                                     callback: (p) {
@@ -133,7 +131,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                     child: Text(
                       'Đi đặt hàng',
                       style: TextStyle(
-                        color: widget.plan.status == 'READY'
+                        color: widget.plan.status == planStatuses[2].engName
                             ? primaryColor
                             : Colors.grey,
                       ),
@@ -181,7 +179,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                       },
                       isShowQuantity: true,
                       endDate: widget.plan.utcEndAt,
-                      planType: widget.planType,
+                      planType: widget.plan.status,
                       order: roomOrderList[index],
                       isLeader: widget.isLeader);
                 },
@@ -196,7 +194,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                         widget.onGetOrderList();
                       },
                       isShowQuantity: true,
-                      planType: widget.planType,
+                      planType: widget.plan.status,
                       order: foodOrderList[index],
                       isLeader: widget.isLeader);
                 },
@@ -211,7 +209,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                         widget.onGetOrderList();
                       },
                       isShowQuantity: true,
-                      planType: widget.planType,
+                      planType: widget.plan.status,
                       order: movingOrderList[index],
                       isLeader: widget.isLeader);
                 },

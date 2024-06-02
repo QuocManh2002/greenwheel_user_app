@@ -18,6 +18,7 @@ import 'firebase_options.dart';
 import 'screens/authentication_screen/login_screen.dart';
 import 'screens/introduce_screen/splash_screen.dart';
 import 'screens/offline_screen/offline_home_screen.dart';
+import 'widgets/test_screen.dart';
 
 late SharedPreferences sharedPreferences;
 late bool hasConnection;

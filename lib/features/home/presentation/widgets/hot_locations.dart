@@ -68,44 +68,24 @@ class _HotLocationsState extends State<HotLocations> {
                     child: ListView.builder(
                       controller: controller,
                       physics: const AlwaysScrollableScrollPhysics(),
-                      itemCount: value.hot_locations == null
+                      itemCount: value.hotLocations == null
                           ? 0
-                          : value.hot_locations!.length,
+                          : value.hotLocations!.length,
                       shrinkWrap: true,
                       scrollDirection: Axis.horizontal,
                       itemBuilder: (context, index) => Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 8),
                         child:
-                            LocationCard(location: value.hot_locations![index]),
+                            LocationCard(location: value.hotLocations![index]),
                       ),
                     ),
                   ))
                 ],
               );
-              // child: Row(
-              //   children: <Widget>[
-              //     Expanded(
-              //         child: SizedBox(
-              //       height: 30.h,
-              //       child: ListView.builder(
-              //         controller: controller,
-              //         physics: const BouncingScrollPhysics(),
-              //         itemCount: hot_locations.length,
-              //         shrinkWrap: true,
-              //         scrollDirection: Axis.horizontal,
-              //         itemBuilder: (context, index) => Padding(
-              //           padding: const EdgeInsets.symmetric(horizontal: 8),
-              //           child: LocationCard(location: hot_locations[index]),
-              //         ),
-              //       ),
-              //     ))
-              //   ],
-              // ),
             },
           ),
         ),
       ],
     );
-    // : Container();
   }
 }

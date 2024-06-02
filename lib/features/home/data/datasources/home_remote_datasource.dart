@@ -174,7 +174,6 @@ class HomeRemoteDataSourceImpl implements HomeRemoteDataSource {
       final listObjects =
           res.map((e) => HomeLocationModel.fromJson(e['node'])).toList();
       return Pagination(pageSize: 5, cursor: cursor, objects: listObjects);
-      // return listObjects;
     } catch (error) {
       throw Exception(error);
     }

@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -48,6 +49,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
   final PageController _pageController = PageController(initialPage: 0);
   List<PlanSchedule> scheduleList = [];
   final PlanService _planService = PlanService();
+  final OrderService _orderService = OrderService();
   DateTime? departureDate;
   DateTime? startDate;
   int duration = 0;
@@ -200,8 +202,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                     textAlign: TextAlign.center,
                     style: TextStyle(
                         color: Colors.black54,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold),
+                        fontSize: 17,),
                   ),
                 )
               ],
@@ -477,7 +478,7 @@ class _SelectPlanScheduleScreenState extends State<SelectPlanScheduleScreen> {
                   order['serveDates'] = newDates;
                   order['serveDateIndexes']
                       .remove(item.date!.difference(startDate!).inDays);
-                  order['total'] = Utils().getTempOrderTotal(order, false);
+                  order['total'] = _orderService.getTempOrderTotal(order, false);
                 }
               },
               btnOkText: 'Xoá',

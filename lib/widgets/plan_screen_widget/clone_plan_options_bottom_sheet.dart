@@ -7,6 +7,7 @@ import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_start_location_screen.dart';
 import 'package:greenwheel_user_app/service/location_service.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:page_transition/page_transition.dart';
@@ -28,6 +29,7 @@ class _ClonePlanOptionsBottomSheetState
     extends State<ClonePlanOptionsBottomSheet> {
   List<bool> values = clonePlanOptions.map((e) => false).toList();
   final LocationService _locationService = LocationService();
+  final PlanService _planService = PlanService();
   bool isSelectAll = false;
   @override
   void initState() {
@@ -118,8 +120,8 @@ class _ClonePlanOptionsBottomSheetState
                 Expanded(
                     child: ElevatedButton(
                         style: elevatedButtonStyle.copyWith(
-                            backgroundColor:
-                                const MaterialStatePropertyAll(Colors.transparent),
+                            backgroundColor: const MaterialStatePropertyAll(
+                                Colors.transparent),
                             foregroundColor:
                                 const MaterialStatePropertyAll(primaryColor),
                             shape: const MaterialStatePropertyAll(
@@ -157,9 +159,8 @@ class _ClonePlanOptionsBottomSheetState
                                 ),
                               ),
                             );
-                            final location =
-                                await _locationService.getLocationById(
-                                    widget.plan.locationId!);
+                            final location = await _locationService
+                                .getLocationById(widget.plan.locationId!);
                             String? locationName = sharedPreferences
                                 .getString('plan_location_name');
                             if (!values[5] && values[6]) {
@@ -168,10 +169,16 @@ class _ClonePlanOptionsBottomSheetState
                                   .showInvalidScheduleAndServiceClone(context);
                             } else if (locationName != null) {
                               Navigator.of(context).pop();
-                              Utils().handleAlreadyDraft(context, location!,
-                                  locationName, true, widget.plan, values);
+                              _planService.handleAlreadyDraft(
+                                  context,
+                                  location!,
+                                  locationName,
+                                  true,
+                                  widget.plan,
+                                  values);
                             } else {
-                              Utils().setUpDataClonePlan(widget.plan, values);
+                              _planService.setUpDataClonePlan(
+                                  widget.plan, values);
                               Navigator.of(context).pop();
                               Navigator.push(
                                   context,

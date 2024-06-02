@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/shedule_item_type.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/service/product_service.dart';
@@ -187,7 +188,9 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                         if (order['details'] != null)
                                           Column(
                                             children: [
-                                              SizedBox(height: 0.2.h,),
+                                              SizedBox(
+                                                height: 0.2.h,
+                                              ),
                                               Container(
                                                 alignment: Alignment.centerLeft,
                                                 child: RichText(
@@ -216,7 +219,9 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                   textAlign: TextAlign.start,
                                                 ),
                                               ),
-                                              SizedBox(height: 0.2.h,),
+                                              SizedBox(
+                                                height: 0.2.h,
+                                              ),
                                               const Divider(
                                                 color: Colors.black54,
                                                 height: 2,
@@ -252,7 +257,8 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                             TextAlign.end,
                                                         style: const TextStyle(
                                                             fontSize: 16,
-                                                            color: Colors.black54,
+                                                            color:
+                                                                Colors.black54,
                                                             fontWeight:
                                                                 FontWeight.w300,
                                                             fontFamily:
@@ -336,7 +342,9 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                                                         locale: 'vi_VN',
                                                         decimalDigits: 0,
                                                         name: '')
-                                                    .format(order['total'] / order['serveDates'].length),
+                                                    .format(order['total'] /
+                                                        order['serveDates']
+                                                            .length),
                                                 style: const TextStyle(
                                                     fontSize: 18,
                                                     fontFamily: 'NotoSans',
@@ -383,8 +391,7 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                   border:
                       widget.item.isStarred != null && widget.item.isStarred!
                           ? Border.all(color: Colors.amber, width: 2)
-                          : widget.item.type == 'Ăn uống' ||
-                                  widget.item.type == 'Check-in'
+                          : orderScheduleItemTypesVn.contains(widget.item.type)
                               ? Border.all(color: primaryColor, width: 2)
                               : const Border(),
                   borderRadius: const BorderRadius.all(Radius.circular(12))),
@@ -403,8 +410,24 @@ class _PlanScheduleActivityState extends State<PlanScheduleActivity> {
                             overflow: TextOverflow.clip,
                           ),
                         ),
-                        if(widget.isValidPeriodOfOrder != null && !widget.isValidPeriodOfOrder!)
-                        const Icon(Icons.warning, color: Colors.red, size: 23,),
+                        if (widget.isValidPeriodOfOrder != null &&
+                            !widget.isValidPeriodOfOrder!)
+                          const Icon(
+                            Icons.warning,
+                            color: Colors.red,
+                            size: 23,
+                          ),
+                        if (orderScheduleItemTypesVn.contains(widget.item.type))
+                          Icon(
+                            widget.item.type == orderScheduleItemTypesVn[0]
+                                ? Icons.restaurant
+                                : widget.item.type ==
+                                        orderScheduleItemTypesVn[1]
+                                    ? Icons.motorcycle_sharp
+                                    : Icons.hotel,
+                            size: 23,
+                            color: primaryColor,
+                          ),
                         PopupMenuButton(
                           itemBuilder: (context) => [
                             PopupMenuItem(

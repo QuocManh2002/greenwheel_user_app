@@ -1,12 +1,10 @@
 import 'package:collection/collection.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
+import '../../core/constants/plan_statuses.dart';
 import '../../core/constants/urls.dart';
 import '../../main.dart';
 import '../../service/location_service.dart';
@@ -16,7 +14,7 @@ import '../../view_models/plan_viewmodels/plan_card.dart';
 import '../../widgets/plan_screen_widget/empty_plan.dart';
 import '../../widgets/plan_screen_widget/plan_card.dart';
 import '../../widgets/plan_screen_widget/tab_icon_button.dart';
-import '../loading_screen/plan_loading_screen.dart';
+import '../loading_screen/publish_plan_loading_screen.dart';
 import '../plan_screen/create_plan/select_start_location_screen.dart';
 
 class PlanScreen extends StatefulWidget {
@@ -36,6 +34,7 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
   int _selectedTab = 0;
   bool isLoading = true;
   bool isSearch = false;
+  final scrollController = ScrollController();
 
   @override
   void initState() {
@@ -142,303 +141,327 @@ class _PlanScreenState extends State<PlanScreen> with TickerProviderStateMixin {
           )
         ],
       ),
-      body: isLoading
-          ? const PlanLoadingScreen()
-          : RefreshIndicator(
-              onRefresh: () async {
-                setUpData();
-              },
-              child: Padding(
-                padding: const EdgeInsets.all(8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Container(
-                      decoration: BoxDecoration(
-                          border: Border.all(color: primaryColor, width: 1),
-                          borderRadius:
-                              const BorderRadius.all(Radius.circular(12)),
-                          shape: BoxShape.rectangle),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _searchController,
-                              maxLength: 30,
-                              maxLines: 1,
-                              cursorColor: primaryColor,
-                              onChanged: (value) {
-                                setState(() {});
-                              },
-                              style: const TextStyle(
-                                fontSize: 15,
-                                fontFamily: 'NotoSans',
-                              ),
-                              decoration: const InputDecoration(
-                                  contentPadding: EdgeInsets.only(left: 4),
-                                  counterText: '',
-                                  border: InputBorder.none,
-                                  hintText: 'Tên chuyến đi',
-                                  hintStyle: TextStyle(
-                                      color: Colors.grey,
-                                      fontFamily: 'NotoSans')),
-                            ),
-                          ),
-                          IconButton(
-                              onPressed: () {
-                                if (isSearch) {
-                                  setState(() {
-                                    isSearch = false;
-                                    _searchController.clear();
-                                  });
-                                } else {
-                                  onSearchPlan();
-                                  setState(() {
-                                    isSearch = true;
-                                    isLoading = true;
-                                  });
-                                }
-                              },
-                              icon: Icon(
-                                isSearch ? Icons.close : Icons.search,
-                                color: primaryColor,
-                              ))
-                        ],
+      body: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                  border: Border.all(color: primaryColor, width: 1),
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  shape: BoxShape.rectangle),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TextField(
+                      controller: _searchController,
+                      maxLength: 30,
+                      maxLines: 1,
+                      cursorColor: primaryColor,
+                      onChanged: (value) {
+                        setState(() {});
+                      },
+                      style: const TextStyle(
+                        fontSize: 15,
+                        fontFamily: 'NotoSans',
                       ),
+                      decoration: const InputDecoration(
+                          contentPadding: EdgeInsets.only(left: 4),
+                          counterText: '',
+                          border: InputBorder.none,
+                          hintText: 'Tên chuyến đi',
+                          hintStyle: TextStyle(
+                              color: Colors.grey, fontFamily: 'NotoSans')),
                     ),
+                  ),
+                  IconButton(
+                      onPressed: () {
+                        if (isSearch) {
+                          setState(() {
+                            isSearch = false;
+                            _searchController.clear();
+                          });
+                        } else {
+                          onSearchPlan();
+                          setState(() {
+                            isSearch = true;
+                            isLoading = true;
+                          });
+                        }
+                      },
+                      icon: Icon(
+                        isSearch ? Icons.close : Icons.search,
+                        color: primaryColor,
+                      ))
+                ],
+              ),
+            ),
+            SizedBox(
+              height: 1.h,
+            ),
+            if (!isSearch)
+              SingleChildScrollView(
+                controller: scrollController,
+                physics: const AlwaysScrollableScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
                     SizedBox(
-                      height: 1.h,
-                    ),
-                    if (!isSearch)
-                      SingleChildScrollView(
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.start,
-                          children: [
-                            SizedBox(
-                              width: 17.w,
-                              child: InkWell(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(12)),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedTab = 0;
-                                  });
-                                },
-                                child: TabIconButton(
-                                  iconDefaultUrl: upComingGreen,
-                                  iconSelectedUrl: upComingWhite,
-                                  text: 'Sắp đến',
-                                  isSelected: _selectedTab == 0,
-                                  index: 0,
-                                  hasHeight: true,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            SizedBox(
-                              width: 17.w,
-                              child: InkWell(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(12)),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedTab = 1;
-                                  });
-                                },
-                                child: TabIconButton(
-                                  iconDefaultUrl: onGoingGreen,
-                                  iconSelectedUrl: onGoingWhite,
-                                  text: 'Đang diễn ra',
-                                  isSelected: _selectedTab == 1,
-                                  index: 1,
-                                  hasHeight: true,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            SizedBox(
-                              width: 17.w,
-                              child: InkWell(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(12)),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedTab = 2;
-                                  });
-                                },
-                                child: TabIconButton(
-                                  iconDefaultUrl: historyGreen,
-                                  iconSelectedUrl: historyWhite,
-                                  text: 'Lịch sử',
-                                  isSelected: _selectedTab == 2,
-                                  index: 2,
-                                  hasHeight: true,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            SizedBox(
-                              width: 17.w,
-                              child: InkWell(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(12)),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedTab = 3;
-                                  });
-                                },
-                                child: TabIconButton(
-                                  iconDefaultUrl: cancelGreen,
-                                  iconSelectedUrl: cancelWhite,
-                                  text: 'Đã hủy',
-                                  isSelected: _selectedTab == 3,
-                                  index: 3,
-                                  hasHeight: true,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            SizedBox(
-                              width: 17.w,
-                              child: InkWell(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(12)),
-                                onTap: () {
-                                  setState(() {
-                                    _selectedTab = 4;
-                                  });
-                                },
-                                child: TabIconButton(
-                                  iconDefaultUrl: compassGreen,
-                                  iconSelectedUrl: compassWhite,
-                                  text: 'Đã tham gia',
-                                  isSelected: _selectedTab == 4,
-                                  index: 4,
-                                  hasHeight: true,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(
-                              width: 8,
-                            ),
-                            SizedBox(
-                              width: 17.w,
-                              child: InkWell(
-                                borderRadius:
-                                    const BorderRadius.all(Radius.circular(12)),
-                                onTap: () async {
-                                  setState(() {
-                                    isLoading = true;
-                                    _selectedTab = 5;
-                                  });
-                                  List<PlanCardViewModel>? myplans =
-                                      await _planService.getPlanCards(true);
-                                  if (myplans != null) {
-                                    setState(() {
-                                      isLoading = false;
-                                      _myPlans = myplans;
-                                    });
-                                  }
-                                },
-                                child: TabIconButton(
-                                  iconDefaultUrl: draftGreen,
-                                  iconSelectedUrl: draftWhite,
-                                  text: 'Chuyến đi của tôi',
-                                  isSelected: _selectedTab == 5,
-                                  index: 5,
-                                  hasHeight: true,
-                                ),
-                              ),
-                            ),
-                          ],
+                      width: 17.w,
+                      child: InkWell(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        onTap: () {
+                          setState(() {
+                            _selectedTab = 0;
+                          });
+                        },
+                        child: TabIconButton(
+                          iconDefaultUrl: upComingGreen,
+                          iconSelectedUrl: upComingWhite,
+                          text: 'Sắp đến',
+                          isSelected: _selectedTab == 0,
+                          index: 0,
+                          hasHeight: true,
                         ),
                       ),
-                    if (isSearch)
-                      Expanded(
-                          child: Container(
-                        margin: const EdgeInsets.only(top: 8),
-                        child: isLoading
-                            ? const PlanLoadingScreen()
-                            : _searchPlans.isEmpty
-                                ? const EmptyPlan()
-                                : ListView.builder(
-                                    physics: const BouncingScrollPhysics(),
-                                    shrinkWrap: true,
-                                    itemCount: _searchPlans.length,
-                                    itemBuilder: (context, index) => PlanCard(
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    SizedBox(
+                      width: 17.w,
+                      child: InkWell(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        onTap: () {
+                          setState(() {
+                            _selectedTab = 1;
+                          });
+                        },
+                        child: TabIconButton(
+                          iconDefaultUrl: onGoingGreen,
+                          iconSelectedUrl: onGoingWhite,
+                          text: 'Đang diễn ra',
+                          isSelected: _selectedTab == 1,
+                          index: 1,
+                          hasHeight: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    SizedBox(
+                      width: 17.w,
+                      child: InkWell(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        onTap: () {
+                          setState(() {
+                            _selectedTab = 2;
+                          });
+                        },
+                        child: TabIconButton(
+                          iconDefaultUrl: historyGreen,
+                          iconSelectedUrl: historyWhite,
+                          text: 'Lịch sử',
+                          isSelected: _selectedTab == 2,
+                          index: 2,
+                          hasHeight: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    SizedBox(
+                      width: 17.w,
+                      child: InkWell(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        onTap: () {
+                          setState(() {
+                            _selectedTab = 3;
+                          });
+                        },
+                        child: TabIconButton(
+                          iconDefaultUrl: cancelGreen,
+                          iconSelectedUrl: cancelWhite,
+                          text: 'Đã hủy',
+                          isSelected: _selectedTab == 3,
+                          index: 3,
+                          hasHeight: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    SizedBox(
+                      width: 17.w,
+                      child: InkWell(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        onTap: () {
+                          setState(() {
+                            _selectedTab = 4;
+                          });
+                        },
+                        child: TabIconButton(
+                          iconDefaultUrl: compassGreen,
+                          iconSelectedUrl: compassWhite,
+                          text: 'Đã tham gia',
+                          isSelected: _selectedTab == 4,
+                          index: 4,
+                          hasHeight: true,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 8,
+                    ),
+                    SizedBox(
+                      width: 17.w,
+                      child: InkWell(
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(12)),
+                        onTap: () async {
+                          setState(() {
+                            scrollController.jumpTo(
+                                scrollController.position.maxScrollExtent);
+                            isLoading = true;
+                            _selectedTab = 5;
+                          });
+                          List<PlanCardViewModel>? myplans =
+                              await _planService.getPlanCards(true);
+                          if (myplans != null) {
+                            setState(() {
+                              isLoading = false;
+                              _myPlans = myplans;
+                            });
+                          }
+                        },
+                        child: TabIconButton(
+                          iconDefaultUrl: draftGreen,
+                          iconSelectedUrl: draftWhite,
+                          text: 'Chuyến đi của tôi',
+                          isSelected: _selectedTab == 5,
+                          index: 5,
+                          hasHeight: true,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            if (isSearch)
+              Expanded(
+                child: RefreshIndicator(
+                    onRefresh: () async {
+                      setUpData();
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(top: 8),
+                      child: isLoading
+                          ? const PublishPlanLoadingScreen()
+                          : _searchPlans.isEmpty
+                              ? ListView.builder(
+                                  shrinkWrap: true,
+                                  itemCount: 1,
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  itemBuilder: (context, index) => SizedBox(
+                                      height: 50.h, child: const EmptyPlan()),
+                                )
+                              : ListView.builder(
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
+                                  shrinkWrap: true,
+                                  itemCount: _searchPlans.length,
+                                  itemBuilder: (context, index) {
+                                    return PlanCard(
                                       isOwned: false,
                                       plan: _searchPlans[index],
                                       isPublishedPlan: false,
-                                    ),
-                                  ),
-                      )),
-                    if (!isSearch)
-                      Expanded(
-                          child: Container(
-                              margin: const EdgeInsets.only(top: 8),
-                              child: _selectedTab != 5
-                                  ? _totalPlans[_selectedTab].isEmpty
+                                    );
+                                  },
+                                ),
+                    )),
+              ),
+            if (!isSearch)
+              isLoading
+                  ? const Expanded(child: PublishPlanLoadingScreen())
+                  : Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: () async {
+                          setState(() {
+                            isLoading = true;
+                          });
+                          setUpData();
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(top: 8),
+                          child: _selectedTab != 5
+                              ? _totalPlans[_selectedTab].isEmpty
+                                  ? ListView.builder(
+                                      shrinkWrap: true,
+                                      itemCount: 1,
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      itemBuilder: (context, index) => SizedBox(
+                                          height: 50.h,
+                                          child: const EmptyPlan()),
+                                    )
+                                  : ListView.builder(
+                                      physics:
+                                          const AlwaysScrollableScrollPhysics(),
+                                      shrinkWrap: true,
+                                      itemCount:
+                                          _totalPlans[_selectedTab].length,
+                                      itemBuilder: (context, index) {
+                                        return PlanCard(
+                                          isOwned: false,
+                                          plan: _totalPlans[_selectedTab]
+                                              [index],
+                                          isPublishedPlan: false,
+                                        );
+                                      },
+                                    )
+                              : isLoading
+                                  ? const PublishPlanLoadingScreen()
+                                  : _myPlans.isEmpty
                                       ? ListView.builder(
                                           shrinkWrap: true,
                                           itemCount: 1,
                                           physics:
-                                              const BouncingScrollPhysics(),
+                                              const AlwaysScrollableScrollPhysics(),
                                           itemBuilder: (context, index) =>
-                                              const EmptyPlan(),
+                                              SizedBox(
+                                                  height: 50.h,
+                                                  child: const EmptyPlan()),
                                         )
                                       : ListView.builder(
                                           physics:
-                                              const BouncingScrollPhysics(),
+                                              const AlwaysScrollableScrollPhysics(),
                                           shrinkWrap: true,
-                                          itemCount:
-                                              _totalPlans[_selectedTab].length,
+                                          itemCount: _myPlans.length,
                                           itemBuilder: (context, index) {
                                             return PlanCard(
-                                              isOwned: false,
-                                              plan: _totalPlans[_selectedTab]
-                                                  [index],
+                                              isOwned: true,
+                                              plan: _myPlans[index],
                                               isPublishedPlan: false,
                                             );
                                           },
-                                        )
-                                  : isLoading
-                                      ? const PlanLoadingScreen()
-                                      : _myPlans.isEmpty
-                                          ? ListView.builder(
-                                              shrinkWrap: true,
-                                              itemCount: 1,
-                                              physics:
-                                                  const BouncingScrollPhysics(),
-                                              itemBuilder: (context, index) =>
-                                                  const EmptyPlan(),
-                                            )
-                                          : ListView.builder(
-                                              physics:
-                                                  const BouncingScrollPhysics(),
-                                              shrinkWrap: true,
-                                              itemCount: _myPlans.length,
-                                              itemBuilder: (context, index) {
-                                                return PlanCard(
-                                                  isOwned: true,
-                                                  plan: _myPlans[index],
-                                                  isPublishedPlan: false,
-                                                );
-                                              },
-                                            )))
-                  ],
-                ),
-              ),
-            ),
+                                        ),
+                        ),
+                      ),
+                    )
+          ],
+        ),
+      ),
     ));
   }
 }

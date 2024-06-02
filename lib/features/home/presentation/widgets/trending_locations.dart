@@ -13,7 +13,7 @@ class TrendingLocations extends StatelessWidget {
     final provider = Provider.of<HomeProvider>(context);
     provider.getHomeTrendingLocations();
     List<HomeLocationEntity>? trendingLocations =
-        Provider.of<HomeProvider>(context).home_trending_locations;
+        Provider.of<HomeProvider>(context).homeTrendingLocations;
     //     final provider =
     //     Provider.of<HomeProvider>(context);
     // provider.getHotLocations();

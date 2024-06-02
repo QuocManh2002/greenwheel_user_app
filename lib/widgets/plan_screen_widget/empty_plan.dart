@@ -17,7 +17,7 @@ class EmptyPlan extends StatelessWidget {
           ),
           const SizedBox(height: 8,),
           const Text(
-            "Bạn chưa có kế hoạch nào ở dạng này",
+            "Không có kế hoạch",
             textAlign: TextAlign.center,
             style: TextStyle(fontSize: 17, color: Colors.black54, fontFamily: 'NotoSans'),
           )

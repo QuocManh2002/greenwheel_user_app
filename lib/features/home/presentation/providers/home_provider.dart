@@ -8,12 +8,12 @@ import 'package:greenwheel_user_app/features/home/data/datasources/home_remote_d
 import 'package:greenwheel_user_app/features/home/data/repositories/home_repository_impl.dart';
 
 class HomeProvider extends ChangeNotifier {
-  List<HomeLocationEntity>? hot_locations = [];
-  List<HomeProvinceEntity>? home_provinces;
-  List<HomeLocationEntity>? home_trending_locations;
+  List<HomeLocationEntity>? hotLocations = [];
+  List<HomeProvinceEntity>? homeProvinces;
+  List<HomeLocationEntity>? homeTrendingLocations;
   HomeProvider({
-    this.hot_locations,
-    this.home_provinces,
+    this.hotLocations,
+    this.homeProvinces,
   });
 
   String? cursorHotLocation;
@@ -22,17 +22,17 @@ class HomeProvider extends ChangeNotifier {
     HomeRepositoryImpl repository =
         HomeRepositoryImpl(remoteDataSource: HomeRemoteDataSourceImpl());
 
-    final hotLocations =
+    final hotLocation =
         await GetHomeLocations(repository).call(cursorHotLocation);
-    if (hotLocations != null) {
-      if (hotLocations.objects != null && hotLocations.objects!.isNotEmpty) {
-        if (hot_locations == null || hot_locations!.isEmpty) {
-          hot_locations = hotLocations.objects!;
+    if (hotLocation != null) {
+      if (hotLocation.objects != null && hotLocation.objects!.isNotEmpty) {
+        if (hotLocations == null || hotLocations!.isEmpty) {
+          hotLocations = hotLocation.objects!;
         } else {
-          hot_locations!.addAll(hotLocations.objects!);
+          hotLocations!.addAll(hotLocation.objects!);
         }
       }
-      cursorHotLocation = hotLocations.cursor;
+      cursorHotLocation = hotLocation.cursor;
       notifyListeners();
     }
   }
@@ -41,9 +41,9 @@ class HomeProvider extends ChangeNotifier {
     HomeRepositoryImpl repository =
         HomeRepositoryImpl(remoteDataSource: HomeRemoteDataSourceImpl());
 
-    final homeProvinces = await GetHomeProvinces(repository).call();
-    if (homeProvinces != null) {
-      home_provinces = homeProvinces;
+    final homeProvince = await GetHomeProvinces(repository).call();
+    if (homeProvince != null) {
+      homeProvinces = homeProvince;
       notifyListeners();
     }
   }
@@ -51,10 +51,10 @@ class HomeProvider extends ChangeNotifier {
   void getHomeTrendingLocations() async {
     HomeRepositoryImpl repository =
         HomeRepositoryImpl(remoteDataSource: HomeRemoteDataSourceImpl());
-    final homeTrendingLocations =
+    final homeTrendingLocation =
         await GetHomeTrendingLocations(repository).call();
-    if (homeTrendingLocations != null) {
-      home_trending_locations = homeTrendingLocations;
+    if (homeTrendingLocation != null) {
+      homeTrendingLocations = homeTrendingLocation;
       notifyListeners();
     }
   }

@@ -16,7 +16,7 @@ class TransactionDetailScreen extends StatefulWidget {
   const TransactionDetailScreen(
       {super.key, required this.transaction, required this.icon});
 
-  final Transaction transaction;
+  final TransactionViewModel transaction;
   final Widget icon;
 
   @override

@@ -2,22 +2,23 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/main.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/profile_loading_screen.dart';
-import 'package:greenwheel_user_app/screens/payment_screen/payment_result_screen.dart';
-import 'package:greenwheel_user_app/screens/profie_screen/qr_screen.dart';
-import 'package:greenwheel_user_app/screens/profie_screen/transaction_history_screen.dart';
-import 'package:greenwheel_user_app/screens/profie_screen/update_profile_screen.dart';
-import 'package:greenwheel_user_app/screens/payment_screen/add_balance.dart';
-import 'package:greenwheel_user_app/service/traveler_service.dart';
-import 'package:greenwheel_user_app/view_models/customer.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:restart_app/restart_app.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/urls.dart';
+import '../../main.dart';
+import '../../service/traveler_service.dart';
+import '../../view_models/customer.dart';
+import '../loading_screen/profile_loading_screen.dart';
+import '../main_screen/tabscreen.dart';
+import '../payment_screen/add_balance.dart';
+import '../payment_screen/payment_result_screen.dart';
+import 'qr_screen.dart';
+import 'update_profile_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -285,11 +286,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           height: 1.h,
                         ),
                         buildProfileButton(() {
-                          Navigator.push(
+                          Navigator.pushAndRemoveUntil(
                               context,
                               PageTransition(
-                                  child: const TransactionHistoryScreen(),
-                                  type: PageTransitionType.rightToLeft));
+                                  child: const TabScreen(pageIndex: 2),
+                                  type: PageTransitionType.rightToLeft),(route) => false,);
                         }, Icons.history, 'Lịch sử giao dịch'),
                         SizedBox(
                           height: 1.h,
@@ -407,7 +408,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 amount: amount,
                 planId: null,
                 isSuccess: true,
-                isPublicPlan: false,
               ),
               type: PageTransitionType.rightToLeft));
     } else {
@@ -418,7 +418,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 amount: amount,
                 planId: null,
                 isSuccess: false,
-                isPublicPlan: false,
               ),
               type: PageTransitionType.rightToLeft));
     }

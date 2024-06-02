@@ -1,13 +1,14 @@
 import 'dart:convert';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/core/constants/order_status.dart';
-import 'package:greenwheel_user_app/screens/loading_screen/order_detail_loading_screen.dart';
+import 'package:greenwheel_user_app/service/product_service.dart';
+import 'package:greenwheel_user_app/view_models/location.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -16,6 +17,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/colors.dart';
 import '../../core/constants/global_constant.dart';
+import '../../core/constants/order_status.dart';
 import '../../core/constants/plan_statuses.dart';
 import '../../core/constants/service_types.dart';
 import '../../core/constants/sessions.dart';
@@ -26,11 +28,15 @@ import '../../models/holiday.dart';
 import '../../models/menu_item_cart.dart';
 import '../../models/order_input_model.dart';
 import '../../models/session.dart';
+import '../../service/supplier_service.dart';
 import '../../view_models/order.dart';
 import '../../view_models/order_detail.dart';
 import '../../view_models/product.dart';
 import '../../widgets/order_screen_widget/cancel_order_bottom_sheet.dart';
 import '../../widgets/style_widget/button_style.dart';
+import '../../widgets/style_widget/dialog_style.dart';
+import '../loading_screen/order_detail_loading_screen.dart';
+import '../main_screen/service_main_screen.dart';
 import '../main_screen/service_menu_screen.dart';
 import '../sub_screen/local_map_screen.dart';
 import 'rate_order_screen.dart';
@@ -45,8 +51,9 @@ class OrderDetailScreen extends StatefulWidget {
       this.planId,
       required this.callback,
       this.isFromTempOrder,
-      this.planType,
+      this.planStatus,
       this.availableGcoinAmount,
+      this.location,
       required this.isTempOrder});
   final OrderViewModel order;
   final DateTime startDate;
@@ -56,7 +63,8 @@ class OrderDetailScreen extends StatefulWidget {
   final DateTime? endDate;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
-  final String? planType;
+  final String? planStatus;
+  final LocationViewModel? location;
   final void Function() callback;
 
   @override
@@ -65,15 +73,17 @@ class OrderDetailScreen extends StatefulWidget {
 
 class _OrderDetailScreenState extends State<OrderDetailScreen> {
   TextEditingController noteController = TextEditingController();
+  final SupplierService supplierService = SupplierService();
+  final ProductService productService = ProductService();
   bool isExpanded = false;
-  String _servingTime = '';
+  String servingTime = '';
   List<OrderDetailViewModel> details = [];
-  List<DateTime> _servingDates = [];
+  List<DateTime> servingDates = [];
   List<DateTime> normalServingDates = [];
   List<DateTime> holidayServingDates = [];
   int holidayUpPCT = 0;
   bool isLoading = true;
-  num _listedPricePerDay = 0;
+  num listedPricePerDay = 0;
 
   @override
   void initState() {
@@ -82,24 +92,23 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
   }
 
   setUpData() async {
-    
     noteController.text = widget.order.note ?? '';
-    _servingDates =
+    servingDates =
         (widget.order.serveDates ?? []).map((e) => DateTime.parse(e)).toList();
-    _servingTime = sessions
+    servingTime = sessions
         .firstWhere((element) => element.enumName == widget.order.period)
         .range;
     final tmp =
         widget.order.details!.groupListsBy((element) => element.productId);
     for (final temp in tmp.values) {
       details.add(temp.first);
-      _listedPricePerDay += (temp.first.price! * temp.first.quantity);
+      listedPricePerDay += (temp.first.price! * temp.first.quantity);
     }
     holidayUpPCT = Utils().getHolidayUpPct(widget.order.type!);
     final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
     List<Holiday> holidays =
         holidaysText!.map((e) => Holiday.fromJson(json.decode(e))).toList();
-    final dates = Utils().getHolidayServingDates(holidays, _servingDates);
+    final dates = Utils().getHolidayServingDates(holidays, servingDates);
     normalServingDates = dates['normalServingDates'];
     holidayServingDates = dates['holidayServingDates'];
     setState(() {
@@ -114,12 +123,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       appBar: AppBar(
         title: const Text('Chi tiết đơn hàng'),
         actions: [
-          if (widget.planType == planStatuses[2].engName ||
+          if (widget.planStatus == planStatuses[2].engName ||
               (widget.order.currentStatus != null &&
-                  widget.order.currentStatus == orderStatuses[2]))
+                  widget.order.currentStatus == orderStatuses[2] &&
+                  widget.order.rating == null))
             PopupMenuButton(
               itemBuilder: (context) => [
-                if (widget.planType == planStatuses[2].engName)
+                if (widget.planStatus == planStatuses[2].engName)
                   const PopupMenuItem(
                     value: 0,
                     child: Row(
@@ -144,7 +154,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                   ),
                 if (widget.order.currentStatus != null &&
-                    widget.order.currentStatus == orderStatuses[2])
+                    widget.order.currentStatus == orderStatuses[2] &&
+                    widget.order.rating == null)
                   const PopupMenuItem(
                     value: 1,
                     child: Row(
@@ -497,7 +508,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     Text(
                                       widget.order.type! != 'FOOD'
                                           ? '12:00 SA'
-                                          : _servingTime,
+                                          : servingTime,
                                       style: const TextStyle(fontSize: 18),
                                     )
                                   ],
@@ -639,7 +650,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                       fontWeight: FontWeight.bold,
                                       fontFamily: 'NotoSans'),
                                 ),
-                                for (final date in _servingDates)
+                                SizedBox(
+                                  height: 1.h,
+                                ),
+                                for (final date in servingDates)
                                   Column(
                                     children: [
                                       Row(
@@ -670,16 +684,16 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                     name: 'đ')
                                                 .format(holidayServingDates
                                                         .contains(date)
-                                                    ? _listedPricePerDay *
+                                                    ? listedPricePerDay *
                                                         (1 + holidayUpPCT / 100)
-                                                    : _listedPricePerDay),
+                                                    : listedPricePerDay),
                                             style: const TextStyle(
                                                 fontSize: 14,
                                                 fontFamily: 'NotoSans'),
                                           )
                                         ],
                                       ),
-                                      if (date != _servingDates.last)
+                                      if (date != servingDates.last)
                                         Divider(
                                           color: Colors.grey.withOpacity(0.7),
                                           thickness: 0.1.h,
@@ -711,7 +725,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                               decimalDigits: 0,
                                               name: "đ")
                                           .format(widget.order.id == null
-                                              ? (widget.order.total ?? 0) *
+                                              ? (widget.order.actualTotal ??
+                                                      0) *
                                                   GlobalConstant()
                                                       .VND_CONVERT_RATE
                                               : widget.order.total ?? 0),
@@ -735,11 +750,11 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     const Spacer(),
                                     Text(
                                       NumberFormat.simpleCurrency(
-                                              locale: 'vi-VN',
+                                              locale: 'vi_VN',
                                               decimalDigits: 0,
                                               name: "")
                                           .format(widget.order.id == null
-                                              ? (widget.order.total ?? 0)
+                                              ? (widget.order.actualTotal ?? 0)
                                               : (widget.order.total ?? 0) /
                                                   GlobalConstant()
                                                       .VND_CONVERT_RATE),
@@ -770,21 +785,10 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                   ElevatedButton(
                       style: elevatedButtonStyle,
                       onPressed: () async {
-                        Session? session;
-                        switch (widget.order.period) {
-                          case 'MORNING':
-                            session = sessions[0];
-                            break;
-                          case 'NOON':
-                            session = sessions[1];
-                            break;
-                          case 'AFTERNOON':
-                            session = sessions[2];
-                            break;
-                          case 'EVENING':
-                            session = sessions[3];
-                            break;
-                        }
+                        final invalidSupplierIds = await supplierService
+                            .getInvalidSupplierByIds(
+                                [widget.order.supplier!.id], context);
+
                         List<ItemCart> cart = [];
                         for (final detail in widget.order.details!) {
                           cart.add(ItemCart(
@@ -795,40 +799,115 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                               ),
                               qty: detail.quantity));
                         }
-                        List<String> ids = [];
+                        List<int> ids = [];
                         for (final item in cart) {
                           if (!ids.contains(item.product.id.toString())) {
-                            ids.add(item.product.id.toString());
+                            ids.add(item.product.id);
                           }
                         }
-                        sharedPreferences.setStringList('initCartIds', ids);
 
-                        Navigator.of(context).push(MaterialPageRoute(
-                            builder: (ctx) => ServiceMenuScreen(
-                                  inputModel: OrderInputModel(
-                                    startDate: widget.startDate,
-                                    endDate: widget.endDate,
-                                    availableGcoinAmount:
-                                        widget.availableGcoinAmount,
-                                    initCart: cart,
-                                    session: session,
-                                    orderGuid: widget.order.uuid,
-                                    currentCart: cart,
-                                    supplier: widget.order.supplier!,
-                                    serviceType: services.firstWhere(
-                                        (element) =>
-                                            element.name == widget.order.type),
-                                    numberOfMember: widget.memberLimit!,
-                                    period: widget.order.period,
-                                    isOrder: true,
-                                    holidayUpPCT: holidayUpPCT,
-                                    servingDates: _servingDates,
-                                    holidayServingDates: holidayServingDates,
-                                    callbackFunction: (tempOrder) {
-                                      widget.callback();
-                                    },
-                                  ),
-                                )));
+                        final invalidProductIds = await productService
+                            .getInvalidProductByIds(ids, context);
+
+                        if (invalidSupplierIds.isNotEmpty) {
+                          DialogStyle().basicDialog(
+                              // ignore: use_build_context_synchronously
+                              context: context,
+                              title:
+                                  'Rất tiếc! Nhà cung cấp này đã không còn khả dụng',
+                              desc:
+                                  'Vui lòng chọn lại một nhà cung cấp khác cho đơn dịch vụ',
+                              onOk: () {
+                                Navigator.push(
+                                    context,
+                                    PageTransition(
+                                        child: ServiceMainScreen(
+                                          serviceType: services.firstWhere(
+                                              (element) =>
+                                                  element.name ==
+                                                  widget.order.type),
+                                          location: widget.location!,
+                                          isOrder: true,
+                                          isFromTempOrder:
+                                              widget.isFromTempOrder,
+                                          availableGcoinAmount:
+                                              widget.availableGcoinAmount,
+                                          initSession: sessions.firstWhere(
+                                              (element) =>
+                                                  element.enumName ==
+                                                  widget.order.period),
+                                          numberOfMember: widget.memberLimit!,
+                                          startDate: widget.startDate,
+                                          endDate: widget.endDate!,
+                                          uuid: widget.order.uuid,
+                                          serveDates: widget.order.serveDates!
+                                              .map((e) => DateTime.parse(e))
+                                              .toList(),
+                                          callbackFunction: (tempOrder) {
+                                            widget.callback();
+                                          },
+                                        ),
+                                        type: PageTransitionType.rightToLeft));
+                              },
+                              type: DialogType.warning);
+                        } else if (invalidProductIds.isNotEmpty) {
+                          DialogStyle().basicDialog(
+                              // ignore: use_build_context_synchronously
+                              context: context,
+                              title:
+                                  'Rất tiếc! Các sản phẩm ${invalidProductIds.map((productId) => '${details.firstWhere((detail) => detail.productId == productId).productName} ,')} đã không còn khả dụng',
+                              desc:
+                                  'Vui lòng chọn lại các sản phẩm khác thay thế',
+                              onOk: () {},
+                              type: DialogType.warning);
+                        } else {
+                          Session? session;
+                          switch (widget.order.period) {
+                            case 'MORNING':
+                              session = sessions[0];
+                              break;
+                            case 'NOON':
+                              session = sessions[1];
+                              break;
+                            case 'AFTERNOON':
+                              session = sessions[2];
+                              break;
+                            case 'EVENING':
+                              session = sessions[3];
+                              break;
+                          }
+
+                          sharedPreferences.setStringList('initCartIds',
+                              ids.map((e) => e.toString()).toList());
+
+                          Navigator.of(context).push(MaterialPageRoute(
+                              builder: (ctx) => ServiceMenuScreen(
+                                    inputModel: OrderInputModel(
+                                      startDate: widget.startDate,
+                                      endDate: widget.endDate,
+                                      availableGcoinAmount:
+                                          widget.availableGcoinAmount,
+                                      initCart: cart,
+                                      session: session,
+                                      orderGuid: widget.order.uuid,
+                                      currentCart: cart,
+                                      supplier: widget.order.supplier!,
+                                      serviceType: services.firstWhere(
+                                          (element) =>
+                                              element.name ==
+                                              widget.order.type),
+                                      numberOfMember: widget.memberLimit!,
+                                      period: widget.order.period,
+                                      isOrder: true,
+                                      holidayUpPCT: holidayUpPCT,
+                                      servingDates: servingDates,
+                                      holidayServingDates: holidayServingDates,
+                                      callbackFunction: (tempOrder) {
+                                        widget.callback();
+                                      },
+                                    ),
+                                  )));
+                        }
                       },
                       child: const Text('Xác nhận đơn hàng mẫu')),
                 if (widget.isTempOrder)
@@ -838,7 +917,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ],
             ),
       bottomNavigationBar: widget.order.currentStatus != null &&
-              widget.order.currentStatus == orderStatuses[2]
+              widget.order.currentStatus == orderStatuses[2] &&
+              widget.order.currentStatus != orderStatuses[4]
           ? Padding(
               padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
               child: ElevatedButton(

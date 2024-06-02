@@ -23,18 +23,14 @@ class JoinConfirmPlanScreen extends StatefulWidget {
   const JoinConfirmPlanScreen(
       {super.key,
       required this.plan,
-      required this.isPublic,
       this.callback,
-      required this.isView,
-      this.onPublicizePlan,
       this.member,
+      this.joinMethod,
       required this.isConfirm});
   final PlanDetail plan;
-  final bool isPublic;
   final bool isConfirm;
-  final bool isView;
   final PlanMemberViewModel? member;
-  final void Function(bool isFromJoinScreen, int? amount, BuildContext context)? onPublicizePlan;
+  final String? joinMethod;
   final void Function()? callback;
 
   @override
@@ -684,7 +680,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             animType: AnimType.leftSlide,
             dialogType: DialogType.question,
             title:
-                'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${widget.plan.maxMemberCount! - widget.plan.memberCount! > 1 ? ' x ${widget.plan.maxMemberCount! - widget.plan.memberCount!} = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * (widget.plan.maxMemberCount! - widget.plan.memberCount!))}' : ''} GCOIN',
+                'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${widget.plan.maxMemberCount! - widget.plan.memberCount! > 1 ? ' x ${widget.plan.maxMemberCount! - widget.plan.memberCount!} = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * (widget.plan.maxMemberCount! - widget.plan.memberCount!))}' : ''} GCOIN',
             titleTextStyle:
                 const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             btnOkColor: Colors.blue,
@@ -714,15 +710,18 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
     companionNames = names;
   }
 
-  handleJoinSuccess() {
+  handleJoinSuccess() async {
+    if (widget.joinMethod != null) {
+      await _planService.updateJoinMethod(
+          widget.plan.id!, widget.joinMethod!, context);
+    }
     Navigator.pushAndRemoveUntil(
+        // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
             builder: (ctx) => PaymentResultScreen(
                   planId: widget.plan.id!,
                   isSuccess: true,
-                  isPublicPlan: widget.isPublic,
-                  onPublic: widget.isPublic ? widget.onPublicizePlan : null,
                   amount: widget.plan.gcoinBudgetPerCapita! * weight,
                 )),
         (route) => false);

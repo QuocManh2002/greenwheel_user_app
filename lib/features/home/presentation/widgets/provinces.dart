@@ -13,7 +13,7 @@ class Provinces extends StatelessWidget {
     final provider = Provider.of<HomeProvider>(context);
     provider.getHomeProvinces();
     List<HomeProvinceEntity>? provinces =
-        Provider.of<HomeProvider>(context).home_provinces;
+        Provider.of<HomeProvider>(context).homeProvinces;
     return provinces != null
         ? Column(
             crossAxisAlignment: CrossAxisAlignment.start,

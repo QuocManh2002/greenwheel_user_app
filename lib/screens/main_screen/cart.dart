@@ -748,8 +748,8 @@ class _CartScreenState extends State<CartScreen> {
         'productId': item.product.id,
         'productName': item.product.name,
         'quantity': item.qty,
-        'unitPrice': item.product.price.toDouble(),
-        'price': item.product.price.toDouble()
+        'price': item.product.price.toDouble(),
+        'partySize': item.product.partySize
       });
     }
     final tempOrder = orderService.convertToTempOrder(

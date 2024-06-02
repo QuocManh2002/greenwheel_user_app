@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
@@ -10,6 +11,7 @@ import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:greenwheel_user_app/config/graphql_config.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/models/pagination.dart';
 import 'package:greenwheel_user_app/view_models/notification_viewmodels/notification_viewmodel.dart';
 
 class AnnouncementService {
@@ -128,14 +130,24 @@ class AnnouncementService {
     });
   }
 
-  Future<List<AnnouncementViewModel>> getNotificationList() async {
+  Future<Pagination<AnnouncementViewModel>?> getNotificationList(
+      String? cursor) async {
     try {
+      final newClient = graphQlConfig.getClient();
       int travelerId = sharedPreferences.getInt('userId')!;
-      QueryResult result = await client.query(QueryOptions(
+      QueryResult result = await newClient.query(QueryOptions(
         fetchPolicy: FetchPolicy.noCache,
         document: gql("""
 {
-  announcements(where: { accountId: { eq: $travelerId } }, order: { id: DESC }) {
+  announcements(
+    where: { accountId: { eq: $travelerId } }
+    order: { id: DESC }
+    after: ${cursor == null ? null : json.encode(cursor)}
+    first: 10
+  ) {
+    pageInfo {
+      endCursor
+    }
     edges {
       node {
         id
@@ -168,12 +180,12 @@ class AnnouncementService {
 
       List? res = result.data!['announcements']['edges'];
       if (res == null || res.isEmpty) {
-        return [];
+        return Pagination(pageSize: 10, cursor: cursor, objects: []);
       }
-      List<AnnouncementViewModel> notifications = res
-          .map((noti) => AnnouncementViewModel.fromJson(noti['node']))
-          .toList();
-      return notifications;
+      cursor = result.data!['announcements']['pageInfo']['endCursor'];
+      final listObjects =
+          res.map((e) => AnnouncementViewModel.fromJson(e['node'])).toList();
+      return Pagination(pageSize: 10, cursor: cursor, objects: listObjects);
     } catch (error) {
       throw Exception(error);
     }

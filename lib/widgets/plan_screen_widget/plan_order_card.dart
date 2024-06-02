@@ -59,7 +59,7 @@ class _PlanOrderCardState extends State<PlanOrderCard> {
                 PageTransition(
                     child: OrderDetailScreen(
                         order: widget.order,
-                        planType: widget.planType,
+                        planStatus: widget.planType,
                         startDate: DateTime.now(),
                         endDate: widget.endDate,
                         callback: widget.callback,

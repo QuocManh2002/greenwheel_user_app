@@ -6,9 +6,12 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:flutter_widget_from_html/flutter_widget_from_html.dart';
 import 'package:greenwheel_user_app/core/constants/colors.dart';
+import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
+import 'package:greenwheel_user_app/main.dart';
 import 'package:greenwheel_user_app/view_models/order.dart';
+import 'package:greenwheel_user_app/view_models/plan_viewmodels/combo_date.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_create.dart';
 import 'package:greenwheel_user_app/view_models/plan_viewmodels/surcharge.dart';
 import 'package:greenwheel_user_app/widgets/plan_screen_widget/bottom_sheet_container_widget.dart';
@@ -51,6 +54,8 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   bool _isShowOrder = false;
   HtmlEditorController controller = HtmlEditorController();
 
+  ComboDate? comboDate;
+
   List<dynamic> emergencyList = [];
   List<dynamic> scheduleList = [];
   List<dynamic>? newRoomOrderList = [];
@@ -62,6 +67,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
   List<List<String>> scheduleTextList = [];
   double total = 0;
   int budgetPerCapita = 0;
+  bool isPlanEndAtNoon = false;
 
   getTotal() {
     total = 0;
@@ -98,6 +104,15 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     if (widget.plan!.savedContacts != null) {
       emergencyList = json.decode(widget.plan!.savedContacts!);
     }
+
+    if (widget.plan!.numOfExpPeriod != null) {
+      comboDate = listComboDate.firstWhere(
+          (element) => element.duration == widget.plan!.numOfExpPeriod);
+      if (sharedPreferences.getString('plan_arrivedTime') != null) {
+        isPlanEndAtNoon = Utils().isEndAtNoon(null);
+      }
+    }
+
     if (widget.plan!.travelDuration != null) {
       var tempDuration = DateFormat.Hm().parse(widget.plan!.travelDuration!);
       if (tempDuration.hour != 0) {
@@ -174,15 +189,54 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
               ),
               BottomSheetContainerWidget(
                   title: 'Địa điểm', content: widget.locationName),
-              if (widget.plan!.endDate != null)
+              if (comboDate != null)
                 SizedBox(
                   height: 1.h,
                 ),
-              if (widget.plan!.endDate != null)
-                BottomSheetContainerWidget(
-                    title: 'Thời gian chuyến đi',
-                    content:
-                        '${DateFormat('dd/MM/yyyy').format(widget.plan!.departAt!)} - ${DateFormat('dd/MM/yyyy').format(widget.plan!.endDate!)}'),
+              if (comboDate != null)
+                Container(
+                    width: 100.w,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                    decoration: BoxDecoration(
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 3,
+                            color: Colors.black12,
+                            offset: Offset(1, 3),
+                          )
+                        ],
+                        color: Colors.white.withOpacity(0.97),
+                        borderRadius:
+                            const BorderRadius.all(Radius.circular(8))),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Thời gian chuyến đi: ',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        Text(
+                          '${comboDate!.numberOfDay} ngày, ${comboDate!.numberOfNight} đêm',
+                          style: const TextStyle(
+                              fontSize: 18, fontWeight: FontWeight.bold),
+                          overflow: TextOverflow.clip,
+                        ),
+                        if (widget.plan!.endDate != null)
+                          Divider(
+                            color: Colors.black26,
+                            thickness: 1,
+                            height: 1.h,
+                          ),
+                        if (widget.plan!.endDate != null)
+                          Text(
+                            '${DateFormat.Hm().format(widget.plan!.departAt!)} ${DateFormat('dd/MM/yy').format(widget.plan!.departAt!)} - ${isPlanEndAtNoon ? '14:00' : '22:00'} ${DateFormat('dd/MM/yy').format(widget.plan!.endDate!)}',
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                            overflow: TextOverflow.clip,
+                          ),
+                      ],
+                    )),
               if (widget.plan!.travelDuration != null)
                 SizedBox(
                   height: 1.h,
@@ -489,7 +543,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      sur.note.substring(0, 1) == '"' ? '${json.decode(sur.note)}' : sur.note,
+                                      sur.note.substring(0, 1) == '"'
+                                          ? '${json.decode(sur.note)}'
+                                          : sur.note,
                                       style: const TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold),
@@ -504,7 +560,8 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                         .format(sur.gcoinAmount *
                                             widget.plan!.maxMemberCount!),
                                     style: const TextStyle(
-                                        fontSize: 15, fontWeight: FontWeight.bold),
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.bold),
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   Padding(
@@ -516,12 +573,12 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                   )
                                 ],
                               ),
-                              if(sur != widget.surchargeList!.last)
-                              Divider(
-                                thickness: 1,
-                                height: 8,
-                                color: Colors.grey.withOpacity(0.3),
-                              )
+                              if (sur != widget.surchargeList!.last)
+                                Divider(
+                                  thickness: 1,
+                                  height: 8,
+                                  color: Colors.grey.withOpacity(0.3),
+                                )
                             ],
                           )
                       ]),

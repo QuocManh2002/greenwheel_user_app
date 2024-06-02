@@ -3,7 +3,7 @@ import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart
 import 'package:greenwheel_user_app/view_models/profile_viewmodels/transaction.dart';
 
 class TransactionDetailViewModel {
-  Transaction? transaction;
+  TransactionViewModel? transaction;
   PlanDetail? plan;
   OrderViewModel? order;
   int? memberWeight;

@@ -3,13 +3,13 @@ import 'dart:convert';
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../../core/constants/colors.dart';
 import '../../../core/constants/urls.dart';
-import '../../../helpers/util.dart';
 import '../../../main.dart';
 import '../../../service/plan_service.dart';
 import '../../../view_models/location.dart';
@@ -50,6 +50,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
   DateTime? _selectedDate = DateTime.now();
   GlobalKey<FormState> formKey = GlobalKey<FormState>();
   final PlanService _planService = PlanService();
+  final OrderService _orderService = OrderService();
 
   @override
   void initState() {
@@ -448,7 +449,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                         'plan_schedule', json.encode(schedule));
                   }
                   if (widget.isClone) {
-                    Utils().updateTempOrder(false, null);
+                    _orderService.updateTempOrder(false, null);
                   }
                   Navigator.push(
                       context,

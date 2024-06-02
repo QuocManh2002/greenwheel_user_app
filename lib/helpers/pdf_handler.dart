@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:greenwheel_user_app/core/constants/global_constant.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/util.dart';
 import 'package:greenwheel_user_app/main.dart';
@@ -216,7 +217,7 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
                                           const PdfColor.fromInt(0xffE4080A))),
                               pw.Spacer(),
                               pw.Text(
-                                  '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(plan.gcoinBudgetPerCapita! * 100)} VND/ NGƯỜI',
+                                  '${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(plan.gcoinBudgetPerCapita! * GlobalConstant().VND_CONVERT_RATE)} VND/ NGƯỜI',
                                   style: pw.TextStyle(
                                       font: boldTtf,
                                       fontSize: 16,
@@ -346,7 +347,7 @@ buildServiceWidget(String type, List<dynamic> orders, pw.Font font) =>
                       .format(((order.runtimeType == OrderViewModel
                                   ? order.total
                                   : order['total']) /
-                              100)
+                              GlobalConstant().VND_CONVERT_RATE)
                           .toInt()),
                   style: pw.TextStyle(
                       font: font, fontSize: 17, fontWeight: pw.FontWeight.bold),

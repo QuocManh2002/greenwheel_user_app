@@ -1,4 +1,4 @@
-class Transaction {
+class TransactionViewModel {
   int? id;
   int? accountId;
   int? planMemberId;
@@ -12,7 +12,7 @@ class Transaction {
   DateTime? createdAt;
   int? providerId;
 
-  Transaction({
+  TransactionViewModel({
     this.id,
     this.providerId,
     this.type,
@@ -27,7 +27,7 @@ class Transaction {
     this.planMemberId
   });
 
-  factory Transaction.fromJson(Map<String, dynamic> json) => Transaction(
+  factory TransactionViewModel.fromJson(Map<String, dynamic> json) => TransactionViewModel(
         id: json["id"],
         orderId: json['orderId'],
         planMemberId: json['planMemberId'],

@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:greenwheel_user_app/screens/plan_screen/create_plan/select_emergency_service.dart';
+import 'package:greenwheel_user_app/service/order_service.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -50,6 +51,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       TextEditingController();
   int _maxMemberWeight = 1;
   final PlanService _planService = PlanService();
+  final OrderService _orderService = OrderService();
   bool isShowDialog = false;
   int initMemberCount = 0;
   int _maxCombodateIndex = 0;
@@ -269,8 +271,6 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
             'plan_start_date', _departureDate!.toString().split(' ')[0]);
       } else {
         widget.plan!.startDate = _departureDate!;
-        // .add(Duration(hours: _departureTime!.hour))
-        // .add(Duration(minutes: _departureTime!.minute));
       }
     }
     if (widget.plan == null) {
@@ -286,12 +286,6 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
         sharedPreferences.setInt('numOfExpPeriod',
             listComboDate[_selectedCombo].numberOfDay + numberOfNight!);
       }
-      // else {
-      //   setState(() {
-      //     widget.plan!.numOfExpPeriod =
-      //         listComboDate[_selectedCombo].numberOfDay + numberOfNight!;
-      //   });
-      // }
     } else {
       sharedPreferences.setInt(
           'numOfExpPeriod', listComboDate[_selectedCombo].duration.toInt());
@@ -373,10 +367,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                               });
                               sharedPreferences.setInt(
                                   'plan_combo_date', value);
-                              sharedPreferences.setInt(
-                                  'initNumOfExpPeriod',
-                                  listComboDate[value].numberOfDay +
-                                      listComboDate[value].numberOfNight);
+                              sharedPreferences.setInt('initNumOfExpPeriod',
+                                  listComboDate[value].duration.toInt());
                             } else {
                               widget.plan!.numOfExpPeriod =
                                   listComboDate[value].duration.toInt();
@@ -732,7 +724,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                     } else {
                       if (sharedPreferences.getString('plan_schedule') !=
                           null) {
-                        await Utils().updateTempOrder(true, _maxMemberWeight);
+                        await _orderService.updateTempOrder(
+                            true, _maxMemberWeight);
                       }
 
                       if (sharedPreferences.getString('plan_schedule') !=
@@ -752,7 +745,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                   sharedPreferences
                                       .getInt('init_plan_number_of_member'))) {
                         // ignore: use_build_context_synchronously
-                        Utils().updateScheduleAndOrder(context, () {
+                        _planService.updateScheduleAndOrder(context, () {
                           sharedPreferences.setInt(
                               'init_plan_number_of_member',
                               sharedPreferences

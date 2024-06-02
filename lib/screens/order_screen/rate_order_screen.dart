@@ -58,7 +58,15 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
         actions: [
           TextButton(
               onPressed: () async {
-                if (_formKey.currentState!.validate()) {
+                if (ratingValue <=
+                        GlobalConstant().ORDER_MIN_RATING_NO_COMMENT &&
+                    _commentController.text.isEmpty) {
+                  DialogStyle().basicDialog(
+                      context: context,
+                      title:
+                          'Với đánh giá từ ${GlobalConstant().ORDER_MIN_RATING_NO_COMMENT - 1} sao trở xuống, phải thêm nhận xét cho đánh giá đơn hàng',
+                      type: DialogType.warning);
+                } else if (_formKey.currentState!.validate()) {
                   int? rs;
                   if (widget.isRate) {
                     rs = await _orderService.rateOrder(widget.order.id!,
@@ -190,17 +198,7 @@ class _RateOrderScreenState extends State<RateOrderScreen> {
                       ),
                       unratedColor: Colors.amberAccent,
                       onRatingUpdate: (value) {
-                        if (_commentController.text.isEmpty &&
-                            value <
-                                GlobalConstant().ORDER_MIN_RATING_NO_COMMENT) {
-                          DialogStyle().basicDialog(
-                              context: context,
-                              title:
-                                  'Với đánh giá từ ${GlobalConstant().ORDER_MIN_RATING_NO_COMMENT - 1} sao trở xuống, phải thêm nhận xét cho đánh giá đơn hàng',
-                              type: DialogType.warning);
-                        } else {
-                          ratingValue = value.toInt();
-                        }
+                        ratingValue = value.toInt();
                       },
                     ),
                   ],

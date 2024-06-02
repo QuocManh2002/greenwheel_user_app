@@ -1,6 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/sessions.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/screens/order_screen/detail_order_screen.dart';
@@ -27,6 +28,7 @@ class SupplierOrderCard extends StatelessWidget {
       required this.startDate,
       required this.isTempOrder,
       this.location,
+      required this.isConfirm,
       this.planId});
   final OrderViewModel order;
   final DateTime startDate;
@@ -38,104 +40,109 @@ class SupplierOrderCard extends StatelessWidget {
   final int? availableGcoinAmount;
   final void Function(dynamic) callback;
   final LocationViewModel? location;
+  final bool isConfirm;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: () {
-        if (!order.supplier!.isActive!) {
-          DialogStyle().basicDialog(
-              context: context,
-              title: 'Nhà cung cấp đã không còn khả dụng',
-              desc: 'Vui lòng chọn lại một nhà cung cấp khác',
-              onOk: () {
-                Navigator.push(
-                    context,
-                    PageTransition(
-                        child: ServiceMainScreen(
-                            serviceType: services.firstWhere(
-                                (element) => element.name == order.type),
-                            location: location!,
-                            isOrder: true,
-                            isFromTempOrder: isFromTempOrder,
-                            availableGcoinAmount: availableGcoinAmount,
-                            initSession: sessions.firstWhere((element) => element.enumName == order.period),
-                            numberOfMember: memberLimit!,
-                            startDate: startDate,
-                            endDate: endDate!,
-                            uuid: order.uuid,
-                            serveDates: order.serveDates!.map((e) => DateTime.parse(e)).toList(),
-                            callbackFunction: callback),
-                        type: PageTransitionType.rightToLeft));
-              },
-              type: DialogType.warning);
-        } else if (order.details!.any((detail) => !detail.isAvailable!)) {
-          final invalidProduct =
-              order.details!.where((detail) => !detail.isAvailable!).toList();
-          AwesomeDialog(
-                  context: context,
-                  animType: AnimType.leftSlide,
-                  dialogType: DialogType.warning,
-                  body: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 2.w),
-                    child: Column(
-                      children: [
-                        RichText(
-                          text: TextSpan(
-                              text: 'Sản phẩm: ',
-                              style: const TextStyle(
-                                  fontSize: 17,
-                                  color: Colors.black,
-                                  fontFamily: 'NotoSans',
-                                  fontWeight: FontWeight.bold),
-                              children: [
-                                for (final prod in invalidProduct)
-                                  TextSpan(
-                                      text:
-                                          '${prod.productName} ${prod != invalidProduct.last ? ',' : ''}',
-                                      style: const TextStyle(
-                                          color: Colors.black87)),
-                                const TextSpan(text: 'đã không còn khả dụng')
-                              ]),
-                          overflow: TextOverflow.clip,
-                          textAlign: TextAlign.center,
-                        ),
-                        SizedBox(
-                          height: 1.h,
-                        ),
-                        const Text(
-                          'Vui lòng điều chỉnh lại đơn hàng',
-                          style: TextStyle(
-                              color: Colors.grey,
-                              fontSize: 15,
-                              fontFamily: 'NotoSans'),
-                        )
-                      ],
-                    ),
-                  ),
-                  btnOkColor: Colors.amber,
-                  btnOkOnPress: () {},
-                  btnOkText: 'Ok',
-                  btnCancelColor: Colors.blue,
-                  btnCancelOnPress: () {},
-                  btnCancelText: 'Huỷ')
-              .show();
-        } else {
-          Navigator.of(context).push(MaterialPageRoute(
-              builder: (ctx) => OrderDetailScreen(
-                    memberLimit: memberLimit,
-                    availableGcoinAmount: availableGcoinAmount,
-                    endDate: endDate,
-                    order: order,
-                    startDate: startDate,
-                    isFromTempOrder: isFromTempOrder,
-                    isTempOrder: isTempOrder,
-                    planId: planId,
-                    callback: () {
-                      callback(null);
-                    },
-                  )));
-        }
+        // if (!order.supplier!.isActive!) {
+        //   DialogStyle().basicDialog(
+        //       context: context,
+        //       title: 'Nhà cung cấp đã không còn khả dụng',
+        //       desc: 'Vui lòng chọn lại một nhà cung cấp khác',
+        //       onOk: () {
+        //         Navigator.push(
+        //             context,
+        //             PageTransition(
+        //                 child: ServiceMainScreen(
+        //                     serviceType: services.firstWhere(
+        //                         (element) => element.name == order.type),
+        //                     location: location!,
+        //                     isOrder: true,
+        //                     isFromTempOrder: isFromTempOrder,
+        //                     availableGcoinAmount: availableGcoinAmount,
+        //                     initSession: sessions.firstWhere(
+        //                         (element) => element.enumName == order.period),
+        //                     numberOfMember: memberLimit!,
+        //                     startDate: startDate,
+        //                     endDate: endDate!,
+        //                     uuid: order.uuid,
+        //                     serveDates: order.serveDates!
+        //                         .map((e) => DateTime.parse(e))
+        //                         .toList(),
+        //                     callbackFunction: callback),
+        //                 type: PageTransitionType.rightToLeft));
+        //       },
+        //       type: DialogType.warning);
+        // } else if (order.details!.any((detail) => !detail.isAvailable!)) {
+        //   final invalidProduct =
+        //       order.details!.where((detail) => !detail.isAvailable!).toList();
+        //   AwesomeDialog(
+        //           context: context,
+        //           animType: AnimType.leftSlide,
+        //           dialogType: DialogType.warning,
+        //           body: Padding(
+        //             padding: EdgeInsets.symmetric(horizontal: 2.w),
+        //             child: Column(
+        //               children: [
+        //                 RichText(
+        //                   text: TextSpan(
+        //                       text: 'Sản phẩm: ',
+        //                       style: const TextStyle(
+        //                           fontSize: 17,
+        //                           color: Colors.black,
+        //                           fontFamily: 'NotoSans',
+        //                           fontWeight: FontWeight.bold),
+        //                       children: [
+        //                         for (final prod in invalidProduct)
+        //                           TextSpan(
+        //                               text:
+        //                                   '${prod.productName} ${prod != invalidProduct.last ? ',' : ''}',
+        //                               style: const TextStyle(
+        //                                   color: Colors.black87)),
+        //                         const TextSpan(text: 'đã không còn khả dụng')
+        //                       ]),
+        //                   overflow: TextOverflow.clip,
+        //                   textAlign: TextAlign.center,
+        //                 ),
+        //                 SizedBox(
+        //                   height: 1.h,
+        //                 ),
+        //                 const Text(
+        //                   'Vui lòng điều chỉnh lại đơn hàng',
+        //                   style: TextStyle(
+        //                       color: Colors.grey,
+        //                       fontSize: 15,
+        //                       fontFamily: 'NotoSans'),
+        //                 )
+        //               ],
+        //             ),
+        //           ),
+        //           btnOkColor: Colors.amber,
+        //           btnOkOnPress: () {},
+        //           btnOkText: 'Ok',
+        //           btnCancelColor: Colors.blue,
+        //           btnCancelOnPress: () {},
+        //           btnCancelText: 'Huỷ')
+        //       .show();
+        // } else {
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => OrderDetailScreen(
+                  memberLimit: memberLimit,
+                  availableGcoinAmount: availableGcoinAmount,
+                  endDate: endDate,
+                  order: order,
+                  startDate: startDate,
+                  isFromTempOrder: isFromTempOrder,
+                  isTempOrder: isTempOrder && !isConfirm,
+                  planId: planId,
+                  location: location,
+                  callback: () {
+                    callback(null);
+                  },
+                )));
+        // }
       },
       child: Container(
         decoration: BoxDecoration(
@@ -155,7 +162,7 @@ class SupplierOrderCard extends StatelessWidget {
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           clipBehavior: Clip.hardEdge,
           elevation: 2,
-          child: Row(children: [
+          child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Container(
               decoration:
                   BoxDecoration(borderRadius: BorderRadius.circular(14)),
@@ -180,7 +187,7 @@ class SupplierOrderCard extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   const SizedBox(
-                    height: 6,
+                    height: 3,
                   ),
                   SizedBox(
                     width: 45.w,
@@ -191,17 +198,17 @@ class SupplierOrderCard extends StatelessWidget {
                             fontSize: 18, fontWeight: FontWeight.bold)),
                   ),
                   const SizedBox(
-                    height: 6,
+                    height: 3,
                   ),
                   Text("Đã đặt ${order.details!.length.toString()} sản phẩm"),
                   const SizedBox(
-                    height: 6,
+                    height: 3,
                   ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Tổng: ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(order.total)}",
+                        "Ước tính: ${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(order.total)}",
                         style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
                       Padding(
@@ -213,9 +220,35 @@ class SupplierOrderCard extends StatelessWidget {
                       )
                     ],
                   ),
+                  if (order.actualTotal != order.total)
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Thực tế: ${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(order.actualTotal)}",
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 3),
+                          child: SvgPicture.asset(
+                            gcoinLogo,
+                            height: 15,
+                          ),
+                        )
+                      ],
+                    ),
                 ],
               ),
-            )
+            ),
+            if (isConfirm)
+              Padding(
+                padding: EdgeInsets.only(right: 2.w, top: 1.h),
+                child: const Icon(
+                  Icons.check_circle,
+                  color: primaryColor,
+                  size: 25,
+                ),
+              )
           ]),
         ),
       ),

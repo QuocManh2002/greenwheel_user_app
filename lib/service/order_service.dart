@@ -1,12 +1,18 @@
 import 'dart:convert';
 import 'dart:developer';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
+import 'package:sizer2/sizer2.dart';
 import 'package:uuid/uuid.dart';
 
 import '../config/graphql_config.dart';
+import '../core/constants/colors.dart';
+import '../core/constants/global_constant.dart';
+import '../core/constants/service_types.dart';
 import '../core/constants/sessions.dart';
 import '../helpers/util.dart';
 import '../main.dart';
@@ -20,6 +26,8 @@ import '../view_models/product.dart';
 import '../view_models/supplier.dart';
 import '../view_models/topup_request.dart';
 import '../view_models/topup_viewmodel.dart';
+import 'product_service.dart';
+import 'supplier_service.dart';
 
 class OrderService extends Iterable {
   static GraphQlConfig config = GraphQlConfig();
@@ -453,6 +461,17 @@ mutation {
   Future<int?> rateOrder(
       int orderId, int rating, String comment, BuildContext context) async {
     try {
+      log('''
+mutation{
+  rateOrder(dto: {
+    comment: ${comment == '' ? null : json.encode(comment)}
+    orderId:$orderId
+    rating:$rating
+  }){
+    id
+  }
+}
+''');
       QueryResult result = await client.mutate(MutationOptions(document: gql('''
 mutation{
   rateOrder(dto: {
@@ -596,6 +615,336 @@ mutation{
     } catch (error) {
       throw Exception(error);
     }
+  }
+
+  updateTempOrder(bool isChangeByMember, int? newMaxMemberCount) async {
+    final newMaxMemberCount = sharedPreferences.getInt('plan_number_of_member');
+    var orderList =
+        json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+    final ProductService productService = ProductService();
+    final OrderService orderService = OrderService();
+    if (isChangeByMember) {
+      for (final order in orderList) {
+        if (order['type'] == services[1].name) {
+          List<ProductViewModel> products = await productService
+              .getProductsBySupplierId(order['providerId'], order['period']);
+          final result = orderService.getCheapestDetailCheckinOrder(
+              products, newMaxMemberCount!);
+          final resultGroupBy = result.groupListsBy((element) => element.id);
+          var newDetails = [];
+          for (final detail in resultGroupBy.values) {
+            newDetails.add({
+              'productId': detail.first.id,
+              'productName': detail.first.name,
+              'quantity': detail.length,
+              'partySize': detail.first.partySize,
+              'price': detail.first.price.toDouble()
+            });
+          }
+          order['newDetails'] = newDetails;
+        } else {
+          var newDetails = [];
+          for (final detail in order['details']) {
+            var newDetail = {
+              'productId': detail['productId'],
+              'productName': detail['productName'],
+              'partySize': detail['partySize'],
+              'price': detail['price'].toDouble()
+            };
+            newDetail['quantity'] =
+                (newMaxMemberCount! / detail['partySize']).ceil();
+            newDetails.add(newDetail);
+          }
+          order['newDetails'] = newDetails;
+        }
+        order['newTotal'] = getTempOrderTotal(order, false);
+      }
+    } else {
+      DateTime startDate =
+          DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+      for (final order in orderList) {
+        List<DateTime> servingDates = [];
+        for (final index in order['serveDateIndexes']) {
+          servingDates.add(startDate.add(Duration(days: index)));
+        }
+        order['serveDates'] = order['serveDateIndexes']
+            .map((e) =>
+                startDate.add(Duration(days: e)).toString().split(' ')[0])
+            .toList();
+        order['newTotal'] = getTempOrderTotal(order, false);
+      }
+    }
+    sharedPreferences.setString('plan_temp_order', json.encode(orderList));
+  }
+
+  updateProductPrice(BuildContext context, bool isUpdatePlan) async {
+    var orders =
+        json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
+    List<double> newPrice = [];
+    final SupplierService supplierService = SupplierService();
+    final ProductService productService = ProductService();
+    List<int> supplierIds = [];
+    List<int> productIds = [];
+    List<dynamic> invalidOrders = [];
+    if (orders.isNotEmpty) {
+      for (final order in orders) {
+        if (!supplierIds.contains(order['providerId'])) {
+          supplierIds.add(order['providerId']);
+        }
+        for (final detail in order['details']) {
+          if (!productIds.contains(detail['productId'])) {
+            productIds.add(detail['productId']);
+          }
+        }
+      }
+      final invalidSupplierIds =
+          await supplierService.getInvalidSupplierByIds(supplierIds, context);
+
+      final invalidProductIds =
+          // ignore: use_build_context_synchronously
+          await productService.getInvalidProductByIds(productIds, context);
+      for (final order in orders) {
+        if (invalidSupplierIds.contains(order['providerId'])) {
+          order['cancelReason'] = 'Nhà cung cấp không khả dụng';
+          invalidOrders.add(order);
+        } else if (order['details']
+            .any((detail) => invalidProductIds.contains(detail['productId']))) {
+          order['cancelReason'] = 'Sản phẩm không khả dụng';
+          invalidOrders.add(order);
+        }
+      }
+      if (invalidOrders.isNotEmpty) {
+        await AwesomeDialog(
+                // ignore: use_build_context_synchronously
+                context: context,
+                animType: AnimType.leftSlide,
+                dialogType: DialogType.infoReverse,
+                body: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 1.h),
+                  child: Column(
+                    children: [
+                      Container(
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Thông báo quan trọng',
+                          style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'NotoSans'),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 1.h,
+                      ),
+                      Container(
+                        alignment: Alignment.center,
+                        child: const Text(
+                          'Các đơn hàng sau đã bị huỷ, hãy tạo lại cho chuyến đi thật đầy đủ nhé',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              fontSize: 15,
+                              fontFamily: 'NotoSans',
+                              color: Colors.grey),
+                        ),
+                      ),
+                      SizedBox(
+                        height: 1.h,
+                      ),
+                      for (int index = 0; index < invalidOrders.length; index++)
+                        Container(
+                          padding: EdgeInsets.symmetric(
+                              vertical: 1.h, horizontal: 2.w),
+                          decoration: BoxDecoration(
+                            color: index.isOdd
+                                ? primaryColor.withOpacity(0.1)
+                                : lightPrimaryTextColor.withOpacity(0.5),
+                            borderRadius: BorderRadius.only(
+                              topLeft: index == 0
+                                  ? const Radius.circular(10)
+                                  : Radius.zero,
+                              topRight: index == 0
+                                  ? const Radius.circular(10)
+                                  : Radius.zero,
+                              bottomLeft: index == invalidOrders.length - 1
+                                  ? const Radius.circular(10)
+                                  : Radius.zero,
+                              bottomRight: index == invalidOrders.length - 1
+                                  ? const Radius.circular(10)
+                                  : Radius.zero,
+                            ),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                invalidOrders[index]['type'] == 'EAT'
+                                    ? 'Dùng bữa tại:'
+                                    : invalidOrders[index]['type'] == 'VISIT'
+                                        ? 'Thuê phương tiện:'
+                                        : 'Nghỉ ngơi tại:',
+                                style: const TextStyle(
+                                    fontSize: 13, fontFamily: 'NotoSans'),
+                              ),
+                              RichText(
+                                  text: TextSpan(
+                                      text: invalidOrders[index]
+                                          ['providerName'],
+                                      style: const TextStyle(
+                                          fontSize: 17,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                          fontFamily: 'NotoSans'),
+                                      children: [
+                                    TextSpan(
+                                        text:
+                                            '  (${Utils().getPeriodString(invalidOrders[index]['period'])['text']})',
+                                        style: const TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: FontWeight.normal,
+                                            fontFamily: 'NotoSans'))
+                                  ])),
+                              Row(
+                                children: [
+                                  const Icon(
+                                    Icons.clear_outlined,
+                                    color: Colors.red,
+                                    weight: 1.5,
+                                  ),
+                                  SizedBox(
+                                    width: 1.w,
+                                  ),
+                                  SizedBox(
+                                    width: 60.w,
+                                    child: Text(
+                                      invalidOrders[index]['cancelReason'],
+                                      style: const TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold),
+                                    ),
+                                  )
+                                ],
+                              )
+                            ],
+                          ),
+                        )
+                    ],
+                  ),
+                ),
+                btnOkOnPress: () {
+                  var schedule = json
+                      .decode(sharedPreferences.getString('plan_schedule')!);
+                  for (final order in invalidOrders) {
+                    for (final date in schedule) {
+                      for (final item in date) {
+                        if (item['orderUUID'] == order['orderUUID']) {
+                          item['orderUUID'] = null;
+                        }
+                      }
+                    }
+                    orders.remove(orders.firstWhere(
+                        (e) => e['orderUUID'] == order['orderUUID']));
+                    sharedPreferences.setString(
+                        'plan_schedule', json.encode(schedule));
+                  }
+                },
+                btnOkColor: Colors.blueAccent,
+                btnOkText: 'OK')
+            .show();
+      } else {}
+      productIds.sort();
+      final products = await productService.getListProduct(productIds);
+      newPrice = products.map((e) => e.price.toDouble()).toList();
+      for (final order in orders) {
+        for (final detail in order['details']) {
+          final index = productIds.indexOf(detail['productId']);
+          detail['price'] = newPrice[index];
+        }
+        order['total'] = getTempOrderTotal(order, false);
+      }
+    }
+    sharedPreferences.setString('plan_temp_order', json.encode(orders));
+  }
+
+  getTempOrderTotal(dynamic order, bool isUpdate) {
+    final numberHoliday =
+        (isUpdate ? order['newServeDates'] : order['serveDates'])
+            .where((date) => Utils().isHoliday(DateTime.parse(date)))
+            .toList()
+            .length;
+    final upPct = Utils().getHolidayUpPct(order['type']);
+    if (order['newDetails'] != null) {
+      return order['newDetails'].fold(
+          0,
+          (previousValue, element) =>
+              previousValue +
+              (element['price'] * element['quantity']) *
+                  ((1 + upPct / 100) * numberHoliday +
+                      ((isUpdate ? order['newServeDates'] : order['serveDates'])
+                              .length -
+                          numberHoliday)) /
+                  GlobalConstant().VND_CONVERT_RATE);
+    } else {
+      return order['details'].fold(
+          0,
+          (previousValue, element) =>
+              previousValue +
+              (element['price'] * element['quantity']) *
+                  ((1 + upPct / 100) * numberHoliday +
+                      ((isUpdate ? order['newServeDates'] : order['serveDates'])
+                              .length -
+                          numberHoliday)) /
+                  GlobalConstant().VND_CONVERT_RATE);
+    }
+  }
+
+  List<OrderViewModel> convertFromTempOrder(List<ProductViewModel> products,
+      List<dynamic> tempOrders, DateTime startAt) {
+    return tempOrders.map((e) {
+      List<OrderDetailViewModel> details = [];
+      final Map<String, dynamic> cart = e['cart'];
+      List<String> serveDates = [];
+      double actualTotal = 0;
+      ProductViewModel sampleProduct = products.firstWhere(
+          (element) => element.id.toString() == cart.entries.first.key);
+
+      for (final index in e["serveDateIndexes"]) {
+        serveDates
+            .add(startAt.add(Duration(days: index)).toString().split(' ')[0]);
+      }
+      for (final detail in cart.entries) {
+        final product = products
+            .firstWhere((element) => element.id.toString() == detail.key);
+        details.add(OrderDetailViewModel(
+            id: product.id,
+            productId: product.id,
+            productName: product.name,
+            price: product.price.toDouble(),
+            isAvailable: product.isAvailable,
+            quantity: detail.value));
+        actualTotal += product.price * detail.value * serveDates.length / GlobalConstant().VND_CONVERT_RATE;
+      }
+
+      return OrderViewModel(
+          id: e['id'],
+          uuid: e['uuid'],
+          details: details,
+          note: e['note'],
+          serveDates: serveDates,
+          total: e['totalGcoin'].toDouble(),
+          actualTotal: actualTotal,
+          createdAt: DateTime.now(),
+          supplier: SupplierViewModel(
+              type: sampleProduct.supplierType,
+              id: sampleProduct.supplierId!,
+              name: sampleProduct.supplierName,
+              phone: sampleProduct.supplierPhone,
+              thumbnailUrl: sampleProduct.supplierThumbnailUrl,
+              isActive: sampleProduct.supplierIsActive,
+              address: sampleProduct.supplierAddress),
+          type: e['type'],
+          period: e['period']);
+    }).toList();
   }
 
   @override

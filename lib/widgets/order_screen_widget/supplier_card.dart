@@ -69,10 +69,13 @@ class SupplierCard extends StatelessWidget {
               List<Holiday> holidays = holidaysText!
                   .map((e) => Holiday.fromJson(json.decode(e)))
                   .toList();
-              final dates =
-                  Utils().getHolidayServingDates(holidays, serveDates!);
-              // final normalServingDates = dates['normalServingDates'];
-              final holidayServingDates = dates['holidayServingDates'];
+              dynamic holidayServingDates;
+              if (serveDates != null) {
+                final dates =
+                    Utils().getHolidayServingDates(holidays, serveDates!);
+                holidayServingDates = dates['holidayServingDates'];
+              }
+
               Navigator.push(
                   context,
                   PageTransition(

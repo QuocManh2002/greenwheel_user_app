@@ -16,8 +16,10 @@ class ListOrderScreen extends StatelessWidget {
       required this.location,
       required this.memberLimit,
       this.availableGcoinAmount,
+      required this.tempOrders,
       required this.callback});
   final List<OrderViewModel> orders;
+  final List<OrderViewModel> tempOrders;
   final DateTime startDate;
   final int planId;
   final void Function(dynamic) callback;
@@ -43,15 +45,15 @@ class ListOrderScreen extends StatelessWidget {
           SizedBox(
             height: 1.h,
           ),
-          orders.isNotEmpty
+          tempOrders.isNotEmpty
               ? SizedBox(
                   height: 75.h,
                   child: ListView.builder(
-                      itemCount: orders.length,
+                      itemCount: tempOrders.length,
                       physics: const BouncingScrollPhysics(),
                       itemBuilder: (ctx, index) => SupplierOrderCard(
                             callback: callback,
-                            order: orders[index],
+                            order: tempOrders[index],
                             startDate: startDate,
                             isFromTempOrder: true,
                             isTempOrder: true,
@@ -60,6 +62,8 @@ class ListOrderScreen extends StatelessWidget {
                             availableGcoinAmount: availableGcoinAmount,
                             planId: planId,
                             location: location,
+                            isConfirm: orders.any((element) =>
+                                element.uuid == tempOrders[index].uuid),
                           )),
                 )
               : Center(

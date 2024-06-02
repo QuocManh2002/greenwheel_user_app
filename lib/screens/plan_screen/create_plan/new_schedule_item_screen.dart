@@ -734,7 +734,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                 value: _selectedType,
                                 onChanged: (value) {
                                   // final startSession = getStartEndSession();
-                                  if (value == 'Check-in') {
+                                  if (value == orderScheduleItemTypesVn[2]) {
                                     if (_isEndDay && _isEndAtNoon!) {
                                       DialogStyle().basicDialog(
                                           context: context,
@@ -767,9 +767,9 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     }
                                     setState(() {
                                       _selectedType = value;
-                                      _isFoodActivity = value == 'Ăn uống';
-                                      _isRoomActivity = value == 'Check-in';
-                                      _isVisitActivity = value == 'Tham quan';
+                                      _isFoodActivity = value == orderScheduleItemTypesVn[0];
+                                      _isRoomActivity = value == orderScheduleItemTypesVn[2];
+                                      _isVisitActivity = value == orderScheduleItemTypesVn[1];
                                     });
                                   }
                                 },
@@ -1232,7 +1232,7 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                       ? Icons.restaurant
                                       : _isRoomActivity
                                           ? Icons.hotel
-                                          : Icons.directions_car),
+                                          : Icons.motorcycle_sharp),
                                   style: elevatedButtonStyle,
                                   label: const Text(
                                     'Dự trù kinh phí',

@@ -5,6 +5,7 @@ class OrderViewModel {
   int? id;
   String? uuid;
   double? total;
+  double? actualTotal;
   String? note;
   List<String>? serveDates;
   int? rating;
@@ -15,30 +16,32 @@ class OrderViewModel {
   SupplierViewModel? supplier;
   String? currentStatus;
 
-  OrderViewModel({
-    this.id,
-    this.period,
-    this.note,
-    this.serveDates,
-    this.total,
-    this.details,
-    this.createdAt,
-    this.type,
-    this.uuid,
-    this.supplier,
-    this.currentStatus
-  });
+  OrderViewModel(
+      {this.id,
+      this.period,
+      this.note,
+      this.serveDates,
+      this.total,
+      this.details,
+      this.createdAt,
+      this.type,
+      this.uuid,
+      this.supplier,
+      this.currentStatus,
+      this.actualTotal});
 
   factory OrderViewModel.fromJson(Map<String, dynamic> json) => OrderViewModel(
       id: json["id"],
       uuid: json['uuid'],
       note: json["note"],
-      serveDates:List<String>.from(json["serveDates"].map((e) => e)).toList(),
+      serveDates: List<String>.from(json["serveDates"].map((e) => e)).toList(),
       total: double.parse(json["total"].toString()),
       createdAt: DateTime.parse(json["createdAt"]),
       type: json['type'],
       currentStatus: json['currentStatus'],
-      details: List<OrderDetailViewModel>.from(json['details'].map((e) => OrderDetailViewModel.fromJson(e))).toList(),
+      details: List<OrderDetailViewModel>.from(
+              json['details'].map((e) => OrderDetailViewModel.fromJson(e)))
+          .toList(),
       supplier: SupplierViewModel(
           latitude: json['provider']['coordinate']['coordinates'][1],
           longitude: json['provider']['coordinate']['coordinates'][0],
@@ -50,12 +53,4 @@ class OrderViewModel {
           thumbnailUrl: json["provider"]["imagePath"],
           address: json["provider"]["address"]),
       period: json['period']);
-
-  List<OrderDetailViewModel> getDetails(dynamic details) {
-    List<OrderDetailViewModel> list = [];
-    for (final detail in details) {
-      list.add(OrderDetailViewModel.fromJson(detail));
-    }
-    return list;
-  }
 }

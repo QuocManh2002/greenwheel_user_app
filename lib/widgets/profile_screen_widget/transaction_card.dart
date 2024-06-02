@@ -11,7 +11,7 @@ import 'package:sizer2/sizer2.dart';
 class TransactionCard extends StatelessWidget {
   const TransactionCard(
       {super.key, required this.index, required this.transaction});
-  final Transaction transaction;
+  final TransactionViewModel transaction;
   final int index;
   @override
   Widget build(BuildContext context) {

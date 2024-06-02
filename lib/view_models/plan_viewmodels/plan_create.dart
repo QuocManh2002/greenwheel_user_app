@@ -27,6 +27,7 @@ class PlanCreate {
   String? travelDistanceText;
   double? travelDurationValue;
   double? travelDistanceValue;
+  int? sourceId;
 
   PlanCreate(
       {this.locationId,
@@ -52,5 +53,6 @@ class PlanCreate {
       this.travelDistanceText,
       this.travelDistanceValue,
       this.travelDurationValue,
+      this.sourceId,
       this.savedContacts});
 }

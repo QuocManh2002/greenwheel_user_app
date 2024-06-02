@@ -2,16 +2,16 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/combo_date_plan.dart';
-import 'package:greenwheel_user_app/core/constants/plan_statuses.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/helpers/util.dart';
-import 'package:greenwheel_user_app/view_models/plan_viewmodels/plan_detail.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
 
+import '../../core/constants/colors.dart';
+import '../../core/constants/combo_date_plan.dart';
+import '../../core/constants/plan_statuses.dart';
+import '../../core/constants/urls.dart';
+import '../../helpers/util.dart';
 import '../../models/plan_status.dart';
+import '../../view_models/plan_viewmodels/plan_detail.dart';
 
 class DetailPlanHeader extends StatefulWidget {
   const DetailPlanHeader(
@@ -71,16 +71,13 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(
-            width: 70.w,
-            child: Text(
-              widget.plan.locationName!,
-              overflow: TextOverflow.clip,
-              style: const TextStyle(
-                  fontSize: 20,
-                  fontFamily: 'NotoSans',
-                  fontWeight: FontWeight.bold),
-            ),
+          Text(
+            widget.plan.locationName!,
+            overflow: TextOverflow.clip,
+            style: const TextStyle(
+                fontSize: 20,
+                fontFamily: 'NotoSans',
+                fontWeight: FontWeight.bold),
           ),
           Text(
             comboDateText,
@@ -129,15 +126,14 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
             height: 0.5.h,
           ),
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 2.w, vertical: 0.3.h),
-            decoration: BoxDecoration(
-              color: primaryColor,
-                // border: Border.all(color: primaryColor, width: 1.5),
-                borderRadius: const BorderRadius.all(Radius.circular(12))),
+            padding: EdgeInsets.symmetric(horizontal: 1.5.w, vertical: 0.2.h),
+            decoration: const BoxDecoration(
+                color: primaryColor,
+                borderRadius: BorderRadius.all(Radius.circular(10))),
             child: Text(
               status!.name,
               style: const TextStyle(
-                  fontSize: 20,
+                  fontSize: 18,
                   fontFamily: 'NotoSans',
                   color: Colors.white,
                   fontWeight: FontWeight.bold),

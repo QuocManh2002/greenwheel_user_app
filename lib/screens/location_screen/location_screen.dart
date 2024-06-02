@@ -4,6 +4,7 @@ import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
+import 'package:greenwheel_user_app/service/plan_service.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:readmore/readmore.dart';
 import 'package:sizer2/sizer2.dart';
@@ -53,6 +54,7 @@ class _LocationScreenState extends State<LocationScreen> {
   List<CommentViewModel> _comments = [];
   final LocationService _locationService = LocationService();
   final CustomerService _customerService = CustomerService();
+  final PlanService _planService = PlanService();
   final Utils util = Utils();
   LocationViewModel? location;
   int? numberOfPublishedPlan = 0;
@@ -537,7 +539,7 @@ class _LocationScreenState extends State<LocationScreen> {
                                     String? locationName = sharedPreferences
                                         .getString('plan_location_name');
                                     if (locationName != null) {
-                                      Utils().handleAlreadyDraft(
+                                      _planService.handleAlreadyDraft(
                                           context,
                                           location!,
                                           locationName,

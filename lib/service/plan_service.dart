@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'dart:developer';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -27,6 +28,14 @@ import 'package:greenwheel_user_app/widgets/plan_screen_widget/confirm_plan_bott
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../core/constants/combo_date_plan.dart';
+import '../core/constants/global_constant.dart';
+import '../core/constants/service_types.dart';
+import '../core/constants/sessions.dart';
+import '../screens/plan_screen/create_plan/select_start_location_screen.dart';
+import '../widgets/plan_screen_widget/update_order_clone_plan_bottom_sheet.dart';
+import '../widgets/style_widget/dialog_style.dart';
 
 class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
@@ -81,6 +90,7 @@ class PlanService {
     surcharges:$surcharges
     travelDuration:"${model.travelDuration}"
     tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
+    ${model.sourceId != null ? 'sourceId: ${model.sourceId}' : ''}
   }){
     id
   }
@@ -1094,7 +1104,7 @@ mutation{
               ),
             ));
     if (plan == null) {
-      await Utils().updateProductPrice(context, plan != null);
+      await orderService.updateProductPrice(context, plan != null);
     }
     Navigator.of(context).pop();
     DateTime? travelDuration =
@@ -1116,6 +1126,8 @@ mutation{
               surchargeList: surcharges,
               plan: plan ??
                   PlanCreate(
+                      numOfExpPeriod:
+                          sharedPreferences.getInt('initNumOfExpPeriod'),
                       tempOrders: orders,
                       surcharges: surcharges,
                       endDate: sharedPreferences.getString('plan_end_date') ==
@@ -1277,6 +1289,391 @@ mutation{
       return plans;
     } catch (error) {
       throw Exception(error);
+    }
+  }
+
+  setUpDataClonePlan(PlanDetail plan, List<bool> options) {
+    final OrderService orderService = OrderService();
+    sharedPreferences.setString('plan_clone_options', json.encode(options));
+    sharedPreferences.setInt('planId', plan.id!);
+    sharedPreferences.setString('plan_location_name', plan.locationName!);
+    sharedPreferences.setInt('plan_location_id', plan.locationId!);
+    sharedPreferences.setInt('maxCombodateValue', plan.numOfExpPeriod!);
+    sharedPreferences.setInt(
+        'init_plan_number_of_member', plan.maxMemberCount!);
+
+    sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
+    sharedPreferences.setInt(
+        'plan_combo_date',
+        listComboDate
+                .firstWhere(
+                    (element) => element.duration == plan.numOfExpPeriod)
+                .id -
+            1);
+    sharedPreferences.setInt('plan_number_of_member', plan.maxMemberCount!);
+    sharedPreferences.setInt('plan_max_member_weight', plan.maxMemberWeight!);
+
+    sharedPreferences.setDouble('plan_start_lat', plan.startLocationLat!);
+    sharedPreferences.setDouble('plan_start_lng', plan.startLocationLng!);
+    sharedPreferences.setString('plan_start_address', plan.departureAddress!);
+    sharedPreferences.setString(
+        'plan_departureTime', plan.utcDepartAt!.toLocal().toString());
+
+    sharedPreferences.setString('plan_name', plan.name!);
+
+    if (options[5]) {
+      sharedPreferences.setStringList('selectedIndex',
+          plan.savedContacts!.map((e) => e.providerId.toString()).toList());
+    }
+
+    if (options[6]) {
+      sharedPreferences.setBool('notAskScheduleAgain', false);
+      if (options[7]) {
+        final availableOrder = plan.orders!
+            .where((e) =>
+                e.supplier!.isActive! &&
+                e.details!.every((element) => element.isAvailable!))
+            .toList();
+        final list = availableOrder.map((order) {
+          final orderDetailGroupList =
+              order.details!.groupListsBy((e) => e.productId);
+          final orderDetailList =
+              orderDetailGroupList.entries.map((e) => e.value.first).toList();
+          return orderService.convertToTempOrder(
+              order.supplier!,
+              order.note ?? "",
+              order.type!,
+              orderDetailList
+                  .map((item) => {
+                        'productId': item.productId,
+                        'productName': item.productName,
+                        'quantity': item.quantity,
+                        'partySize': item.partySize,
+                        'price': item.price
+                      })
+                  .toList(),
+              order.period!,
+              order.serveDates!.map((date) => date.toString()).toList(),
+              order.serveDates!
+                  .map((date) => DateTime.parse(date.toString())
+                      .difference(DateTime(
+                          plan.utcStartAt!.toLocal().year,
+                          plan.utcStartAt!.toLocal().month,
+                          plan.utcStartAt!.toLocal().day,
+                          0,
+                          0,
+                          0))
+                      .inDays)
+                  .toList(),
+              order.uuid,
+              order.total! / GlobalConstant().VND_CONVERT_RATE);
+        }).toList();
+        for (final date in plan.schedule!) {
+          for (final item in date) {
+            if (item['orderUUID'] != null &&
+                !availableOrder
+                    .any((element) => element.uuid == item['orderUUID'])) {
+              item['orderUUID'] = null;
+            }
+          }
+        }
+        sharedPreferences.setString('plan_temp_order', json.encode(list));
+      } else {
+        sharedPreferences.setString('plan_temp_order', '[]');
+
+        for (final date in plan.schedule!) {
+          for (final item in date) {
+            if (item['orderUUID'] != null) {
+              item['orderUUID'] = null;
+            }
+          }
+        }
+      }
+      sharedPreferences.setString('plan_schedule', json.encode(plan.schedule));
+    }
+
+    if (options[8]) {
+      sharedPreferences.setString(
+          'plan_surcharge',
+          json.encode(
+              plan.surcharges!.map((e) => e.toJsonWithoutImage()).toList()));
+    }
+    sharedPreferences.setString('plan_note', plan.note ?? 'null');
+  }
+
+  handleAlreadyDraft(BuildContext context, LocationViewModel location,
+      String locationName, bool isClone, PlanDetail? plan, List<bool> options) {
+    DialogStyle().basicDialog(
+      context: context,
+      type: DialogType.question,
+      title:
+          'Bạn đang có bản nháp chuyến đi tại ${locationName == location.name ? 'địa điểm này' : locationName}',
+      desc: 'Bạn có muốn ghi đè chuyến đi đó không ?',
+      onOk: () {
+        Utils().clearPlanSharePref();
+        sharedPreferences.setString('plan_location_name', location.name);
+        sharedPreferences.setInt('plan_location_id', location.id);
+        if (isClone) {
+          setUpDataClonePlan(plan!, options);
+        }
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (ctx) => SelectStartLocationScreen(
+                  isCreate: true,
+                  location: location,
+                  isClone: isClone,
+                )));
+      },
+      btnOkColor: Colors.deepOrangeAccent,
+      btnOkText: 'Có',
+      btnCancelColor: Colors.blueAccent,
+      btnCancelText: 'Không',
+      onCancel: () {
+        if (locationName == location.name) {
+          Navigator.of(context).push(MaterialPageRoute(
+              builder: (ctx) => SelectStartLocationScreen(
+                    isCreate: true,
+                    location: location,
+                    isClone: isClone,
+                  )));
+        }
+      },
+    );
+  }
+
+  updateScheduleAndOrder(BuildContext context, void Function() onConfirm,
+      bool isChangeDate) async {
+    final OrderService orderService = OrderService();
+    int newDuration =
+        (sharedPreferences.getInt('initNumOfExpPeriod')! / 2).ceil();
+    var schedule =
+        json.decode(sharedPreferences.getString('plan_schedule') ?? '[]');
+    var tempOrders =
+        json.decode(sharedPreferences.getString('plan_temp_order')!);
+    final isPlanEndAtNoon = Utils().isEndAtNoon(null);
+    var newSchedule = [];
+
+    for (int i = 0; i < newDuration; i++) {
+      if (i < newDuration - 1) {
+        newSchedule.add(schedule[i]);
+      }
+    }
+    newSchedule.add(schedule.last);
+
+    var updatedOrders = [];
+    var canceledOrders = [];
+    for (final order in tempOrders) {
+      final newIndexes = [];
+      final invalidIndexes = [];
+      for (final index in order['serveDateIndexes']) {
+        if (order['type'] == services[0].name) {
+          if (index < newDuration - 1) {
+            newIndexes.add(index);
+          } else if (index >= newDuration - 1 && index < schedule.length - 1) {
+            invalidIndexes.add(index);
+          }
+
+          if (index == schedule.length - 1 &&
+              isPlanEndAtNoon &&
+              (order['period'] == sessions[0].enumName ||
+                  order['period'] == sessions[1].enumName)) {
+            newIndexes.add(newDuration - 1);
+          }
+        } else if ((order['type'] == services[1].name ||
+                order['type'] == services[2].name) &&
+            index < newDuration - 1) {
+          newIndexes.add(index);
+        } else {
+          invalidIndexes.add(index);
+        }
+      }
+      if (newIndexes.isNotEmpty && newIndexes != order['serveDateIndexes']) {
+        final startDate =
+            DateTime.parse(sharedPreferences.getString('plan_start_date')!);
+        order['newIndexes'] = newIndexes;
+        order['newServeDates'] = newIndexes
+            .map((e) => startDate.add(Duration(days: e)).toString())
+            .toList();
+        order['invalidIndexes'] = invalidIndexes;
+        order['newTotal'] = orderService.getTempOrderTotal(order, true);
+        updatedOrders.add(order);
+      } else {
+        order['cancelReason'] = 'Ngoài ngày phục vụ';
+        canceledOrders.add(order);
+      }
+    }
+    final arrivedText = sharedPreferences.getString('plan_arrivedTime');
+    if (arrivedText != null) {
+      final arrivedTime = DateTime.parse(arrivedText);
+      final startSession = sessions.firstWhereOrNull((aTime) =>
+              aTime.from <= arrivedTime.hour && aTime.to > arrivedTime.hour) ??
+          sessions[0];
+      bool endAtNoon = Utils().isEndAtNoon(null);
+      final endSession = endAtNoon ? sessions[1] : sessions.last;
+
+      for (final item in newSchedule[0]) {
+        if (item['orderUUID'] != null) {
+          final order =
+              tempOrders.firstWhere((e) => e['orderUUID'] == item['orderUUID']);
+          final session = sessions
+              .firstWhere((element) => element.enumName == order['period']);
+          if (session.index < startSession.index) {
+            if (updatedOrders
+                .any((element) => element['orderUUID'] == item['orderUUID'])) {
+              order['newIndexes'].remove(order['newIndexes'].first);
+              order['newServeDates'].remove(order['newServeDates'].first);
+            } else {
+              order['newIndexes'] = order['serveDateIndexes']
+                  .remove(order['serveDateIndexes'].first);
+              order['newServeDates'] =
+                  order['serveDates'].remove(order['serveDates'].first);
+              updatedOrders.add(order);
+            }
+            order['newTotal'] = orderService.getTempOrderTotal(order, true);
+          }
+        }
+      }
+      for (final item in newSchedule.last) {
+        if (item['orderUUID'] != null) {
+          final order =
+              tempOrders.firstWhere((e) => e['orderUUID'] == item['orderUUID']);
+          final session = sessions
+              .firstWhere((element) => element.enumName == order['period']);
+          if (session.index > endSession.index &&
+              (order['type'] == services[0].name ||
+                  order['type'] == services[2].name)) {
+            if (updatedOrders
+                .any((element) => element['orderUUID'] == item['orderUUID'])) {
+              order['newIndexes'].remove(order['newIndexes'].last);
+              order['newServeDates'].remove(order['newServeDates'].last);
+            } else {
+              order['newIndexes'] = order['serveDateIndexes']
+                  .remove(order['serveDateIndexes'].last);
+              order['newServeDates'] =
+                  order['serveDates'].remove(order['serveDates'].last);
+              updatedOrders.add(order);
+            }
+            order['newTotal'] = orderService.getTempOrderTotal(order, true);
+          }
+        }
+      }
+    }
+    if (updatedOrders.isNotEmpty || canceledOrders.isNotEmpty) {
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useSafeArea: true,
+        builder: (context) => UpdateOrderClonePlanBottomSheet(
+          cancelOrders: canceledOrders,
+          updatedOrders: updatedOrders,
+          onConfirm: () async {
+            for (final order in canceledOrders) {
+              tempOrders.removeWhere(
+                  (element) => element['orderUUID'] == order['orderUUID']);
+              for (final date in newSchedule) {
+                for (final item in date) {
+                  if (item['orderUUID'] == order['orderUUID']) {
+                    item['orderUUID'] = null;
+                  }
+                }
+              }
+            }
+            for (final order in updatedOrders) {
+              var temp = tempOrders.firstWhere(
+                  (element) => element['orderUUID'] == order['orderUUID']);
+              final index = tempOrders.indexOf(temp);
+              tempOrders[index]['total'] = order['newTotal'];
+              tempOrders[index]['serveDates'] = order['newServeDates'];
+              tempOrders[index]['details'] = order['newDetails'];
+              tempOrders[index]['serveDateIndexes'] = order['newIndexes'];
+
+              if (isChangeDate && order['type'] == services[1].name) {
+                final List<List<DateTime>> splitServeDates =
+                    Utils().splitCheckInServeDates(order['newServeDates']);
+                final endDate = DateTime.parse(
+                    sharedPreferences.getString('plan_end_date')!);
+                final startDate = DateTime.parse(
+                    sharedPreferences.getString('plan_start_date')!);
+                for (final dateList in splitServeDates) {
+                  if (!newSchedule[dateList.first.difference(startDate).inDays]
+                      .any((element) =>
+                          element['orderUUID'] == order['orderUUID'])) {
+                    await newSchedule[
+                            dateList.first.difference(startDate).inDays]
+                        .add({
+                      'isStarred': false,
+                      'shortDescription': 'Check-in',
+                      'description': 'Check-in nhà nghỉ/khách sạn',
+                      'type': 'CHECKIN',
+                      'orderUUID': order['orderUUID'],
+                      'duration': '00:30:00'
+                    });
+                  }
+                  if (dateList.last == endDate) {
+                    if (!newSchedule.last.any((element) =>
+                        element['orderUUID'] == order['orderUUID'] &&
+                        element['type'] == 'CHECKOUT')) {
+                      await newSchedule.last.add({
+                        'isStarred': false,
+                        'shortDescription': 'Check-out',
+                        'description': 'Check-out nhà nghỉ/khách sạn',
+                        'type': 'CHECKOUT',
+                        'orderUUID': order['orderUUID'],
+                        'duration': '00:15:00'
+                      });
+                    }
+                  } else {
+                    final index =
+                        dateList.last.difference(startDate).inDays + 1;
+                    if (!newSchedule[index].any((element) =>
+                        element['orderUUID'] == order['orderUUID'] &&
+                        element['type'] == 'CHECKOUT')) {
+                      await newSchedule[index].add({
+                        'isStarred': false,
+                        'shortDescription': 'Check-out',
+                        'description': 'Check-out nhà nghỉ/khách sạn',
+                        'type': 'CHECKOUT',
+                        'orderUUID': order['orderUUID'],
+                        'duration': '00:15:00'
+                      });
+                    }
+                  }
+                }
+              }
+              for (int index = 0; index < newSchedule.length; index++) {
+                for (final item in newSchedule[index]) {
+                  if (item['orderUUID'] != null) {
+                    final order = tempOrders.firstWhere(
+                        (order) => order['orderUUID'] == item['orderUUID']);
+                    if (order['type'] == services[1].name) {
+                      if (!(index == newSchedule.length - 1) &&
+                          !order['serveDateIndexes'].contains(index)) {
+                        item['orderUUID'] = null;
+                      }
+                    } else {
+                      if (!order['serveDateIndexes'].contains(index)) {
+                        item['orderUUID'] = null;
+                      }
+                    }
+                  }
+                }
+              }
+              order['newTotal'] = null;
+              order['newServeDates'] = null;
+              order['newDetails'] = null;
+              order['newIndexes'] = null;
+              order['invalidIndexes'] = null;
+            }
+            sharedPreferences.setString(
+                'plan_schedule', json.encode(newSchedule));
+            sharedPreferences.setString(
+                'plan_temp_order', json.encode(tempOrders));
+            onConfirm();
+          },
+        ),
+      );
+    } else {
+      sharedPreferences.setString('plan_schedule', json.encode(newSchedule));
+      onConfirm();
     }
   }
 }

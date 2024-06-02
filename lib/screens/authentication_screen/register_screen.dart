@@ -6,11 +6,12 @@ import 'package:greenwheel_user_app/core/constants/colors.dart';
 import 'package:greenwheel_user_app/core/constants/urls.dart';
 import 'package:greenwheel_user_app/helpers/image_handler.dart';
 import 'package:greenwheel_user_app/main.dart';
+import 'package:greenwheel_user_app/screens/introduce_screen/splash_screen.dart';
 import 'package:greenwheel_user_app/service/traveler_service.dart';
 import 'package:greenwheel_user_app/view_models/register.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/button_style.dart';
 import 'package:greenwheel_user_app/widgets/style_widget/text_form_field_widget.dart';
-import 'package:restart_app/restart_app.dart';
+import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -280,7 +281,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           newService.saveAccountToSharePref(rs.traveler);
           sharedPreferences.setString('userRefreshToken', rs.refreshToken);
           sharedPreferences.setString('userToken', rs.accessToken);
-          Restart.restartApp(); // ignore: use_build_context_synchronously
+          // Restart.restartApp(); 
+          Navigator.pushAndRemoveUntil(
+            // ignore: use_build_context_synchronously
+              context,
+              PageTransition(
+                  child: const SplashScreen(), type: PageTransitionType.rightToLeft),
+              (route) => false);
         }
       }
     }

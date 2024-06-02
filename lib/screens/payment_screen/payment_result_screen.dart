@@ -1,27 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:greenwheel_user_app/core/constants/colors.dart';
-import 'package:greenwheel_user_app/core/constants/urls.dart';
-import 'package:greenwheel_user_app/screens/main_screen/tabscreen.dart';
-import 'package:greenwheel_user_app/screens/plan_screen/detail_plan_screen.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/urls.dart';
+import '../main_screen/tabscreen.dart';
+import '../plan_screen/detail_plan_screen.dart';
 
 class PaymentResultScreen extends StatefulWidget {
   const PaymentResultScreen(
       {super.key,
       required this.amount,
       required this.planId,
-      required this.isPublicPlan,
-      this.onPublic,
       required this.isSuccess});
   final int amount;
   final int? planId;
   final bool isSuccess;
-  final bool isPublicPlan;
-  final void Function(bool isFromJoinScreen, int? amount, BuildContext context)?
-      onPublic;
 
   @override
   State<PaymentResultScreen> createState() => _PaymentResultScreenState();
@@ -31,18 +27,7 @@ class _PaymentResultScreenState extends State<PaymentResultScreen> {
   @override
   void initState() {
     super.initState();
-    handlePublicPlan();
   }
-
-  handlePublicPlan() {
-    if (widget.isPublicPlan) {
-      Future.delayed(const Duration(milliseconds: 1), () {
-        widget.onPublic!(true, null, context);
-      },);
-    }
-  }
-
-  
 
   @override
   Widget build(BuildContext context) {
@@ -224,9 +209,6 @@ class _PaymentResultScreenState extends State<PaymentResultScreen> {
                         Expanded(
                             child: InkWell(
                           onTap: () {
-                            // if (widget.isPublicPlan) {
-                            //   widget.onPublic!(true, null, context);
-                            // } else {
                             Navigator.pushAndRemoveUntil(
                               context,
                               PageTransition(
@@ -267,7 +249,6 @@ class _PaymentResultScreenState extends State<PaymentResultScreen> {
                                     ),
                                     type: PageTransitionType.topToBottom),
                               );
-                              // }
                             } else {
                               Navigator.pushAndRemoveUntil(
                                 context,
