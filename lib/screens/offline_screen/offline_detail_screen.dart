@@ -210,7 +210,6 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
                       plan: widget.plan.plan,
                       isLeader: true,
                       tempOrders: const [],
-                      orderList: widget.plan.plan.orders,
                       totalOrder: widget.plan.totalOrder,
                       onGetOrderList: () {}),
                 if (_selectedTab == 3)

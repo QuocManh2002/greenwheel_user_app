@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
@@ -16,8 +15,6 @@ import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import '../../helpers/util.dart';
-import '../../main.dart';
-import '../../models/holiday.dart';
 
 class SupplierCard extends StatelessWidget {
   const SupplierCard(
@@ -65,14 +62,10 @@ class SupplierCard extends StatelessWidget {
                 backgroundColor: Colors.white),
             onPressed: () async {
               final holidayUpPCT = Utils().getHolidayUpPct(serviceType.name);
-              final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
-              List<Holiday> holidays = holidaysText!
-                  .map((e) => Holiday.fromJson(json.decode(e)))
-                  .toList();
               dynamic holidayServingDates;
               if (serveDates != null) {
                 final dates =
-                    Utils().getHolidayServingDates(holidays, serveDates!);
+                    Utils().getHolidayServingDates(serveDates!);
                 holidayServingDates = dates['holidayServingDates'];
               }
 

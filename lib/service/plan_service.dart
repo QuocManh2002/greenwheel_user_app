@@ -352,6 +352,43 @@ mutation{
         note
         totalGcoin
       }
+      orders {
+        id
+        planId
+        total
+        serveDates
+        note
+        createdAt
+        period
+        type
+        currentStatus
+        uuid
+        provider {
+          coordinate{
+            coordinates
+          }
+          type
+          id
+          phone
+          name
+          imagePath
+          address
+          isActive
+        }
+        details {
+          id
+          price
+          quantity
+          product {
+            id
+            partySize
+            name
+            type
+            price
+            isAvailable
+          }
+        }
+      }
     }
   }
 }

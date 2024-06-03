@@ -836,7 +836,6 @@ mutation{
           serveDates: serveDates,
           total: e['totalGcoin'].toDouble(),
           actualTotal: actualTotal,
-          createdAt: DateTime.now(),
           supplier: SupplierViewModel(
               type: sampleProduct.supplierType,
               id: sampleProduct.supplierId!,

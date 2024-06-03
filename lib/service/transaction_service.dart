@@ -21,6 +21,7 @@ class TransactionService {
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
   transactions(
+    where: { type: { in: [PLAN_FUND, PLAN_REFUND, TOPUP, GIFT] } }
     order: { id: DESC }
     after: ${cursor == null ? null : json.encode(cursor)}
     first: 15

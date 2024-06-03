@@ -115,7 +115,7 @@ GraphQLClient client = config.getClient();
     }
   }
 
-  Future<List<int>> getInvalidProductByIds(List<int> ids, BuildContext context)async{
+  Future<List<ProductViewModel>> getInvalidProductByIds(List<int> ids, BuildContext context)async{
     try{
       GraphQLClient newClient = config.getClient();
       QueryResult result = await newClient.query(QueryOptions(document: gql('''
@@ -133,6 +133,20 @@ GraphQLClient client = config.getClient();
     edges{
       node{
         id
+      name
+      price
+      imagePath
+      partySize
+      isAvailable
+      provider {
+        id
+        name
+        imagePath
+        phone
+        address
+        type
+        isActive
+      }
       }
     }
   }
@@ -146,15 +160,13 @@ GraphQLClient client = config.getClient();
 
         throw Exception(result.exception!.linkException!);
       }
-      final list = result.data!['products']['edges'];
-      if(list == null || list!.isEmpty){
+      final List? res = result.data?['products']['edges'];
+      if(res == null || res.isEmpty){
         return [];
       }else{
-        List<int> resultList = [];
-        for(final item in list){
-          resultList.add(int.parse(item['node']['id'].toString()));
-        }
-        return resultList;
+        final List<ProductViewModel> products =
+            res.map((product) => ProductViewModel.fromJson(product['node'])).toList();
+        return products;
       }
     }catch (error) {
       throw Exception(error);

@@ -1,5 +1,6 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:phuot_app/models/order_input_model.dart';
 import 'package:phuot_app/models/service_type.dart';
 import 'package:phuot_app/models/session.dart';
 import 'package:phuot_app/screens/main_screen/service_main_screen.dart';
@@ -7,21 +8,20 @@ import 'package:phuot_app/view_models/location.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SessionCard extends StatelessWidget {
-  const SessionCard({
-    super.key,
-    required this.session,
-    required this.serviceType,
-    required this.location,
-    required this.numberOfMember,
-    required this.startDate,
-    required this.callbackFunction,
-    required this.endDate,
-    this.isOrder,
-    this.availableGcoinAmount,
-    this.isFromTempOrder,
-    this.initSession,
-    this.isEndAtNoon
-  });
+  const SessionCard(
+      {super.key,
+      required this.session,
+      required this.serviceType,
+      required this.location,
+      required this.numberOfMember,
+      required this.startDate,
+      required this.callbackFunction,
+      required this.endDate,
+      this.isOrder,
+      this.availableGcoinAmount,
+      this.isFromTempOrder,
+      this.initSession,
+      this.isEndAtNoon});
   final Session session;
   final DateTime startDate;
   final DateTime endDate;
@@ -50,7 +50,9 @@ class SessionCard extends StatelessWidget {
                 ),
                 backgroundColor: Colors.white),
             onPressed: () async {
-              if (isEndAtNoon == null && initSession != null && initSession != session) {
+              if (isEndAtNoon == null &&
+                  initSession != null &&
+                  initSession != session) {
                 AwesomeDialog(
                         context: context,
                         animType: AnimType.leftSlide,
@@ -98,16 +100,15 @@ class SessionCard extends StatelessWidget {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (ctx) => ServiceMainScreen(
-                                initSession: session,
-                                isOrder: isOrder,
-                                startDate: startDate,
-                                location: location,
-                                endDate: endDate,
-                                numberOfMember: numberOfMember,
-                                serviceType: serviceType,
-                                isFromTempOrder: isFromTempOrder,
-                                availableGcoinAmount: availableGcoinAmount,
-                                callbackFunction: callbackFunction,
+                                inputModel: OrderInputModel(
+                                    session: session,
+                                    isOrder: isOrder,
+                                    startDate: startDate,
+                                    endDate: endDate,
+                                    numberOfMember: numberOfMember,
+                                    serviceType: serviceType,
+                                    availableGcoinAmount: availableGcoinAmount,
+                                    callbackFunction: callbackFunction),
                               ),
                             ),
                           );
@@ -122,16 +123,17 @@ class SessionCard extends StatelessWidget {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (ctx) => ServiceMainScreen(
-                      isOrder: isOrder,
-                      startDate: startDate,
-                      endDate: endDate,
-                      location: location,
-                      initSession: session,
-                      numberOfMember: numberOfMember,
-                      serviceType: serviceType,
-                      isFromTempOrder: isFromTempOrder,
-                      availableGcoinAmount: availableGcoinAmount,
-                      callbackFunction: callbackFunction,
+                      inputModel: OrderInputModel(
+                        isOrder: isOrder, 
+                        startDate: startDate, 
+                        endDate: endDate,
+                        location: location,
+                        session: initSession, 
+                        numberOfMember: numberOfMember,
+                        serviceType: serviceType,
+                        availableGcoinAmount: availableGcoinAmount,
+                        callbackFunction: callbackFunction,
+                      ),
                     ),
                   ),
                 );

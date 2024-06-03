@@ -4,20 +4,23 @@ import 'package:draggable_fab/draggable_fab.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:phuot_app/core/constants/colors.dart';
-import 'package:phuot_app/core/constants/global_constant.dart';
-import 'package:phuot_app/core/constants/urls.dart';
-import 'package:phuot_app/models/menu_item_cart.dart';
-import 'package:phuot_app/models/order_input_model.dart';
-import 'package:phuot_app/screens/loading_screen/service_menu_loading_screen.dart';
-import 'package:phuot_app/screens/main_screen/cart.dart';
-import 'package:phuot_app/service/plan_service.dart';
-import 'package:phuot_app/service/product_service.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:phuot_app/view_models/product.dart';
-import 'package:phuot_app/widgets/order_screen_widget/menu_item_card.dart';
 import 'package:intl/intl.dart';
+import 'package:page_transition/page_transition.dart';
+import 'package:phuot_app/screens/main_screen/service_main_screen.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/colors.dart';
+import '../../core/constants/global_constant.dart';
+import '../../core/constants/urls.dart';
+import '../../models/menu_item_cart.dart';
+import '../../models/order_input_model.dart';
+import '../../service/plan_service.dart';
+import '../../service/product_service.dart';
+import '../../view_models/plan_viewmodels/plan_detail.dart';
+import '../../view_models/product.dart';
+import '../../widgets/order_screen_widget/menu_item_card.dart';
+import '../loading_screen/service_menu_loading_screen.dart';
+import 'cart.dart';
 
 class ServiceMenuScreen extends StatefulWidget {
   const ServiceMenuScreen({required this.inputModel, super.key});
@@ -220,21 +223,13 @@ class _ServiceMenuScreenState extends State<ServiceMenuScreen> {
                 ],
                 onSelected: (value) {
                   if (value == 0) {
-                    // Navigator.push(
-                    //     context,
-                    //     PageTransition(
-                    //         child: ServiceMainScreen(
-                    //             serviceType: widget.inputModel.serviceType!,
-                    //             location: widget.inputModel.l.,
-                    //             numberOfMember: widget.inputModel.numberOfMember!,
-                    //             startDate: widget.inputModel.startDate!,
-                    //             endDate: widget.inputModel.endDate!,
-                    //             availableGcoinAmount: widget.inputModel.availableGcoinAmount,
-                    //             isOrder: widget.inputModel.isOrder,
-                    //             initSession: widget.inputModel.session,
-                                
-                    //             callbackFunction: widget.inputModel.callbackFunction!),
-                    //         type: PageTransitionType.rightToLeft));
+                    Navigator.pushReplacement(
+                        context,
+                        PageTransition(
+                            child: ServiceMainScreen(
+                              inputModel: widget.inputModel,
+                            ),
+                            type: PageTransitionType.rightToLeft));
                   }
                 },
               )

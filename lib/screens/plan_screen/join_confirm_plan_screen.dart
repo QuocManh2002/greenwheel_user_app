@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:phuot_app/screens/payment_screen/add_balance.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
@@ -16,8 +17,10 @@ import '../../view_models/plan_viewmodels/plan_detail.dart';
 import '../../widgets/style_widget/button_style.dart';
 import '../../widgets/style_widget/dialog_style.dart';
 import '../loading_screen/transaction_detail_loading_screen.dart';
+import '../main_screen/tabscreen.dart';
 import '../payment_screen/payment_result_screen.dart';
 import 'create_plan/input_companion_name_screen.dart';
+import 'detail_plan_screen.dart';
 
 class JoinConfirmPlanScreen extends StatefulWidget {
   const JoinConfirmPlanScreen(
@@ -40,13 +43,13 @@ class JoinConfirmPlanScreen extends StatefulWidget {
 class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   final PlanService _planService = PlanService();
   int weight = 1;
-  double? newBalance;
   int? travelerBalance;
   List<String> companionNames = [];
   bool isEnableToAdd = false;
   bool isEnableToSubtract = false;
   final CustomerService _customerService = CustomerService();
   bool isLoading = true;
+  final myId = sharedPreferences.getInt('userId')!;
 
   onChangeWeight(bool isAdd) {
     if (isAdd && isEnableToAdd) {
@@ -103,8 +106,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             weight < widget.plan.maxMemberCount! - widget.plan.memberCount!);
 
     isEnableToSubtract = weight > 1;
-    travelerBalance = await _customerService
-        .getTravelerBalance(sharedPreferences.getInt('userId')!);
+    travelerBalance = await _customerService.getTravelerBalance(myId);
     if (travelerBalance != null) {
       setState(() {
         isLoading = false;
@@ -269,7 +271,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                           Row(
                             children: [
                               const Text(
-                                'Số người tối đa',
+                                'Số thành viên tối đa',
                                 style:
                                     TextStyle(fontSize: 16, color: Colors.grey),
                               ),
@@ -290,33 +292,33 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                               )
                             ],
                           ),
-                          if (widget.plan.maxMemberWeight! > 1) buildDivider(),
-                          if (widget.plan.maxMemberWeight! > 1)
-                            Row(
-                              children: [
-                                SizedBox(
-                                  width: 60.w,
-                                  child: const Text(
-                                    'Thành viên tối đa của 1 nhóm',
-                                    overflow: TextOverflow.clip,
-                                    style: TextStyle(
-                                        fontSize: 16, color: Colors.grey),
-                                  ),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  widget.plan.maxMemberWeight! < 10
-                                      ? '0${widget.plan.maxMemberWeight!}'
-                                      : '${widget.plan.maxMemberWeight!}',
-                                  textAlign: TextAlign.end,
-                                  overflow: TextOverflow.clip,
-                                  style: const TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.black),
-                                )
-                              ],
-                            ),
+                          // if (widget.plan.maxMemberWeight! > 1) buildDivider(),
+                          // if (widget.plan.maxMemberWeight! > 1)
+                          //   Row(
+                          //     children: [
+                          //       SizedBox(
+                          //         width: 60.w,
+                          //         child: const Text(
+                          //           'Thành viên tối đa của 1 nhóm',
+                          //           overflow: TextOverflow.clip,
+                          //           style: TextStyle(
+                          //               fontSize: 16, color: Colors.grey),
+                          //         ),
+                          //       ),
+                          //       const Spacer(),
+                          //       Text(
+                          //         widget.plan.maxMemberWeight! < 10
+                          //             ? '0${widget.plan.maxMemberWeight!}'
+                          //             : '${widget.plan.maxMemberWeight!}',
+                          //         textAlign: TextAlign.end,
+                          //         overflow: TextOverflow.clip,
+                          //         style: const TextStyle(
+                          //             fontSize: 18,
+                          //             fontWeight: FontWeight.bold,
+                          //             color: Colors.black),
+                          //       )
+                          //     ],
+                          //   ),
                           if (widget.isConfirm) buildDivider(),
                           if (widget.isConfirm)
                             Row(
@@ -656,16 +658,43 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
             animType: AnimType.leftSlide,
             dialogType: DialogType.question,
             title:
-                'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${weight != 1 ? 'x $weight = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * weight)}' : ''}GCOIN',
+                'Thanh toán ${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita)}${weight != 1 ? 'x $weight = ${NumberFormat.simpleCurrency(locale: 'vi-VN', decimalDigits: 0, name: "").format(widget.plan.gcoinBudgetPerCapita! * weight)}' : ''}GCOIN',
             titleTextStyle:
                 const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             btnOkColor: Colors.deepOrangeAccent,
             btnOkText: 'Đồng ý',
             btnOkOnPress: () async {
-              final rs = await _planService.joinPlan(
-                  widget.plan.id!, companionNames, context);
-              if (rs != null) {
-                handleJoinSuccess();
+              if (travelerBalance! <
+                  (widget.plan.gcoinBudgetPerCapita! * weight)) {
+                DialogStyle().basicDialog(
+                    context: context,
+                    type: DialogType.warning,
+                    title: 'Số dư của bạn không đủ để tham gia kế hoạch này',
+                    desc:
+                        'Vui lòng nạp thêm ${NumberFormat.simpleCurrency(locale: 'vi_VN', decimalDigits: 0, name: '').format(widget.plan.gcoinBudgetPerCapita! * weight - travelerBalance!)} GCOIN để tham gia kế hoạch',
+                    onOk: () {
+                      Navigator.push(
+                          context,
+                          PageTransition(
+                              child: AddBalanceScreen(
+                                balance: travelerBalance!.toDouble(),
+                                initAmount:
+                                    widget.plan.gcoinBudgetPerCapita! * weight -
+                                        travelerBalance!,
+                                callback: callbackAddBalance,
+                              ),
+                              type: PageTransitionType.rightToLeft));
+                    },
+                    btnOkText: 'Nạp thêm',
+                    btnCancelColor: Colors.blue,
+                    onCancel: () {},
+                    btnCancelText: 'Huỷ');
+              } else {
+                final rs = await _planService.joinPlan(
+                    widget.plan.id!, companionNames, context);
+                if (rs != null) {
+                  handleJoinSuccess();
+                }
               }
             },
             btnCancelColor: Colors.blueAccent,
@@ -715,7 +744,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
       await _planService.updateJoinMethod(
           widget.plan.id!, widget.joinMethod!, context);
     }
-    Navigator.pushAndRemoveUntil(
+    Navigator.push(
         // ignore: use_build_context_synchronously
         context,
         MaterialPageRoute(
@@ -723,7 +752,46 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                   planId: widget.plan.id!,
                   isSuccess: true,
                   amount: widget.plan.gcoinBudgetPerCapita! * weight,
-                )),
-        (route) => false);
+                  onBackButton: () {
+                    Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                            builder: (ctx) => const TabScreen(
+                                  pageIndex: 1,
+                                )),
+                        (route) => false);
+                    Navigator.push(
+                      context,
+                      PageTransition(
+                          child: DetailPlanNewScreen(
+                            planId: widget.plan.id!,
+                            planType: 'JOIN',
+                            isEnableToJoin: false,
+                          ),
+                          type: PageTransitionType.topToBottom),
+                    );
+                  },
+                )),);
+  }
+
+  callbackAddBalance(bool isSuccess, int amount) async {
+    if (isSuccess) {
+      final newBalance = await _customerService.getTravelerBalance(myId);
+      setState(() {
+        travelerBalance = newBalance;
+      });
+    }
+    Navigator.push(
+        // ignore: use_build_context_synchronously
+        context,
+        PageTransition(
+            child: PaymentResultScreen(
+              amount: amount,
+              planId: null,
+              isSuccess: isSuccess,
+              onBackButton: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            type: PageTransitionType.rightToLeft));
   }
 }

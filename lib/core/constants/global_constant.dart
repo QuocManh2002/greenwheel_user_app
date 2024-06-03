@@ -99,4 +99,6 @@ class GlobalConstant {
   final int ADDRESS_MAX_LENGTH = 120;
   final int PLAN_NAME_MIN_LENGTH = 3;
   final int PLAN_NAME_MAX_LENGTH = 30;
+  final int ACCOUNT_NAME_MIN_LENGTH = 4;
+  final int ACCOUNT_NAME_MAX_LENGTH = 30;
 }

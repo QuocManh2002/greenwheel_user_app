@@ -287,10 +287,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                         buildProfileButton(() {
                           Navigator.pushAndRemoveUntil(
-                              context,
-                              PageTransition(
-                                  child: const TabScreen(pageIndex: 2),
-                                  type: PageTransitionType.rightToLeft),(route) => false,);
+                            context,
+                            PageTransition(
+                                child: const TabScreen(pageIndex: 2),
+                                type: PageTransitionType.rightToLeft),
+                            (route) => false,
+                          );
                         }, Icons.history, 'Lịch sử giao dịch'),
                         SizedBox(
                           height: 1.h,
@@ -399,27 +401,36 @@ class _ProfileScreenState extends State<ProfileScreen> {
       );
 
   callbackAddBalance(bool isSuccess, int amount) {
-    if (isSuccess) {
-      setUpData();
-      Navigator.push(
-          context,
-          PageTransition(
-              child: PaymentResultScreen(
-                amount: amount,
-                planId: null,
-                isSuccess: true,
-              ),
-              type: PageTransitionType.rightToLeft));
-    } else {
-      Navigator.push(
-          context,
-          PageTransition(
-              child: PaymentResultScreen(
-                amount: amount,
-                planId: null,
-                isSuccess: false,
-              ),
-              type: PageTransitionType.rightToLeft));
-    }
+    // if (isSuccess) {
+    setUpData();
+    // Navigator.push(
+    //     context,
+    //     PageTransition(
+    //         child: PaymentResultScreen(
+    //           amount: amount,
+    //           planId: null,
+    //           isSuccess: true,
+    //         ),
+    //         type: PageTransitionType.rightToLeft));
+    // } else {
+    Navigator.push(
+        context,
+        PageTransition(
+            child: PaymentResultScreen(
+              amount: amount,
+              planId: null,
+              isSuccess: isSuccess,
+              onBackButton: () {
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  PageTransition(
+                      child: const TabScreen(pageIndex: 4),
+                      type: PageTransitionType.rightToLeft),
+                  (route) => false,
+                );
+              },
+            ),
+            type: PageTransitionType.rightToLeft));
+    // }
   }
 }

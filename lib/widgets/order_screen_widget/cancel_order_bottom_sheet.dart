@@ -1,14 +1,16 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:phuot_app/core/constants/cancel_reasons.dart';
-import 'package:phuot_app/core/constants/colors.dart';
-import 'package:phuot_app/core/constants/urls.dart';
-import 'package:phuot_app/service/order_service.dart';
-import 'package:phuot_app/widgets/style_widget/button_style.dart';
-import 'package:phuot_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
+
+import '../../core/constants/cancel_reasons.dart';
+import '../../core/constants/colors.dart';
+import '../../core/constants/urls.dart';
+import '../../service/order_service.dart';
+import '../style_widget/button_style.dart';
+import '../style_widget/text_form_field_widget.dart';
 
 class CancelOrderBottomSheet extends StatefulWidget {
   const CancelOrderBottomSheet(
@@ -191,11 +193,13 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                       }
                     },
                   ),
-                  Text(
-                    reason.text,
-                    overflow: TextOverflow.clip,
-                    style:
-                        const TextStyle(fontSize: 16, fontFamily: 'NotoSans'),
+                  Expanded(
+                    child: Text(
+                      reason.text,
+                      overflow: TextOverflow.clip,
+                      style:
+                          const TextStyle(fontSize: 16, fontFamily: 'NotoSans'),
+                    ),
                   )
                 ],
               ),
@@ -223,8 +227,7 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                         const Text(
                           'Hoàn lại:',
                           style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 17,
                               fontFamily: 'NotoSans'),
                         ),
                         const Spacer(),

@@ -15,9 +15,13 @@ class MemberListWidget extends StatelessWidget {
       {super.key,
       required this.members,
       required this.onRemoveMember,
+      required this.leaderId,
+      required this.isLeader,
       required this.status});
   final PlanStatus status;
   final List<PlanMemberViewModel> members;
+  final bool isLeader;
+  final int leaderId;
   final void Function(int memberId, bool isBlock) onRemoveMember;
 
   @override
@@ -97,7 +101,7 @@ class MemberListWidget extends StatelessWidget {
                               )
                             ]),
                       ),
-                      if (mem.accountType == 1)
+                      if (mem.accountId == leaderId)
                         const Padding(
                           padding: EdgeInsets.only(right: 8),
                           child: Icon(
@@ -128,7 +132,9 @@ class MemberListWidget extends StatelessWidget {
                               ],
                             ),
                           ),
-                          if (mem.accountType == 3 && status.value < 2)
+                          if (isLeader &&
+                              mem.accountId != leaderId &&
+                              status.value < 2)
                             const PopupMenuItem(
                               value: 1,
                               child: Row(
@@ -149,7 +155,9 @@ class MemberListWidget extends StatelessWidget {
                                 ],
                               ),
                             ),
-                          if (mem.accountType == 3 && status.value < 2)
+                          if (isLeader &&
+                              mem.accountId != leaderId &&
+                              status.value < 2)
                             const PopupMenuItem(
                               value: 2,
                               child: Row(
@@ -250,22 +258,22 @@ class MemberListWidget extends StatelessWidget {
                                     ));
                           } else if (value == 1) {
                             DialogStyle().basicDialog(
-                              context: context,
-                              title: 'Xoá "${mem.name}" khỏi chuyến đi này ?',
-                              type: DialogType.question,
-                              onOk: () {
-                                onRemoveMember(mem.memberId, false);
-                              },
-                              btnOkText: 'Xoá',
-                              btnOkColor: Colors.deepOrangeAccent,
-                              btnCancelText: 'Huỷ',
-                              btnCancelColor: Colors.blue,
-                              onCancel: (){}
-                            );
+                                context: context,
+                                title: 'Xoá "${mem.name}" khỏi chuyến đi này ?',
+                                type: DialogType.question,
+                                onOk: () {
+                                  onRemoveMember(mem.memberId, false);
+                                },
+                                btnOkText: 'Xoá',
+                                btnOkColor: Colors.deepOrangeAccent,
+                                btnCancelText: 'Huỷ',
+                                btnCancelColor: Colors.blue,
+                                onCancel: () {});
                           } else if (value == 2) {
                             DialogStyle().basicDialog(
                                 context: context,
-                                title: 'Chặn "${mem.name}" khỏi chuyến đi này ?',
+                                title:
+                                    'Chặn "${mem.name}" khỏi chuyến đi này ?',
                                 type: DialogType.question,
                                 btnOkText: 'Chặn',
                                 onOk: () {
@@ -273,9 +281,7 @@ class MemberListWidget extends StatelessWidget {
                                 },
                                 btnOkColor: Colors.deepOrangeAccent,
                                 btnCancelText: 'Huỷ',
-                                onCancel: () {
-                                  
-                                },
+                                onCancel: () {},
                                 btnCancelColor: Colors.blue);
                           }
                         },

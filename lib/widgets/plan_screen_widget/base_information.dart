@@ -4,6 +4,7 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/enums.dart';
 import 'package:phuot_app/core/constants/plan_statuses.dart';
 import 'package:phuot_app/core/constants/urls.dart';
 import 'package:phuot_app/helpers/util.dart';
@@ -51,9 +52,14 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   String maxMemberText = '';
   String? memberCountText;
   String comboDateText = '';
+  List<PlanMemberViewModel> joinedMembers = [];
+
   @override
   void initState() {
     super.initState();
+    joinedMembers = widget.members
+        .where((member) => member.status == MemberStatus.JOINED.name)
+        .toList();
     status = planStatuses
         .firstWhereOrNull((element) => element.engName == widget.plan.status);
     var tempDuration = DateFormat.Hm().parse(widget.plan.travelDuration!);
@@ -269,10 +275,9 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                                       context: context,
                                       builder: (ctx) => MemberListWidget(
                                             status: status!,
-                                            members: widget.members
-                                                .where((element) =>
-                                                    element.weight != 0)
-                                                .toList(),
+                                            isLeader: widget.isLeader,
+                                            leaderId: widget.plan.leaderId!,
+                                            members: joinedMembers,
                                             onRemoveMember: onRemoveMember,
                                           ));
                                 }
@@ -337,9 +342,9 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                             ],
                           ),
                         ),
-                    if (widget.members.length > 3)
+                    if (joinedMembers.length > 3)
                       Text(
-                        '  ... +${widget.members.length - 3} thành viên',
+                        '  ... +${joinedMembers.length - 3} thành viên',
                         style: const TextStyle(
                             fontSize: 17,
                             fontFamily: 'NotoSans',

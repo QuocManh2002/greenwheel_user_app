@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:phuot_app/core/constants/sessions.dart';
 import 'package:phuot_app/core/constants/urls.dart';
+import 'package:phuot_app/models/order_input_model.dart';
 import 'package:phuot_app/models/service_type.dart';
 import 'package:phuot_app/models/session.dart';
 import 'package:phuot_app/screens/loading_screen/service_supplier_loading_screen.dart';
@@ -13,34 +14,12 @@ import 'package:phuot_app/widgets/order_screen_widget/supplier_card.dart';
 import 'package:sizer2/sizer2.dart';
 
 class ServiceMainScreen extends StatefulWidget {
-  const ServiceMainScreen(
-      {super.key,
-      required this.serviceType,
-      required this.location,
-      required this.numberOfMember,
-      required this.startDate,
-      required this.endDate,
-      this.isOrder,
-      this.availableGcoinAmount,
-      this.isFromTempOrder,
-      this.initSession,
-      this.endSession,
-      this.serveDates,
-      this.uuid,
-      required this.callbackFunction});
-  final int numberOfMember;
-  final ServiceType serviceType;
-  final LocationViewModel location;
-  final DateTime startDate;
-  final DateTime endDate;
-  final bool? isOrder;
-  final int? availableGcoinAmount;
-  final bool? isFromTempOrder;
-  final void Function(dynamic tempOrder) callbackFunction;
-  final Session? initSession;
-  final Session? endSession;
-  final List<DateTime>? serveDates;
-  final String? uuid;
+  const ServiceMainScreen({
+    super.key,
+    required this.inputModel,
+  });
+
+  final OrderInputModel inputModel;
 
   @override
   State<ServiceMainScreen> createState() => _ServiceMainScreenState();
@@ -61,24 +40,27 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
 
   setUpData() async {
     List<String> type = [];
-    switch (widget.serviceType.id) {
-      case 1:
+    switch (widget.inputModel.serviceType!.name) {
+      case 'EAT':
         title = "Dịch vụ ăn uống";
         type.add("FOOD");
         break;
-      case 2:
+      case 'CHECKIN':
         title = "Dịch vụ lưu trú";
         type.add("ROOM");
         break;
-      case 3:
+      case 'VISIT':
         title = "Dịch vụ cho thuê xe";
         type.add("VEHICLE");
         break;
     }
     list = await supplierService.getSuppliers(
-        PointLatLng(widget.location.latitude, widget.location.longitude),
+        PointLatLng(widget.inputModel.location!.latitude,
+            widget.inputModel.location!.longitude),
         type,
-        widget.serviceType.id == 1 ? widget.initSession : sessions[1]);
+        widget.inputModel.serviceType!.id == 1
+            ? widget.inputModel.session
+            : sessions[1]);
 
     if (list != null) {
       setState(() {
@@ -138,7 +120,9 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    if ((widget.startDate.difference(DateTime.now()).inDays +
+                    if ((widget.inputModel.startDate!
+                                .difference(DateTime.now())
+                                .inDays +
                             1) <=
                         3)
                       Padding(
@@ -192,18 +176,20 @@ class _ServiceMainScreenState extends State<ServiceMainScreen> {
                             itemBuilder: (context, index) {
                               return SupplierCard(
                                 availableGcoinAmount:
-                                    widget.availableGcoinAmount,
-                                isOrder: widget.isOrder,
-                                startDate: widget.startDate,
-                                endDate: widget.endDate,
-                                numberOfMember: widget.numberOfMember,
+                                    widget.inputModel.availableGcoinAmount,
+                                isOrder: widget.inputModel.isOrder,
+                                startDate: widget.inputModel.startDate!,
+                                endDate: widget.inputModel.endDate!,
+                                numberOfMember:
+                                    widget.inputModel.numberOfMember!,
                                 supplier: list![index],
-                                serviceType: widget.serviceType,
-                                location: widget.location,
-                                initSession: widget.initSession,
-                                callbackFunction: widget.callbackFunction,
-                                serveDates: widget.serveDates,
-                                uuid: widget.uuid,
+                                serviceType: widget.inputModel.serviceType!,
+                                location: widget.inputModel.location!,
+                                initSession: widget.inputModel.session,
+                                callbackFunction:
+                                    widget.inputModel.callbackFunction!,
+                                serveDates: widget.inputModel.servingDates,
+                                uuid: widget.inputModel.orderGuid,
                               );
                             },
                           ),

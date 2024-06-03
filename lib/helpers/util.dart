@@ -283,8 +283,6 @@ class Utils {
     return arrivedTime;
   }
 
-  
-
   showInvalidScheduleAndServiceClone(BuildContext context) {
     DialogStyle().basicDialog(
       context: context,
@@ -293,9 +291,12 @@ class Utils {
     );
   }
 
-  getHolidayServingDates(List<Holiday> holidays, List<DateTime> servingDates) {
+  getHolidayServingDates(List<DateTime> servingDates) {
     List<DateTime> normalServingDates = [];
     List<DateTime> holidayServingDates = [];
+    final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
+    final holidays =
+        holidaysText!.map((e) => Holiday.fromJson(json.decode(e))).toList();
     for (final date in servingDates) {
       if (holidays.any((element) =>
           element.from.isBefore(date) && element.to.isAfter(date) ||
@@ -311,8 +312,6 @@ class Utils {
       'holidayServingDates': holidayServingDates
     };
   }
-
-  
 
   bool isHoliday(
     DateTime date,
@@ -337,8 +336,6 @@ class Utils {
     }
     return 0;
   }
-
-  
 
   splitCheckInServeDates(List<String> serveDates) {
     List<List<DateTime>> result = [];

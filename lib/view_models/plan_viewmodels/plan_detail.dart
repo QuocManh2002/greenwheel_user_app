@@ -77,43 +77,46 @@ class PlanDetail {
       this.orders});
 
   factory PlanDetail.fromJson(Map<String, dynamic> json) => PlanDetail(
-        utcDepartAt: DateTime.parse(json['utcDepartAt']),
-        utcEndAt: DateTime.parse(json['utcEndAt']),
-        utcRegCloseAt: json['utcRegCloseAt'] == null ? null : DateTime.parse(json['utcRegCloseAt']),
-        utcStartAt: DateTime.parse(json['utcStartAt']),
-        id: json["id"],
-        name: json["name"],
-        leaderName: json['account']['name'],
-        tempOrders: json['tempOrders'],
-        schedule: json["schedule"],
-        maxMemberCount: json["maxMemberCount"],
-        status: json["status"],
-        leaderId: json['accountId'],
-        maxMemberWeight: json['maxMemberWeight'],
-        travelDuration: json['travelDuration'],
-        locationName: json["destination"]["name"],
-        locationId: json["destination"]["id"],
-        imageUrls: json["destination"]["imagePaths"],
-        joinMethod: json["joinMethod"],
-        numOfExpPeriod: json['periodCount'],
-        note: json['note'],
-        actualGcoinBudget: json['actualGcoinBudget'].toInt(),
-        displayGcoinBudget: json['displayGcoinBudget'].toInt(),
-        memberCount: json['memberCount'],
-        departureAddress: json['departureAddress'],
-        isPublished: json['isPublished'],
-        gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'].toInt(),
-        startLocationLat: json["departure"]["coordinates"][1].toDouble(),
-        startLocationLng: json["departure"]["coordinates"][0].toDouble(),
-        locationLatLng: PointLatLng(json['destination']['coordinate']['coordinates'][1], json['destination']['coordinate']['coordinates'][0]),
-        surcharges: List<SurchargeViewModel>.from(json['surcharges']
-            .map((e) => SurchargeViewModel.fromJsonQuery(e))).toList(),
-        members: List<PlanMemberViewModel>.from(
-                json['members'].map((e) => PlanMemberViewModel.fromJson(e)))
-            .toList(),
-        savedContacts: List<EmergencyContactViewModel>.from(
-                json['savedProviders'].map(
-                    (e) => EmergencyContactViewModel.fromJsonByPlan(e)))
-            .toList(),
-      );
+      utcDepartAt: DateTime.parse(json['utcDepartAt']),
+      utcEndAt: DateTime.parse(json['utcEndAt']),
+      utcRegCloseAt: json['utcRegCloseAt'] == null
+          ? null
+          : DateTime.parse(json['utcRegCloseAt']),
+      utcStartAt: DateTime.parse(json['utcStartAt']),
+      id: json["id"],
+      name: json["name"],
+      leaderName: json['account']['name'],
+      tempOrders: json['tempOrders'],
+      schedule: json["schedule"],
+      maxMemberCount: json["maxMemberCount"],
+      status: json["status"],
+      leaderId: json['accountId'],
+      maxMemberWeight: json['maxMemberWeight'],
+      travelDuration: json['travelDuration'],
+      locationName: json["destination"]["name"],
+      locationId: json["destination"]["id"],
+      imageUrls: json["destination"]["imagePaths"],
+      joinMethod: json["joinMethod"],
+      numOfExpPeriod: json['periodCount'],
+      note: json['note'],
+      actualGcoinBudget: json['actualGcoinBudget'].toInt(),
+      displayGcoinBudget: json['displayGcoinBudget'].toInt(),
+      memberCount: json['memberCount'],
+      departureAddress: json['departureAddress'],
+      isPublished: json['isPublished'],
+      gcoinBudgetPerCapita: json['gcoinBudgetPerCapita'].toInt(),
+      startLocationLat: json["departure"]["coordinates"][1].toDouble(),
+      startLocationLng: json["departure"]["coordinates"][0].toDouble(),
+      locationLatLng: PointLatLng(
+          json['destination']['coordinate']['coordinates'][1],
+          json['destination']['coordinate']['coordinates'][0]),
+      surcharges: List<SurchargeViewModel>.from(
+              json['surcharges'].map((e) => SurchargeViewModel.fromJsonQuery(e)))
+          .toList(),
+      members: List<PlanMemberViewModel>.from(
+          json['members'].map((e) => PlanMemberViewModel.fromJson(e))).toList(),
+      savedContacts: List<EmergencyContactViewModel>.from(json['savedProviders']
+          .map((e) => EmergencyContactViewModel.fromJsonByPlan(e))).toList(),
+      orders:
+          List<OrderViewModel>.from(json['orders'].map((e) => OrderViewModel.fromJson(e))).toList());
 }

@@ -17,8 +17,12 @@ import '../../service/transaction_service.dart';
 
 class AddBalanceScreen extends StatefulWidget {
   const AddBalanceScreen(
-      {super.key, required this.balance, required this.callback});
+      {super.key,
+      required this.balance,
+      required this.callback,
+      this.initAmount});
   final double balance;
+  final int? initAmount;
   final void Function(bool isSuccess, int amount) callback;
 
   @override
@@ -30,7 +34,6 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   bool isSelected = false;
   TransactionService transactionService = TransactionService();
   bool isLoading = true;
-  double? refreshedBalance;
   String? paymentData;
   int amount = 0;
   bool isSuccess = true;
@@ -47,6 +50,13 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
   @override
   void initState() {
     super.initState();
+    if (widget.initAmount != null) {
+      setState(() {
+        amount = widget.initAmount!;
+        newBalanceController.text =
+            NumberFormat('###,###,##0', 'vi_VN').format(widget.initAmount);
+      });
+    }
     minTopUp = sharedPreferences.getInt('MIN_TOPUP')!;
     maxTopUp = sharedPreferences.getInt('MAX_TOPUP')!;
   }
@@ -91,7 +101,7 @@ class _AddBalanceScreenState extends State<AddBalanceScreen> {
                                         locale: 'vi_VN',
                                         decimalDigits: 0,
                                         name: "")
-                                    .format(refreshedBalance ?? widget.balance),
+                                    .format(widget.balance),
                                 style: const TextStyle(
                                     fontSize: 20, fontWeight: FontWeight.bold),
                               ),

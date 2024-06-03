@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
@@ -7,8 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:phuot_app/service/product_service.dart';
-import 'package:phuot_app/view_models/location.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:sizer2/sizer2.dart';
@@ -16,19 +12,20 @@ import 'package:transparent_image/transparent_image.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/colors.dart';
+import '../../core/constants/enums.dart';
 import '../../core/constants/global_constant.dart';
-import '../../core/constants/order_status.dart';
 import '../../core/constants/plan_statuses.dart';
 import '../../core/constants/service_types.dart';
 import '../../core/constants/sessions.dart';
 import '../../core/constants/urls.dart';
 import '../../helpers/util.dart';
 import '../../main.dart';
-import '../../models/holiday.dart';
 import '../../models/menu_item_cart.dart';
 import '../../models/order_input_model.dart';
 import '../../models/session.dart';
+import '../../service/product_service.dart';
 import '../../service/supplier_service.dart';
+import '../../view_models/location.dart';
 import '../../view_models/order.dart';
 import '../../view_models/order_detail.dart';
 import '../../view_models/product.dart';
@@ -47,7 +44,7 @@ class OrderDetailScreen extends StatefulWidget {
       required this.order,
       required this.startDate,
       this.endDate,
-      this.memberLimit,
+      this.numberOfMember,
       this.planId,
       required this.callback,
       this.isFromTempOrder,
@@ -59,7 +56,7 @@ class OrderDetailScreen extends StatefulWidget {
   final DateTime startDate;
   final bool isTempOrder;
   final int? planId;
-  final int? memberLimit;
+  final int? numberOfMember;
   final DateTime? endDate;
   final bool? isFromTempOrder;
   final int? availableGcoinAmount;
@@ -105,10 +102,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
       listedPricePerDay += (temp.first.price! * temp.first.quantity);
     }
     holidayUpPCT = Utils().getHolidayUpPct(widget.order.type!);
-    final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
-    List<Holiday> holidays =
-        holidaysText!.map((e) => Holiday.fromJson(json.decode(e))).toList();
-    final dates = Utils().getHolidayServingDates(holidays, servingDates);
+    final dates = Utils().getHolidayServingDates(servingDates);
     normalServingDates = dates['normalServingDates'];
     holidayServingDates = dates['holidayServingDates'];
     setState(() {
@@ -125,7 +119,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
         actions: [
           if (widget.planStatus == planStatuses[2].engName ||
               (widget.order.currentStatus != null &&
-                  widget.order.currentStatus == orderStatuses[2] &&
+                  widget.order.currentStatus == OrderStatus.SERVED.name &&
                   widget.order.rating == null))
             PopupMenuButton(
               itemBuilder: (context) => [
@@ -154,7 +148,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                     ),
                   ),
                 if (widget.order.currentStatus != null &&
-                    widget.order.currentStatus == orderStatuses[2] &&
+                    widget.order.currentStatus == OrderStatus.SERVED.name &&
                     widget.order.rating == null)
                   const PopupMenuItem(
                     value: 1,
@@ -414,6 +408,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
+                                if(widget.order.createdAt != null)
                                 Row(
                                   children: [
                                     const Icon(
@@ -807,6 +802,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                         }
 
                         final invalidProductIds = await productService
+                            // ignore: use_build_context_synchronously
                             .getInvalidProductByIds(ids, context);
 
                         if (invalidSupplierIds.isNotEmpty) {
@@ -822,30 +818,30 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     context,
                                     PageTransition(
                                         child: ServiceMainScreen(
-                                          serviceType: services.firstWhere(
-                                              (element) =>
-                                                  element.name ==
-                                                  widget.order.type),
-                                          location: widget.location!,
-                                          isOrder: true,
-                                          isFromTempOrder:
-                                              widget.isFromTempOrder,
-                                          availableGcoinAmount:
-                                              widget.availableGcoinAmount,
-                                          initSession: sessions.firstWhere(
-                                              (element) =>
-                                                  element.enumName ==
-                                                  widget.order.period),
-                                          numberOfMember: widget.memberLimit!,
-                                          startDate: widget.startDate,
-                                          endDate: widget.endDate!,
-                                          uuid: widget.order.uuid,
-                                          serveDates: widget.order.serveDates!
+                                          inputModel: OrderInputModel(
+                                            availableGcoinAmount:
+                                                widget.availableGcoinAmount,
+                                            callbackFunction: (tempOrder) {
+                                              widget.callback();
+                                            },
+                                            serviceType: services.firstWhere(
+                                                (element) =>
+                                                    element.name ==
+                                                    widget.order.type),
+                                            startDate: widget.startDate,
+                                            endDate: widget.endDate!,
+                                            location: widget.location,
+                                            isOrder: true,
+                                            session: sessions.firstWhere(
+                                                (element) =>
+                                                    element.enumName ==
+                                                    widget.order.period),
+                                            numberOfMember: widget.numberOfMember!,
+                                            orderGuid: widget.order.uuid,
+                                            servingDates: widget.order.serveDates!
                                               .map((e) => DateTime.parse(e))
                                               .toList(),
-                                          callbackFunction: (tempOrder) {
-                                            widget.callback();
-                                          },
+                                          ),
                                         ),
                                         type: PageTransitionType.rightToLeft));
                               },
@@ -880,6 +876,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           sharedPreferences.setStringList('initCartIds',
                               ids.map((e) => e.toString()).toList());
 
+                          // ignore: use_build_context_synchronously
                           Navigator.of(context).push(MaterialPageRoute(
                               builder: (ctx) => ServiceMenuScreen(
                                     inputModel: OrderInputModel(
@@ -896,7 +893,7 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                           (element) =>
                                               element.name ==
                                               widget.order.type),
-                                      numberOfMember: widget.memberLimit!,
+                                      numberOfMember: widget.numberOfMember!,
                                       period: widget.order.period,
                                       isOrder: true,
                                       holidayUpPCT: holidayUpPCT,
@@ -917,8 +914,8 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
               ],
             ),
       bottomNavigationBar: widget.order.currentStatus != null &&
-              widget.order.currentStatus == orderStatuses[2] &&
-              widget.order.currentStatus != orderStatuses[4]
+              widget.order.currentStatus == OrderStatus.SERVED.name &&
+              widget.order.currentStatus != OrderStatus.COMPLAINED.name
           ? Padding(
               padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 1.h),
               child: ElevatedButton(

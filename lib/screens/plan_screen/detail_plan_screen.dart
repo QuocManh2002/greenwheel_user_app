@@ -8,11 +8,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:page_transition/page_transition.dart';
-import 'package:phuot_app/core/constants/enums.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
 import '../../core/constants/colors.dart';
+import '../../core/constants/enums.dart';
 import '../../core/constants/plan_statuses.dart';
 import '../../core/constants/urls.dart';
 import '../../main.dart';
@@ -21,7 +21,6 @@ import '../../service/location_service.dart';
 import '../../service/order_service.dart';
 import '../../service/plan_service.dart';
 import '../../service/product_service.dart';
-import '../../service/traveler_service.dart';
 import '../../view_models/location_viewmodels/emergency_contact.dart';
 import '../../view_models/order.dart';
 import '../../view_models/plan_member.dart';
@@ -71,16 +70,13 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   final PlanService _planService = PlanService();
   final LocationService _locationService = LocationService();
   final ProductService _productService = ProductService();
-  final CustomerService _customerService = CustomerService();
   final OrderService _orderService = OrderService();
   PlanDetail? _planDetail;
-  List<PlanMemberViewModel> _planMembers = [];
   double _totalOrder = 0;
   int _selectedTab = 0;
   bool _isEnableToInvite = false;
   List<ProductViewModel> products = [];
   List<OrderViewModel>? tempOrders = [];
-  List<OrderViewModel> orderList = [];
   bool _isEnableToJoin = false;
   bool isLeader = false;
   bool _isAlreadyJoin = false;
@@ -105,14 +101,27 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     _planDetail = null;
     final plan = await _planService.getPlanById(widget.planId, widget.planType);
     List<int> productIds = [];
-    if (plan != null) {
+
+    if (plan == null ||
+        plan.members!.any((member) =>
+            member.accountId == myId &&
+            member.status == MemberStatus.BLOCKED.name)) {
+      DialogStyle().basicDialog(
+          context: context,
+          title: 'Chuyến đi không tồn tại hoặc không còn khả dụng',
+          desc: 'Vui lòng kiểm tra lại thông tin',
+          onOk: () {
+            Navigator.of(context).pop();
+          },
+          type: DialogType.warning);
+    } else {
       setState(() {
         _planDetail = plan;
         isLoading = false;
         status = planStatuses
             .firstWhere((element) => element.engName == _planDetail!.status!);
       });
-      isLeader = sharedPreferences.getInt('userId') == _planDetail!.leaderId;
+      isLeader = myId == _planDetail!.leaderId;
       for (final order in _planDetail!.tempOrders ?? []) {
         for (final detail in order['cart'].entries) {
           if (!productIds.contains(int.parse(detail.key))) {
@@ -125,99 +134,40 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         tempOrders = _orderService.convertFromTempOrder(products,
             _planDetail!.tempOrders!, _planDetail!.utcStartAt!.toLocal());
       }
+      _planDetail!.tempOrders = tempOrders;
       _isEnableToInvite = _planDetail!.status == planStatuses[1].engName &&
           _planDetail!.memberCount! < _planDetail!.maxMemberCount!;
-      await getOrderList();
-      await getPlanMember();
+      _totalOrder =
+          _planDetail!.orders!.fold(0, (sum, obj) => sum + obj.total!);
       if (_planDetail != null) {
         setState(() {
           isLoading = false;
         });
       }
-      _isEnableToConfirm = _planDetail!.status == 'REGISTERING';
-    } else {
-      DialogStyle().basicDialog(
-          context: context,
-          title: 'Chuyến đi không tồn tại hoặc không còn khả dụng',
-          desc: 'Vui lòng kiểm tra lại thông tin',
-          onOk: () {
-            Navigator.of(context).pop();
-          },
-          type: DialogType.warning);
-    }
-  }
+      _isEnableToConfirm = _planDetail!.status == planStatuses[1].engName;
 
-  getPlanMember() async {
-    final memberList = await _planService.getPlanMember(
-        widget.planId, widget.planType, context);
-    _planMembers = [];
-    for (final mem in memberList) {
-      if (mem.status == 'JOINED') {
-        int type = 0;
-        if (mem.accountId == _planDetail!.leaderId) {
-          type = 1;
-        } else if (mem.accountId == sharedPreferences.getInt('userId')) {
-          type = 2;
-        } else {
-          type = 3;
-        }
-        _planMembers.add(PlanMemberViewModel(
-            name: mem.name,
-            memberId: mem.memberId,
-            phone: mem.phone,
-            status: mem.status,
-            companions: mem.companions,
-            accountId: mem.accountId,
-            accountType: type,
-            isMale: mem.isMale,
-            imagePath: mem.imagePath,
-            weight: mem.weight));
+      _isAlreadyJoin = _planDetail!.members!.any((element) =>
+          element.accountId == myId &&
+          element.status == MemberStatus.JOINED.name);
+      if (_isAlreadyJoin) {
+        myAccount = _planDetail!.members!
+            .firstWhere((element) => element.accountId == myId);
+        _isEnableToRegisterMore = planStatuses
+                    .firstWhere(
+                        (element) => element.engName == _planDetail!.status!)
+                    .value <
+                2 &&
+            myAccount!.weight < _planDetail!.maxMemberWeight! &&
+            _planDetail!.memberCount! < _planDetail!.maxMemberCount!;
+      } else {
+        _isEnableToJoin = status.value < 2 &&
+            _planDetail!.memberCount! < _planDetail!.maxMemberCount! &&
+            !_planDetail!.members!.any((member) =>
+                member.accountId == myId &&
+                (member.status == MemberStatus.BLOCKED.name ||
+                    member.status == MemberStatus.SELF_BLOCKED.name));
       }
     }
-
-    _isAlreadyJoin = _planMembers.any((element) =>
-        element.accountId == sharedPreferences.getInt('userId')! &&
-        element.status == 'JOINED');
-    if (_isAlreadyJoin) {
-      myAccount = _planMembers.firstWhere((element) =>
-          element.accountId == sharedPreferences.getInt('userId')!);
-      _isEnableToRegisterMore = planStatuses
-                  .firstWhere(
-                      (element) => element.engName == _planDetail!.status!)
-                  .value <
-              2 &&
-          myAccount!.weight < _planDetail!.maxMemberWeight! &&
-          _planDetail!.memberCount! < _planDetail!.maxMemberCount!;
-    } else {
-      _isEnableToJoin = status.value < 2 &&
-          _planDetail!.memberCount! < _planDetail!.maxMemberWeight! &&
-          !_planMembers.any((member) =>
-              member.accountId == myId &&
-              (member.status == MemberStatus.BLOCKED.name ||
-                  member.status == MemberStatus.SELF_BLOCKED.name));
-    }
-  }
-
-  getOrderList() async {
-    var totalOrder = 0.0;
-    if (_planDetail!.status == planStatuses[0].engName ||
-        _planDetail!.status == planStatuses[1].engName) {
-      orderList = tempOrders!;
-    } else {
-      final rs =
-          await _orderService.getOrderByPlan(widget.planId, widget.planType);
-      if (rs != null) {
-        setState(() {
-          orderList = rs['orders'];
-          _planDetail!.orders = rs['orders'];
-          _planDetail!.actualGcoinBudget = rs['currentBudget'].toInt();
-        });
-      }
-    }
-    totalOrder = orderList.fold(0, (sum, obj) => sum + obj.total!);
-    setState(() {
-      _totalOrder = totalOrder;
-    });
   }
 
   updatePlan() async {
@@ -268,7 +218,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
         child: Scaffold(
             floatingActionButton: _planDetail == null ||
                     (_planDetail != null && _planDetail!.memberCount! == 0) ||
-                    _planDetail!.joinMethod == 'NONE'
+                    _planDetail!.joinMethod == JoinMethod.NONE.name
                 ? null
                 : isLeader
                     ? SpeedDial(
@@ -725,7 +675,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                             ],
                           )),
                         ),
-                        if (_isEnableToJoin || widget.planType == 'PUBLISH')
+                        if ((!isLeader && _isEnableToJoin) ||
+                            widget.planType == 'PUBLISH')
                           buildNewFooter()
                       ],
                     ),
@@ -744,11 +695,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       plan: _planDetail!,
       isLeader: isLeader,
       tempOrders: tempOrders!,
-      orderList: orderList,
       totalOrder: _totalOrder,
-      onGetOrderList: () async {
-        setupData();
-      });
+      onGetOrderList: setupData);
 
   buildInforWidget() => Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -768,7 +716,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           ),
           BaseInformationWidget(
             plan: _planDetail!,
-            members: _planMembers,
+            members: _planDetail!.members!,
             refreshData: setupData,
             isLeader: isLeader,
             planType: widget.planType,
@@ -811,9 +759,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       Navigator.of(context).push(MaterialPageRoute(
           builder: (ctx) => SharePlanScreen(
                 joinMethod: _planDetail!.joinMethod!,
-                isFromHost: _planDetail!.leaderId ==
-                    sharedPreferences.getInt('userId')!,
-                planMembers: _planMembers,
+                isFromHost: _planDetail!.leaderId == myId!,
+                planMembers: _planDetail!.members!,
                 isEnableToJoin: widget.isEnableToJoin,
                 planId: widget.planId,
               )));
@@ -866,76 +813,58 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           btnOkColor: redColor,
           desc: 'Chuyến đi đã đủ số lượng thành viên tham gia');
     } else {
-      final int balance = await _customerService
-          .getTravelerBalance(sharedPreferences.getInt('userId')!);
-      if (balance >= _planDetail!.gcoinBudgetPerCapita!) {
-        for (final emer in _planDetail!.savedContacts!) {
-          emerList.add({
-            "name": emer.name,
-            "phone": emer.phone,
-            "address": emer.address,
-            "imageUrl": emer.imageUrl,
-            "type": emer.type
-          });
-        }
-        final rs = await showModalBottomSheet(
-            context: context,
-            isScrollControlled: true,
-            builder: (BuildContext context) => SizedBox(
-                  height: 90.h,
-                  child: ConfirmPlanBottomSheet(
-                    isInfo: false,
-                    isFromHost: isLeader,
-                    plan: PlanCreate(
-                        departAddress: _planDetail!.departureAddress,
-                        schedule: json.encode(_planDetail!.schedule),
-                        savedContacts: json.encode(emerList),
-                        name: _planDetail!.name,
-                        maxMemberCount: _planDetail!.maxMemberCount,
-                        startDate: _planDetail!.utcStartAt,
-                        endDate: _planDetail!.utcEndAt,
-                        travelDuration: _planDetail!.travelDuration,
-                        departAt: _planDetail!.utcDepartAt!.toLocal(),
-                        note: _planDetail!.note,
-                        numOfExpPeriod: _planDetail!.numOfExpPeriod),
-                    locationName: _planDetail!.locationName!,
-                    orderList: tempOrders,
-                    onCompletePlan: () {},
-                    surchargeList: _planDetail!.surcharges,
-                    isJoin: true,
-                    onJoinPlan: () {
-                      confirmJoin(_planDetail!.joinMethod!, null);
-                    },
-                    onCancel: () {
-                      setState(() {
-                        _planDetail!.joinMethod = 'NONE';
-                      });
-                      Navigator.of(context).pop();
-                    },
-                  ),
-                ));
-        if (rs == null && isLeader) {
-          setState(() {
-            _planDetail!.joinMethod = 'NONE';
-          });
-        }
-      } else {
-        DialogStyle().basicDialog(
-            context: context,
-            type: DialogType.error,
-            title: 'Số dư của bạn không đủ để tham gia kế hoạch này',
-            desc: 'Vui lòng nạp thêm GCOIN',
-            btnOkColor: Colors.red,
-            onOk: () {
-              Navigator.push(
-                  context,
-                  PageTransition(
-                      child: const TabScreen(pageIndex: 4),
-                      type: PageTransitionType.rightToLeft));
-            },
-            btnOkText: 'Nạp thêm',
-            btnCancelColor: Colors.amber,
-            btnCancelText: 'Huỷ');
+      // final int balance = await _customerService
+      //     .getTravelerBalance(myId!);
+      // if (balance >= _planDetail!.gcoinBudgetPerCapita!) {
+      for (final emer in _planDetail!.savedContacts!) {
+        emerList.add({
+          "name": emer.name,
+          "phone": emer.phone,
+          "address": emer.address,
+          "imageUrl": emer.imageUrl,
+          "type": emer.type
+        });
+      }
+      final rs = await showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (BuildContext context) => SizedBox(
+                height: 90.h,
+                child: ConfirmPlanBottomSheet(
+                  isInfo: false,
+                  isFromHost: isLeader,
+                  plan: PlanCreate(
+                      departAddress: _planDetail!.departureAddress,
+                      schedule: json.encode(_planDetail!.schedule),
+                      savedContacts: json.encode(emerList),
+                      name: _planDetail!.name,
+                      maxMemberCount: _planDetail!.maxMemberCount,
+                      startDate: _planDetail!.utcStartAt,
+                      endDate: _planDetail!.utcEndAt,
+                      travelDuration: _planDetail!.travelDuration,
+                      departAt: _planDetail!.utcDepartAt!.toLocal(),
+                      note: _planDetail!.note,
+                      numOfExpPeriod: _planDetail!.numOfExpPeriod),
+                  locationName: _planDetail!.locationName!,
+                  orderList: tempOrders,
+                  onCompletePlan: () {},
+                  surchargeList: _planDetail!.surcharges,
+                  isJoin: true,
+                  onJoinPlan: () {
+                    confirmJoin(_planDetail!.joinMethod!, null);
+                  },
+                  onCancel: () {
+                    setState(() {
+                      _planDetail!.joinMethod = JoinMethod.NONE.name;
+                    });
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ));
+      if (rs == null && isLeader) {
+        setState(() {
+          _planDetail!.joinMethod = JoinMethod.NONE.name;
+        });
       }
     }
   }
@@ -946,7 +875,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               plan: _planDetail!,
               isConfirm: false,
               member: member,
-              joinMethod: isLeader ? _planDetail!.joinMethod : null,
+              joinMethod: (isLeader && !_isAlreadyJoin)  ? _planDetail!.joinMethod : null,
             )));
   }
 
@@ -985,7 +914,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
       'status': true,
       'message': 'Kế hoạch đủ điều kiện để chia sẻ'
     };
-    if (_planDetail!.maxMemberCount == _planMembers.length) {
+    if (_planDetail!.maxMemberCount == _planDetail!.members!.length) {
       return {
         'status': false,
         'message': 'Đã đủ số lượng thành viên của chuyến đi'
@@ -1103,9 +1032,8 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
   }
 
   onQuitPlan(bool isBlock) async {
-    final memberId = _planMembers
-        .firstWhere((element) =>
-            element.accountId == sharedPreferences.getInt('userId'))
+    final memberId = _planDetail!.members!
+        .firstWhere((element) => element.accountId == myId)
         .memberId;
     final rs = await _planService.removeMember(memberId, isBlock, context);
     if (rs != 0) {
@@ -1184,12 +1112,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             btnCancelText: 'Huỷ',
             onDismissCallback: (type) {
               setState(() {
-                _planDetail!.joinMethod = 'NONE';
+                _planDetail!.joinMethod = JoinMethod.NONE.name;
               });
             },
             btnCancelOnPress: () {
               setState(() {
-                _planDetail!.joinMethod = 'NONE';
+                _planDetail!.joinMethod = JoinMethod.NONE.name;
               });
             }).show();
       } else {
@@ -1197,7 +1125,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             _planDetail!.id!, joinMethod, context);
         if (!rs) {
           setState(() {
-            _planDetail!.joinMethod = 'NONE';
+            _planDetail!.joinMethod = JoinMethod.NONE.name;
           });
         } else {
           _planDetail!.joinMethod = joinMethod;
@@ -1206,132 +1134,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     }
   }
 
-  // handlePublicizePlan(bool isFromJoinScreen, int? amount, String joinMethod,
-  //     BuildContext buildContext) {
-  //   showModalBottomSheet(
-  //       context: buildContext,
-  //       isDismissible: false,
-  //       enableDrag: false,
-  //       backgroundColor: Colors.white.withOpacity(0.94),
-  //       builder: (ctx) => Padding(
-  //             padding: const EdgeInsets.symmetric(horizontal: 23, vertical: 15),
-  //             child: Column(
-  //               mainAxisSize: MainAxisSize.min,
-  //               children: [
-  //                 const Text(
-  //                   'Cách chia sẻ chuyến đi',
-  //                   style: TextStyle(
-  //                       fontSize: 18,
-  //                       fontWeight: FontWeight.bold,
-  //                       fontFamily: 'NotoSans'),
-  //                 ),
-  //                 SizedBox(
-  //                   height: 1.h,
-  //                 ),
-  //                 Row(
-  //                   children: [
-  //                     Expanded(
-  //                         child: InkWell(
-  //                       borderRadius:
-  //                           const BorderRadius.all(Radius.circular(12)),
-  //                       onTap: () async {
-  //                         final rs = await _planService.updateJoinMethod(
-  //                             _planDetail!.id!, 'INVITE', context);
-  //                         if (rs) {
-  //                           setState(() {
-  //                             _planDetail!.joinMethod = 'INVITE';
-  //                           });
-  //                           Navigator.of(buildContext).pop();
-  //                         }
-  //                       },
-  //                       child: Container(
-  //                         padding: const EdgeInsets.symmetric(vertical: 12),
-  //                         decoration: const BoxDecoration(
-  //                             color: Colors.white,
-  //                             borderRadius:
-  //                                 BorderRadius.all(Radius.circular(12))),
-  //                         child: Row(
-  //                           crossAxisAlignment: CrossAxisAlignment.center,
-  //                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                           children: [
-  //                             Container(
-  //                               decoration: BoxDecoration(
-  //                                   shape: BoxShape.circle,
-  //                                   color: Colors.blue.withOpacity(0.7)),
-  //                               padding: const EdgeInsets.all(10),
-  //                               child: const Icon(
-  //                                 Icons.send,
-  //                                 color: Colors.white,
-  //                               ),
-  //                             ),
-  //                             const Text(
-  //                               'Mời',
-  //                               style: TextStyle(
-  //                                   fontSize: 20,
-  //                                   fontWeight: FontWeight.w500,
-  //                                   color: Colors.grey),
-  //                             )
-  //                           ],
-  //                         ),
-  //                       ),
-  //                     )),
-  //                     SizedBox(
-  //                       width: 2.h,
-  //                     ),
-  //                     Expanded(
-  //                         child: InkWell(
-  //                       borderRadius:
-  //                           const BorderRadius.all(Radius.circular(12)),
-  //                       onTap: () async {
-  //                         final rs = await _planService.updateJoinMethod(
-  //                             _planDetail!.id!, 'SCAN', buildContext);
-  //                         if (rs) {
-  //                           setState(() {
-  //                             _planDetail!.joinMethod = 'SCAN';
-  //                           });
-  //                           Navigator.of(buildContext).pop();
-  //                         }
-  //                       },
-  //                       child: Container(
-  //                         padding: const EdgeInsets.symmetric(vertical: 12),
-  //                         decoration: const BoxDecoration(
-  //                             color: Colors.white,
-  //                             borderRadius:
-  //                                 BorderRadius.all(Radius.circular(12))),
-  //                         child: Row(
-  //                           crossAxisAlignment: CrossAxisAlignment.center,
-  //                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-  //                           children: [
-  //                             Container(
-  //                               decoration: BoxDecoration(
-  //                                   shape: BoxShape.circle,
-  //                                   color: Colors.orange.withOpacity(0.7)),
-  //                               padding: const EdgeInsets.all(10),
-  //                               child: const Icon(
-  //                                 Icons.qr_code,
-  //                                 color: Colors.white,
-  //                               ),
-  //                             ),
-  //                             const Text(
-  //                               'QR',
-  //                               style: TextStyle(
-  //                                   fontSize: 20,
-  //                                   fontWeight: FontWeight.w500,
-  //                                   color: Colors.grey),
-  //                             )
-  //                           ],
-  //                         ),
-  //                       ),
-  //                     )),
-  //                   ],
-  //                 ),
-  //               ],
-  //             ),
-  //           ));
-  // }
-
   onClonePlan() async {
-    _planDetail!.orders = orderList;
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,

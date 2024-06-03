@@ -1,4 +1,6 @@
 
+import 'package:phuot_app/view_models/location.dart';
+
 import '../view_models/supplier.dart';
 import 'menu_item_cart.dart';
 import 'service_type.dart';
@@ -19,7 +21,7 @@ class OrderInputModel {
   final int? availableGcoinAmount;
   final void Function(dynamic tempOrder)? callbackFunction;
   final String? orderGuid;
-
+  final LocationViewModel? location;
   final List<DateTime>? servingDates;
   final List<DateTime>? holidayServingDates;
   final int? holidayUpPCT;
@@ -41,5 +43,6 @@ class OrderInputModel {
       this.holidayServingDates,
       this.servingDates,
       this.holidayUpPCT,
+      this.location,
       this.supplier});
 }

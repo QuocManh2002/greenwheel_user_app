@@ -12,7 +12,6 @@ class PlanMemberViewModel {
     String phone;
     String status;
     int accountId;
-    int? accountType;
     int weight;
     String? imagePath;
     List<dynamic>? companions;
@@ -24,7 +23,6 @@ class PlanMemberViewModel {
         required this.phone,
         required this.status,
         required this.accountId,
-        this.accountType,
         this.companions,
         this.imagePath,
         required this.weight,

@@ -1,6 +1,7 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:phuot_app/core/constants/colors.dart';
+import 'package:phuot_app/core/constants/global_constant.dart';
 import 'package:phuot_app/widgets/style_widget/button_style.dart';
 import 'package:phuot_app/widgets/style_widget/text_form_field_widget.dart';
 import 'package:sizer2/sizer2.dart';
@@ -108,7 +109,7 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
                           widget.onJoin();
                         }
                         : null,
-                    child: const Text('Xuống tiền'))),
+                    child: const Text('Thanh toán'))),
           ],
         ),
       ),
@@ -216,14 +217,14 @@ class _InputCompanionNameScreenState extends State<InputCompanionNameScreen> {
               key: _formKey,
               child: defaultTextFormField(
                   maxline: 1,
-                  maxLength: 30,
+                  maxLength: GlobalConstant().ACCOUNT_NAME_MAX_LENGTH,
                   hinttext: 'Tên thành viên',
                   controller: _nameController,
                   onValidate: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Tên thành viên không được để trống';
-                    } else if (value.length > 30) {
-                      return 'Tên thành viên không quá 40 kí tự';
+                    } else if (value.length > GlobalConstant().ACCOUNT_NAME_MAX_LENGTH || value.length < GlobalConstant().ACCOUNT_NAME_MIN_LENGTH) {
+                      return 'Tên phải từ ${GlobalConstant().ACCOUNT_NAME_MIN_LENGTH} đến ${GlobalConstant().ACCOUNT_NAME_MAX_LENGTH} ký tự';
                     }
                     return null;
                   },

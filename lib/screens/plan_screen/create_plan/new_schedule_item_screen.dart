@@ -347,19 +347,19 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                 }
                               } else {
                                 widget.callback(
-                                item: PlanScheduleItem(
-                                    isStarred: _isStarEvent,
-                                    shortDescription:
-                                        _shortDescriptionController.text,
-                                    description: _descriptionController.text,
-                                    date: _selectedDate,
-                                    orderUUID: _tempOrder['orderUUID'],
-                                    activityTime: _selectedTime,
-                                    type: _selectedType,
-                                    id: widget.item?.id),
-                                isCreate: widget.item == null,
-                                oldItem: widget.item,
-                              );
+                                  item: PlanScheduleItem(
+                                      isStarred: _isStarEvent,
+                                      shortDescription:
+                                          _shortDescriptionController.text,
+                                      description: _descriptionController.text,
+                                      date: _selectedDate,
+                                      orderUUID: _tempOrder['orderUUID'],
+                                      activityTime: _selectedTime,
+                                      type: _selectedType,
+                                      id: widget.item?.id),
+                                  isCreate: widget.item == null,
+                                  oldItem: widget.item,
+                                );
                               }
                             }
                           }
@@ -767,9 +767,12 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
                                     }
                                     setState(() {
                                       _selectedType = value;
-                                      _isFoodActivity = value == orderScheduleItemTypesVn[0];
-                                      _isRoomActivity = value == orderScheduleItemTypesVn[2];
-                                      _isVisitActivity = value == orderScheduleItemTypesVn[1];
+                                      _isFoodActivity =
+                                          value == orderScheduleItemTypesVn[0];
+                                      _isRoomActivity =
+                                          value == orderScheduleItemTypesVn[2];
+                                      _isVisitActivity =
+                                          value == orderScheduleItemTypesVn[1];
                                     });
                                   }
                                 },
@@ -1285,18 +1288,19 @@ class _NewScheduleItemScreenState extends State<NewScheduleItemScreen> {
         context,
         PageTransition(
             child: ServiceMainScreen(
-              isOrder: false,
-              serviceType: _isFoodActivity
-                  ? services[0]
-                  : _isRoomActivity
-                      ? services[1]
-                      : services[2],
-              location: widget.location,
-              initSession: initSession,
-              numberOfMember: numberOfMember!,
-              startDate: _selectedDate,
-              endDate: endDate!,
-              callbackFunction: callback,
+              inputModel: OrderInputModel(
+                  isOrder: false,
+                  serviceType: _isFoodActivity
+                      ? services[0]
+                      : _isRoomActivity
+                          ? services[1]
+                          : services[2],
+                  location: widget.location,
+                  session: initSession,
+                  numberOfMember: numberOfMember,
+                  startDate: _selectedDate,
+                  endDate: endDate,
+                  callbackFunction: callback),
             ),
             type: PageTransitionType.rightToLeft));
   }

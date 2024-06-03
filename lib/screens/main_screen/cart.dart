@@ -114,10 +114,7 @@ class _CartScreenState extends State<CartScreen> {
     }
 
     if (widget.isOrder == null || !widget.isOrder!) {
-      final holidaysText = sharedPreferences.getStringList('HOLIDAYS');
-      holidays =
-          holidaysText!.map((e) => Holiday.fromJson(json.decode(e))).toList();
-      final rs = Utils().getHolidayServingDates(holidays, _servingDates);
+      final rs = Utils().getHolidayServingDates(_servingDates);
       holidayServingDates = rs['holidayServingDates'];
       normalServingDates = rs['normalServingDates'];
       holidayUpPCT = Utils().getHolidayUpPct(widget.serviceType.name);
@@ -897,7 +894,7 @@ class _CartScreenState extends State<CartScreen> {
       finalTotal = total;
       selectedDays = servingDates.length;
     });
-    final rs = Utils().getHolidayServingDates(holidays, _servingDates);
+    final rs = Utils().getHolidayServingDates(_servingDates);
     holidayServingDates = rs['holidayServingDates'];
     normalServingDates = rs['normalServingDates'];
     servingDates.sort((a, b) => a.compareTo(b));

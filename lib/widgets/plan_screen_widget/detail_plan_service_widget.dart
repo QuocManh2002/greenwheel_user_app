@@ -1,9 +1,8 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:developer';
-
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:phuot_app/core/constants/enums.dart';
 import 'package:phuot_app/core/constants/plan_statuses.dart';
 import 'package:sizer2/sizer2.dart';
 
@@ -23,12 +22,10 @@ class DetailPlanServiceWidget extends StatefulWidget {
       required this.isLeader,
       required this.tempOrders,
       required this.totalOrder,
-      this.orderList,
       required this.onGetOrderList});
   final PlanDetail plan;
   final bool isLeader;
   final void Function() onGetOrderList;
-  final List<OrderViewModel>? orderList;
   final List<OrderViewModel> tempOrders;
   final double totalOrder;
 
@@ -41,7 +38,6 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
     with TickerProviderStateMixin {
   late TabController tabController;
   final LocationService _locationService = LocationService();
-  List<OrderViewModel> _orderList = [];
   List<OrderViewModel> roomOrderList = [];
   List<OrderViewModel> foodOrderList = [];
   List<OrderViewModel> movingOrderList = [];
@@ -56,6 +52,12 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
 
   setUpData() {
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
+    final orderList = widget.plan.status == planStatuses[0].engName ||
+            widget.plan.status == planStatuses[1].engName
+        ? widget.tempOrders
+        : widget.plan.orders!.where(
+            (element) => element.currentStatus != OrderStatus.CANCELLED.name);
+    final orderGroups = orderList.groupListsBy((element) => element.type);
 
     _totalSurcharge = (widget.plan.surcharges ?? []).fold(
       0,
@@ -65,8 +67,6 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
               widget.plan.memberCount!,
     );
     setState(() {
-      _orderList = widget.orderList ?? [];
-      final orderGroups = _orderList.groupListsBy((element) => element.type);
       roomOrderList = orderGroups[services[1].name] ?? [];
       foodOrderList = orderGroups[services[0].name] ?? [];
       movingOrderList = orderGroups[services[2].name] ?? [];
@@ -75,10 +75,9 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
     int index = totalList.indexOf(
         totalList.firstWhereOrNull((element) => element.isNotEmpty) ??
             roomOrderList);
-            log(index.toString());
-    // tabController.animateTo(index, duration: const Duration(milliseconds: 500));
-    isShowTotal =
-        widget.plan.status != planStatuses[0].engName && widget.plan.status != planStatuses[1].engName;
+    tabController.animateTo(index, duration: const Duration(milliseconds: 500));
+    isShowTotal = widget.plan.status != planStatuses[0].engName &&
+        widget.plan.status != planStatuses[1].engName;
   }
 
   @override
@@ -89,7 +88,6 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
 
   @override
   Widget build(BuildContext context) {
-    setUpData();
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
       child: Column(
@@ -116,7 +114,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                                         widget.plan.actualGcoinBudget,
                                     planId: widget.plan.id!,
                                     tempOrders: widget.tempOrders,
-                                    orders: _orderList,
+                                    orders: widget.plan.orders ?? [],
                                     startDate:
                                         widget.plan.utcStartAt!.toLocal(),
                                     callback: (p) {
