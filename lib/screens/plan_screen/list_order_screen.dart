@@ -1,4 +1,6 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:phuot_app/core/constants/enums.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/urls.dart';
@@ -51,7 +53,9 @@ class ListOrderScreen extends StatelessWidget {
                   child: ListView.builder(
                       itemCount: tempOrders.length,
                       physics: const BouncingScrollPhysics(),
-                      itemBuilder: (ctx, index) => SupplierOrderCard(
+                      itemBuilder: (ctx, index) {
+                        final order = orders.firstWhereOrNull((element) => element.uuid == tempOrders[index].uuid);
+                        return SupplierOrderCard(
                             callback: callback,
                             order: tempOrders[index],
                             startDate: startDate,
@@ -62,9 +66,17 @@ class ListOrderScreen extends StatelessWidget {
                             availableGcoinAmount: availableGcoinAmount,
                             planId: planId,
                             location: location,
+                            cancelReason: order?.cancelReason,
+                            isCancel: orders.any((element) =>
+                                element.uuid == tempOrders[index].uuid &&
+                                element.currentStatus ==
+                                    OrderStatus.CANCELLED.name),
                             isConfirm: orders.any((element) =>
                                 element.uuid == tempOrders[index].uuid),
-                          )),
+                          );
+                      }
+                          
+                          ),
                 )
               : Center(
                   child: Column(

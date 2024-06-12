@@ -21,7 +21,7 @@ import '../authentication_screen/select_default_address.dart';
 
 class UpdateProfileScreen extends StatefulWidget {
   const UpdateProfileScreen({super.key, required this.traveler, required this.callback});
-  final CustomerViewModel traveler;
+  final TravelerViewModel traveler;
   final void Function() callback;
 
   @override
@@ -62,10 +62,11 @@ class _UpdateProfileScreenState extends State<UpdateProfileScreen> {
             style: elevatedButtonStyle,
             onPressed: () async {
               final rs = await _customerService.updateTravelerProfile(
-                  CustomerViewModel(
+                  TravelerViewModel(
                       id: widget.traveler.id,
                       name: nameController.text,
                       isMale: isMale,
+                      prestigePoint: widget.traveler.prestigePoint,
                       avatarUrl: '$baseBucketImage$avatarLink',
                       phone: widget.traveler.phone,
                       balance: widget.traveler.balance,

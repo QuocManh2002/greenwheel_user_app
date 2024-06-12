@@ -160,7 +160,7 @@ class _OTPScreenState extends State<OTPScreen> {
         sharedPreferences.setString('userToken', model.accessToken);
         sharedPreferences.setString('userRefreshToken', model.refreshToken);
 
-        CustomerViewModel? traveler = await customerService
+        TravelerViewModel? traveler = await customerService
             .getCustomerByPhone('84${widget.phoneNumber.substring(1)}');
         if (traveler == null) {
           Navigator.pushAndRemoveUntil(

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:phuot_app/core/constants/colors.dart';
 import 'package:phuot_app/core/constants/urls.dart';
 import 'package:phuot_app/main.dart';
@@ -7,6 +8,7 @@ import 'package:phuot_app/screens/main_screen/tabscreen.dart';
 import 'package:phuot_app/service/config_service.dart';
 import 'package:phuot_app/service/order_service.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:phuot_app/service/plan_service.dart';
 import 'package:sizer2/sizer2.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -21,6 +23,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController controller;
   final ConfigService _configService = ConfigService();
   final OrderService _orderService = OrderService();
+  final PlanService _planService = PlanService();
   bool isStart = false;
 
   setUpConfig() async {
@@ -44,6 +47,20 @@ class _SplashScreenState extends State<SplashScreen>
     }
   }
 
+  setUpDataOffline() async{
+    await Hive.initFlutter();
+    final myPlans = await Hive.openBox('myPlans');
+    List<int> ids = [];
+    ids = myPlans.keys.map((e) => int.parse(e.toString())).toList();
+    for(final id in ids){
+      // ignore: use_build_context_synchronously
+      final rs = await _planService.getValidOfflinePlan(id, context);
+      if(!rs){
+        myPlans.delete(id);
+      }
+    }
+  }
+
   @override
   void initState() {
     controller = AnimationController(
@@ -53,6 +70,7 @@ class _SplashScreenState extends State<SplashScreen>
         setState(() {});
       });
     setUpConfig();
+    setUpDataOffline();
     super.initState();
   }
 

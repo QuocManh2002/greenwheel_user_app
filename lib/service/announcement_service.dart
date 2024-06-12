@@ -141,7 +141,7 @@ class AnnouncementService {
 {
   announcements(
     where: { accountId: { eq: $travelerId } }
-    order: { id: DESC }
+    order: { createdAt: DESC ,id: DESC}
     after: ${cursor == null ? null : json.encode(cursor)}
     first: 10
   ) {

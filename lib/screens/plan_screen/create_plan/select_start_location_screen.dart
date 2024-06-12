@@ -1,4 +1,3 @@
-import 'dart:convert';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
@@ -56,7 +55,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   PointLatLng? defaultLatLng;
   bool _isSelectedLocation = false;
   final PlanService _planService = PlanService();
-  bool? _isCloneAddress;
 
   _getRouteInfo() async {
     var jsonResponse = await getRouteInfo(_selectedLocation!,
@@ -137,8 +135,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
   setUpDataCreate() async {
     double? planDistance = sharedPreferences.getDouble('plan_distance_value');
     if (widget.isClone) {
-      _isCloneAddress =
-          json.decode(sharedPreferences.getString('plan_clone_options')!)[0];
       _searchController.selection =
           TextSelection.fromPosition(const TextPosition(offset: 0));
     }
@@ -290,7 +286,6 @@ class _SelectStartLocationScreenState extends State<SelectStartLocationScreen> {
                 cursorColor: primaryColor,
                 maxLines: 1,
                 autofocus: true,
-                readOnly: widget.isClone && _isCloneAddress!,
                 onTap: () {},
                 decoration: InputDecoration(
                     suffixIcon: IconButton(

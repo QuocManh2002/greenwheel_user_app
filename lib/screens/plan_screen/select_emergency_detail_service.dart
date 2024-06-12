@@ -46,7 +46,7 @@ class _SelectEmergencyDetailServiceState
                   width: 100.w,
                   key: UniqueKey(),
                   fit: BoxFit.fill,
-                  errorWidget: (context, url, error) => Image.network(defaultHomeImage),
+                  errorWidget: (context, url, error) => Image.asset(emptyPlan),
                   placeholder: (context, url) => Image.memory(kTransparentImage),
                   imageUrl: '$baseBucketImage${widget.emergency.imageUrl}'),
                 SizedBox(
@@ -76,7 +76,7 @@ class _SelectEmergencyDetailServiceState
                             fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        '0${widget.emergency.phone!.substring(3)}',
+                        '0${widget.emergency.phone!.substring(2)}',
                         style:
                             const TextStyle(fontSize: 20, color: Colors.grey),
                       ),
@@ -86,7 +86,7 @@ class _SelectEmergencyDetailServiceState
                             final Uri url = Uri(
                                 scheme: 'tel',
                                 path:
-                                    '0${widget.emergency.phone!.substring(3)}');
+                                    '0${widget.emergency.phone!.substring(2)}');
                             if (await canLaunchUrl(url)) {
                               await launchUrl(url);
                             }

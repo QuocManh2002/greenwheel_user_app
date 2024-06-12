@@ -29,7 +29,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   final CustomerService _customerService = CustomerService();
-  CustomerViewModel? _customer;
+  TravelerViewModel? _customer;
   bool _isLoading = true;
 
   @override
@@ -128,6 +128,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                             fontSize: 18,
                                           ),
                                         ),
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
+                                        RichText(
+                                            text: TextSpan(
+                                                text:  '${_customer!.prestigePoint}',
+                                                style: const TextStyle(
+                                                    fontFamily: 'NotoSans',
+                                                    fontWeight:
+                                                        FontWeight.bold,
+                                                    color: Colors.black,
+                                                    fontSize: 18 ),
+                                                children: const [
+                                              TextSpan(
+                                                  text:
+                                                      ' Điểm uy tín',
+                                                  style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.normal,
+                                                      fontSize: 18))
+                                            ]))
                                       ],
                                     ),
                                     Padding(
@@ -173,11 +194,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                   children: [
                                     Padding(
                                       padding: const EdgeInsets.symmetric(
-                                          horizontal: 24, vertical: 16),
+                                          horizontal: 24, vertical: 12),
                                       child: Container(
                                         alignment: Alignment.centerLeft,
                                         child: const Text(
-                                          "Số dư:",
+                                          "Số dư",
                                           style: TextStyle(
                                               fontSize: 17, color: Colors.grey),
                                         ),

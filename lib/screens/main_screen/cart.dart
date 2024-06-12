@@ -4,6 +4,7 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:phuot_app/widgets/style_widget/dialog_style.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
@@ -848,20 +849,8 @@ class _CartScreenState extends State<CartScreen> {
             sharedPreferences.getInt('planId')!,
             context);
         if (rs != 0) {
-          AwesomeDialog(
-            // ignore: use_build_context_synchronously
-            context: context,
-            dialogType: DialogType.success,
-            animType: AnimType.topSlide,
-            showCloseIcon: true,
-            padding: const EdgeInsets.all(12),
-            titleTextStyle: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              fontFamily: 'NotoSans',
-            ),
-            title: "Thanh toán thành công",
-          ).show();
+          // ignore: use_build_context_synchronously
+          DialogStyle().successDialog(context, 'Thanh toán thành công');
           Future.delayed(const Duration(seconds: 1), () {
             widget.callbackFunction(null);
             Navigator.of(context).pop();

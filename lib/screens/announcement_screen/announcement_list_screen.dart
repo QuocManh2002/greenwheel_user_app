@@ -1,7 +1,9 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
+import 'package:transparent_image/transparent_image.dart';
 
 import '../../core/constants/colors.dart';
 import '../../core/constants/urls.dart';
@@ -144,7 +146,8 @@ class _AnnouncementListScreenState extends State<AnnouncementListScreen> {
                                         const Text(
                                           'Bạn không có thông báo nào',
                                           style: TextStyle(
-                                              fontSize: 17, color: Colors.black54),
+                                              fontSize: 17,
+                                              color: Colors.black54),
                                           textAlign: TextAlign.center,
                                         )
                                       ]),
@@ -217,23 +220,36 @@ class _AnnouncementListScreenState extends State<AnnouncementListScreen> {
                                           child: Row(
                                             children: [
                                               Container(
-                                                height: 15.w,
-                                                width: 15.w,
-                                                clipBehavior: Clip.hardEdge,
-                                                decoration: const BoxDecoration(
-                                                    shape: BoxShape.circle),
-                                                child: Image.network(
-                                                  _notiList[index].imageUrl ==
-                                                          null
-                                                      ? _notiList[index].type ==
-                                                              'PLAN'
-                                                          ? defaultPlanNotiAvatar
-                                                          : defaultServiceNotiAvatar
-                                                      : _notiList[index]
-                                                          .imageUrl!,
-                                                  fit: BoxFit.cover,
-                                                ),
-                                              ),
+                                                  height: 15.w,
+                                                  width: 15.w,
+                                                  clipBehavior: Clip.hardEdge,
+                                                  decoration:
+                                                      const BoxDecoration(
+                                                          shape:
+                                                              BoxShape.circle),
+                                                  child: CachedNetworkImage(
+                                                      key: UniqueKey(),
+                                                      height: 15.w,
+                                                      width: 15.w,
+                                                      fit: BoxFit.cover,
+                                                      imageUrl: _notiList[index]
+                                                                  .imageUrl ==
+                                                              null
+                                                          ? _notiList[index]
+                                                                      .type ==
+                                                                  'PLAN'
+                                                              ? defaultPlanNotiAvatar
+                                                              : defaultServiceNotiAvatar
+                                                          : _notiList[index]
+                                                              .imageUrl!,
+                                                      placeholder: (context,
+                                                              url) =>
+                                                          Image.memory(
+                                                              kTransparentImage),
+                                                      errorWidget: (context,
+                                                              url, error) =>
+                                                          Image.asset(
+                                                              emptyPlan))),
                                               SizedBox(
                                                 width: 2.w,
                                               ),

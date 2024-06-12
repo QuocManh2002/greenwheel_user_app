@@ -4,7 +4,6 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:phuot_app/service/order_service.dart';
 import 'package:html_editor_enhanced/html_editor.dart';
 import 'package:intl/intl.dart';
 import 'package:sizer2/sizer2.dart';
@@ -14,7 +13,7 @@ import '../../../core/constants/global_constant.dart';
 import '../../../core/constants/urls.dart';
 import '../../../helpers/util.dart';
 import '../../../main.dart';
-import '../../../service/background_service.dart';
+import '../../../service/order_service.dart';
 import '../../../service/plan_service.dart';
 import '../../../view_models/location.dart';
 import '../../../view_models/order.dart';
@@ -58,6 +57,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
   List<Widget> _listSurchargeCards = [];
   final PlanService _planService = PlanService();
   final OrderService _orderService = OrderService();
+
   int? memberLimit;
   PlanCreate? _plan;
   bool _isAvailableToOrder = false;
@@ -493,26 +493,27 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
           json.decode(sharedPreferences.getString('plan_temp_order') ?? '[]');
       orders = _orderService.getOrderFromJson(orderList);
       _plan = PlanCreate(
-        tempOrders: orders,
-        departAddress: sharedPreferences.getString('plan_start_address'),
-        numOfExpPeriod: sharedPreferences.getInt('initNumOfExpPeriod'),
-        locationId: widget.location.id,
-        name: sharedPreferences.getString('plan_name'),
-        departCoordinate: PointLatLng(
-            sharedPreferences.getDouble('plan_start_lat')!,
-            sharedPreferences.getDouble('plan_start_lng')!),
-        maxMemberCount: sharedPreferences.getInt('plan_number_of_member') ?? 1,
-        savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
-        startDate:
-            DateTime.parse(sharedPreferences.getString('plan_start_date')!),
-        departAt: departureDate,
-        schedule: sharedPreferences.getString('plan_schedule'),
-        endDate: DateTime.parse(sharedPreferences.getString('plan_end_date')!),
-        travelDuration: DateFormat.Hm().format(travelDuration),
-        note: sharedPreferences.getString('plan_note'),
-        maxMemberWeight: sharedPreferences.getInt('plan_max_member_weight'),
-        sourceId: sharedPreferences.getInt('plan_sourceId')
-      );
+          tempOrders: orders,
+          departAddress: sharedPreferences.getString('plan_start_address'),
+          numOfExpPeriod: sharedPreferences.getInt('initNumOfExpPeriod'),
+          locationId: widget.location.id,
+          name: sharedPreferences.getString('plan_name'),
+          departCoordinate: PointLatLng(
+              sharedPreferences.getDouble('plan_start_lat')!,
+              sharedPreferences.getDouble('plan_start_lng')!),
+          maxMemberCount:
+              sharedPreferences.getInt('plan_number_of_member') ?? 1,
+          savedContacts: sharedPreferences.getString('plan_saved_emergency')!,
+          startDate:
+              DateTime.parse(sharedPreferences.getString('plan_start_date')!),
+          departAt: departureDate,
+          schedule: sharedPreferences.getString('plan_schedule'),
+          endDate:
+              DateTime.parse(sharedPreferences.getString('plan_end_date')!),
+          travelDuration: DateFormat.Hm().format(travelDuration),
+          note: sharedPreferences.getString('plan_note'),
+          maxMemberWeight: sharedPreferences.getInt('plan_max_member_weight'),
+          sourceId: sharedPreferences.getInt('plan_sourceId'));
     }
     showModalBottomSheet(
         backgroundColor: Colors.white.withOpacity(0.94),
@@ -547,11 +548,14 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
       final surchargeText =
           _listSurchargeObjects.map((e) => e.toFinalJson()).toList().toString();
       if (_isAvailableToOrder) {
-        if (widget.isClone) {
-          rs = await _planService.clonePlan(_plan!, context, surchargeText);
-        } else {
-          rs = await _planService.createNewPlan(_plan!, context, surchargeText);
-        }
+        rs = await _planService.createNewPlan(_plan!, context, surchargeText);
+        // if (rs != null) {
+        //   OfflineService offlineService = OfflineService();
+        //   final plan = await _planService.getPlanById(rs, 'OWN');
+        //   if (plan != null) {
+        //     offlineService.savePlanToHive(plan);
+        //   }
+        // }
       } else {
         rs = 0;
       }
@@ -562,9 +566,7 @@ class _CreateNoteSurchargeScreenState extends State<CreateNoteSurchargeScreen> {
 
     if (rs != null) {
       Navigator.of(context).pop();
-      if (widget.plan == null && rs != 0) {
-        await initializeService();
-      }
+      if (widget.plan == null && rs != 0) {}
       DialogStyle().successDialog(
           context,
           widget.plan == null

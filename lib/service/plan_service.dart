@@ -8,34 +8,36 @@ import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
-import 'package:phuot_app/config/graphql_config.dart';
-import 'package:phuot_app/core/constants/colors.dart';
-import 'package:phuot_app/core/constants/shedule_item_type.dart';
-import 'package:phuot_app/core/constants/urls.dart';
-import 'package:phuot_app/helpers/util.dart';
-import 'package:phuot_app/main.dart';
-import 'package:phuot_app/service/order_service.dart';
-import 'package:phuot_app/view_models/location.dart';
-import 'package:phuot_app/view_models/order.dart';
-import 'package:phuot_app/view_models/plan_member.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/plan_card.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/plan_create.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/plan_schedule.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/plan_schedule_item.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/surcharge.dart';
-import 'package:phuot_app/widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import 'package:intl/intl.dart';
 import 'package:location/location.dart';
+import 'package:phuot_app/core/constants/plan_statuses.dart';
+import 'package:phuot_app/models/pagination.dart';
 import 'package:sizer2/sizer2.dart';
 
+import '../config/graphql_config.dart';
+import '../core/constants/colors.dart';
 import '../core/constants/combo_date_plan.dart';
 import '../core/constants/global_constant.dart';
 import '../core/constants/service_types.dart';
 import '../core/constants/sessions.dart';
+import '../core/constants/shedule_item_type.dart';
+import '../core/constants/urls.dart';
+import '../helpers/util.dart';
+import '../main.dart';
 import '../screens/plan_screen/create_plan/select_start_location_screen.dart';
+import '../view_models/location.dart';
+import '../view_models/order.dart';
+import '../view_models/plan_member.dart';
+import '../view_models/plan_viewmodels/plan_card.dart';
+import '../view_models/plan_viewmodels/plan_create.dart';
+import '../view_models/plan_viewmodels/plan_detail.dart';
+import '../view_models/plan_viewmodels/plan_schedule.dart';
+import '../view_models/plan_viewmodels/plan_schedule_item.dart';
+import '../view_models/plan_viewmodels/surcharge.dart';
+import '../widgets/plan_screen_widget/confirm_plan_bottom_sheet.dart';
 import '../widgets/plan_screen_widget/update_order_clone_plan_bottom_sheet.dart';
 import '../widgets/style_widget/dialog_style.dart';
+import 'order_service.dart';
 
 class PlanService {
   static GraphQlConfig graphQlConfig = GraphQlConfig();
@@ -43,7 +45,7 @@ class PlanService {
   final Location _locationController = Location();
   final OrderService _orderService = OrderService();
 
-  Future<int> createNewPlan(
+  Future<int?> createNewPlan(
       PlanCreate model, BuildContext context, String surcharges) async {
     var schedule = json.decode(model.schedule!);
     final emerIds =
@@ -65,10 +67,11 @@ class PlanService {
     surcharges:$surcharges
     travelDuration:"${model.travelDuration}"
     tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
+    ${model.sourceId != null ? 'sourceId: ${model.sourceId}' : ''}
   }){
-    id
-  }
-}
+      id
+      
+}}
 """);
     try {
       QueryResult result = await client.mutate(MutationOptions(
@@ -92,7 +95,8 @@ class PlanService {
     tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
     ${model.sourceId != null ? 'sourceId: ${model.sourceId}' : ''}
   }){
-    id
+      id
+      
   }
 }
 """),
@@ -106,6 +110,7 @@ class PlanService {
       } else {
         var rstext = result.data!;
         int planId = rstext['createPlan']['id'];
+
         return planId;
       }
     } catch (error) {
@@ -167,78 +172,6 @@ mutation{
       } else {
         var rstext = result.data!;
         int planId = rstext['updatePlan']['id'];
-        return planId;
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
-  }
-
-  Future<int> clonePlan(
-      PlanCreate model, BuildContext context, String surcharges) async {
-    try {
-      var schedule = json.decode(model.schedule!);
-      final emerIds =
-          json.decode(model.savedContacts!).map((e) => e['id']).toList();
-      log("""
-  mutation{
-  createPlan(dto: {
-    departureAddress:"${model.departAddress}"
-    departAt:"${model.departAt!.year}-${model.departAt!.month}-${model.departAt!.day} ${model.departAt!.hour}:${model.departAt!.minute}:00.000+07:00"
-    departure:[${model.departCoordinate!.longitude},${model.departCoordinate!.latitude}]
-    destinationId:${model.locationId}
-    maxMemberCount:${model.maxMemberCount}
-    maxMemberWeight:${model.maxMemberWeight!}
-    name:"${model.name}"
-    note: "${model.note}"
-    periodCount:${model.numOfExpPeriod}
-    savedProviderIds:$emerIds
-    schedule:${convertToFinalSchedule(schedule)}
-    surcharges:$surcharges
-    travelDuration:"${model.travelDuration}"
-    sourceId:${sharedPreferences.getInt('planId')}
-    tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
-  }){
-    id
-  }
-}
-""");
-      GraphQLClient client = graphQlConfig.getClient();
-      QueryResult result = await client.mutate(MutationOptions(
-        fetchPolicy: FetchPolicy.noCache,
-        document: gql("""
-  mutation{
-  createPlan(dto: {
-    departureAddress:"${model.departAddress}"
-    departAt:"${model.departAt!.year}-${model.departAt!.month}-${model.departAt!.day} ${model.departAt!.hour}:${model.departAt!.minute}:00.000+07:00"
-    departure:[${model.departCoordinate!.longitude},${model.departCoordinate!.latitude}]
-    destinationId:${model.locationId}
-    maxMemberCount:${model.maxMemberCount}
-    maxMemberWeight:${model.maxMemberWeight!}
-    name:"${model.name}"
-    note: "${model.note}"
-    periodCount:${model.numOfExpPeriod}
-    savedProviderIds:$emerIds
-    schedule:${convertToFinalSchedule(schedule)}
-    surcharges:$surcharges
-    travelDuration:"${model.travelDuration}"
-    sourceId:${sharedPreferences.getInt('planId')}
-    tempOrders:${_orderService.convertTempOrders(model.tempOrders ?? [], model.startDate!)}
-  }){
-    id
-  }
-}
-"""),
-      ));
-      if (result.hasException) {
-        dynamic rs = result.exception!.linkException!;
-        Utils().handleServerException(
-            rs.parsedResponse.errors.first.message.toString(), context);
-
-        throw Exception(result.exception!.linkException!);
-      } else {
-        var rstext = result.data!;
-        int planId = rstext['createPlan']['id'];
         return planId;
       }
     } catch (error) {
@@ -321,6 +254,8 @@ mutation{
         status
         weight
         companions
+        reportReason
+        modifiedAt
         account {
           avatarPath
           id
@@ -363,6 +298,9 @@ mutation{
         type
         currentStatus
         uuid
+        traces{
+          description
+        }
         provider {
           coordinate{
             coordinates
@@ -630,44 +568,49 @@ mutation{
   }
 
   Future<List<PlanMemberViewModel>> getPlanMember(
-      int planId, String type, BuildContext context) async {
+      int planId, BuildContext context) async {
     try {
-      String planType = '';
-      switch (type) {
-        case "JOIN":
-          planType = 'joinedPlans';
-          break;
-        case "OWN":
-          planType = 'ownedPlans';
-          break;
-        case "INVITATION":
-          planType = 'invitations';
-          break;
-        case "SCAN":
-          planType = 'scannablePlans';
-          break;
-        case "PUBLISH":
-          planType = 'publishedPlans';
-          break;
+      log('''{
+  plans(where: { id: { eq: $planId } }) {
+    edges {
+      node {
+        members {
+          status
+          weight
+          companions
+          account {
+            name
+            phone
+            id
+            isMale
+            avatarPath
+          }
+          id
+        }
       }
+    }
+  }
+}''');
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  $planType(where: { id: { eq: $planId } }) {
-    nodes {
-      members {
-        status
-        weight
-        companions
-        account {
-          name
-          phone
+  plans(where: { id: { eq: $planId } }) {
+    edges {
+      node {
+        members {
+          status
+          weight
+          companions
+          account {
+            name
+            phone
+            id
+            isMale
+            avatarPath
+          }
           id
-          isMale
-          avatarPath
         }
-        id
       }
     }
   }
@@ -681,7 +624,7 @@ mutation{
         throw Exception(result.exception!.linkException!);
       }
 
-      List? res = result.data![planType]['nodes'][0]['members'];
+      List? res = result.data!['plans']['edges'][0]['node']['members'];
       if (res == null || res.isEmpty) {
         return [];
       }
@@ -771,17 +714,22 @@ mutation{
     return result;
   }
 
-  Future<List<PlanCardViewModel>?> getSuggestPlanByLocation(
-      int locationId, BuildContext context) async {
+  Future<Pagination<PlanCardViewModel>?> getSuggestPlanByLocation(
+      int locationId, String? cursor, BuildContext context) async {
     try {
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  publishedPlans(
+  plans(
     where: { destinationId: { eq: $locationId } }
-    order: { periodCount: ASC }
+    order: { periodCount: ASC, id: DESC}
+    after: ${cursor == null ? null : json.encode(cursor)}
+    first: 20
   ) {
+    pageInfo {
+      endCursor
+    }
     edges {
       node {
         id
@@ -804,14 +752,14 @@ mutation{
         throw Exception(result.exception!.linkException!);
       }
 
-      List? res = result.data!['publishedPlans']['edges'];
+      List? res = result.data!['plans']['edges'];
       if (res == null || res.isEmpty) {
-        return [];
+        return Pagination(pageSize: 10, cursor: cursor, objects: []);
       }
-
-      List<PlanCardViewModel> plans =
-          res.map((plan) => PlanCardViewModel.fromJson(plan['node'])).toList();
-      return plans;
+      cursor = result.data!['plans']['pageInfo']['endCursor'];
+      final listObjects =
+          res.map((e) => PlanCardViewModel.fromJson(e['node'])).toList();
+      return Pagination(pageSize: 10, cursor: cursor, objects: listObjects);
     } catch (error) {
       throw Exception(error);
     }
@@ -1344,29 +1292,39 @@ mutation{
   setUpDataClonePlan(PlanDetail plan, List<bool> options) {
     final OrderService orderService = OrderService();
     sharedPreferences.setString('plan_clone_options', json.encode(options));
-    sharedPreferences.setInt('planId', plan.id!);
+    sharedPreferences.setInt('plan_sourceId', plan.id!);
     sharedPreferences.setString('plan_location_name', plan.locationName!);
     sharedPreferences.setInt('plan_location_id', plan.locationId!);
-    sharedPreferences.setInt('maxCombodateValue', plan.numOfExpPeriod!);
     sharedPreferences.setInt(
         'init_plan_number_of_member', plan.maxMemberCount!);
+    sharedPreferences.setInt('maxCombodateValue', plan.numOfExpPeriod!);
 
-    sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
-    sharedPreferences.setInt(
-        'plan_combo_date',
-        listComboDate
-                .firstWhere(
-                    (element) => element.duration == plan.numOfExpPeriod)
-                .id -
-            1);
-    sharedPreferences.setInt('plan_number_of_member', plan.maxMemberCount!);
-    sharedPreferences.setInt('plan_max_member_weight', plan.maxMemberWeight!);
+    if (options[0]) {
+      sharedPreferences.setDouble('plan_start_lat', plan.startLocationLat!);
+      sharedPreferences.setDouble('plan_start_lng', plan.startLocationLng!);
+      sharedPreferences.setString('plan_start_address', plan.departureAddress!);
+    }
 
-    sharedPreferences.setDouble('plan_start_lat', plan.startLocationLat!);
-    sharedPreferences.setDouble('plan_start_lng', plan.startLocationLng!);
-    sharedPreferences.setString('plan_start_address', plan.departureAddress!);
-    sharedPreferences.setString(
-        'plan_departureTime', plan.utcDepartAt!.toLocal().toString());
+    if (options[1]) {
+      sharedPreferences.setString(
+          'plan_departureTime', plan.utcDepartAt!.toLocal().toString());
+    }
+
+    if (options[2]) {
+      sharedPreferences.setInt('plan_number_of_member', plan.maxMemberCount!);
+      sharedPreferences.setInt('plan_max_member_weight', plan.maxMemberWeight!);
+    }
+
+    if (options[3]) {
+      sharedPreferences.setInt('initNumOfExpPeriod', plan.numOfExpPeriod!);
+      sharedPreferences.setInt(
+          'plan_combo_date',
+          listComboDate
+                  .firstWhere(
+                      (element) => element.duration == plan.numOfExpPeriod)
+                  .id -
+              1);
+    }
 
     sharedPreferences.setString('plan_name', plan.name!);
 
@@ -1723,6 +1681,105 @@ mutation{
     } else {
       sharedPreferences.setString('plan_schedule', json.encode(newSchedule));
       onConfirm();
+    }
+  }
+
+  Future<int?> reportPlan(
+      String reportReason, int planId, BuildContext context) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql('''
+mutation{
+  reportPlan(dto: {
+    planId:$planId
+    reason:"$reportReason"
+  }){
+    id
+  }
+}
+''')));
+
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+
+        throw Exception(result.exception!.linkException!);
+      }
+
+      return result.data?['reportPlan']['id'];
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<int?> ratePlan(
+      String comment, int planId, int rating, BuildContext context) async {
+    try {
+      QueryResult result = await client.mutate(MutationOptions(document: gql('''
+mutation{
+    ratePlan(dto: {
+      comment:"$comment"
+      planId:$planId
+      rating:$rating
+    }){
+      id
+    }
+  }
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+        throw Exception(result.exception!.linkException!);
+      }
+      return result.data?['ratePlan']['id'];
+    } catch (error) {
+      throw Exception(error);
+    }
+  }
+
+  Future<bool> getValidOfflinePlan(int planId, BuildContext context) async {
+    try {
+      QueryResult result = await client.query(QueryOptions(document: gql('''
+{
+  plans(
+    where: {
+      id:{
+        eq:$planId
+      }
+    }
+  ){
+    edges{
+      node{
+        id
+        status
+      }
+    }
+  }
+}
+''')));
+      if (result.hasException) {
+        dynamic rs = result.exception!.linkException!;
+        Utils().handleServerException(
+            rs.parsedResponse.errors.first.message.toString(), context);
+        throw Exception(result.exception!.linkException!);
+      }
+
+      List? res = result.data?['plans']['edges'];
+      if (res == null || res.isEmpty) {
+        return false;
+      }
+
+      final status = res.first['node']['status'];
+      final statusIndex =
+          planStatuses.firstWhere((element) => element.engName == status).value;
+      if (statusIndex >= 5) {
+        return false;
+      } else {
+        return true;
+      }
+    } catch (error) {
+      throw Exception(error);
     }
   }
 }

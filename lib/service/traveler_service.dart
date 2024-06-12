@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
 import 'package:phuot_app/config/graphql_config.dart';
@@ -13,7 +14,7 @@ import 'package:phuot_app/view_models/register.dart';
 class CustomerService {
   GraphQlConfig graphQlConfig = GraphQlConfig();
 
-  Future<CustomerViewModel?> getCustomerByPhone(String phone) async {
+  Future<TravelerViewModel?> getCustomerByPhone(String phone) async {
     GraphQLClient client = graphQlConfig.getClient();
     try {
       QueryResult result = await client.query(
@@ -33,6 +34,7 @@ class CustomerService {
       coordinate{
         coordinates
       }
+      prestigePoint
     }
   }
 }
@@ -53,8 +55,8 @@ class CustomerService {
       if (res == null || res.isEmpty) {
         return null;
       }
-      List<CustomerViewModel> users =
-          res.map((users) => CustomerViewModel.fromJson(users)).toList();
+      List<TravelerViewModel> users =
+          res.map((users) => TravelerViewModel.fromJson(users)).toList();
       return users[0];
     } catch (error) {
       throw Exception(error);
@@ -66,6 +68,27 @@ class CustomerService {
   Future<RegisterModel?> registerTraveler(RegisterViewModel model) async {
     GraphQLClient client = graphQlConfig.getClient();
     try {
+      log('''mutation register{
+  travelerRegister(dto: {
+    deviceToken:"${model.deviceToken}"
+    isMale:${model.isMale}
+    name:"${model.name}" 
+    avatarUrl: ${model.avatarUrl == null ? null : json.encode('$baseBucketImage${model.avatarUrl}')}
+  }){
+    authResult{
+      accessToken
+      refreshToken
+    }
+    account{
+      id
+      name
+      isMale
+      gcoinBalance
+      phone
+      avatarPath
+    }
+  }
+}''');
       QueryResult result = await client.mutate(
           MutationOptions(fetchPolicy: FetchPolicy.noCache, document: gql('''
 mutation register{
@@ -130,7 +153,7 @@ mutation removeDevice{
     }
   }
 
-  Future<List<CustomerViewModel>> getCustomerById(int id) async {
+  Future<List<TravelerViewModel>> getCustomerById(int id) async {
     try {
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.query(
@@ -152,6 +175,7 @@ mutation removeDevice{
       gcoinBalance
       phone
       avatarPath
+      prestigePoint
     }
     }
 }
@@ -167,15 +191,15 @@ mutation removeDevice{
       if (res == null || res.isEmpty) {
         return [];
       }
-      List<CustomerViewModel> users =
-          res.map((users) => CustomerViewModel.fromJson(users)).toList();
+      List<TravelerViewModel> users =
+          res.map((users) => TravelerViewModel.fromJson(users)).toList();
       return users;
     } catch (error) {
       throw Exception(error);
     }
   }
 
-  Future<int?> updateTravelerProfile(CustomerViewModel model) async {
+  Future<int?> updateTravelerProfile(TravelerViewModel model) async {
     try {
       GraphQLClient client = graphQlConfig.getClient();
       QueryResult result = await client.mutate(MutationOptions(document: gql('''
@@ -317,7 +341,7 @@ mutation {
     }
   }
 
-  void saveAccountToSharePref(CustomerViewModel traveler) {
+  void saveAccountToSharePref(TravelerViewModel traveler) {
     if (traveler.defaultAddress != null && traveler.defaultCoordinate != null) {
       Utils().saveDefaultAddressToSharedPref(
           traveler.defaultAddress!, traveler.defaultCoordinate!);

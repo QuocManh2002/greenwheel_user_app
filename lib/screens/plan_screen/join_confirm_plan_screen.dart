@@ -5,6 +5,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:phuot_app/screens/payment_screen/add_balance.dart';
+import 'package:phuot_app/service/offline_service.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
@@ -48,6 +49,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
   bool isEnableToAdd = false;
   bool isEnableToSubtract = false;
   final CustomerService _customerService = CustomerService();
+  final OfflineService _offlineService = OfflineService();
   bool isLoading = true;
   final myId = sharedPreferences.getInt('userId')!;
 
@@ -693,6 +695,7 @@ class _JoinPlanScreenState extends State<JoinConfirmPlanScreen> {
                 final rs = await _planService.joinPlan(
                     widget.plan.id!, companionNames, context);
                 if (rs != null) {
+                  _offlineService.savePlanToHive(widget.plan);
                   handleJoinSuccess();
                 }
               }

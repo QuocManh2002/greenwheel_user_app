@@ -23,17 +23,15 @@ import 'package:transparent_image/transparent_image.dart';
 
 // ignore: must_be_immutable
 class BaseInformationWidget extends StatefulWidget {
-  BaseInformationWidget(
+  const BaseInformationWidget(
       {super.key,
       required this.plan,
-      required this.members,
       required this.planType,
       required this.isLeader,
       this.routeData,
       required this.locationLatLng,
       required this.refreshData});
   final PlanDetail plan;
-  List<PlanMemberViewModel> members;
   final String planType;
   final void Function() refreshData;
   final bool isLeader;
@@ -57,7 +55,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
   @override
   void initState() {
     super.initState();
-    joinedMembers = widget.members
+    joinedMembers = widget.plan.members!
         .where((member) => member.status == MemberStatus.JOINED.name)
         .toList();
     status = planStatuses
@@ -299,11 +297,11 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                     ),
                     for (int i = 0;
                         i <
-                            (widget.members.length < 3
-                                ? widget.members.length
+                            (joinedMembers.length < 3
+                                ? joinedMembers.length
                                 : 3);
                         i++)
-                      if (widget.members[i].weight != 0)
+                      if (joinedMembers[i].weight != 0)
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 6),
                           child: Row(
@@ -320,12 +318,12 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                                       width: double.infinity,
                                       fit: BoxFit.cover,
                                       imageUrl:
-                                          '$baseBucketImage${widget.members[i].imagePath}',
+                                          '$baseBucketImage${joinedMembers[i].imagePath}',
                                       placeholder: (context, url) =>
                                           Image.memory(kTransparentImage),
                                       errorWidget: (context, url, error) =>
                                           Image.asset(
-                                            widget.members[i].isMale
+                                            joinedMembers[i].isMale
                                                 ? maleDefaultAvatar
                                                 : femaleDefaultAvatar,
                                             height: 25,
@@ -335,7 +333,7 @@ class _BaseInformationWidgetState extends State<BaseInformationWidget> {
                                 width: 4,
                               ),
                               Text(
-                                " ${widget.members[i].name} (${widget.members[i].companions == null ? 1 : widget.members[i].companions!.length + 1})",
+                                " ${joinedMembers[i].name} (${joinedMembers[i].companions == null ? 1 : joinedMembers[i].companions!.length + 1})",
                                 style: const TextStyle(
                                     fontSize: 18, fontFamily: 'NotoSans'),
                               ),

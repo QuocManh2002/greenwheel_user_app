@@ -101,4 +101,23 @@ class GlobalConstant {
   final int PLAN_NAME_MAX_LENGTH = 30;
   final int ACCOUNT_NAME_MIN_LENGTH = 4;
   final int ACCOUNT_NAME_MAX_LENGTH = 30;
+  final int PLAN_COMMENT_MIN_LENGTH = 10;
+  final int PLAN_COMMENT_MAX_LENGTH = 300;
+  final int MEMBER_REFUND_SELF_REMOVE_1_DAY_PCT = 50;
+  final int ORDER_PROCESSING_DATE_DURATION = 3;
+  final int ORDER_REFUND_CUSTOMER_CANCEL_1_DAY_PCT = 70;
+  final int ORDER_REFUND_CUSTOMER_CANCEL_2_DAY_PCT = 40;
+  final int MIN_TOPUP = 15;
+  final int MAX_TOPUP = 10000;
+  final int HOLIDAY_MEAL_UP_PCT = 10;
+  final int HOLIDAY_LODGING_UP_PCT = 50;
+  final int HOLIDAY_RIDING_UP_PCT = 10;
+  final int PLAN_COMPLETE_AFTER_DAYS = 3;
+  final int ORDER_COMPLETE_AFTER_DAYS = 3;
+  final int MIN_PLAN_MEMBER = 1;
+  final int MAX_PLAN_MEMBER = 20;
+  final int MIN_DEPART_DIFF = 7;
+  final int MAX_DEPART_DIFF = 30;
+  final int MIN_PERIOD = 2;
+  final int MAX_PERIOD = 30;
 }

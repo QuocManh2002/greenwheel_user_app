@@ -28,6 +28,7 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
   Duration duration = const Duration();
   String comboDateText = '';
   PlanStatus? status;
+  String? statusText;
 
   @override
   void initState() {
@@ -35,15 +36,27 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
     setUpData();
   }
 
-  setUpData() {
+  setUpData() async {
     if (widget.plan.utcRegCloseAt != null) {
       calculateTimeLeft(widget.plan.utcRegCloseAt!.toLocal());
       timer = Timer.periodic(const Duration(minutes: 1), (timer) {
         calculateTimeLeft(widget.plan.utcRegCloseAt!.toLocal());
       });
     }
-    status = planStatuses
-        .firstWhere((element) => element.engName == widget.plan.status);
+    if (widget.plan.status != null) {
+      status = planStatuses
+          .firstWhere((element) => element.engName == widget.plan.status);
+    }
+
+    if (status == planStatuses[4]) {
+      final systemTime = await Utils().getSystemTime(context);
+      setState(() {
+        statusText =
+            '${widget.plan.locationName} - Ngày ${systemTime.difference(widget.plan.utcStartAt!.toLocal()).inDays + 1}';
+      });
+    } else {
+      statusText = status != null ? status!.name : '';
+    }
     var tempDuration = DateFormat.Hm().parse(widget.plan.travelDuration!);
     final startTime = DateTime(0, 0, 0, widget.plan.utcDepartAt!.hour,
         widget.plan.utcDepartAt!.minute, 0);
@@ -125,25 +138,27 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
           SizedBox(
             height: 0.5.h,
           ),
-          if(widget.plan.isPublished == null || !widget.plan.isPublished!)
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 1.5.w, vertical: 0.2.h),
-            decoration: const BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.all(Radius.circular(10))),
-            child: Text(
-              status!.name,
-              style: const TextStyle(
-                  fontSize: 18,
-                  fontFamily: 'NotoSans',
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold),
+          if (statusText != null &&
+              statusText!.isNotEmpty &&
+              (widget.plan.isPublished == null || !widget.plan.isPublished!))
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 1.5.w, vertical: 0.2.h),
+              decoration: const BoxDecoration(
+                  color: primaryColor,
+                  borderRadius: BorderRadius.all(Radius.circular(10))),
+              child: Text(
+                statusText!,
+                style: const TextStyle(
+                    fontSize: 18,
+                    fontFamily: 'NotoSans',
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold),
+              ),
             ),
-          ),
-          if(widget.plan.isPublished == null || !widget.plan.isPublished!)
-          SizedBox(
-            height: 0.5.h,
-          ),
+          if (widget.plan.isPublished == null || !widget.plan.isPublished!)
+            SizedBox(
+              height: 0.5.h,
+            ),
           if (widget.plan.utcRegCloseAt != null &&
               widget.plan.status == planStatuses[1].engName)
             Column(
@@ -198,8 +213,9 @@ class _DetailPlanHeaderState extends State<DetailPlanHeader> {
     );
   }
 
-  void calculateTimeLeft(DateTime deadLine) {
-    final minutes = deadLine.difference(DateTime.now()).inMinutes;
+  void calculateTimeLeft(DateTime deadLine) async {
+    final systemTime = await Utils().getSystemTime(context);
+    final minutes = deadLine.difference(systemTime).inMinutes;
     setState(() => duration = Duration(minutes: minutes));
   }
 

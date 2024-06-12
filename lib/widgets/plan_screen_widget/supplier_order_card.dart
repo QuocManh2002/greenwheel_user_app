@@ -39,6 +39,8 @@ class SupplierOrderCard extends StatelessWidget {
       required this.isTempOrder,
       this.location,
       required this.isConfirm,
+      required this.isCancel,
+      this.cancelReason,
       this.planId});
   final OrderViewModel order;
   final DateTime startDate;
@@ -51,6 +53,8 @@ class SupplierOrderCard extends StatelessWidget {
   final void Function(dynamic) callback;
   final LocationViewModel? location;
   final bool isConfirm;
+  final bool isCancel;
+  final String? cancelReason;
 
   @override
   Widget build(BuildContext context) {
@@ -226,6 +230,7 @@ class SupplierOrderCard extends StatelessWidget {
             Navigator.of(context).push(MaterialPageRoute(
                 builder: (ctx) => OrderDetailScreen(
                       numberOfMember: memberLimit,
+                      isCancel: isCancel,
                       availableGcoinAmount: availableGcoinAmount,
                       endDate: endDate,
                       order: order,
@@ -234,6 +239,7 @@ class SupplierOrderCard extends StatelessWidget {
                       isTempOrder: isTempOrder && !isConfirm,
                       planId: planId,
                       location: location,
+                      cancelReason: cancelReason,
                       callback: () {
                         callback(null);
                       },
@@ -337,15 +343,25 @@ class SupplierOrderCard extends StatelessWidget {
                 ],
               ),
             ),
-            if (isConfirm)
-              Padding(
-                padding: EdgeInsets.only(right: 2.w, top: 1.h),
-                child: const Icon(
-                  Icons.check_circle,
-                  color: primaryColor,
-                  size: 25,
-                ),
-              )
+            isCancel
+                ? Padding(
+                    padding: EdgeInsets.only(right: 2.w, top: 1.h),
+                    child: const Icon(
+                      Icons.cancel_outlined,
+                      color: Colors.red,
+                      size: 25,
+                    ),
+                  )
+                : isConfirm
+                    ? Padding(
+                        padding: EdgeInsets.only(right: 2.w, top: 1.h),
+                        child: const Icon(
+                          Icons.check_circle,
+                          color: primaryColor,
+                          size: 25,
+                        ),
+                      )
+                    : Container()
           ]),
         ),
       ),

@@ -93,8 +93,8 @@ class _PlanScheduleActivityViewState extends State<PlanScheduleActivityView> {
                             height: 2.h,
                           ),
                           if (widget.item.orderUUID != null &&
-                              (widget.isLeader ||
-                                  widget.planType == 'PUBLISH'))
+                              _order != null &&
+                              (widget.isLeader || widget.planType == 'PUBLISH'))
                             Container(
                               width: 100.w,
                               padding: const EdgeInsets.symmetric(

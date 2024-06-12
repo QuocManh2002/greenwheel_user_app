@@ -96,12 +96,14 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                             ? widget.plan.surcharges!.length
                             : 0,
                         itemBuilder: (context, index) {
-                          final statusIndex = planStatuses
-                              .firstWhere(
-                                (element) =>
-                                    element.engName == widget.plan.status,
-                              )
-                              .value;
+                          final statusIndex = widget.plan.status == null
+                              ? 0
+                              : planStatuses
+                                  .firstWhere(
+                                    (element) =>
+                                        element.engName == widget.plan.status,
+                                  )
+                                  .value;
                           return Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 8),
                             child: SurchargeCard(
@@ -128,11 +130,11 @@ class _DetailPlanSurchargeNoteState extends State<DetailPlanSurchargeNote>
                     height: 1.h,
                   ),
                   if (widget.isLeader)
-                  PlanTotalInfo(
-                      plan: widget.plan,
-                      isShowTotal: isShowTotal,
-                      totalOrder: widget.totalOrder.toInt(),
-                      totalSurcharge: _totalSurcharge.toInt())
+                    PlanTotalInfo(
+                        plan: widget.plan,
+                        isShowTotal: isShowTotal,
+                        totalOrder: widget.totalOrder.toInt(),
+                        totalSurcharge: _totalSurcharge.toInt())
                 ],
               ),
               Container(

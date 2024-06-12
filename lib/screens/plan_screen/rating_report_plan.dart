@@ -11,16 +11,21 @@ import '../../core/constants/colors.dart';
 import '../../core/constants/combo_date_plan.dart';
 import '../../core/constants/global_constant.dart';
 import '../../core/constants/urls.dart';
+import '../../service/plan_service.dart';
 import '../../view_models/plan_viewmodels/combo_date.dart';
 import '../../view_models/plan_viewmodels/plan_detail.dart';
 import '../../widgets/style_widget/dialog_style.dart';
 import '../../widgets/style_widget/text_form_field_widget.dart';
-import '../main_screen/tabscreen.dart';
 
 class RatingReportPlan extends StatefulWidget {
-  const RatingReportPlan({super.key, required this.plan, required this.isRate});
+  const RatingReportPlan(
+      {super.key,
+      required this.plan,
+      required this.isRate,
+      required this.callback});
   final PlanDetail plan;
   final bool isRate;
+  final void Function() callback;
 
   @override
   State<RatingReportPlan> createState() => _RatingReportPlanState();
@@ -29,23 +34,10 @@ class RatingReportPlan extends StatefulWidget {
 class _RatingReportPlanState extends State<RatingReportPlan> {
   int ratingValue = 5;
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+  final PlanService _planService = PlanService();
 
   final TextEditingController _contentController = TextEditingController();
   ComboDate? combodate;
-
-  // bool _isValidSentence(String sentence) {
-  //   List<String> words = sentence.split(' ');
-  //   Map<String, int> wordFrequency = {};
-
-  //   for (String word in words) {
-  //     wordFrequency[word] = (wordFrequency[word] ?? 0) + 1;
-  //     if (wordFrequency[word]! >= 3) {
-  //       return false;
-  //     }
-  //   }
-
-  //   return true;
-  // }
 
   @override
   void initState() {
@@ -72,14 +64,9 @@ class _RatingReportPlanState extends State<RatingReportPlan> {
                           'Với đánh giá từ ${GlobalConstant().ORDER_MIN_RATING_NO_COMMENT - 1} sao trở xuống, phải thêm nhận xét cho đánh giá chuyến đi',
                       type: DialogType.warning);
                 } else if (_formKey.currentState!.validate()) {
-                  int? rs ;
-                  if (widget.isRate) {
-                    // rating plan
-                  } else {
-                    // report plan
-                  }
-
+                  int? rs;
                   showDialog(
+                    // ignore: use_build_context_synchronously
                     context: context,
                     builder: (context) => AlertDialog(
                       content: SizedBox(
@@ -92,13 +79,25 @@ class _RatingReportPlanState extends State<RatingReportPlan> {
                       ),
                     ),
                   );
+
+                  if (widget.isRate) {
+                    rs = await _planService.ratePlan(_contentController.text,
+                        widget.plan.id!, ratingValue, context);
+                  } else {
+                    rs = await _planService.reportPlan(
+                        _contentController.text, widget.plan.id!, context);
+                  }
+
                   if (rs != null) {
+                    // ignore: use_build_context_synchronously
                     Navigator.of(context).pop();
+                    // ignore: use_build_context_synchronously
                     DialogStyle().successDialog(context,
                         'Đã thêm ${widget.isRate ? 'đánh giá' : 'báo cáo'} chuyến đi');
                     Future.delayed(
                       const Duration(milliseconds: 1500),
                       () {
+                        widget.callback();
                         Navigator.of(context).pop();
                         Navigator.of(context).pop();
                       },
@@ -272,7 +271,7 @@ class _RatingReportPlanState extends State<RatingReportPlan> {
                 child: defaultTextFormField(
                     controller: _contentController,
                     text: widget.isRate ? 'Nhận xét' : 'Nội dung báo cáo ',
-                    maxLength: GlobalConstant().ORDER_COMMENT_MAX_LENGTH,
+                    maxLength: GlobalConstant().PLAN_COMMENT_MAX_LENGTH,
                     maxline: 5,
                     minLine: 5,
                     hinttext: widget.isRate
@@ -282,10 +281,10 @@ class _RatingReportPlanState extends State<RatingReportPlan> {
                       if (value != null &&
                           value.isEmpty &&
                           (value.length <
-                                  GlobalConstant().ORDER_COMMENT_MIN_LENGTH ||
+                                  GlobalConstant().PLAN_COMMENT_MIN_LENGTH ||
                               value.length >
-                                  GlobalConstant().ORDER_COMMENT_MAX_LENGTH)) {
-                        return '${widget.isRate ? 'Nhận xét' : 'Báo cáo'} của chuyến đi phải từ ${GlobalConstant().ORDER_COMMENT_MIN_LENGTH} đến ${GlobalConstant().ORDER_COMMENT_MAX_LENGTH} kí tự';
+                                  GlobalConstant().PLAN_COMMENT_MAX_LENGTH)) {
+                        return '${widget.isRate ? 'Nhận xét' : 'Báo cáo'} của chuyến đi phải từ ${GlobalConstant().PLAN_COMMENT_MIN_LENGTH} đến ${GlobalConstant().PLAN_COMMENT_MAX_LENGTH} kí tự';
                       }
                       return null;
                     },
@@ -295,79 +294,6 @@ class _RatingReportPlanState extends State<RatingReportPlan> {
           ),
         ),
       ),
-      // Padding(
-      //   padding: const EdgeInsets.all(12),
-      //   child: Column(crossAxisAlignment: CrossAxisAlignment.center, children: [
-      //     SizedBox(
-      //       height: 3.h,
-      //     ),
-      //     Container(
-      //       alignment: Alignment.center,
-      //       child: RatingBar.builder(
-      //         minRating: 0,
-      //         itemBuilder: (ctx, _) => const Icon(
-      //           Icons.star,
-      //           color: Colors.amber,
-      //         ),
-      //         onRatingUpdate: (value) => setState(() {
-      //           rating = value;
-      //         }),
-      //       ),
-      //     ),
-      //     SizedBox(
-      //       height: 2.h,
-      //     ),
-      //     if (rating > 0 && rating < 4)
-      //       Form(
-      //         key: _formKey,
-      //         child: TextFormFieldWithLength(
-      //           controller: _contentController,
-      //           inputType: TextInputType.text,
-      //           hinttext: 'Để lại góp ý của bạn cho ứng dụng...',
-      //           onValidate: (value) {
-      //             if (value!.isEmpty) {
-      //               return "Bình luận của bạn không được để trống";
-      //             } else if (VNBadwordsFilter.isProfane(value)) {
-      //               return "Bình luận của bạn chứa từ ngữ không hợp lệ";
-      //             } else if (!_isValidSentence(value)) {
-      //               return "Bình luận của bạn chứa quá nhiều từ ngữ trùng lặp";
-      //             }
-      //             return null;
-      //           },
-      //         ),
-      //       ),
-      //     SizedBox(
-      //       height: 2.h,
-      //     ),
-      //     ElevatedButton(
-      //         style: elevatedButtonStyle,
-      //         onPressed: () {
-      //           if (rating > 0 && rating < 4) {
-      //             if (_formKey.currentState!.validate()) {
-      //               _showDialog();
-      //             }
-      //           } else {
-      //             _showDialog();
-      //           }
-      //         },
-      //         child: const Text('Thêm đánh giá'))
-      //   ]),
-      // ),
     ));
   }
-
-  _showDialog() => AwesomeDialog(
-      context: context,
-      dialogType: DialogType.success,
-      animType: AnimType.leftSlide,
-      title: 'Thêm đánh giá thành công',
-      titleTextStyle:
-          const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-      btnOkColor: primaryColor,
-      btnOkText: 'Ok',
-      btnOkOnPress: () {
-        Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (ctx) => const TabScreen(pageIndex: 1)),
-            (route) => false);
-      }).show();
 }

@@ -52,6 +52,9 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
   final PlanService _planService = PlanService();
   final OrderService _orderService = OrderService();
 
+  final int minDepartDiff = sharedPreferences.getInt('MIN_DEPART_DIFF')!;
+  final int maxDepartDiff = sharedPreferences.getInt('MAX_DEPART_DIFF')!;
+
   @override
   void initState() {
     super.initState();
@@ -99,7 +102,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
       _selectedDate = departDate;
       _dateController.text = DateFormat('dd/MM/yyyy').format(departDate);
     } else {
-      var initDate = DateTime.now().add(const Duration(days: 7));
+      var initDate = DateTime.now().add(Duration(days: minDepartDiff));
       if (DateTime(0, 0, 0, _selectTime.hour, _selectTime.minute).isBefore(
           DateTime(0, 0, 0, DateTime.now().hour, DateTime.now().minute))) {
         initDate = initDate.add(const Duration(days: 1));
@@ -219,7 +222,7 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                               .parse(_dateController.text),
                           firstDate: DateTime.now(),
                           lastDate:
-                              DateTime.now().add(const Duration(days: 30)),
+                              DateTime.now().add(Duration(days: maxDepartDiff)),
                           cancelText: 'HỦY',
                           confirmText: 'CHỌN',
                           builder: (
@@ -237,10 +240,10 @@ class _SelectStartDateState extends State<SelectStartDateScreen> {
                         if (DateTime(newDay.year, newDay.month, newDay.day,
                                 _selectTime.hour, _selectTime.minute)
                             .isBefore(
-                                DateTime.now().add(const Duration(days: 7)))) {
+                                DateTime.now().add(Duration(days: minDepartDiff)))) {
                           isAvailableToOrder = false;
                           DateTime availableTime =
-                              DateTime.now().add(const Duration(days: 7));
+                              DateTime.now().add(Duration(days: minDepartDiff));
                           DialogStyle().basicDialog(
                               // ignore: use_build_context_synchronously
                               context: context,

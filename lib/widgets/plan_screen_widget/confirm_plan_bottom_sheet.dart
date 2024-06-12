@@ -75,12 +75,12 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     }
     if (widget.surchargeList != null && widget.surchargeList!.isNotEmpty) {
       for (final sur in widget.surchargeList!) {
-        total += sur.gcoinAmount * widget.plan!.maxMemberCount!;
+        total += sur.gcoinAmount * (widget.plan!.maxMemberCount ?? 1);
       }
     }
 
-    budgetPerCapita = ((num.parse((total * 1.1).toStringAsFixed(5)).ceil() /
-            widget.plan!.maxMemberCount!))
+    budgetPerCapita = ((num.parse((total * sharedPreferences.getDouble('BUDGET_ASSURANCE_RATE')!).toStringAsFixed(5)).ceil() /
+            (widget.plan!.maxMemberCount ?? 1) ))
         .ceil();
   }
 
@@ -124,9 +124,9 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
     if (widget.plan!.schedule != null) {
       buildListScheduleText();
     }
-    if (widget.plan!.maxMemberCount != null) {
+    // if (widget.plan!.maxMemberCount != null) {
       getTotal();
-    }
+    // }
     buildServiceInfor();
   }
 
@@ -557,7 +557,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                             locale: 'vi_VN',
                                             name: '')
                                         .format(sur.gcoinAmount *
-                                            widget.plan!.maxMemberCount!),
+                                            (widget.plan!.maxMemberCount ?? 1)),
                                     style: const TextStyle(
                                         fontSize: 15,
                                         fontWeight: FontWeight.bold),
@@ -692,7 +692,7 @@ class _ConfirmPlanBottomSheetState extends State<ConfirmPlanBottomSheet> {
                                       decimalDigits: 0,
                                       name: "")
                                   .format(num.parse(
-                                          (total * 1.1).toStringAsFixed(5))
+                                          (total * (sharedPreferences.getDouble('BUDGET_ASSURANCE_RATE')!)).toStringAsFixed(5))
                                       .ceil()),
                               style: const TextStyle(
                                   fontSize: 15, fontWeight: FontWeight.bold),

@@ -3,7 +3,7 @@ import 'package:phuot_app/view_models/customer.dart';
 class RegisterModel {
   String accessToken;
   String refreshToken;
-  CustomerViewModel traveler;
+  TravelerViewModel traveler;
 
   RegisterModel(
       {required this.accessToken,
@@ -11,7 +11,7 @@ class RegisterModel {
       required this.refreshToken});
 
   factory RegisterModel.fromJson(Map<String, dynamic> json) => RegisterModel(
-      traveler: CustomerViewModel.fromJson(json['account']),
+      traveler: TravelerViewModel.fromJson(json['account']),
       accessToken: json['authResult']['accessToken'],
       refreshToken: json['authResult']['refreshToken']);
 }

@@ -8,6 +8,7 @@ import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:phuot_app/service/config_service.dart';
 
 import '../core/constants/colors.dart';
 import '../core/constants/global_constant.dart';
@@ -437,13 +438,14 @@ class Utils {
       }
     }
     if (isValid) {
-      final rs = await customerService.updateTravelerProfile(CustomerViewModel(
+      final rs = await customerService.updateTravelerProfile(TravelerViewModel(
           id: 0,
           name: sharedPreferences.getString('userName')!,
           isMale: sharedPreferences.getBool('userIsMale')!,
           avatarUrl: sharedPreferences.getString('userAvatarUrl'),
           phone: sharedPreferences.getString('userPhone')!,
           balance: 0,
+          prestigePoint: 0,
           defaultAddress: defaultAddress,
           defaultCoordinate: selectedAddress != null
               ? PointLatLng(selectedAddress.lat, selectedAddress.lng)
@@ -477,5 +479,28 @@ class Utils {
     } else {
       return GlobalConstant().MAX_SUM_ACTIVITY_TIME;
     }
+  }
+
+  Future<DateTime> getSystemTime(BuildContext context) async {
+    ConfigService configService = ConfigService();
+    final timeString = await configService.getAdditionalSpan(context);
+    List<String>? parts =
+        timeString!.contains('.') ? timeString.split(".") : null;
+    List<String> timeParts = (parts == null ? timeString : parts[1]).split(":");
+    int days = parts == null ? 0 : int.parse(parts[0].split(".")[0]);
+    int hours = int.parse(timeParts[0]);
+    int minutes = int.parse(timeParts[1]);
+    int seconds = int.parse(timeParts[2]);
+    int microseconds =
+        parts == null ? 0 : (double.parse("0.${parts.last}") * 1000000).round();
+
+    Duration duration = Duration(
+      days: days,
+      hours: hours,
+      minutes: minutes,
+      seconds: seconds,
+      microseconds: microseconds,
+    );
+    return DateTime.now().toLocal().add(duration);
   }
 }

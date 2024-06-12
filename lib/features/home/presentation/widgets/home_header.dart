@@ -48,7 +48,7 @@ class HomeHeader extends StatelessWidget {
                         style: TextStyle(color: Colors.white, fontSize: 15),
                         children: [
                       TextSpan(
-                          text: "GREENWHEELS",
+                          text: "PHƯỢT",
                           style: TextStyle(fontWeight: FontWeight.bold)),
                       TextSpan(text: " - đưa chuyến đi của bạn lên tầm cao mới")
                     ])),

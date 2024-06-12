@@ -256,7 +256,7 @@ class ConfirmServiceInfor extends StatelessWidget {
                         Text(
                           NumberFormat.simpleCurrency(
                                   locale: 'vi_VN', decimalDigits: 0, name: "")
-                              .format((total + totalSurcharge) * 1.1),
+                              .format((total + totalSurcharge) * sharedPreferences.getDouble('BUDGET_ASSURANCE_RATE')!),
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),
@@ -276,7 +276,7 @@ class ConfirmServiceInfor extends StatelessWidget {
                         Text(
                           NumberFormat.simpleCurrency(
                                   locale: 'vi_VN', decimalDigits: 0, name: "")
-                              .format((total + totalSurcharge) * 1.1 / sharedPreferences.getInt('plan_number_of_member')!),
+                              .format((total + totalSurcharge) * sharedPreferences.getDouble('BUDGET_ASSURANCE_RATE')! / sharedPreferences.getInt('plan_number_of_member')!),
                           style: const TextStyle(
                               fontSize: 18, fontWeight: FontWeight.bold),
                         ),

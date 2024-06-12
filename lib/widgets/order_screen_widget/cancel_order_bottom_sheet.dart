@@ -1,8 +1,9 @@
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:phuot_app/helpers/util.dart';
+import 'package:phuot_app/main.dart';
 import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/cancel_reasons.dart';
@@ -35,12 +36,21 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
   final OrderService _orderService = OrderService();
   int refundAmount = 0;
 
-  getRefundAmount() {
-    int different = DateTime.now().difference(widget.orderCreatedAt).inHours;
+  getRefundAmount() async {
+    final systemTime = await Utils().getSystemTime(context);
+    int different = systemTime.difference(widget.orderCreatedAt.toLocal()).inHours;
     if (different >= 0 && different <= 24) {
-      return (widget.total * 0.7).ceil();
+      return (widget.total *
+              (sharedPreferences
+                  .getInt('ORDER_REFUND_CUSTOMER_CANCEL_1_DAY_PCT')!) /
+              100)
+          .ceil();
     } else if (different > 24 && different <= 48) {
-      return (widget.total * 0.4).ceil();
+      return (widget.total *
+              (sharedPreferences
+                  .getInt('ORDER_REFUND_CUSTOMER_CANCEL_2_DAY_PCT')!) /
+              100)
+          .ceil();
     } else if (different > 48) {
       return 0;
     }
@@ -49,7 +59,14 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
   @override
   void initState() {
     super.initState();
-    refundAmount = getRefundAmount();
+    setUpData();
+  }
+
+  setUpData() async {
+    final amount = await getRefundAmount();
+    setState(() {
+      refundAmount = amount;
+    });
   }
 
   @override
@@ -226,9 +243,8 @@ class _CancelOrderBottomSheetState extends State<CancelOrderBottomSheet> {
                       children: [
                         const Text(
                           'Hoàn lại:',
-                          style: TextStyle(
-                              fontSize: 17,
-                              fontFamily: 'NotoSans'),
+                          style:
+                              TextStyle(fontSize: 17, fontFamily: 'NotoSans'),
                         ),
                         const Spacer(),
                         Text(

@@ -61,7 +61,9 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
   DateTime? _endDate;
   bool? isOverDate;
   bool? _isCloneComboDate;
-  bool? _isCloneNumOfMember;
+  final int minPlanMember = sharedPreferences.getInt('MIN_PLAN_MEMBER')!;
+  final int maxPlanMember = sharedPreferences.getInt('MAX_PLAN_MEMBER')!;
+
 
   @override
   void initState() {
@@ -89,7 +91,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
 
   setUpDataCreate() async {
     initMemberCount =
-        sharedPreferences.getInt('init_plan_number_of_member') ?? 1;
+        sharedPreferences.getInt('init_plan_number_of_member') ?? minPlanMember;
     int? member = sharedPreferences.getInt('plan_number_of_member');
     int? numOfExpPeriod = sharedPreferences.getInt('initNumOfExpPeriod');
     int? maxMemberWeight = sharedPreferences.getInt('plan_max_member_weight');
@@ -105,7 +107,6 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
       final cloneOptions =
           json.decode(sharedPreferences.getString('plan_clone_options')!);
       _isCloneComboDate = cloneOptions[2];
-      _isCloneNumOfMember = cloneOptions[3];
     }
     if (numOfExpPeriod != null) {
       selectedComboDate = listComboDate.firstWhere(
@@ -441,12 +442,13 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (!(widget.isClone && _isCloneNumOfMember!))
+                  // if (!(widget.isClone && _isCloneNumOfMember!))
+                  // if (!(widget.isClone))
                     IconButton(
                         color: primaryColor,
                         iconSize: 30,
                         onPressed: () {
-                          if (int.parse(_memberController.text) > 2) {
+                          if (int.parse(_memberController.text) > (minPlanMember) ) {
                             onChangeMaxMemberCount("subtract");
                           }
                         },
@@ -467,7 +469,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                           onChange: (value) {
                             if (value == null || value.isEmpty) {
                               sharedPreferences.setInt(
-                                  'plan_number_of_member', 2);
+                                  'plan_number_of_member', minPlanMember);
                               Fluttertoast.showToast(
                                   msg:
                                       "Số lượng thành viên không được để trống",
@@ -482,7 +484,7 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                   int.tryParse(_memberController.text);
                               if (selectedNumber == null) {
                                 sharedPreferences.setInt(
-                                    'plan_number_of_member', 2);
+                                    'plan_number_of_member', minPlanMember);
                                 Fluttertoast.showToast(
                                     msg: "Số lượng thành viên không hợp lệ",
                                     toastLength: Toast.LENGTH_SHORT,
@@ -492,11 +494,11 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                                     textColor: Colors.black,
                                     fontSize: 18.0);
                               } else {
-                                if (selectedNumber < 2 || selectedNumber > 20) {
+                                if (selectedNumber < minPlanMember || selectedNumber > maxPlanMember) {
                                   sharedPreferences.setInt(
-                                      'plan_number_of_member', 2);
+                                      'plan_number_of_member', minPlanMember);
                                   Fluttertoast.showToast(
-                                      msg: "Số lượng thành viên phải từ 2 - 20",
+                                      msg: "Số lượng thành viên phải từ $minPlanMember - $maxPlanMember",
                                       toastLength: Toast.LENGTH_SHORT,
                                       gravity: ToastGravity.CENTER,
                                       timeInSecForIosWeb: 1,
@@ -519,12 +521,13 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                           textAlign: TextAlign.center,
                           controller: _memberController,
                           inputType: TextInputType.number)),
-                  if (!(widget.isClone && _isCloneNumOfMember!))
+                  // if (!(widget.isClone && _isCloneNumOfMember!))
+                  // if (!(widget.isClone))
                     IconButton(
                         color: primaryColor,
                         iconSize: 30,
                         onPressed: () {
-                          if (int.parse(_memberController.text) < 20) {
+                          if (int.parse(_memberController.text) < maxPlanMember) {
                             onChangeMaxMemberCount('add');
                           }
                         },
@@ -546,7 +549,6 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    if (!(widget.isClone && _isCloneNumOfMember!))
                       IconButton(
                           color: primaryColor,
                           iconSize: 30,
@@ -624,7 +626,6 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                             textAlign: TextAlign.center,
                             controller: _maxMemberWeightController,
                             inputType: TextInputType.number)),
-                    if (!(widget.isClone && _isCloneNumOfMember!))
                       IconButton(
                           color: primaryColor,
                           iconSize: 30,
@@ -706,8 +707,8 @@ class _SelectComboDateScreenState extends State<SelectComboDateScreen> {
                   style: elevatedButtonStyle,
                   onPressed: () async {
                     if (int.tryParse(_memberController.text) == null ||
-                        int.parse(_memberController.text) < 1 ||
-                        int.parse(_memberController.text) > 20) {
+                        int.parse(_memberController.text) < minPlanMember ||
+                        int.parse(_memberController.text) > maxPlanMember) {
                       DialogStyle().basicDialog(
                           context: context,
                           title: 'Số lượng thành viên tối đa không hợp lệ',

@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:phuot_app/core/constants/enums.dart';
 import 'package:phuot_app/widgets/style_widget/dialog_style.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -26,18 +27,15 @@ import '../../view_models/plan_viewmodels/temp_plan.dart';
 import '../../widgets/style_widget/button_style.dart';
 
 class SharePlanScreen extends StatefulWidget {
-  const SharePlanScreen(
-      {super.key,
-      required this.planId,
-      required this.planMembers,
-      required this.isFromHost,
-      required this.joinMethod,
-      required this.isEnableToJoin});
+  const SharePlanScreen({
+    super.key,
+    required this.planId,
+    required this.isFromHost,
+    required this.joinMethod,
+  });
   final int planId;
-  final bool isEnableToJoin;
   final bool isFromHost;
   final String joinMethod;
-  final List<PlanMemberViewModel> planMembers;
 
   @override
   State<SharePlanScreen> createState() => _SharePlanScreenState();
@@ -54,7 +52,8 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   final TextEditingController phoneSearch = TextEditingController();
   bool _isSearch = false;
   bool _isSearchingLoading = true;
-  CustomerViewModel? _customer;
+  PlanMemberViewModel? _member;
+  TravelerViewModel? _customer;
   CustomerService customerService = CustomerService();
   bool _isEmptySearchResult = false;
   bool _isEnableToInvite = true;
@@ -62,7 +61,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   List<PlanMemberViewModel> _planMembers = [];
 
   searchCustomer() async {
-    CustomerViewModel? customer = await customerService
+    TravelerViewModel? customer = await customerService
         .getCustomerByPhone('84${phoneSearch.text.substring(1)}');
     if (customer == null) {
       setState(() {
@@ -70,22 +69,34 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
         _isSearchingLoading = false;
       });
     } else {
-      if (_planMembers.any((member) =>
-          member.accountId == customer.id &&
-          (member.status == 'JOINED' || member.status == 'BLOCKED'))) {
-        setState(() {
-          _isEnableToInvite = false;
-        });
+      final member = _planMembers
+          .where((element) => element.accountId == customer.id)
+          .toList();
+      if (member.isNotEmpty) {
+        if (member.first.status == MemberStatus.SELF_BLOCKED.name) {
+          setState(() {
+            _isEmptySearchResult = true;
+            _isSearchingLoading = false;
+          });
+        } else if (member.first.status == MemberStatus.JOINED.name ||
+            member.first.status == MemberStatus.BLOCKED.name ||
+            member.first.status == MemberStatus.INVITED.name) {
+          setState(() {
+            _member = member.first;
+            _customer = customer;
+            _isEnableToInvite = false;
+            _isEmptySearchResult = false;
+            _isSearchingLoading = false;
+          });
+        }
       } else {
         setState(() {
           _isEnableToInvite = true;
+          _customer = customer;
+          _isEmptySearchResult = false;
+          _isSearchingLoading = false;
         });
       }
-      setState(() {
-        _customer = customer;
-        _isEmptySearchResult = false;
-        _isSearchingLoading = false;
-      });
     }
   }
 
@@ -163,18 +174,11 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
     if (rs != 0) {
       // ignore: use_build_context_synchronously
       DialogStyle().successDialog(context, 'Đã gửi lời mời');
+      setUpData();
       Future.delayed(
         const Duration(milliseconds: 1500),
         () {
           phoneSearch.clear();
-          _planMembers.add(PlanMemberViewModel(
-              name: _customer!.name,
-              memberId: _customer!.id,
-              phone: _customer!.phone,
-              accountId: _customer!.id,
-              weight: 1,
-              isMale: _customer!.isMale,
-              status: "INVITED"));
           Navigator.of(context).pop();
           setState(() {
             _isSearch = false;
@@ -185,7 +189,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
   }
 
   setUpData() async {
-    var mems = await _planService.getPlanMember(widget.planId, 'JOIN', context);
+    var mems = await _planService.getPlanMember(widget.planId, context);
     if (mems.isNotEmpty) {
       setState(() {
         _planMembers = mems;
@@ -251,7 +255,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                 ),
               ),
             ),
-            if (widget.joinMethod == 'SCAN')
+            if (widget.joinMethod == JoinMethod.SCAN.name)
               Column(
                 children: [
                   SizedBox(
@@ -264,7 +268,6 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                           TempPlan(
                             isFromHost: widget.isFromHost,
                             planId: widget.planId,
-                            isEnableToJoin: widget.isEnableToJoin,
                           ),
                           "plan"),
                       version: QrVersions.auto,
@@ -373,7 +376,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                                             fit: BoxFit.cover,
                                           )
                                         : Image.network(
-                                            '$baseBucketImage${_customer!.avatarUrl!}',
+                                            '$baseBucketImage${_customer!.avatarUrl}',
                                             width: 6.h,
                                             height: 6.h,
                                             fit: BoxFit.cover),
@@ -427,7 +430,7 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                                           child: const Text(
                                             'Mời',
                                             style: TextStyle(
-                                                fontSize: 16,
+                                                fontSize: 12,
                                                 color: primaryColor),
                                           ))
                                       : Container(
@@ -441,10 +444,10 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
                                                   const BorderRadius.all(
                                                 Radius.circular(8),
                                               )),
-                                          child: const Text(
-                                            'Đã mời',
-                                            style: TextStyle(
-                                                fontSize: 16,
+                                          child: Text(
+                                            getMemberStatus(_member!.status),
+                                            style: const TextStyle(
+                                                fontSize: 12,
                                                 color: primaryColor),
                                           ),
                                         ),
@@ -460,5 +463,16 @@ class _SharePlanScreenState extends State<SharePlanScreen> {
         ],
       ),
     ));
+  }
+
+  getMemberStatus(String status) {
+    switch (status) {
+      case 'JOINED':
+        return 'Đã tham gia';
+      case 'INVITED':
+        return 'Đã mời';
+      case 'BLOCKED':
+        return 'Đã chặn';
+    }
   }
 }

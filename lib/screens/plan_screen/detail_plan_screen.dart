@@ -7,7 +7,11 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:intl/intl.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:phuot_app/helpers/util.dart';
+import 'package:phuot_app/screens/plan_screen/rating_report_plan.dart';
 import 'package:sizer2/sizer2.dart';
 import 'package:transparent_image/transparent_image.dart';
 
@@ -406,13 +410,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               actions: [
                 if (_planDetail != null)
                   if ((isLeader &&
-                          _planDetail!.status == planStatuses[0].engName) ||
+                          (_planDetail!.status == planStatuses[0].engName ||
+                              _planDetail!.status ==
+                                  planStatuses[1].engName)) ||
                       (!isLeader &&
                           _isAlreadyJoin &&
-                          _planDetail!.status == planStatuses[1].engName) ||
-                      (isLeader &&
-                          (_planDetail!.status == planStatuses[0].engName ||
-                              _planDetail!.status == planStatuses[1].engName)))
+                          _planDetail!.status == planStatuses[1].engName))
                     PopupMenuButton(
                       itemBuilder: (ctx) => [
                         if (isLeader &&
@@ -503,6 +506,7 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             body: isLoading
                 ? const PlanDetailLoadingScreen()
                 : RefreshIndicator(
+                    color: primaryColor,
                     onRefresh: () async {
                       setupData();
                     },
@@ -545,6 +549,43 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                                       PlanJoinMethod(
                                         joinMethod: _planDetail!.joinMethod!,
                                         updateJoinMethod: updateJoinMethod,
+                                      ),
+                                    if (!isLeader &&
+                                        (_planDetail!.status ==
+                                                planStatuses[3].engName ||
+                                            _planDetail!.status ==
+                                                planStatuses[4].engName) &&
+                                        myAccount!.reportReason == null)
+                                      InkWell(
+                                        onTap: () {
+                                          Navigator.push(
+                                              context,
+                                              PageTransition(
+                                                  child: RatingReportPlan(
+                                                    isRate: false,
+                                                    plan: _planDetail!,
+                                                    callback: setupData,
+                                                  ),
+                                                  type: PageTransitionType
+                                                      .rightToLeft));
+                                        },
+                                        child: const Column(
+                                          children: [
+                                            Icon(
+                                              Icons.flag_circle_outlined,
+                                              color: Colors.red,
+                                              size: 40,
+                                            ),
+                                            Text(
+                                              'Báo cáo',
+                                              style: TextStyle(
+                                                  fontSize: 17,
+                                                  color: Colors.red,
+                                                  fontFamily: 'NotoSans',
+                                                  fontWeight: FontWeight.bold),
+                                            )
+                                          ],
+                                        ),
                                       ),
                                     SizedBox(
                                       width: 2.w,
@@ -676,6 +717,12 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                           )),
                         ),
                         if ((!isLeader && _isEnableToJoin) ||
+                            (!isLeader &&
+                                _isAlreadyJoin &&
+                                (_planDetail!.status ==
+                                        planStatuses[5].engName ||
+                                    _planDetail!.status ==
+                                        planStatuses[6].engName)) ||
                             widget.planType == 'PUBLISH')
                           buildNewFooter()
                       ],
@@ -716,7 +763,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           ),
           BaseInformationWidget(
             plan: _planDetail!,
-            members: _planDetail!.members!,
             refreshData: setupData,
             isLeader: isLeader,
             planType: widget.planType,
@@ -760,8 +806,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           builder: (ctx) => SharePlanScreen(
                 joinMethod: _planDetail!.joinMethod!,
                 isFromHost: _planDetail!.leaderId == myId!,
-                planMembers: _planDetail!.members!,
-                isEnableToJoin: widget.isEnableToJoin,
                 planId: widget.planId,
               )));
     } else {
@@ -813,9 +857,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
           btnOkColor: redColor,
           desc: 'Chuyến đi đã đủ số lượng thành viên tham gia');
     } else {
-      // final int balance = await _customerService
-      //     .getTravelerBalance(myId!);
-      // if (balance >= _planDetail!.gcoinBudgetPerCapita!) {
       for (final emer in _planDetail!.savedContacts!) {
         emerList.add({
           "name": emer.name,
@@ -875,7 +916,9 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
               plan: _planDetail!,
               isConfirm: false,
               member: member,
-              joinMethod: (isLeader && !_isAlreadyJoin)  ? _planDetail!.joinMethod : null,
+              joinMethod: (isLeader && !_isAlreadyJoin)
+                  ? _planDetail!.joinMethod
+                  : null,
             )));
   }
 
@@ -891,18 +934,27 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                 } else {
                   if (!_isAlreadyJoin) {
                     onJoinPlan(_planDetail!.joinMethod!);
+                  } else {
+                    Navigator.push(
+                        context,
+                        PageTransition(
+                            child: RatingReportPlan(
+                                plan: _planDetail!,
+                                isRate: true,
+                                callback: setupData),
+                            type: PageTransitionType.rightToLeft));
                   }
                 }
               },
               style: elevatedButtonStyle.copyWith(
-                  backgroundColor: MaterialStatePropertyAll(
-                      _isAlreadyJoin && widget.planType != 'PUBLISH'
-                          ? Colors.grey
-                          : primaryColor)),
+                  backgroundColor:
+                      const MaterialStatePropertyAll(primaryColor)),
               child: Text(
                 widget.planType == 'PUBLISH'
                     ? "Sao chép kế hoạch"
-                    : "Tham gia kế hoạch",
+                    : !_isAlreadyJoin
+                        ? "Tham gia kế hoạch"
+                        : "Đánh giá kế hoạch",
                 style:
                     const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
@@ -970,15 +1022,36 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
     setupData();
   }
 
-  handleQuitPlan() {
+  handleQuitPlan() async {
     bool isBlock = false;
+    final systemTime = await Utils().getSystemTime(context);
+    final diffDay = systemTime.difference(myAccount!.modifiedAt!).inDays;
+    final rfAmount = diffDay == 0
+        ? _planDetail!.gcoinBudgetPerCapita
+        : _planDetail!.gcoinBudgetPerCapita! *
+            (1 -
+                (sharedPreferences
+                        .getInt('MEMBER_REFUND_SELF_REMOVE_1_DAY_PCT')!) /
+                    100);
     AwesomeDialog(
             context: context,
             dialogType: DialogType.question,
             btnOkColor: Colors.deepOrangeAccent,
             btnOkText: 'Rời khỏi',
-            btnOkOnPress: () {
-              onQuitPlan(isBlock);
+            btnOkOnPress: () async {
+              final rs = await _planService.removeMember(
+                  myAccount!.memberId, isBlock, context);
+              if (rs != 0) {
+                DialogStyle().successDialog(context, 'Đã rời khỏi chuyến đi');
+                Future.delayed(const Duration(seconds: 2), () {
+                  Navigator.pushAndRemoveUntil(
+                      context,
+                      PageTransition(
+                          child: const TabScreen(pageIndex: 1),
+                          type: PageTransitionType.rightToLeft),
+                      (route) => false);
+                });
+              }
             },
             body: StatefulBuilder(
               builder: (context, setState) => Padding(
@@ -994,8 +1067,44 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
                           fontSize: 20,
                           fontWeight: FontWeight.bold),
                     ),
-                    SizedBox(
+                    Divider(
+                      color: Colors.grey.withOpacity(0.5),
                       height: 2.h,
+                      thickness: 1,
+                    ),
+                    Row(
+                      children: [
+                        const Text(
+                          'Được hoàn lại:',
+                          style:
+                              TextStyle(fontSize: 14, fontFamily: 'NotoSans'),
+                        ),
+                        const Spacer(),
+                        Row(
+                          children: [
+                            Text(
+                              NumberFormat.simpleCurrency(
+                                      decimalDigits: 0,
+                                      locale: 'vi_VN',
+                                      name: '')
+                                  .format(rfAmount),
+                              style: const TextStyle(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.bold,
+                                  fontFamily: 'NotoSans'),
+                            ),
+                            SvgPicture.asset(
+                              gcoinLogo,
+                              height: 20,
+                            )
+                          ],
+                        )
+                      ],
+                    ),
+                    Divider(
+                      color: Colors.grey.withOpacity(0.5),
+                      height: 2.h,
+                      thickness: 1,
                     ),
                     Row(
                       children: [
@@ -1029,24 +1138,6 @@ class _DetailPlanScreenState extends State<DetailPlanNewScreen>
             btnCancelColor: Colors.blue,
             btnCancelOnPress: () {})
         .show();
-  }
-
-  onQuitPlan(bool isBlock) async {
-    final memberId = _planDetail!.members!
-        .firstWhere((element) => element.accountId == myId)
-        .memberId;
-    final rs = await _planService.removeMember(memberId, isBlock, context);
-    if (rs != 0) {
-      DialogStyle().successDialog(context, 'Đã rời khỏi chuyến đi');
-      Future.delayed(const Duration(seconds: 2), () {
-        Navigator.pushAndRemoveUntil(
-            context,
-            PageTransition(
-                child: const TabScreen(pageIndex: 1),
-                type: PageTransitionType.rightToLeft),
-            (route) => false);
-      });
-    }
   }
 
   handleCancelPlan() {

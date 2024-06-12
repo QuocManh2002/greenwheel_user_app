@@ -1,8 +1,5 @@
 import 'dart:convert';
-
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:phuot_app/core/constants/colors.dart';
 import 'package:phuot_app/core/constants/urls.dart';
@@ -113,6 +110,7 @@ class SurchargeCard extends StatelessWidget {
                   ],
                 ),
               ),
+              SizedBox(width: 2.w,),
               if (isEnableToUpdate)
                 PopupMenuButton(
                   itemBuilder: (context) => [

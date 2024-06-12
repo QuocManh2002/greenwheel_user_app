@@ -614,13 +614,14 @@ class _LocationScreenState extends State<LocationScreen> {
       }
     }
     if (isValid) {
-      final rs = await _customerService.updateTravelerProfile(CustomerViewModel(
+      final rs = await _customerService.updateTravelerProfile(TravelerViewModel(
           id: 0,
           name: sharedPreferences.getString('userName')!,
           isMale: sharedPreferences.getBool('userIsMale')!,
           avatarUrl: sharedPreferences.getString('userAvatarUrl'),
           phone: sharedPreferences.getString('userPhone')!,
           balance: 0,
+          prestigePoint: 0,
           defaultAddress: defaultAddress,
           defaultCoordinate: selectedAddress != null
               ? PointLatLng(selectedAddress.lat, selectedAddress.lng)

@@ -77,11 +77,11 @@ Future<Uint8List> generatePdf(final PdfPageFormat format) async {
       sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
   final rs = await cusomterService.getCustomerById(plan!.leaderId!);
   final res = await orderService
-      .getOrderByPlan(sharedPreferences.getInt('plan_id_pdf')!, 'JOIN');
+      .getOrderByPlan(sharedPreferences.getInt('plan_id_pdf')!);
   if (res != null) {
     plan.orders = res['orders'];
   }
-  CustomerViewModel leader = rs[0];
+  TravelerViewModel leader = rs[0];
   final doc = pw.Document(
     title: 'Test Generate PDF',
   );

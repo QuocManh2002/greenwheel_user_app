@@ -37,7 +37,7 @@ void onStart(ServiceInstance service) async {
     Future.delayed(const Duration(seconds: 20), () async {
       Timer.periodic(const Duration(hours: 12), (timer) async {
         final OfflineService offlineService = OfflineService();
-        await offlineService.savePlanToHive();
+        // await offlineService.savePlanToHive();
       });
     });
   }

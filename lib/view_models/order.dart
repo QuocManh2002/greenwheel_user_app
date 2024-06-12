@@ -15,6 +15,7 @@ class OrderViewModel {
   String? type;
   SupplierViewModel? supplier;
   String? currentStatus;
+  String? cancelReason;
 
   OrderViewModel(
       {this.id,
@@ -28,6 +29,7 @@ class OrderViewModel {
       this.uuid,
       this.supplier,
       this.currentStatus,
+      this.cancelReason,
       this.actualTotal});
 
   factory OrderViewModel.fromJson(Map<String, dynamic> json) => OrderViewModel(
@@ -39,6 +41,7 @@ class OrderViewModel {
       createdAt: DateTime.parse(json["createdAt"]),
       type: json['type'],
       currentStatus: json['currentStatus'],
+      cancelReason: json['traces'][0]['description'],
       details: List<OrderDetailViewModel>.from(
               json['details'].map((e) => OrderDetailViewModel.fromJson(e)))
           .toList(),

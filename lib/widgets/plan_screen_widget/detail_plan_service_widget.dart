@@ -8,6 +8,7 @@ import 'package:sizer2/sizer2.dart';
 
 import '../../core/constants/colors.dart';
 import '../../core/constants/service_types.dart';
+import '../../models/plan_status.dart';
 import '../../screens/plan_screen/list_order_screen.dart';
 import '../../service/location_service.dart';
 import '../../view_models/order.dart';
@@ -43,6 +44,7 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
   List<OrderViewModel> movingOrderList = [];
   bool isShowTotal = false;
   double _totalSurcharge = 0;
+  PlanStatus? planStatus;
 
   @override
   void initState() {
@@ -51,6 +53,10 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
   }
 
   setUpData() {
+    if (widget.plan.status != null) {
+      planStatus = planStatuses
+          .firstWhere((element) => element.engName == widget.plan.status);
+    }
     tabController = TabController(length: 3, vsync: this, initialIndex: 0);
     final orderList = widget.plan.status == planStatuses[0].engName ||
             widget.plan.status == planStatuses[1].engName
@@ -98,13 +104,13 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                   alignment: Alignment.centerLeft,
                   child: const Text(
                     "Các đơn dịch vụ",
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: TextStyle(fontSize: 19, fontWeight: FontWeight.bold),
                   )),
               const Spacer(),
-              if (widget.isLeader)
+              if (widget.isLeader && planStatus != null)
                 TextButton(
                     onPressed: () async {
-                      if (widget.plan.status == planStatuses[2].engName) {
+                      if (planStatus!.value > 1) {
                         final rs = await _locationService
                             .getLocationById(widget.plan.locationId!);
                         if (rs != null) {
@@ -128,11 +134,12 @@ class _DetailPlanServiceWidgetState extends State<DetailPlanServiceWidget>
                       }
                     },
                     child: Text(
-                      'Đi đặt hàng',
+                      planStatus!.value < 3
+                          ? 'Đi đặt hàng'
+                          : 'Danh sách đơn hàng',
                       style: TextStyle(
-                        color: widget.plan.status == planStatuses[2].engName
-                            ? primaryColor
-                            : Colors.grey,
+                        color:
+                            planStatus!.value < 2 ? Colors.grey : primaryColor,
                       ),
                     ))
             ],

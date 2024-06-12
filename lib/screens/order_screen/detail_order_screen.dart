@@ -2,7 +2,6 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -35,7 +34,6 @@ import '../../widgets/style_widget/dialog_style.dart';
 import '../loading_screen/order_detail_loading_screen.dart';
 import '../main_screen/service_main_screen.dart';
 import '../main_screen/service_menu_screen.dart';
-import '../sub_screen/local_map_screen.dart';
 import 'rate_order_screen.dart';
 
 class OrderDetailScreen extends StatefulWidget {
@@ -51,6 +49,8 @@ class OrderDetailScreen extends StatefulWidget {
       this.planStatus,
       this.availableGcoinAmount,
       this.location,
+      this.cancelReason,
+      required this.isCancel,
       required this.isTempOrder});
   final OrderViewModel order;
   final DateTime startDate;
@@ -63,6 +63,8 @@ class OrderDetailScreen extends StatefulWidget {
   final String? planStatus;
   final LocationViewModel? location;
   final void Function() callback;
+  final String? cancelReason;
+  final bool isCancel;
 
   @override
   State<OrderDetailScreen> createState() => _OrderDetailScreenState();
@@ -350,51 +352,6 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                     color: Colors.black54),
                                               ),
                                             ),
-                                            if (widget
-                                                    .order.supplier!.latitude !=
-                                                null)
-                                              InkWell(
-                                                  onTap: () {
-                                                    Navigator.push(
-                                                        context,
-                                                        PageTransition(
-                                                            child:
-                                                                LocalMapScreen(
-                                                              title:
-                                                                  'Địa chỉ dịch vụ',
-                                                              toAddress: widget
-                                                                  .order
-                                                                  .supplier!
-                                                                  .name,
-                                                              toLocation: PointLatLng(
-                                                                  widget
-                                                                      .order
-                                                                      .supplier!
-                                                                      .latitude!,
-                                                                  widget
-                                                                      .order
-                                                                      .supplier!
-                                                                      .longitude!),
-                                                            ),
-                                                            type: PageTransitionType
-                                                                .rightToLeft));
-                                                  },
-                                                  child: Container(
-                                                    width: 35,
-                                                    height: 35,
-                                                    decoration: BoxDecoration(
-                                                        color: primaryColor
-                                                            .withOpacity(0.1),
-                                                        shape: BoxShape.circle,
-                                                        border: Border.all(
-                                                            color: primaryColor,
-                                                            width: 1.5)),
-                                                    child: const Icon(
-                                                      Icons.location_on,
-                                                      color: primaryColor,
-                                                      size: 20,
-                                                    ),
-                                                  ))
                                           ],
                                         ),
                                       ),
@@ -408,31 +365,31 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                           child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                if(widget.order.createdAt != null)
-                                Row(
-                                  children: [
-                                    const Icon(
-                                      Icons.calendar_month,
-                                      color: Colors.purple,
-                                    ),
-                                    const SizedBox(
-                                      width: 8,
-                                    ),
-                                    const Text(
-                                      'Ngày đặt: ',
-                                      style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold),
-                                    ),
-                                    Text(
-                                      DateFormat('dd/MM/yyyy')
-                                          .format(widget.order.createdAt!),
-                                      style: const TextStyle(
-                                        fontSize: 18,
+                                if (widget.order.createdAt != null)
+                                  Row(
+                                    children: [
+                                      const Icon(
+                                        Icons.calendar_month,
+                                        color: Colors.purple,
                                       ),
-                                    )
-                                  ],
-                                ),
+                                      const SizedBox(
+                                        width: 8,
+                                      ),
+                                      const Text(
+                                        'Ngày đặt: ',
+                                        style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold),
+                                      ),
+                                      Text(
+                                        DateFormat('dd/MM/yyyy')
+                                            .format(widget.order.createdAt!),
+                                        style: const TextStyle(
+                                          fontSize: 18,
+                                        ),
+                                      )
+                                    ],
+                                  ),
                                 const SizedBox(
                                   height: 12,
                                 ),
@@ -508,13 +465,58 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                     )
                                   ],
                                 ),
-                                const SizedBox(
-                                  height: 12,
-                                ),
+                                if (widget.isCancel && widget.cancelReason != null)
+                                  Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Divider(
+                                        color: Colors.grey.withOpacity(0.7),
+                                        thickness: 0.2.h,
+                                        height: 3.h,
+                                      ),
+                                      Container(
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 2.w, vertical: 0.5.h),
+                                        decoration: const BoxDecoration(
+                                            color: Colors.redAccent,
+                                            borderRadius: BorderRadius.all(
+                                                Radius.circular(12))),
+                                        child: const Text(
+                                          'Đã huỷ',
+                                          style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.bold,
+                                              fontFamily: 'NotoSans',
+                                              color: Colors.white),
+                                        ),
+                                      ),
+                                      SizedBox(
+                                        height: 1.h,
+                                      ),
+                                      RichText(
+                                          text: TextSpan(
+                                              text: 'Lí do: ',
+                                              style: const TextStyle(
+                                                  color: Colors.black,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.bold),
+                                              children: [
+                                            TextSpan(
+                                                text: '${widget.cancelReason}',
+                                                style: const TextStyle(
+                                                    fontWeight:
+                                                        FontWeight.normal))
+                                          ]))
+                                    ],
+                                  ),
                                 if (widget.order.note != null &&
                                     widget.order.note!.isNotEmpty)
                                   Column(
                                     children: [
+                                      SizedBox(
+                                        height: 1.h,
+                                      ),
                                       const Row(
                                         children: [
                                           Icon(
@@ -836,11 +838,13 @@ class _OrderDetailScreenState extends State<OrderDetailScreen> {
                                                 (element) =>
                                                     element.enumName ==
                                                     widget.order.period),
-                                            numberOfMember: widget.numberOfMember!,
+                                            numberOfMember:
+                                                widget.numberOfMember!,
                                             orderGuid: widget.order.uuid,
-                                            servingDates: widget.order.serveDates!
-                                              .map((e) => DateTime.parse(e))
-                                              .toList(),
+                                            servingDates: widget
+                                                .order.serveDates!
+                                                .map((e) => DateTime.parse(e))
+                                                .toList(),
                                           ),
                                         ),
                                         type: PageTransitionType.rightToLeft));

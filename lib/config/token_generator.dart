@@ -11,15 +11,12 @@ class TokenGenerator {
     if (type == "plan") {
       if (encoded is TempPlan) {
         jwt = JWT(
-          // Payload for plan
           {
             'isFromHost':encoded.isFromHost,
             'planId': encoded.planId,
-            'isEnableToJoin': encoded.isEnableToJoin,
           },
         );
       } else {
-        // Handle the case where encoded is not a TempPlan
         return "Invalid input for 'plan' type";
       }
     } else if (type == "traveler") {

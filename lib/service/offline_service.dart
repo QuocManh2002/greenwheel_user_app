@@ -2,50 +2,40 @@ import 'dart:convert';
 
 import 'package:collection/collection.dart';
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
-import 'package:phuot_app/core/constants/plan_statuses.dart';
-import 'package:phuot_app/core/constants/urls.dart';
-import 'package:phuot_app/helpers/goong_request.dart';
-import 'package:phuot_app/helpers/util.dart';
-import 'package:phuot_app/service/location_service.dart';
-import 'package:phuot_app/service/order_service.dart';
-import 'package:phuot_app/service/plan_service.dart';
-import 'package:phuot_app/view_models/location.dart';
-import 'package:phuot_app/view_models/order.dart';
-import 'package:phuot_app/view_models/order_detail.dart';
-import 'package:phuot_app/view_models/plan_member.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/plan_card.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/plan_detail.dart';
-import 'package:phuot_app/view_models/plan_viewmodels/plan_offline.dart';
-import 'package:phuot_app/view_models/supplier.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+import '../core/constants/urls.dart';
+import '../helpers/goong_request.dart';
+import '../helpers/util.dart';
+import '../view_models/location.dart';
 import '../view_models/location_viewmodels/emergency_contact.dart';
+import '../view_models/order.dart';
+import '../view_models/order_detail.dart';
+import '../view_models/plan_member.dart';
+import '../view_models/plan_viewmodels/plan_detail.dart';
+import '../view_models/plan_viewmodels/plan_offline.dart';
 import '../view_models/plan_viewmodels/surcharge.dart';
+import '../view_models/supplier.dart';
+import 'location_service.dart';
+import 'order_service.dart';
 
 class OfflineService {
-  Future<void> savePlanToHive() async {
+  Future<void> savePlanToHive(PlanDetail plan) async {
     await Hive.initFlutter();
     final myPlans = await Hive.openBox('myPlans');
+
     final LocationService locationService = LocationService();
-    final PlanService planService = PlanService();
     final OrderService orderService = OrderService();
-    List<PlanCardViewModel>? planCards = await planService.getPlanCards(false);
-    for (final planCard in planCards!) {
-      if (planCard.status == planStatuses[2].engName &&
-          myPlans.get(planCard.id) == null) {
-        PlanDetail? plan = await planService.getPlanById(planCard.id, 'JOIN');
-        final location =
-            await locationService.getLocationById(plan!.locationId!);
-        final planOrders =
-            await orderService.getOrderByPlan(plan.id!, 'JOIN');
-        if (location != null) {
-          await myPlans.put(
-              plan.id, convertToOfflinePlan(plan, location, planOrders));
-        }
-      } else if (planCard.utcEndAt!.toLocal().isAfter(DateTime.now())) {
-        myPlans.delete(planCard.id);
+    final location = await locationService.getLocationById(plan.locationId!);
+    final planOrders = await orderService.getOrderByPlan(plan.id!);
+    // if (myPlans.get(plan.id) == null) {
+      if (location != null) {
+        myPlans.put(
+            plan.id, await convertToOfflinePlan(plan, location, planOrders));
       }
-    }
+    // }
+    // myPlans.
+    // myPlans.close();
   }
 
   List<PlanOfflineViewModel>? getOfflinePlans() {
@@ -238,29 +228,5 @@ class OfflineService {
       'gcoinBudgetPerCapita': plan.gcoinBudgetPerCapita,
       'actualGcoinBudget': plan.actualGcoinBudget
     };
-  }
-
-  Future<void> setUpDataForTest() async {
-    try {
-      final PlanService planService = PlanService();
-      final LocationService locationService = LocationService();
-      final OrderService orderService = OrderService();
-      await Hive.initFlutter();
-      final myPlans = await Hive.openBox('myPlans');
-      final ids = [3263, 3264, 3265];
-      for (final id in ids) {
-        PlanDetail? plan = await planService.getPlanById(id, 'PUBLISH');
-        final location =
-            await locationService.getLocationById(plan!.locationId!);
-        final planOrders =
-            await orderService.getOrderByPlan(plan.id!, 'PUBLISH');
-        if (location != null) {
-          await myPlans.put(
-              plan.id, convertToOfflinePlan(plan, location, planOrders));
-        }
-      }
-    } catch (error) {
-      throw Exception(error);
-    }
   }
 }

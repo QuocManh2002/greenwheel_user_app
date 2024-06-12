@@ -168,7 +168,6 @@ class _OfflineDetailScreenState extends State<OfflineDetailScreen> {
                 if (_selectedTab == 0)
                   BaseInformationWidget(
                     plan: widget.plan.plan,
-                    members: widget.plan.plan.members!,
                     planType: planStatuses[2].engName,
                     isLeader: sharedPreferences.getInt('userId') ==
                         widget.plan.plan.leaderId,

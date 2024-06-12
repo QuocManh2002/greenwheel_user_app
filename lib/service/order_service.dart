@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:collection/collection.dart';
@@ -199,6 +198,9 @@ mutation {
         createdAt
         period
         type
+        traces{
+          description
+        }
         provider {
           type
           id
@@ -295,16 +297,58 @@ mutation {
   void saveConfigToPref(ConfigurationModel model) {
     sharedPreferences.setStringList('HOLIDAYS',
         (model.HOLIDAYS ?? []).map((e) => json.encode(e.toJson())).toList());
+    sharedPreferences.setInt('HOLIDAY_RIDING_UP_PCT',
+        model.HOLIDAY_RIDING_UP_PCT ?? GlobalConstant().HOLIDAY_RIDING_UP_PCT);
     sharedPreferences.setInt(
-        'HOLIDAY_RIDING_UP_PCT', model.HOLIDAY_RIDING_UP_PCT ?? 0);
-    sharedPreferences.setInt(
-        'HOLIDAY_LODGING_UP_PCT', model.HOLIDAY_LODGING_UP_PCT ?? 0);
-    sharedPreferences.setInt(
-        'HOLIDAY_MEAL_UP_PCT', model.HOLIDAY_MEAL_UP_PCT ?? 0);
+        'HOLIDAY_LODGING_UP_PCT',
+        model.HOLIDAY_LODGING_UP_PCT ??
+            GlobalConstant().HOLIDAY_LODGING_UP_PCT);
+    sharedPreferences.setInt('HOLIDAY_MEAL_UP_PCT',
+        model.HOLIDAY_MEAL_UP_PCT ?? GlobalConstant().HOLIDAY_MEAL_UP_PCT);
     sharedPreferences.setString(
         'LAST_MODIFIED', model.LAST_MODIFIED.toString());
-    sharedPreferences.setInt('MAX_TOPUP', model.MAX_TOPUP ?? 0);
-    sharedPreferences.setInt('MIN_TOPUP', model.MIN_TOPUP ?? 0);
+    sharedPreferences.setInt(
+        'MAX_TOPUP', model.MAX_TOPUP ?? GlobalConstant().MAX_TOPUP);
+    sharedPreferences.setInt(
+        'MIN_TOPUP', model.MIN_TOPUP ?? GlobalConstant().MIN_TOPUP);
+    sharedPreferences.setInt(
+        'ORDER_REFUND_CUSTOMER_CANCEL_2_DAY_PCT',
+        model.ORDER_REFUND_CUSTOMER_CANCEL_2_DAY_PCT ??
+            GlobalConstant().ORDER_REFUND_CUSTOMER_CANCEL_2_DAY_PCT);
+    sharedPreferences.setInt(
+        'ORDER_REFUND_CUSTOMER_CANCEL_1_DAY_PCT',
+        model.ORDER_REFUND_CUSTOMER_CANCEL_1_DAY_PCT ??
+            GlobalConstant().ORDER_REFUND_CUSTOMER_CANCEL_1_DAY_PCT);
+    sharedPreferences.setInt(
+        'ORDER_PROCESSING_DATE_DURATION',
+        model.ORDER_PROCESSING_DATE_DURATION ??
+            GlobalConstant().ORDER_PROCESSING_DATE_DURATION);
+    sharedPreferences.setInt(
+        'MEMBER_REFUND_SELF_REMOVE_1_DAY_PCT',
+        model.MEMBER_REFUND_SELF_REMOVE_1_DAY_PCT ??
+            GlobalConstant().MEMBER_REFUND_SELF_REMOVE_1_DAY_PCT);
+    sharedPreferences.setDouble('BUDGET_ASSURANCE_RATE',
+        model.BUDGET_ASSURANCE_RATE ?? GlobalConstant().BUDGET_ASSURANCE_RATE);
+    sharedPreferences.setInt(
+        'PLAN_COMPLETE_AFTER_DAYS',
+        model.PLAN_COMPLETE_AFTER_DAYS ??
+            GlobalConstant().PLAN_COMPLETE_AFTER_DAYS);
+    sharedPreferences.setInt(
+        'ORDER_COMPLETE_AFTER_DAYS',
+        model.ORDER_COMPLETE_AFTER_DAYS ??
+            GlobalConstant().ORDER_COMPLETE_AFTER_DAYS);
+    sharedPreferences.setInt('MIN_PLAN_MEMBER',
+        model.MIN_PLAN_MEMBER ?? GlobalConstant().MIN_PLAN_MEMBER);
+    sharedPreferences.setInt('MAX_PLAN_MEMBER',
+        model.MAX_PLAN_MEMBER ?? GlobalConstant().MAX_PLAN_MEMBER);
+    sharedPreferences.setInt('MIN_DEPART_DIFF',
+        model.MIN_DEPART_DIFF ?? GlobalConstant().MIN_DEPART_DIFF);
+    sharedPreferences.setInt('MAX_DEPART_DIFF',
+        model.MAX_DEPART_DIFF ?? GlobalConstant().MAX_DEPART_DIFF);
+    sharedPreferences.setInt(
+        'MIN_PERIOD', model.MIN_PERIOD ?? GlobalConstant().MIN_PERIOD);
+    sharedPreferences.setInt(
+        'MAX_PERIOD', model.MAX_PERIOD ?? GlobalConstant().MAX_PERIOD);
   }
 
   List<ProductViewModel> getCheapestDetailCheckinOrder(
@@ -361,17 +405,6 @@ mutation {
   Future<int?> rateOrder(
       int orderId, int rating, String comment, BuildContext context) async {
     try {
-      log('''
-mutation{
-  rateOrder(dto: {
-    comment: ${comment == '' ? null : json.encode(comment)}
-    orderId:$orderId
-    rating:$rating
-  }){
-    id
-  }
-}
-''');
       QueryResult result = await client.mutate(MutationOptions(document: gql('''
 mutation{
   rateOrder(dto: {
@@ -398,24 +431,24 @@ mutation{
     }
   }
 
-  Future<Map?> getOrderByPlan(int planId, String planType) async {
+  Future<Map?> getOrderByPlan(int planId) async {
     try {
-      String type = '';
-      switch (planType) {
-        case 'OWN':
-          type = 'ownedPlans';
-          break;
-        case 'JOIN':
-          type = 'joinedPlans';
-          break;
-        case 'PUBLISH':
-          type = 'publishedPlans';
-      }
+      // String type = '';
+      // switch (planType) {
+      //   case 'OWN':
+      //     type = 'ownedPlans';
+      //     break;
+      //   case 'JOIN':
+      //     type = 'joinedPlans';
+      //     break;
+      //   case 'PUBLISH':
+      //     type = 'publishedPlans';
+      // }
       GraphQLClient newClient = await config.getOfflineClient();
       QueryResult result = await newClient.query(
           QueryOptions(fetchPolicy: FetchPolicy.noCache, document: gql("""
 {
-  $type(where: { id: { eq: $planId } }) {
+  plans(where: { id: { eq: $planId } }) {
     nodes {
       actualGcoinBudget
       orders {
@@ -429,6 +462,9 @@ mutation{
         type
         currentStatus
         uuid
+        traces{
+          description
+        }
         provider {
           coordinate{
             coordinates
@@ -464,7 +500,7 @@ mutation{
         throw Exception(result.exception!.linkException!);
       }
 
-      List? res = result.data![type]['nodes'][0]['orders'];
+      List? res = result.data!['plans']['nodes'][0]['orders'];
       if (res == null) {
         return null;
       }
@@ -482,7 +518,7 @@ mutation{
       }
       return {
         'orders': orders,
-        'currentBudget': result.data![type]['nodes'][0]['actualGcoinBudget']
+        'currentBudget': result.data!['plans']['nodes'][0]['actualGcoinBudget']
       };
     } catch (error) {
       throw Exception(error);

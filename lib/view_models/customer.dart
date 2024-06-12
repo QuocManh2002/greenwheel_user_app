@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:flutter_polyline_points/flutter_polyline_points.dart';
 
-class CustomerViewModel {
+class TravelerViewModel {
   int id;
   String name;
   bool isMale;
@@ -11,13 +11,14 @@ class CustomerViewModel {
   double balance;
   String? defaultAddress;
   PointLatLng? defaultCoordinate;
+  int? prestigePoint;
 
-  CustomerViewModel customerFromJson(String str) =>
-      CustomerViewModel.fromJson(json.decode(str));
+  TravelerViewModel customerFromJson(String str) =>
+      TravelerViewModel.fromJson(json.decode(str));
 
-  String customerToJson(CustomerViewModel data) => json.encode(data.toJson());
+  String customerToJson(TravelerViewModel data) => json.encode(data.toJson());
 
-  CustomerViewModel(
+  TravelerViewModel(
       {required this.id,
       required this.name,
       required this.isMale,
@@ -25,16 +26,18 @@ class CustomerViewModel {
       required this.phone,
       required this.balance,
       required this.defaultAddress,
+      required this.prestigePoint,
       required this.defaultCoordinate});
 
-  factory CustomerViewModel.fromJson(Map<String, dynamic> json) =>
-      CustomerViewModel(
+  factory TravelerViewModel.fromJson(Map<String, dynamic> json) =>
+      TravelerViewModel(
         id: json["id"],
         name: json["name"],
         isMale: json["isMale"],
         avatarUrl: json["avatarPath"],
         phone: json["phone"],
         defaultAddress: json['address'],
+        prestigePoint: json['prestigePoint'],
         defaultCoordinate: json['coordinate'] == null
             ? null
             : PointLatLng(json['coordinate']['coordinates'][1],

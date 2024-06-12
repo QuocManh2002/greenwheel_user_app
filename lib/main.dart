@@ -1,3 +1,4 @@
+import 'dart:async';
 
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -18,8 +19,6 @@ import 'firebase_options.dart';
 import 'screens/authentication_screen/login_screen.dart';
 import 'screens/introduce_screen/splash_screen.dart';
 import 'screens/offline_screen/offline_home_screen.dart';
-import 'widgets/test_screen.dart';
-
 late SharedPreferences sharedPreferences;
 late bool hasConnection;
 late FlutterLocalization localization;
@@ -53,16 +52,40 @@ void main() async {
   hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 
-  // final cron = Cron();
-  // cron.schedule(Schedule.parse('*/1 * * * *'),(){
-  //   print('Cron Job');
-  // });
-
   runApp(const MainApp());
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
+
+  @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.detached ||
+        state == AppLifecycleState.inactive) {
+      return;
+    }
+    final inBackground = state == AppLifecycleState.paused;
+    if (inBackground ) {
+      Timer.periodic(const Duration(hours: 12), (timer) {
+        String? refreshToken = sharedPreferences.getString("userRefreshToken");
+        if (refreshToken != null && hasConnection) {
+          TokenRefresher.refreshToken();
+        }
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +112,6 @@ class MainApp extends StatelessWidget {
                   ? const SplashScreen()
                   : const LoginScreen()
               : const OfflineHomeScreen(),
-          // home: const TestScreen(),
           theme: theme,
           debugShowCheckedModeBanner: false,
         ),
