@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
-import 'package:phuot_app/service/offline_service.dart';
 
 Future<void> initializeService() async {
   final service = FlutterBackgroundService();
@@ -13,7 +12,6 @@ Future<void> initializeService() async {
   );
 
   await service.startService();
-  // service.invoke('setAsBackground');
 }
 
 @pragma('vm:entry-point')
@@ -36,8 +34,6 @@ void onStart(ServiceInstance service) async {
 
     Future.delayed(const Duration(seconds: 20), () async {
       Timer.periodic(const Duration(hours: 12), (timer) async {
-        final OfflineService offlineService = OfflineService();
-        // await offlineService.savePlanToHive();
       });
     });
   }

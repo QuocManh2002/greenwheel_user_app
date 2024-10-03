@@ -47,8 +47,6 @@ void main() async {
 
   MapboxOptions.setAccessToken(dotenv.env['mapbox_access_token'].toString());
   localization = FlutterLocalization.instance;
-  final myPlans = await Hive.openBox('myPlans');
-  // myPlans.clear();
   hasConnection = await InternetConnectionChecker().hasConnection;
   FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
 

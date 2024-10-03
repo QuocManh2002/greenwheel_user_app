@@ -1,4 +1,3 @@
-import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:graphql_flutter/graphql_flutter.dart';
@@ -26,7 +25,6 @@ class PaymentWebViewScreen extends StatefulWidget {
 
 class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
   late WebViewController controller;
-  late GraphQLClient _client;
   static GraphQlConfig config = GraphQlConfig();
   GraphQLClient client = config.getClient();
 
@@ -81,11 +79,6 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         ),
       )
       ..loadRequest(Uri.parse(widget.request.paymentUrl));
-
-    final options = SubscriptionOptions(
-      document: gql(text),
-      variables: {'transactionId': widget.request.transactionId},
-    );
   }
 
   @override
@@ -97,33 +90,6 @@ class _PaymentWebViewScreenState extends State<PaymentWebViewScreen> {
         child: CacheProvider(
           child: Stack(
             children: [
-              // Subscription(
-              //   options: SubscriptionOptions(
-              //     document: gql(text),
-              //     variables: {'transactionId': widget.request.transactionId},
-              //   ),
-              //   builder: (result) {
-              //     if (result.data == null) {
-              //       return const Center(child: CircularProgressIndicator());
-              //     } else {
-              //       if (result.hasException) {
-              //         return Text('Error: ${result.exception.toString()}');
-              //       }
-
-              //       if (result.isLoading) {
-              //         return const Center(child: CircularProgressIndicator());
-              //       }
-
-              //       return const Center(
-              //         child: Text(
-              //           'Thanh cong....',
-              //           style: TextStyle(
-              //               fontSize: 20, fontWeight: FontWeight.bold),
-              //         ),
-              //       );
-              //     }
-              //   },
-              // ),
               WebViewWidget(
                 controller: controller,
               ),
